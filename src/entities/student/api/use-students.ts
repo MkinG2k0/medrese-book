@@ -8,6 +8,9 @@ type Student = {
 	currentStepIdx: number
 	groupId: string
 	hasSessionToday?: boolean
+	todayAttendance?: 'PRESENT' | 'LATE' | 'ABSENT' | null
+	todayStepsCompleted?: number
+	todayGrades?: number[]
 }
 
 export function useStudents(groupId?: string, date?: string) {

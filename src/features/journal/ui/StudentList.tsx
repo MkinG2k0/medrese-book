@@ -6,7 +6,7 @@ import { useMemo } from "react";
 
 import { useStudents } from "@/entities/student/api/use-students";
 import { useJournalStore } from "@/features/journal/model/journal-store";
-import { StudentCard } from "@/features/journal/ui/StudentCard";
+import { JournalStudentsTable } from "@/features/journal/ui/JournalStudentsTable";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -37,17 +37,9 @@ export function StudentList({ groupId }: StudentListProps) {
 
       {isLoading && <Text>Загрузка...</Text>}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {sorted.map((student) => (
-          <StudentCard
-            key={student.id}
-            id={student.id}
-            name={student.name}
-            currentStepIdx={student.currentStepIdx}
-            hasSessionToday={student.hasSessionToday}
-          />
-        ))}
-      </div>
+      {!isLoading && (
+        <JournalStudentsTable students={sorted} />
+      )}
     </div>
   );
 }

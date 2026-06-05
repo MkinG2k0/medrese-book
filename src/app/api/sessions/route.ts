@@ -1,4 +1,5 @@
 import { auth } from "@/shared/lib/auth";
+import { getLocalDateString, toSessionDate } from "@/shared/lib/calendar-date";
 import { prisma } from "@/shared/lib/prisma";
 import { updateStepProgress } from "@/shared/lib/step-progress";
 import { createSessionSchema } from "@/shared/lib/validations/session";
@@ -24,10 +25,11 @@ export async function POST(request: Request) {
   if (!student) return error("Ученик не найден", 404);
   if (student.group.teacherId !== session.user.teacherId) return forbidden();
 
+  const calendarDay = getLocalDateString(new Date(date));
   const newSession = await prisma.session.create({
     data: {
       studentId,
-      date: new Date(date),
+      date: toSessionDate(calendarDay),
       attendance,
       lateMinutes: attendance === "LATE" ? lateMinutes : null,
       note,

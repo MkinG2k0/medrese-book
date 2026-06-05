@@ -3,12 +3,15 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, message } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { useCreateSession } from "@/entities/session/api/use-sessions";
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
+import { useJournalStore } from "@/features/journal/model/journal-store";
 import { AttendanceButtons } from "@/features/journal/ui/AttendanceButtons";
 import { StepCard, type StepGradeState } from "@/features/journal/ui/StepCard";
+import { toSessionDate } from "@/shared/lib/calendar-date";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -23,6 +26,7 @@ type LessonPageProps = {
   totalSteps: number;
   totalHours: number;
   steps: JournalStep[];
+  nextStudent: { id: string; name: string } | null;
 };
 
 function getInitials(name: string) {
@@ -34,12 +38,11 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function buildInitialStates(steps: JournalStep[]): Record<string, StepGradeState> {
+function buildInitialStates(
+  steps: JournalStep[],
+): Record<string, StepGradeState> {
   return Object.fromEntries(
-    steps.map((step, index) => [
-      step.id,
-      { selected: index === 0, grade: null, note: "" },
-    ]),
+    steps.map((step) => [step.id, { grade: null, note: "" }]),
   );
 }
 
@@ -51,7 +54,10 @@ export function LessonPage({
   totalSteps,
   totalHours,
   steps,
+  nextStudent,
 }: LessonPageProps) {
+  const router = useRouter();
+  const { dateFilter } = useJournalStore();
   const [attendance, setAttendance] = useState<"PRESENT" | "LATE" | "ABSENT">(
     "PRESENT",
   );
@@ -107,16 +113,12 @@ export function LessonPage({
     setStepStates((prev) => ({ ...prev, [stepId]: state }));
   };
 
-  const handleSave = async () => {
+  const saveSession = async () => {
     const completions =
       attendance === "ABSENT"
         ? []
         : visibleSteps
-            .filter(
-              (step) =>
-                stepStates[step.id]?.selected &&
-                stepStates[step.id]?.grade !== null,
-            )
+            .filter((step) => stepStates[step.id]?.grade !== null)
             .map((step) => ({
               stepId: step.id,
               grade: stepStates[step.id]!.grade!,
@@ -124,22 +126,44 @@ export function LessonPage({
             }));
 
     if (attendance !== "ABSENT" && completions.length === 0) {
-      message.warning("Выберите хотя бы один шаг и поставьте оценку");
-      return;
+      message.warning("Поставьте оценку хотя бы одному шагу");
+      return false;
     }
 
     try {
       await createSession.mutateAsync({
         studentId,
-        date: new Date().toISOString(),
+        date: toSessionDate(dateFilter).toISOString(),
         attendance,
         lateMinutes: attendance === "LATE" ? lateMinutes : null,
         note: null,
         completions,
       });
-      message.success("Урок сохранён");
+      return true;
     } catch (err) {
       message.error(err instanceof Error ? err.message : "Ошибка сохранения");
+      return false;
+    }
+  };
+
+  const handleSave = async () => {
+    const saved = await saveSession();
+    if (!saved) return;
+
+    message.success("Урок сохранён");
+    router.push("/journal");
+  };
+
+  const handleSaveAndNext = async () => {
+    const saved = await saveSession();
+    if (!saved) return;
+
+    if (nextStudent) {
+      message.success(`Переход к ${nextStudent.name}`);
+      router.push(`/journal/${nextStudent.id}`);
+    } else {
+      message.success("Урок сохранён. Это последний ученик в группе");
+      router.push("/journal");
     }
   };
 
@@ -157,12 +181,10 @@ export function LessonPage({
   }
 
   return (
-    <Flex vertical gap={24} className="mx-auto max-w-2xl pb-24">
+    <Flex vertical gap={24} className="mx-auto max-w-2xl pb-32">
       <Link href="/journal" className="flex items-center gap-2 no-underline">
         <ArrowLeftOutlined />
-        <Text>
-          Все ученики · {todayLabel}
-        </Text>
+        <Text>Все ученики · {todayLabel}</Text>
       </Link>
 
       <Flex align="center" gap={16}>
@@ -224,15 +246,28 @@ export function LessonPage({
       )}
 
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-[#2a2622] bg-[#141210] p-4 md:left-[240px]">
-        <Button
-          type="primary"
-          size="large"
-          block
-          onClick={handleSave}
-          loading={createSession.isPending}
-        >
-          Сохранить урок
-        </Button>
+        <Flex gap={8} className="mx-auto ">
+          {nextStudent && (
+            <Button
+              type="primary"
+              size="large"
+              block
+              onClick={handleSaveAndNext}
+              loading={createSession.isPending}
+            >
+              Сохранить и перейти к {nextStudent.name}
+            </Button>
+          )}
+          <Button
+            type={nextStudent ? "default" : "primary"}
+            size="large"
+            block
+            onClick={handleSave}
+            loading={createSession.isPending}
+          >
+            Сохранить урок
+          </Button>
+        </Flex>
       </div>
     </Flex>
   );

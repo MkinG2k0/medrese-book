@@ -1,6 +1,8 @@
-import { startOfDay, endOfDay } from 'date-fns'
-
 import { auth } from '@/shared/lib/auth'
+import {
+	getCalendarDayQueryRange,
+	isSameCalendarDay,
+} from '@/shared/lib/calendar-date'
 import { prisma } from '@/shared/lib/prisma'
 import { error, forbidden, success, unauthorized } from '@/shared/api'
 
@@ -24,11 +26,14 @@ export async function GET(request: Request) {
 						? {
 								sessions: {
 									where: {
-										date: {
-											gte: startOfDay(new Date(dateStr)),
-											lte: endOfDay(new Date(dateStr)),
-										},
+										date: (() => {
+											const { start, end } =
+												getCalendarDayQueryRange(dateStr)
+											return { gte: start, lte: end }
+										})(),
 									},
+									orderBy: { date: 'desc' },
+									include: { completions: true },
 								},
 							}
 						: {}),
@@ -46,16 +51,35 @@ export async function GET(request: Request) {
 		return forbidden()
 	}
 
-	const students = group.students.map((s) => ({
-		id: s.id,
-		name: s.user.name,
-		currentStepIdx: s.currentStepIdx,
-		groupId: s.groupId,
-		hasSessionToday:
+	const students = group.students.map((s) => {
+		const sessionsForDay =
 			dateStr && 'sessions' in s
-				? (s as typeof s & { sessions: unknown[] }).sessions.length > 0
-				: false,
-	}))
+				? (
+						s as typeof s & {
+							sessions: {
+								date: Date
+								attendance: 'PRESENT' | 'LATE' | 'ABSENT'
+								completions: { grade: number }[]
+							}[]
+						}
+					).sessions.filter((session) =>
+						isSameCalendarDay(session.date, dateStr),
+					)
+				: []
+
+		const todaySession = sessionsForDay[0]
+
+		return {
+			id: s.id,
+			name: s.user.name,
+			currentStepIdx: s.currentStepIdx,
+			groupId: s.groupId,
+			hasSessionToday: !!todaySession,
+			todayAttendance: todaySession?.attendance ?? null,
+			todayStepsCompleted: todaySession?.completions.length ?? 0,
+			todayGrades: todaySession?.completions.map((c) => c.grade) ?? [],
+		}
+	})
 
 	return success(students)
 }

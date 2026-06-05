@@ -56,6 +56,16 @@ export async function getStudentLesson(studentId: string) {
 		.slice(0, student.currentStepIdx)
 		.reduce((sum, step) => sum + step.hours, 0)
 
+	const groupStudents = await prisma.student.findMany({
+		where: { groupId: student.groupId },
+		include: { user: true },
+	})
+	const sortedStudents = [...groupStudents].sort((a, b) =>
+		a.user.name.localeCompare(b.user.name),
+	)
+	const currentIndex = sortedStudents.findIndex((s) => s.id === studentId)
+	const nextStudent = sortedStudents[currentIndex + 1] ?? null
+
 	return {
 		student: {
 			id: student.id,
@@ -69,5 +79,8 @@ export async function getStudentLesson(studentId: string) {
 		totalSteps: allSteps.length,
 		totalHours,
 		steps: remainingSteps,
+		nextStudent: nextStudent
+			? { id: nextStudent.id, name: nextStudent.user.name }
+			: null,
 	}
 }

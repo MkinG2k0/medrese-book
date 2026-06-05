@@ -1,0 +1,46 @@
+/** Часовой пояс приложения (календарные дни журнала). */
+export const APP_TIMEZONE = "Europe/Moscow";
+
+const CALENDAR_DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Календарная дата YYYY-MM-DD в часовом поясе приложения. */
+export function getLocalDateString(
+  date: Date = new Date(),
+  timeZone: string = APP_TIMEZONE,
+): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(date);
+}
+
+export function isValidCalendarDate(dateStr: string): boolean {
+  return CALENDAR_DATE_FORMAT.test(dateStr);
+}
+
+/** Совпадает ли момент времени с календарным днём YYYY-MM-DD. */
+export function isSameCalendarDay(
+  date: Date,
+  dateStr: string,
+  timeZone: string = APP_TIMEZONE,
+): boolean {
+  return getLocalDateString(date, timeZone) === dateStr;
+}
+
+/**
+ * Широкий интервал для выборки сессий из БД с последующей фильтрацией
+ * по календарному дню (покрывает старые записи с произвольным временем).
+ */
+export function getCalendarDayQueryRange(dateStr: string): {
+  start: Date;
+  end: Date;
+} {
+  const noon = new Date(`${dateStr}T12:00:00.000Z`);
+  const dayMs = 24 * 60 * 60 * 1000;
+  return {
+    start: new Date(noon.getTime() - dayMs),
+    end: new Date(noon.getTime() + dayMs),
+  };
+}
+
+/** Дата сессии для выбранного календарного дня (полдень UTC). */
+export function toSessionDate(calendarDateStr: string): Date {
+  return new Date(`${calendarDateStr}T12:00:00.000Z`);
+}

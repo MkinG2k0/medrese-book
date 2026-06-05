@@ -5,9 +5,7 @@ export async function updateStepProgress(
   grade: number | null,
   attendance: Attendance,
 ) {
-  const shouldAdvance = attendance !== "ABSENT";
-  // TODO: Логика проверки оценки
-  // && grade !== null && grade >= 3
+  const shouldAdvance = attendance !== "ABSENT" && grade !== null && grade >= 3;
 
   if (shouldAdvance) {
     await prisma.student.update({

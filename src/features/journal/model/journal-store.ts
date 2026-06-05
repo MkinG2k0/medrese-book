@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+import { getLocalDateString } from '@/shared/lib/calendar-date'
+
 type JournalStore = {
 	selectedStudentId: string | null
 	setSelectedStudentId: (id: string | null) => void
@@ -10,6 +12,6 @@ type JournalStore = {
 export const useJournalStore = create<JournalStore>((set) => ({
 	selectedStudentId: null,
 	setSelectedStudentId: (id) => set({ selectedStudentId: id }),
-	dateFilter: new Date().toISOString().split('T')[0]!,
+	dateFilter: getLocalDateString(),
 	setDateFilter: (date) => set({ dateFilter: date }),
 }))
