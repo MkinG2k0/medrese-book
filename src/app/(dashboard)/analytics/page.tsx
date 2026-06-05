@@ -1,41 +1,70 @@
-import { LevelStatsChart } from "@/features/analytics/ui/LevelStats";
-import { AnalyticsMonthPicker } from "@/features/analytics/ui/AnalyticsMonthPicker";
-import { TopStudents } from "@/features/analytics/ui/TopStudents";
+import { getAnalyticsTeachers } from '@/features/analytics/actions/analytics-actions'
+import { resolveAnalyticsTeacherFilter } from '@/features/analytics/lib/analytics-query'
+import { AnalyticsMonthPicker } from '@/features/analytics/ui/AnalyticsMonthPicker'
+import { AnalyticsTeacherPicker } from '@/features/analytics/ui/AnalyticsTeacherPicker'
+import { LevelStatsChart } from '@/features/analytics/ui/LevelStats'
+import { TopStudents } from '@/features/analytics/ui/TopStudents'
 import {
-  formatAnalyticsMonth,
-  getLevelStats,
-  getTopStudents,
-  parseAnalyticsMonth,
-} from "@/shared/lib/analytics";
-import { requireRoles } from "@/shared/lib/session";
-import Title from "@/shared/ui/Title";
+	formatAnalyticsMonth,
+	getLevelStats,
+	getTopStudents,
+	parseAnalyticsMonth,
+} from '@/shared/lib/analytics'
+import { requireRoles } from '@/shared/lib/session'
+import Title from '@/shared/ui/Title'
 
 type AnalyticsPageProps = {
-  searchParams: Promise<{ month?: string }>;
-};
+	searchParams: Promise<{ month?: string; teacher?: string }>
+}
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
-  await requireRoles(["TEACHER", "MANAGER", "SUPER_ADMIN"]);
+	const session = await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
 
-  const { month: monthParam } = await searchParams;
-  const month = parseAnalyticsMonth(monthParam);
-  const monthLabel = formatAnalyticsMonth(month);
+	const { month: monthParam, teacher: teacherParam } = await searchParams
+	const month = parseAnalyticsMonth(monthParam)
+	const monthLabel = formatAnalyticsMonth(month)
+	const monthValue = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
 
-  const [topStudents, levelStats] = await Promise.all([
-    getTopStudents(month),
-    getLevelStats(month),
-  ]);
+	const allTeachers = await getAnalyticsTeachers()
+	const validTeacherIds = new Set(allTeachers.map((teacher) => teacher.id))
+	const { filterTeacherId, selectedTeacher } = resolveAnalyticsTeacherFilter(
+		session.user.role,
+		session.user.teacherId,
+		teacherParam,
+		validTeacherIds,
+	)
 
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Title level={3} className="!mb-0">
-          Аналитика
-        </Title>
-        <AnalyticsMonthPicker month={month} />
-      </div>
-      <TopStudents data={topStudents} monthLabel={monthLabel} />
-      <LevelStatsChart data={levelStats} monthLabel={monthLabel} />
-    </div>
-  );
+	const visibleTeachers =
+		session.user.role === 'TEACHER' && session.user.teacherId
+			? allTeachers.filter((teacher) => teacher.id === session.user.teacherId)
+			: allTeachers
+
+	const canSelectAll =
+		session.user.role === 'MANAGER' || session.user.role === 'SUPER_ADMIN'
+
+	const [topStudents, levelStats] = await Promise.all([
+		getTopStudents(month, filterTeacherId),
+		getLevelStats(month, filterTeacherId),
+	])
+
+	return (
+		<div className="flex flex-col gap-8">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<Title level={3} className="!mb-0">
+					Аналитика
+				</Title>
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<AnalyticsTeacherPicker
+						teachers={visibleTeachers}
+						selectedTeacher={selectedTeacher}
+						canSelectAll={canSelectAll}
+						month={monthValue}
+					/>
+					<AnalyticsMonthPicker month={month} selectedTeacher={selectedTeacher} />
+				</div>
+			</div>
+			<TopStudents data={topStudents} monthLabel={monthLabel} />
+			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
+		</div>
+	)
 }

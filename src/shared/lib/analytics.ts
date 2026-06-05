@@ -48,11 +48,15 @@ export type LevelStats = {
 	totalHours: number
 }
 
-export async function getTopStudents(month: Date): Promise<TopEntry[]> {
+export async function getTopStudents(
+	month: Date,
+	teacherId?: string | null,
+): Promise<TopEntry[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
 
 	const students = await prisma.student.findMany({
+		where: teacherId ? { group: { teacherId } } : undefined,
 		include: {
 			user: true,
 			completions: {
@@ -81,10 +85,12 @@ export async function getTopStudents(month: Date): Promise<TopEntry[]> {
 			}
 		})
 		.sort((a, b) => b.stepsCompleted - a.stepsCompleted)
-		.slice(0, 10)
 }
 
-export async function getLevelStats(month: Date): Promise<LevelStats[]> {
+export async function getLevelStats(
+	month: Date,
+	teacherId?: string | null,
+): Promise<LevelStats[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
 
@@ -92,6 +98,7 @@ export async function getLevelStats(month: Date): Promise<LevelStats[]> {
 		include: {
 			steps: true,
 			groups: {
+				where: teacherId ? { teacherId } : undefined,
 				include: {
 					students: {
 						include: {

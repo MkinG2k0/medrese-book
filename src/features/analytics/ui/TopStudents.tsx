@@ -41,7 +41,7 @@ export function TopStudents({
       <Table
         dataSource={data}
         rowKey={(r) => r.student.id}
-        pagination={false}
+        pagination={{ pageSize: 10, showSizeChanger: false }}
         columns={[
           { title: "Ученик", dataIndex: ["student", "name"], key: "name" },
           { title: "Шагов", dataIndex: "stepsCompleted", key: "steps" },
