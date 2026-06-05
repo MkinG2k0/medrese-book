@@ -4,6 +4,7 @@ import {
 	isSameCalendarDay,
 } from '@/shared/lib/calendar-date'
 import { prisma } from '@/shared/lib/prisma'
+import { isStepPassed } from '@/shared/lib/step-completion'
 import { error, forbidden, success, unauthorized } from '@/shared/api'
 
 export async function GET(request: Request) {
@@ -67,7 +68,9 @@ export async function GET(request: Request) {
 			groupId: s.groupId,
 			hasSessionToday: !!todaySession,
 			todayAttendance: todaySession?.attendance ?? null,
-			todayStepsCompleted: completions.length,
+			todayStepsCompleted: completions.filter((c) =>
+				isStepPassed(c.grade),
+			).length,
 			todayGrades: completions.map((c) => c.grade),
 		}
 	})

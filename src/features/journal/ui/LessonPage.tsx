@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Avatar, Button, Flex, message } from "antd";
+import { Avatar, Button, message } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -13,7 +13,11 @@ import {
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
 import { useJournalStore } from "@/features/journal/model/journal-store";
 import { AttendanceButtons } from "@/features/journal/ui/AttendanceButtons";
-import { StepCard, type StepGradeState } from "@/features/journal/ui/StepCard";
+import {
+  EMPTY_STEP_GRADE_STATE,
+  StepCard,
+  type StepGradeState,
+} from "@/features/journal/ui/StepCard";
 import { toSessionDate } from "@/shared/lib/calendar-date";
 import { buildLessonSteps } from "@/shared/lib/step-completion";
 import Text from "@/shared/ui/Text";
@@ -64,7 +68,8 @@ function buildInitialStates(
 
   return Object.fromEntries(
     steps.map((step) => {
-      const source = sessionByStep.get(step.id) ?? historicalByStep.get(step.id);
+      const source =
+        sessionByStep.get(step.id) ?? historicalByStep.get(step.id);
       return [
         step.id,
         {
@@ -109,9 +114,7 @@ export function LessonPage({
 
   const isProgramComplete = useMemo(() => {
     const passedStepIds = new Set(
-      stepCompletions
-        .filter((c) => c.grade >= 3)
-        .map((c) => c.stepId),
+      stepCompletions.filter((c) => c.grade >= 3).map((c) => c.stepId),
     );
     return allSteps.every((step) => passedStepIds.has(step.id));
   }, [allSteps, stepCompletions]);
@@ -150,6 +153,21 @@ export function LessonPage({
   const sessionDataKey = existingSession
     ? `${sessionKey}:${existingSession.id}:${existingSession.completions.map((c) => c.stepId).join(",")}`
     : `${sessionKey}:none`;
+
+  const resolvedStepStates = useMemo(() => {
+    const baseline = buildInitialStates(
+      lessonSteps,
+      existingSession?.completions,
+      isProgramComplete ? stepCompletions : undefined,
+    );
+    return { ...baseline, ...stepStates };
+  }, [
+    lessonSteps,
+    existingSession,
+    isProgramComplete,
+    stepCompletions,
+    stepStates,
+  ]);
 
   useEffect(() => {
     if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
@@ -262,11 +280,11 @@ export function LessonPage({
       attendance === "ABSENT"
         ? []
         : stepsForSave
-            .filter((step) => stepStates[step.id]?.grade !== null)
+            .filter((step) => resolvedStepStates[step.id]?.grade !== null)
             .map((step) => ({
               stepId: step.id,
-              grade: stepStates[step.id]!.grade!,
-              note: stepStates[step.id]!.note || null,
+              grade: resolvedStepStates[step.id]!.grade!,
+              note: resolvedStepStates[step.id]!.note || null,
             }));
 
     if (attendance !== "ABSENT" && completions.length === 0) {
@@ -315,7 +333,7 @@ export function LessonPage({
     cumulativeHoursByAllSteps[step.id] ?? totalHours;
 
   return (
-    <Flex vertical gap={24} className="mx-auto max-w-2xl pb-32">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 pb-24">
       <Link href="/journal" className="flex items-center gap-2 no-underline">
         <ArrowLeftOutlined />
         <Text>Все ученики · {todayLabel}</Text>
@@ -329,20 +347,21 @@ export function LessonPage({
               {studentName}
             </Title>
             <Text type="secondary">
-            {isProgramComplete ? (
-              <>
-                Уровень {levelNumber} · Все {totalSteps} шагов пройдены · Итого{" "}
-                {cumulativeHoursByAllSteps[
-                  allSteps[allSteps.length - 1]?.id ?? ""
-                ] ?? totalHours}{" "}
-                ч
-              </>
-            ) : (
-              <>
-                Уровень {levelNumber} · Шаг {currentStepNumber} из {totalSteps}{" "}
-                · Итого {totalHours} ч
-              </>
-            )}
+              {isProgramComplete ? (
+                <>
+                  Уровень {levelNumber} · Все {totalSteps} шагов пройдены ·
+                  Итого{" "}
+                  {cumulativeHoursByAllSteps[
+                    allSteps[allSteps.length - 1]?.id ?? ""
+                  ] ?? totalHours}{" "}
+                  ч
+                </>
+              ) : (
+                <>
+                  Уровень {levelNumber} · Шаг {currentStepNumber} из{" "}
+                  {totalSteps} · Итого {totalHours} ч
+                </>
+              )}
             </Text>
           </div>
         </div>
@@ -355,7 +374,7 @@ export function LessonPage({
         <Text type="secondary">Все шаги программы пройдены</Text>
       )}
 
-      <Flex vertical gap={8}>
+      <div className="flex flex-col gap-2">
         <Text type="secondary" className="uppercase">
           Посещаемость
         </Text>
@@ -365,26 +384,26 @@ export function LessonPage({
           onChange={handleAttendanceChange}
           disabled={isSessionLoading || loadedSessionKey !== sessionDataKey}
         />
-      </Flex>
+      </div>
 
       {attendance !== "ABSENT" && (
-        <Flex vertical gap={12}>
+        <div className="flex flex-col gap-3">
           <Text type="secondary" className="uppercase">
             {isProgramComplete ? "Пройдено в этот день" : "Шаги на сегодня"}
           </Text>
-          <Flex vertical gap={12}>
+          <div className="flex flex-col gap-3">
             {visibleSteps.map((step) => (
               <StepCard
                 key={step.id}
                 step={step}
                 totalHours={getStepTotalHours(step)}
                 expanded={expandedIds.has(step.id)}
-                state={stepStates[step.id]!}
+                state={resolvedStepStates[step.id] ?? EMPTY_STEP_GRADE_STATE}
                 onToggleExpand={() => toggleExpand(step.id)}
                 onStateChange={(state) => updateStepState(step.id, state)}
               />
             ))}
-          </Flex>
+          </div>
           {hasMore && (
             <Button
               type="link"
@@ -398,11 +417,11 @@ export function LessonPage({
               Загрузить ещё
             </Button>
           )}
-        </Flex>
+        </div>
       )}
 
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-[#2a2622] bg-[#141210] p-4 md:left-[240px]">
-        <Flex gap={8} className="mx-auto ">
+        <div className="mx-auto flex w-full max-w-2xl gap-2">
           {nextStudent && (
             <Button
               type="primary"
@@ -423,8 +442,8 @@ export function LessonPage({
           >
             Сохранить урок
           </Button>
-        </Flex>
+        </div>
       </div>
-    </Flex>
+    </div>
   );
 }

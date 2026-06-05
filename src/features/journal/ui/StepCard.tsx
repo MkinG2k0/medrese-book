@@ -5,6 +5,7 @@ import { Card, Flex, Input, Radio, Tag } from "antd";
 
 import { LetterContent } from "@/features/journal/ui/StepContent/LetterContent";
 import { SurahContent } from "@/features/journal/ui/StepContent/SurahContent";
+import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -27,6 +28,11 @@ const STEP_TYPE_LABEL: Record<"LETTER" | "SURAH", string> = {
 export type StepGradeState = {
   grade: number | null;
   note: string;
+};
+
+export const EMPTY_STEP_GRADE_STATE: StepGradeState = {
+  grade: null,
+  note: "",
 };
 
 type StepCardProps = {
@@ -76,7 +82,11 @@ export function StepCard({
                   Шаг {step.order}
                 </Title>
                 <Tag>{STEP_TYPE_LABEL[step.type]}</Tag>
-                {state.grade !== null && <Tag color="orange">пройден</Tag>}
+                {state.grade !== null && (
+                  <Tag color={isStepPassed(state.grade) ? "orange" : "default"}>
+                    {isStepPassed(state.grade) ? "пройден" : "не пройден"}
+                  </Tag>
+                )}
               </Flex>
               <Flex
                 align="center"

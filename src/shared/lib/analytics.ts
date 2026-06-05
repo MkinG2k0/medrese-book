@@ -2,17 +2,49 @@ import { endOfMonth, startOfMonth } from 'date-fns'
 
 import { prisma } from '@/shared/lib/prisma'
 
+const MONTH_FORMAT = /^\d{4}-\d{2}$/
+
+export function parseAnalyticsMonth(month?: string): Date {
+	if (month && MONTH_FORMAT.test(month)) {
+		const [year, monthIndex] = month.split('-').map(Number)
+		const parsed = new Date(year, monthIndex - 1, 1)
+		if (!Number.isNaN(parsed.getTime())) return startOfMonth(parsed)
+	}
+
+	return startOfMonth(new Date())
+}
+
+export function formatAnalyticsMonth(month: Date): string {
+	return new Intl.DateTimeFormat('ru-RU', {
+		month: 'long',
+		year: 'numeric',
+	}).format(month)
+}
+
+type SessionWithLateness = {
+	attendance: string
+	lateMinutes: number | null
+}
+
+function sumLateMinutes(sessions: SessionWithLateness[]): number {
+	return sessions
+		.filter((s) => s.attendance === 'LATE')
+		.reduce((sum, s) => sum + (s.lateMinutes ?? 0), 0)
+}
+
 export type TopEntry = {
 	student: { id: string; name: string }
 	stepsCompleted: number
 	avgGrade: number
 	absences: number
+	lateMinutes: number
 }
 
 export type LevelStats = {
 	level: number
 	avgGrade: number
 	totalAbsences: number
+	totalLateMinutes: number
 	totalHours: number
 }
 
@@ -45,13 +77,17 @@ export async function getTopStudents(month: Date): Promise<TopEntry[]> {
 				stepsCompleted: student.completions.length,
 				avgGrade: Math.round(avgGrade * 10) / 10,
 				absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
+				lateMinutes: sumLateMinutes(student.sessions),
 			}
 		})
 		.sort((a, b) => b.stepsCompleted - a.stepsCompleted)
 		.slice(0, 10)
 }
 
-export async function getLevelStats(): Promise<LevelStats[]> {
+export async function getLevelStats(month: Date): Promise<LevelStats[]> {
+	const from = startOfMonth(month)
+	const to = endOfMonth(month)
+
 	const levels = await prisma.level.findMany({
 		include: {
 			steps: true,
@@ -59,8 +95,12 @@ export async function getLevelStats(): Promise<LevelStats[]> {
 				include: {
 					students: {
 						include: {
-							completions: true,
-							sessions: true,
+							completions: {
+								where: { createdAt: { gte: from, lte: to } },
+							},
+							sessions: {
+								where: { date: { gte: from, lte: to } },
+							},
 						},
 					},
 				},
@@ -78,13 +118,14 @@ export async function getLevelStats(): Promise<LevelStats[]> {
 			grades.length > 0 ? grades.reduce((a, b) => a + b, 0) / grades.length : 0
 
 		const totalStepHours = level.steps.reduce((sum, step) => sum + step.hours, 0)
-		const lateHours =
-			allSessions.reduce((sum, s) => sum + (s.lateMinutes ?? 0), 0) / 60
+		const totalLateMinutes = sumLateMinutes(allSessions)
+		const lateHours = totalLateMinutes / 60
 
 		return {
 			level: level.number,
 			avgGrade: Math.round(avgGrade * 10) / 10,
 			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
+			totalLateMinutes,
 			totalHours: Math.round((totalStepHours - lateHours) * 10) / 10,
 		}
 	})

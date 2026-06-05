@@ -12,12 +12,19 @@ import {
 } from "recharts";
 
 import type { TopEntry } from "@/shared/lib/analytics";
+import { formatMinutesAsHours } from "@/shared/lib/format-minutes-as-hours";
 import Title from "@/shared/ui/Title";
 
-export function TopStudents({ data }: { data: TopEntry[] }) {
+export function TopStudents({
+  data,
+  monthLabel,
+}: {
+  data: TopEntry[];
+  monthLabel: string;
+}) {
   return (
     <div className="flex flex-col gap-4">
-      <Title level={4}>Топ учеников за месяц</Title>
+      <Title level={4}>Топ учеников за {monthLabel}</Title>
 
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
@@ -40,6 +47,12 @@ export function TopStudents({ data }: { data: TopEntry[] }) {
           { title: "Шагов", dataIndex: "stepsCompleted", key: "steps" },
           { title: "Ср. оценка", dataIndex: "avgGrade", key: "avg" },
           { title: "Прогулы", dataIndex: "absences", key: "absences" },
+          {
+            title: "Опоздания",
+            dataIndex: "lateMinutes",
+            key: "lateness",
+            render: (minutes: number) => formatMinutesAsHours(minutes),
+          },
         ]}
       />
     </div>

@@ -77,7 +77,7 @@ export function JournalStudentsTable({
           render: (idx: number) => <Tag>Шаг {idx + 1}</Tag>,
         },
         {
-          title: "Шагов сегодня",
+          title: "Пройдено сегодня",
           dataIndex: "todayStepsCompleted",
           key: "todayStepsCompleted",
           render: (count: number | undefined) => count ?? 0,

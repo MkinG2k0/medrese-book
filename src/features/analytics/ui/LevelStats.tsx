@@ -12,12 +12,19 @@ import {
 } from 'recharts'
 
 import type { LevelStats } from '@/shared/lib/analytics'
+import { formatMinutesAsHours } from '@/shared/lib/format-minutes-as-hours'
 import Title from '@/shared/ui/Title'
 
-export function LevelStatsChart({ data }: { data: LevelStats[] }) {
+export function LevelStatsChart({
+	data,
+	monthLabel,
+}: {
+	data: LevelStats[]
+	monthLabel: string
+}) {
 	return (
 		<div className="flex flex-col gap-4">
-			<Title level={4}>Статистика по уровням</Title>
+			<Title level={4}>Статистика по уровням за {monthLabel}</Title>
 
 			<div className="h-64">
 				<ResponsiveContainer width="100%" height="100%">
@@ -39,6 +46,12 @@ export function LevelStatsChart({ data }: { data: LevelStats[] }) {
 					{ title: 'Уровень', dataIndex: 'level', key: 'level' },
 					{ title: 'Ср. оценка', dataIndex: 'avgGrade', key: 'avgGrade' },
 					{ title: 'Прогулы', dataIndex: 'totalAbsences', key: 'absences' },
+					{
+						title: 'Опоздания',
+						dataIndex: 'totalLateMinutes',
+						key: 'lateness',
+						render: (minutes: number) => formatMinutesAsHours(minutes),
+					},
 					{ title: 'Часы', dataIndex: 'totalHours', key: 'hours' },
 				]}
 			/>
