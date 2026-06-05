@@ -68,9 +68,7 @@ export function LessonPage({ studentId, studentName, step }: LessonPageProps) {
       <Title level={3}>{studentName}</Title>
 
       <div>
-        <Title level={4} className="!text-[#E8E0D0]">
-          {step.title}
-        </Title>
+        <Title level={4}>{step.title}</Title>
         {step.type === "LETTER" ? (
           <LetterContent content={step.content} />
         ) : (
@@ -79,7 +77,7 @@ export function LessonPage({ studentId, studentName, step }: LessonPageProps) {
       </div>
 
       <div>
-        <Text className="mb-2 block text-[#8a8375]">
+        <Text type="secondary" className="mb-2 block">
           Посещаемость
         </Text>
         <AttendanceButtons

@@ -57,10 +57,10 @@ export function LoginForm() {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4">
-			<Title level={3} className="!mb-0 !text-center !text-[#E8E0D0]">
+			<Title level={3} className="!mb-0 !text-center">
 				Вход в дневник
 			</Title>
-			<Text className="text-center text-[#8a8375]">
+			<Text type="secondary" className="text-center">
 				Введите 6-значный код доступа
 			</Text>
 
@@ -80,7 +80,7 @@ export function LoginForm() {
 							onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ''))}
 						/>
 						{fieldState.error && (
-							<Text type="danger" className="mt-1 block text-sm">
+							<Text type="danger" className="mt-1 block">
 								{fieldState.error.message}
 							</Text>
 						)}

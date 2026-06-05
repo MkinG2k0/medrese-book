@@ -18,9 +18,7 @@ export default async function StudentMePage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <Title level={3}>{profile.name}</Title>
-      <Text className="text-[#8a8375]">
-        {profile.levelTitle}
-      </Text>
+      <Text type="secondary">{profile.levelTitle}</Text>
 
       <div>
         <Text className="mb-2 block">
@@ -34,21 +32,15 @@ export default async function StudentMePage() {
 
       {profile.currentStep && (
         <div>
-          <Title level={4} className="!text-[#E8E0D0]">
-            Текущий урок: {profile.currentStep.title}
-          </Title>
+          <Title level={4}>Текущий урок: {profile.currentStep.title}</Title>
           <BlockRenderer blocks={profile.currentStep.content.blocks} />
         </div>
       )}
 
       <div>
-        <Title level={4} className="!text-[#E8E0D0]">
-          Награды
-        </Title>
+        <Title level={4}>Награды</Title>
         {profile.awards.length === 0 ? (
-          <Text className="text-[#8a8375]">
-            Пока нет наград
-          </Text>
+          <Text type="secondary">Пока нет наград</Text>
         ) : (
           <div className="flex flex-wrap gap-2">
             {profile.awards.map((award) => (
@@ -61,9 +53,7 @@ export default async function StudentMePage() {
       </div>
 
       <div>
-        <Title level={4} className="!text-[#E8E0D0]">
-          История занятий
-        </Title>
+        <Title level={4}>История занятий</Title>
         <Table
           dataSource={profile.sessions}
           rowKey="id"

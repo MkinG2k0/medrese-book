@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import type { Role } from '../../../generated/prisma/client'
+import type { Role } from '@/shared/lib/prisma'
 
 import { auth } from './auth'
 

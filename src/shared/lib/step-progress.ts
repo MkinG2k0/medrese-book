@@ -1,6 +1,4 @@
-import type { Attendance } from '../../../generated/prisma/client'
-
-import { prisma } from '@/shared/lib/prisma'
+import { prisma, type Attendance } from '@/shared/lib/prisma'
 
 export async function updateStepProgress(
 	studentId: string,

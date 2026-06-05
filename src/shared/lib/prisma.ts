@@ -1,4 +1,6 @@
-import { PrismaClient } from '../../../generated/prisma/client'
+import type { PrismaClient } from './db'
+
+export * from './db'
 
 import { createPrismaClient } from './create-prisma-client'
 

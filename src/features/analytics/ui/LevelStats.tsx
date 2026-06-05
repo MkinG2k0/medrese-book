@@ -17,9 +17,7 @@ import Title from '@/shared/ui/Title'
 export function LevelStatsChart({ data }: { data: LevelStats[] }) {
 	return (
 		<div className="flex flex-col gap-4">
-			<Title level={4} className="!text-[#E8E0D0]">
-				Статистика по уровням
-			</Title>
+			<Title level={4}>Статистика по уровням</Title>
 
 			<div className="h-64">
 				<ResponsiveContainer width="100%" height="100%">

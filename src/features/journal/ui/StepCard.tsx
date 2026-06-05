@@ -22,7 +22,7 @@ export function StepCard({
 }: StepCardProps) {
 	return (
 		<div className="rounded-lg border border-[#2a2622] p-4">
-			<Title level={5} className="!mb-2 !text-[#E8E0D0]">
+			<Title level={5} className="!mb-2">
 				{title}
 			</Title>
 			<div className="flex flex-col gap-2">

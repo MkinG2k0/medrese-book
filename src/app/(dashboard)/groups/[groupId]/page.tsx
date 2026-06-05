@@ -25,7 +25,7 @@ export default async function GroupDetailPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <Title level={3}>{group.name}</Title>
-      <Text className="text-[#8a8375]">
+      <Text type="secondary">
         Учитель: {group.teacher.user.name} · Уровень: {group.level.title}
         {!editable && " · Только просмотр"}
       </Text>

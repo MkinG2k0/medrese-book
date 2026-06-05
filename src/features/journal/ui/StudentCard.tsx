@@ -22,7 +22,7 @@ export function StudentCard({
 		<Link href={`/journal/${id}`}>
 			<Card hoverable className="!bg-[#161412] !border-[#2a2622]">
 				<div className="flex items-center justify-between">
-					<Text className="text-[#E8E0D0]">{name}</Text>
+					<Text>{name}</Text>
 					<div className="flex gap-2">
 						<Tag>Шаг {currentStepIdx + 1}</Tag>
 						{hasSessionToday && <Tag color="green">Отмечен</Tag>}

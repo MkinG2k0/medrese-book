@@ -133,7 +133,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             type="text"
             icon={<LogoutOutlined />}
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="!w-full !text-[#8a8375]"
+            className="!w-full"
           >
             {!collapsed && "Выйти"}
           </Button>
@@ -145,9 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Title level={4}>
             {session?.user.name ?? "Дневник медресе"}
           </Title>
-          <Text className="text-[#8a8375]">
-            {session?.user.role}
-          </Text>
+          <Text type="secondary">{session?.user.role}</Text>
         </Header>
 
         <Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">
