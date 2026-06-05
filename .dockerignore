@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+dist
+build
+*.log
+.env
+.env.*
+!.env.example
+.env*.local
+coverage
+.turbo
+generated
+.cursor
+.idea
