@@ -1,7 +1,7 @@
 "use client";
 
 import { DatePicker } from "antd";
-import { format, parseISO } from "date-fns";
+import dayjs from "dayjs";
 import { useMemo } from "react";
 
 import { useStudents } from "@/entities/student/api/use-students";
@@ -28,9 +28,9 @@ export function StudentList({ groupId }: StudentListProps) {
       <div className="flex items-center justify-between">
         <Title level={3}>Журнал на сегодня</Title>
         <DatePicker
-          value={parseISO(dateFilter)}
+          value={dayjs(dateFilter)}
           onChange={(d) =>
-            setDateFilter(d ? format(d, "yyyy-MM-dd") : dateFilter)
+            setDateFilter(d ? d.format("YYYY-MM-DD") : dateFilter)
           }
         />
       </div>

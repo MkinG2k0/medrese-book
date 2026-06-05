@@ -15,6 +15,15 @@ export async function getTeacherGroup() {
 	return group
 }
 
+export type JournalStep = {
+	id: string
+	order: number
+	title: string
+	type: 'LETTER' | 'SURAH'
+	content: StepContent
+	hours: number
+}
+
 export async function getStudentLesson(studentId: string) {
 	const session = await requireRole('TEACHER')
 
@@ -22,25 +31,43 @@ export async function getStudentLesson(studentId: string) {
 		where: { id: studentId },
 		include: {
 			user: true,
-			group: { include: { level: { include: { steps: { orderBy: { order: 'asc' } } } } } },
+			group: {
+				include: {
+					level: { include: { steps: { orderBy: { order: 'asc' } } } },
+				},
+			},
 		},
 	})
 
 	if (!student) return null
 	if (student.group.teacherId !== session.user.teacherId) return null
 
-	const steps = student.group.level.steps
-	const currentStep = steps[student.currentStepIdx] ?? null
+	const allSteps = student.group.level.steps
+	const remainingSteps = allSteps.slice(student.currentStepIdx).map((step) => ({
+		id: step.id,
+		order: step.order,
+		title: step.title,
+		type: step.type,
+		content: step.content as StepContent,
+		hours: step.hours,
+	}))
+
+	const totalHours = allSteps
+		.slice(0, student.currentStepIdx)
+		.reduce((sum, step) => sum + step.hours, 0)
 
 	return {
-		student: { id: student.id, name: student.user.name, currentStepIdx: student.currentStepIdx },
-		step: currentStep
-			? {
-					id: currentStep.id,
-					title: currentStep.title,
-					type: currentStep.type,
-					content: currentStep.content as StepContent,
-				}
-			: null,
+		student: {
+			id: student.id,
+			name: student.user.name,
+			currentStepIdx: student.currentStepIdx,
+		},
+		level: {
+			number: student.group.level.number,
+			title: student.group.level.title,
+		},
+		totalSteps: allSteps.length,
+		totalHours,
+		steps: remainingSteps,
 	}
 }

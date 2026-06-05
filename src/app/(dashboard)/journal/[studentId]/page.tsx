@@ -11,13 +11,17 @@ export default async function StudentLessonPage({ params }: Props) {
 	const { studentId } = await params
 	const lesson = await getStudentLesson(studentId)
 
-	if (!lesson || !lesson.step) notFound()
+	if (!lesson) notFound()
 
 	return (
 		<LessonPage
 			studentId={lesson.student.id}
 			studentName={lesson.student.name}
-			step={lesson.step}
+			currentStepIdx={lesson.student.currentStepIdx}
+			levelNumber={lesson.level.number}
+			totalSteps={lesson.totalSteps}
+			totalHours={lesson.totalHours}
+			steps={lesson.steps}
 		/>
 	)
 }

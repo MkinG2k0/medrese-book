@@ -1,6 +1,11 @@
 'use client'
 
-import { Button, InputNumber, Space } from 'antd'
+import {
+	CheckOutlined,
+	ClockCircleOutlined,
+	CloseOutlined,
+} from '@ant-design/icons'
+import { Flex, InputNumber, Radio } from 'antd'
 
 type Attendance = 'PRESENT' | 'LATE' | 'ABSENT'
 
@@ -10,34 +15,39 @@ type AttendanceButtonsProps = {
 	onChange: (attendance: Attendance, lateMinutes?: number) => void
 }
 
+const OPTIONS: { value: Attendance; label: string; icon: React.ReactNode }[] = [
+	{ value: 'PRESENT', label: 'Пришёл', icon: <CheckOutlined /> },
+	{ value: 'LATE', label: 'Опоздал', icon: <ClockCircleOutlined /> },
+	{ value: 'ABSENT', label: 'Прогул', icon: <CloseOutlined /> },
+]
+
 export function AttendanceButtons({
 	value,
 	lateMinutes,
 	onChange,
 }: AttendanceButtonsProps) {
 	return (
-		<div className="flex flex-col gap-2">
-			<Space wrap>
-				<Button
-					type={value === 'PRESENT' ? 'primary' : 'default'}
-					onClick={() => onChange('PRESENT')}
-				>
-					Присутствует
-				</Button>
-				<Button
-					type={value === 'LATE' ? 'primary' : 'default'}
-					onClick={() => onChange('LATE')}
-				>
-					Опоздал
-				</Button>
-				<Button
-					type={value === 'ABSENT' ? 'primary' : 'default'}
-					danger={value === 'ABSENT'}
-					onClick={() => onChange('ABSENT')}
-				>
-					Прогул
-				</Button>
-			</Space>
+		<Flex vertical gap={12}>
+			<Radio.Group
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				className="w-full"
+			>
+				<Flex gap={8} className="w-full">
+					{OPTIONS.map((opt) => (
+						<Radio.Button
+							key={opt.value}
+							value={opt.value}
+							className="flex-1 text-center"
+						>
+							<Flex align="center" justify="center" gap={6}>
+								{opt.icon}
+								{opt.label}
+							</Flex>
+						</Radio.Button>
+					))}
+				</Flex>
+			</Radio.Group>
 			{value === 'LATE' && (
 				<InputNumber
 					min={1}
@@ -45,8 +55,9 @@ export function AttendanceButtons({
 					value={lateMinutes}
 					onChange={(v) => onChange('LATE', v ?? 5)}
 					addonAfter="мин"
+					className="w-full"
 				/>
 			)}
-		</div>
+		</Flex>
 	)
 }
