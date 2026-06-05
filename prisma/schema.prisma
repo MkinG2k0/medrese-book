@@ -9,14 +9,118 @@ datasource db {
 
 enum Role {
   SUPER_ADMIN
+  MANAGER
   TEACHER
   STUDENT
 }
 
-enum BlockType {
-  TEXT
-  HEADING
-  IMAGE
-  ARABIC
-  HIGHLIGHT
+enum Attendance {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+enum StepType {
+  LETTER
+  SURAH
+}
+
+enum AwardType {
+  STUDY
+  ACTIVITY
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  role      Role
+  teacher   Teacher?
+  student   Student?
+  createdAt DateTime @default(now())
+}
+
+model Teacher {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups Group[]
+}
+
+model Group {
+  id        String    @id @default(cuid())
+  name      String
+  teacherId String
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  levelId   String
+  level     Level     @relation(fields: [levelId], references: [id])
+  students  Student[]
+}
+
+model Student {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId        String
+  group          Group            @relation(fields: [groupId], references: [id])
+  currentStepIdx Int              @default(0)
+  sessions       Session[]
+  completions    StepCompletion[]
+  awards         Award[]
+}
+
+model Level {
+  id      String  @id @default(cuid())
+  number  Int     @unique
+  title   String
+  groups  Group[]
+  steps   Step[]
+}
+
+model Step {
+  id          String           @id @default(cuid())
+  levelId     String
+  level       Level            @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  order       Int
+  type        StepType
+  title       String
+  content     Json
+  hours       Int
+  completions StepCompletion[]
+
+  @@unique([levelId, order])
+}
+
+model Session {
+  id          String           @id @default(cuid())
+  studentId   String
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date        DateTime
+  attendance  Attendance
+  lateMinutes Int?
+  note        String?
+  completions StepCompletion[]
+  createdAt   DateTime         @default(now())
+}
+
+model StepCompletion {
+  id        String   @id @default(cuid())
+  studentId String
+  stepId    String
+  sessionId String
+  grade     Int
+  note      String?
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  step      Step     @relation(fields: [stepId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Award {
+  id        String    @id @default(cuid())
+  studentId String
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type      AwardType
+  title     String
+  date      DateTime  @default(now())
 }

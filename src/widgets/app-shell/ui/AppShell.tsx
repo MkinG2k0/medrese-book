@@ -1,80 +1,159 @@
-"use client"
+"use client";
 
 import {
-	BookOutlined,
-	HomeOutlined,
-	MenuFoldOutlined,
-	MenuUnfoldOutlined,
-	UserOutlined,
-} from "@ant-design/icons"
-import { Button, Layout, Menu, Typography } from "antd"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
+  BarChartOutlined,
+  BookOutlined,
+  LogoutOutlined,
+  TeamOutlined,
+  TrophyOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Button, Layout, Menu } from "antd";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
-const { Header, Sider, Content, Footer } = Layout
+import type { UserRole } from "@/entities/user";
+import Text from "@/shared/ui/Text";
+import Title from "@/shared/ui/Title";
 
-const menuItems = [
-	{ key: "/", icon: <HomeOutlined />, label: "Главная" },
-	{ key: "/program", icon: <BookOutlined />, label: "Программа" },
-	{ key: "/profile", icon: <UserOutlined />, label: "Профиль" },
-]
+const { Header, Sider, Content, Footer } = Layout;
+
+type MenuItem = {
+  key: string;
+  icon: React.ReactNode;
+  label: string;
+  roles: UserRole[];
+};
+
+const allMenuItems: MenuItem[] = [
+  {
+    key: "/journal",
+    icon: <BookOutlined />,
+    label: "Журнал",
+    roles: ["TEACHER"],
+  },
+  {
+    key: "/groups",
+    icon: <TeamOutlined />,
+    label: "Группы",
+    roles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/analytics",
+    icon: <BarChartOutlined />,
+    label: "Аналитика",
+    roles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/student/me",
+    icon: <UserOutlined />,
+    label: "Мой прогресс",
+    roles: ["STUDENT"],
+  },
+  {
+    key: "/admin/users",
+    icon: <UserOutlined />,
+    label: "Пользователи",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/admin/groups",
+    icon: <TeamOutlined />,
+    label: "Группы (админ)",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/admin/program",
+    icon: <BookOutlined />,
+    label: "Программа",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/admin/awards",
+    icon: <TrophyOutlined />,
+    label: "Награды",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-	const pathname = usePathname()
-	const router = useRouter()
-	const [collapsed, setCollapsed] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [collapsed, setCollapsed] = useState(false);
 
-	const selectedKey =
-		menuItems.find((item) =>
-			item.key === "/" ? pathname === "/" : pathname.startsWith(item.key),
-		)?.key ?? "/"
+  const menuItems = useMemo(() => {
+    const role = session?.user.role;
+    if (!role) return [];
+    return allMenuItems
+      .filter((item) => item.roles.includes(role))
+      .map((item) => ({
+        key: item.key,
+        icon: item.icon,
+        label: item.label,
+      }));
+  }, [session?.user.role]);
 
-	return (
-		<Layout className="h-screen min-h-screen" style={{ minHeight: '100vh', height: '100vh' }}>
-			<Sider
-				collapsible
-				collapsed={collapsed}
-				onCollapse={setCollapsed}
-				trigger={null}
-				width={240}
-				className="!h-full !bg-[#12100e]"
-			>
-				<div className="flex h-16 items-center justify-center px-4">
-					<Link href="/" className="font-display text-lg text-[#E8E0D0] no-underline">
-						{collapsed ? "К" : "Коран"}
-					</Link>
-				</div>
-				<Menu
-					mode="inline"
-					selectedKeys={[selectedKey]}
-					items={menuItems}
-					onClick={({ key }) => router.push(key)}
-					className="border-none bg-transparent"
-				/>
-			</Sider>
+  const selectedKey =
+    menuItems.find((item) => pathname.startsWith(item.key))?.key ??
+    menuItems[0]?.key;
 
-			<Layout className="flex min-h-0 flex-1 flex-col">
-				<Header className="flex shrink-0 items-center gap-4 px-6 !bg-[#161412] !leading-none">
-					<Button
-						type="text"
-						icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-						onClick={() => setCollapsed((value) => !value)}
-						className="!text-[#E8E0D0]"
-					/>
-					<Typography.Title level={4} className="!mb-0 !text-[#E8E0D0]">
-						Чтение Корана
-					</Typography.Title>
-				</Header>
+  return (
+    <Layout
+      className="h-screen min-h-screen"
+      style={{ minHeight: "100vh", height: "100vh" }}
+    >
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        trigger={null}
+        width={240}
+        className="!h-full !bg-[#12100e]"
+      >
+        <div className="flex h-16 items-center justify-center px-4">
+          <Link
+            href="/dashboard"
+            className="font-display text-lg text-[#E8E0D0] no-underline"
+          >
+            {collapsed ? "М" : "Дневник медресе"}
+          </Link>
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={selectedKey ? [selectedKey] : []}
+          items={menuItems}
+          onClick={({ key }) => router.push(key)}
+          className="border-none bg-transparent"
+        />
+        <div className="absolute bottom-4 left-0 right-0 px-4">
+          <Button
+            type="text"
+            icon={<LogoutOutlined />}
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="!w-full !text-[#8a8375]"
+          >
+            {!collapsed && "Выйти"}
+          </Button>
+        </div>
+      </Sider>
 
-				<Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">
-					{children}
-				</Content>
+      <Layout className="flex min-h-0 flex-1 flex-col">
+        <Header className="flex shrink-0 items-center justify-between gap-4 px-6 !bg-[#161412] !leading-none">
+          <Title level={4}>
+            {session?.user.name ?? "Дневник медресе"}
+          </Title>
+          <Text className="text-[#8a8375]">
+            {session?.user.role}
+          </Text>
+        </Header>
 
-				<Footer className="shrink-0 text-center !bg-[#161412] !text-[#8a8375]">
-					Платформа обучения чтению Корана
-				</Footer>
-			</Layout>
-		</Layout>
-	)
+        <Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">
+          {children}
+        </Content>
+      </Layout>
+    </Layout>
+  );
 }

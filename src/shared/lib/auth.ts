@@ -1,60 +1,50 @@
-import { timingSafeEqual } from "crypto";
+import NextAuth from 'next-auth'
+import Credentials from 'next-auth/providers/credentials'
+import { z } from 'zod'
 
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import type { UserRole } from '@/entities/user'
+import { authConfig } from '@/shared/lib/auth.config'
+import { prisma } from '@/shared/lib/prisma'
 
-import type { UserRole } from "@/entities/user";
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
 
-const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-
-function verifyAdminPassword(input: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
-
-  const inputBuf = Buffer.from(input);
-  const expectedBuf = Buffer.from(expected);
-  if (inputBuf.length !== expectedBuf.length) return false;
-
-  return timingSafeEqual(inputBuf, expectedBuf);
-}
+const loginSchema = z.object({
+	code: z.string().length(6).regex(/^\d{6}$/),
+})
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: authSecret,
-  trustHost: true,
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
-  providers: [
-    Credentials({
-      id: "credentials",
-      name: "Admin Password",
-      credentials: { password: { type: "password" } },
-      async authorize(credentials) {
-        const password = credentials?.password as string | undefined;
-        if (!password || !verifyAdminPassword(password)) return null;
+	...authConfig,
+	secret: authSecret,
+	providers: [
+		Credentials({
+			id: 'code',
+			name: 'Код доступа',
+			credentials: {
+				code: { label: 'Код доступа', type: 'text' },
+			},
+			async authorize(credentials) {
+				const rawCode = credentials?.code
+				if (typeof rawCode !== 'string') return null
 
-        return {
-          id: "super-admin",
-          name: "Администратор",
-          role: "SUPER_ADMIN" as UserRole,
-          teacherId: null,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.teacherId = user.teacherId ?? null;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as UserRole;
-      session.user.teacherId = (token.teacherId as number | null) ?? null;
-      return session;
-    },
-  },
-});
+				const parsed = loginSchema.safeParse({
+					code: rawCode.replace(/\D/g, ''),
+				})
+				if (!parsed.success) return null
+
+				const user = await prisma.user.findUnique({
+					where: { code: parsed.data.code },
+					include: { teacher: true, student: true },
+				})
+				if (!user) return null
+
+				return {
+					id: user.id,
+					name: user.name,
+					role: user.role as UserRole,
+					teacherId: user.teacher?.id ?? null,
+					studentId: user.student?.id ?? null,
+				}
+			},
+		}),
+	],
+})

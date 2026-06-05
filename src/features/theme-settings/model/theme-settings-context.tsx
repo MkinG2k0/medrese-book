@@ -24,11 +24,11 @@ interface ThemeSettingsContextValue {
 const ThemeSettingsContext = createContext<ThemeSettingsContextValue | null>(null)
 
 export function ThemeSettingsProvider({ children }: { children: ReactNode }) {
-	const [theme, setThemeState] = useState<QuranTheme>(DEFAULT_QURAN_THEME)
+	const [theme, setThemeState] = useState<QuranTheme>(() =>
+		typeof window !== 'undefined' ? getSavedQuranTheme() : DEFAULT_QURAN_THEME,
+	)
 
 	useEffect(() => {
-		setThemeState(getSavedQuranTheme())
-
 		const onChange = () => setThemeState(getSavedQuranTheme())
 		window.addEventListener('quran-theme-change', onChange)
 		return () => window.removeEventListener('quran-theme-change', onChange)

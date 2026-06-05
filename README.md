@@ -1,138 +1,65 @@
-# Моя свадьба — Платформа бронирования банкетных залов
+# Электронный дневник медресе
 
-Платформа поиска и бронирования банкетных залов для свадеб и мероприятий в Махачкале и Дагестане.
+Веб-приложение для ведения журнала посещаемости и успеваемости учеников по программе изучения Корана.
 
-## Технологический стек
+## Стек
 
-- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, shadcn/ui
-- **Backend:** Next.js API Routes, NextAuth.js v5 (SMS OTP)
-- **База данных:** PostgreSQL 15+, Prisma ORM
-- **Сервисы:** Yandex Object Storage (S3), SMS.ru, Telegram Bot API
+- Next.js 16 (App Router), TypeScript
+- PostgreSQL (Neon) + Prisma 7
+- NextAuth v5 — авторизация по 6-значному коду
+- Ant Design, Tailwind CSS
+- React Query, Zustand, React Hook Form, Zod
+- Tiptap — редактор шагов программы
+- Recharts — аналитика
 
 ## Быстрый старт
 
-### Требования
-
-- Node.js 20+
-- pnpm 9+
-- PostgreSQL 15+
-
-### Установка
-
 ```bash
 pnpm install
-```
-
-### База данных
-
-```bash
-# Создать переменные окружения
-cp .env.example .env
-# Отредактируйте .env — укажите DATABASE_URL и другие ключи
-
-# Применить миграции
+cp .env.example .env   # заполнить DATABASE_URL и AUTH_SECRET
 pnpm db:migrate
-
-# Заполнить тестовыми данными (опционально)
 pnpm db:seed
-```
-
-### Запуск в режиме разработки
-
-```bash
 pnpm dev
 ```
 
-Приложение доступно по адресу [http://localhost:3000](http://localhost:3000).
+## Тестовые коды (после seed)
 
-## Развёртывание в Docker
+| Роль | Код |
+|------|-----|
+| SUPER_ADMIN | 100001 |
+| MANAGER | 100002 |
+| TEACHER | 200001, 200002 |
+| STUDENT | 300001–300005 |
 
-### Сборка и запуск
+## Роуты
 
-```bash
-docker compose up -d
-```
+| Путь | Роли |
+|------|------|
+| `/login` | все (вход) |
+| `/journal` | TEACHER |
+| `/groups` | TEACHER, MANAGER, SUPER_ADMIN |
+| `/analytics` | TEACHER, MANAGER, SUPER_ADMIN |
+| `/student/me` | STUDENT |
+| `/admin/users` | MANAGER, SUPER_ADMIN |
+| `/admin/program` | MANAGER, SUPER_ADMIN |
+| `/admin/groups` | MANAGER, SUPER_ADMIN |
+| `/admin/awards` | MANAGER, SUPER_ADMIN |
 
-Сервисы:
-
-- **Приложение:** http://localhost:3000
-- **PostgreSQL:** порт 5432 (внутренняя сеть)
-
-### Переменные окружения
-
-Создайте файл `.env` в корне проекта. Для Docker убедитесь, что `DATABASE_URL` указывает на контейнер postgres или переопределяется в `docker-compose.yml`:
-
-```env
-DATABASE_URL=postgresql://toykhana:toykhana_secret@postgres:5432/toykhana
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
-# ... остальные переменные из .env.example
-```
-
-### Сборка образа
-
-```bash
-docker compose build
-```
-
-## Переменные окружения
-
-| Переменная              | Описание                          |
-|-------------------------|-----------------------------------|
-| `DATABASE_URL`          | Строка подключения к PostgreSQL  |
-| `NEXTAUTH_URL`          | URL приложения (для ссылок, sitemap) |
-| `NEXTAUTH_SECRET`       | Секрет для сессий NextAuth       |
-| `SMS_RU_API_KEY`        | API-ключ SMS.ru                  |
-| `S3_ENDPOINT`           | Endpoint Yandex Object Storage   |
-| `S3_BUCKET`             | Имя S3-бакета                    |
-| `S3_ACCESS_KEY`         | Ключ доступа S3                  |
-| `S3_SECRET_KEY`         | Секретный ключ S3                |
-| `TELEGRAM_BOT_TOKEN`    | Токен Telegram-бота              |
-| `NEXT_PUBLIC_YANDEX_MAPS_KEY` | Ключ Яндекс.Карт          |
-
-Полный список — см. `.env.example`.
-
-## Структура проекта
+## Структура (FSD)
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/             # Логин, регистрация
-│   ├── api/                # API-маршруты
-│   ├── booking/            # Форма бронирования
-│   ├── dashboard/          # Личный кабинет владельца
-│   ├── venues/             # Каталог и страницы залов
-│   ├── sitemap.ts          # Динамическая карта сайта
-│   └── robots.ts           # robots.txt для SEO
-├── components/             # React-компоненты
-│   ├── ui/                 # shadcn/ui
-│   ├── layout/             # header, footer, sidebar
-│   ├── venues/             # карточки, галереи, фильтры
-│   └── booking/            # форма и статусы бронирования
-├── hooks/                  # React-хуки и TanStack Query
-├── lib/                    # prisma, auth, s3, sms, telegram
-├── types/                  # TypeScript-типы
-├── validators/             # Zod-схемы
-└── providers/              # Query, Auth, Theme
+├── app/           # роуты Next.js
+├── entities/      # доменные сущности
+├── features/      # фичи (journal, auth, program-admin…)
+├── widgets/       # app-shell
+└── shared/        # lib, ui, providers
 ```
-
-## SEO
-
-- **Sitemap:** `/sitemap.xml` — динамическая карта с главной, каталогом и страницами залов
-- **Robots:** `/robots.txt` — запрет индексации `/dashboard/`, `/api/`, `/booking/`
 
 ## Скрипты
 
-| Команда         | Описание                    |
-|-----------------|-----------------------------|
-| `pnpm dev`      | Запуск в режиме разработки  |
-| `pnpm build`    | Сборка для production       |
-| `pnpm start`    | Запуск production-сервера   |
-| `pnpm db:generate` | Генерация Prisma Client  |
-| `pnpm db:migrate`  | Применение миграций      |
-| `pnpm db:seed`     | Заполнение тестовыми данными |
-| `pnpm db:studio`   | Prisma Studio (GUI)       |
-
-## Лицензия
-
-Приватный проект.
+- `pnpm dev` — разработка
+- `pnpm build` — production-сборка
+- `pnpm db:migrate` — миграции
+- `pnpm db:seed` — демо-данные
+- `pnpm db:studio` — Prisma Studio
