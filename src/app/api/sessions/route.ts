@@ -1,9 +1,14 @@
 import { auth } from "@/shared/lib/auth";
-import { getLocalDateString, toSessionDate } from "@/shared/lib/calendar-date";
+import {
+  getCalendarDayQueryRange,
+  getLocalDateString,
+  isSameCalendarDay,
+  toSessionDate,
+} from "@/shared/lib/calendar-date";
 import { prisma } from "@/shared/lib/prisma";
-import { updateStepProgress } from "@/shared/lib/step-progress";
+import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
 import { createSessionSchema } from "@/shared/lib/validations/session";
-import { created, error, forbidden, unauthorized } from "@/shared/api";
+import { created, error, forbidden, success, unauthorized } from "@/shared/api";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -26,30 +31,61 @@ export async function POST(request: Request) {
   if (student.group.teacherId !== session.user.teacherId) return forbidden();
 
   const calendarDay = getLocalDateString(new Date(date));
-  const newSession = await prisma.session.create({
-    data: {
+  const dayRange = getCalendarDayQueryRange(calendarDay);
+  const existingSessions = await prisma.session.findMany({
+    where: {
       studentId,
-      date: toSessionDate(calendarDay),
-      attendance,
-      lateMinutes: attendance === "LATE" ? lateMinutes : null,
-      note,
-      completions: {
-        create: completions.map((c) => ({
-          studentId,
-          stepId: c.stepId,
-          grade: c.grade,
-          note: c.note,
-        })),
-      },
+      date: { gte: dayRange.start, lte: dayRange.end },
     },
     include: { completions: true },
   });
+  const existingSession = existingSessions.find((s) =>
+    isSameCalendarDay(s.date, calendarDay),
+  );
 
-  for (const completion of newSession.completions) {
-    await updateStepProgress(studentId, completion.grade, attendance);
-  }
+  const sessionData = {
+    attendance,
+    lateMinutes: attendance === "LATE" ? lateMinutes : null,
+    note,
+  };
 
-  return created(newSession);
+  const savedSession = existingSession
+    ? await prisma.session.update({
+        where: { id: existingSession.id },
+        data: {
+          ...sessionData,
+          completions: {
+            deleteMany: {},
+            create: completions.map((c) => ({
+              studentId,
+              stepId: c.stepId,
+              grade: c.grade,
+              note: c.note,
+            })),
+          },
+        },
+        include: { completions: true },
+      })
+    : await prisma.session.create({
+        data: {
+          studentId,
+          date: toSessionDate(calendarDay),
+          ...sessionData,
+          completions: {
+            create: completions.map((c) => ({
+              studentId,
+              stepId: c.stepId,
+              grade: c.grade,
+              note: c.note,
+            })),
+          },
+        },
+        include: { completions: true },
+      });
+
+  await recalculateStudentStepIdx(studentId);
+
+  return created(savedSession);
 }
 
 export async function GET(request: Request) {
@@ -60,6 +96,38 @@ export async function GET(request: Request) {
   const studentId = searchParams.get("studentId");
   if (!studentId) return error("studentId обязателен");
 
+  const dateStr = searchParams.get("date");
+
+  if (dateStr) {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { group: true },
+    });
+
+    if (!student) return error("Ученик не найден", 404);
+
+    if (
+      session.user.role === "TEACHER" &&
+      session.user.teacherId !== student.group.teacherId
+    ) {
+      return forbidden();
+    }
+
+    const dayRange = getCalendarDayQueryRange(dateStr);
+    const daySessions = await prisma.session.findMany({
+      where: {
+        studentId,
+        date: { gte: dayRange.start, lte: dayRange.end },
+      },
+      include: { completions: true },
+      orderBy: { date: "desc" },
+    });
+    const daySession =
+      daySessions.find((s) => isSameCalendarDay(s.date, dateStr)) ?? null;
+
+    return success(daySession);
+  }
+
   const sessions = await prisma.session.findMany({
     where: { studentId },
     include: { completions: { include: { step: true } } },
@@ -67,5 +135,5 @@ export async function GET(request: Request) {
     take: 30,
   });
 
-  return Response.json({ data: sessions, error: null });
+  return success(sessions);
 }

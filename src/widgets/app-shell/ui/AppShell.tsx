@@ -3,6 +3,7 @@
 import {
   BarChartOutlined,
   BookOutlined,
+  HistoryOutlined,
   LogoutOutlined,
   TeamOutlined,
   TrophyOutlined,
@@ -32,6 +33,12 @@ const allMenuItems: MenuItem[] = [
     key: "/journal",
     icon: <BookOutlined />,
     label: "Журнал",
+    roles: ["TEACHER"],
+  },
+  {
+    key: "/journal/history",
+    icon: <HistoryOutlined />,
+    label: "История шагов",
     roles: ["TEACHER"],
   },
   {
@@ -97,7 +104,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [session?.user.role]);
 
   const selectedKey =
-    menuItems.find((item) => pathname.startsWith(item.key))?.key ??
+    menuItems
+      .filter(
+        (item) =>
+          pathname === item.key || pathname.startsWith(`${item.key}/`),
+      )
+      .sort((a, b) => b.key.length - a.key.length)[0]?.key ??
     menuItems[0]?.key;
 
   return (

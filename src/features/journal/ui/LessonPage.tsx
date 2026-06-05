@@ -4,19 +4,29 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, message } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { useCreateSession } from "@/entities/session/api/use-sessions";
+import {
+  useCreateSession,
+  useStudentSession,
+} from "@/entities/session/api/use-sessions";
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
 import { useJournalStore } from "@/features/journal/model/journal-store";
 import { AttendanceButtons } from "@/features/journal/ui/AttendanceButtons";
 import { StepCard, type StepGradeState } from "@/features/journal/ui/StepCard";
 import { toSessionDate } from "@/shared/lib/calendar-date";
+import { buildLessonSteps } from "@/shared/lib/step-completion";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
 const INITIAL_VISIBLE = 3;
 const LOAD_MORE_COUNT = 3;
+
+type StepCompletionRecord = {
+  stepId: string;
+  grade: number;
+  note: string | null;
+};
 
 type LessonPageProps = {
   studentId: string;
@@ -26,6 +36,8 @@ type LessonPageProps = {
   totalSteps: number;
   totalHours: number;
   steps: JournalStep[];
+  allSteps: JournalStep[];
+  stepCompletions: StepCompletionRecord[];
   nextStudent: { id: string; name: string } | null;
 };
 
@@ -40,10 +52,41 @@ function getInitials(name: string) {
 
 function buildInitialStates(
   steps: JournalStep[],
+  sessionCompletions?: StepCompletionRecord[],
+  historicalCompletions?: StepCompletionRecord[],
 ): Record<string, StepGradeState> {
-  return Object.fromEntries(
-    steps.map((step) => [step.id, { grade: null, note: "" }]),
+  const sessionByStep = new Map(
+    sessionCompletions?.map((c) => [c.stepId, c]) ?? [],
   );
+  const historicalByStep = new Map(
+    historicalCompletions?.map((c) => [c.stepId, c]) ?? [],
+  );
+
+  return Object.fromEntries(
+    steps.map((step) => {
+      const source = sessionByStep.get(step.id) ?? historicalByStep.get(step.id);
+      return [
+        step.id,
+        {
+          grade: source?.grade ?? null,
+          note: source?.note ?? "",
+        },
+      ];
+    }),
+  );
+}
+
+function buildCumulativeHoursMap(
+  steps: { id: string; hours: number }[],
+  initialHours = 0,
+) {
+  const result: Record<string, number> = {};
+  let running = initialHours;
+  for (const step of steps) {
+    running += step.hours;
+    result[step.id] = running;
+  }
+  return result;
 }
 
 export function LessonPage({
@@ -54,23 +97,128 @@ export function LessonPage({
   totalSteps,
   totalHours,
   steps,
+  allSteps,
+  stepCompletions,
   nextStudent,
 }: LessonPageProps) {
   const router = useRouter();
   const { dateFilter } = useJournalStore();
+
+  const { data: existingSession, isLoading: isSessionLoading } =
+    useStudentSession(studentId, dateFilter);
+
+  const isProgramComplete = useMemo(() => {
+    const passedStepIds = new Set(
+      stepCompletions
+        .filter((c) => c.grade >= 3)
+        .map((c) => c.stepId),
+    );
+    return allSteps.every((step) => passedStepIds.has(step.id));
+  }, [allSteps, stepCompletions]);
+
+  const lessonSteps = useMemo(() => {
+    const sessionStepIds =
+      existingSession?.completions.map((c) => c.stepId) ?? [];
+    const merged = buildLessonSteps(allSteps, steps, sessionStepIds);
+    if (merged.length > 0) return merged;
+    if (isProgramComplete) return allSteps;
+    return merged;
+  }, [allSteps, steps, existingSession, isProgramComplete]);
   const [attendance, setAttendance] = useState<"PRESENT" | "LATE" | "ABSENT">(
     "PRESENT",
   );
   const [lateMinutes, setLateMinutes] = useState(5);
   const [visibleCount, setVisibleCount] = useState(
-    Math.min(INITIAL_VISIBLE, steps.length),
+    isProgramComplete
+      ? lessonSteps.length
+      : Math.min(INITIAL_VISIBLE, lessonSteps.length),
   );
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() =>
-    steps[0] ? new Set([steps[0].id]) : new Set(),
+    lessonSteps[0] ? new Set([lessonSteps[0].id]) : new Set(),
   );
   const [stepStates, setStepStates] = useState<Record<string, StepGradeState>>(
-    () => buildInitialStates(steps),
+    () =>
+      buildInitialStates(
+        lessonSteps,
+        undefined,
+        isProgramComplete ? stepCompletions : undefined,
+      ),
   );
+  const [loadedSessionKey, setLoadedSessionKey] = useState<string | null>(null);
+
+  const sessionKey = `${studentId}:${dateFilter}`;
+  const sessionDataKey = existingSession
+    ? `${sessionKey}:${existingSession.id}:${existingSession.completions.map((c) => c.stepId).join(",")}`
+    : `${sessionKey}:none`;
+
+  useEffect(() => {
+    if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
+
+    if (existingSession) {
+      setAttendance(existingSession.attendance);
+      setLateMinutes(existingSession.lateMinutes ?? 5);
+      setStepStates(
+        buildInitialStates(
+          lessonSteps,
+          existingSession.completions,
+          isProgramComplete ? stepCompletions : undefined,
+        ),
+      );
+
+      const gradedStepIds = new Set(
+        existingSession.completions.map((c) => c.stepId),
+      );
+      const maxGradedIndex = lessonSteps.reduce(
+        (max, step, index) =>
+          gradedStepIds.has(step.id) ? Math.max(max, index) : max,
+        -1,
+      );
+      if (maxGradedIndex >= 0 && !isProgramComplete) {
+        setVisibleCount(
+          Math.min(
+            Math.max(INITIAL_VISIBLE, maxGradedIndex + 1),
+            lessonSteps.length,
+          ),
+        );
+        setExpandedIds(new Set([lessonSteps[maxGradedIndex]!.id]));
+      } else if (isProgramComplete) {
+        setVisibleCount(lessonSteps.length);
+        setExpandedIds(new Set(lessonSteps.map((step) => step.id)));
+      }
+    } else {
+      setAttendance("PRESENT");
+      setLateMinutes(5);
+      setStepStates(
+        buildInitialStates(
+          lessonSteps,
+          undefined,
+          isProgramComplete ? stepCompletions : undefined,
+        ),
+      );
+      setVisibleCount(
+        isProgramComplete
+          ? lessonSteps.length
+          : Math.min(INITIAL_VISIBLE, lessonSteps.length),
+      );
+      setExpandedIds(
+        isProgramComplete
+          ? new Set(lessonSteps.map((step) => step.id))
+          : lessonSteps[0]
+            ? new Set([lessonSteps[0].id])
+            : new Set(),
+      );
+    }
+
+    setLoadedSessionKey(sessionDataKey);
+  }, [
+    existingSession,
+    isProgramComplete,
+    isSessionLoading,
+    lessonSteps,
+    loadedSessionKey,
+    sessionDataKey,
+    stepCompletions,
+  ]);
 
   const createSession = useCreateSession();
   const todayLabel = new Intl.DateTimeFormat("ru-RU", {
@@ -78,19 +226,14 @@ export function LessonPage({
     day: "numeric",
     month: "long",
   }).format(new Date());
-  const visibleSteps = steps.slice(0, visibleCount);
-  const hasMore = visibleCount < steps.length;
+  const visibleSteps = lessonSteps.slice(0, visibleCount);
+  const hasMore = visibleCount < lessonSteps.length;
   const currentStepNumber = currentStepIdx + 1;
 
-  const cumulativeHoursByStep = useMemo(() => {
-    let running = totalHours;
-    return Object.fromEntries(
-      steps.map((step) => {
-        running += step.hours;
-        return [step.id, running];
-      }),
-    );
-  }, [steps, totalHours]);
+  const cumulativeHoursByAllSteps = useMemo(
+    () => buildCumulativeHoursMap(allSteps),
+    [allSteps],
+  );
 
   const handleAttendanceChange = (
     value: "PRESENT" | "LATE" | "ABSENT",
@@ -114,10 +257,11 @@ export function LessonPage({
   };
 
   const saveSession = async () => {
+    const stepsForSave = visibleSteps;
     const completions =
       attendance === "ABSENT"
         ? []
-        : visibleSteps
+        : stepsForSave
             .filter((step) => stepStates[step.id]?.grade !== null)
             .map((step) => ({
               stepId: step.id,
@@ -167,18 +311,8 @@ export function LessonPage({
     }
   };
 
-  if (steps.length === 0) {
-    return (
-      <Flex vertical gap={16}>
-        <Link href="/journal" className="flex items-center gap-2 no-underline">
-          <ArrowLeftOutlined />
-          <Text>Все ученики</Text>
-        </Link>
-        <Title level={3}>{studentName}</Title>
-        <Text type="secondary">Все шаги программы пройдены</Text>
-      </Flex>
-    );
-  }
+  const getStepTotalHours = (step: JournalStep) =>
+    cumulativeHoursByAllSteps[step.id] ?? totalHours;
 
   return (
     <Flex vertical gap={24} className="mx-auto max-w-2xl pb-32">
@@ -187,18 +321,39 @@ export function LessonPage({
         <Text>Все ученики · {todayLabel}</Text>
       </Link>
 
-      <Flex align="center" gap={16}>
-        <Avatar size={56}>{getInitials(studentName)}</Avatar>
-        <Flex vertical gap={4}>
-          <Title level={3} className="!mb-0">
-            {studentName}
-          </Title>
-          <Text type="secondary">
-            Уровень {levelNumber} · Шаг {currentStepNumber} из {totalSteps} ·
-            Итого {totalHours} ч
-          </Text>
-        </Flex>
-      </Flex>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Avatar size={56}>{getInitials(studentName)}</Avatar>
+          <div className="flex flex-col gap-1">
+            <Title level={3} className="!mb-0">
+              {studentName}
+            </Title>
+            <Text type="secondary">
+            {isProgramComplete ? (
+              <>
+                Уровень {levelNumber} · Все {totalSteps} шагов пройдены · Итого{" "}
+                {cumulativeHoursByAllSteps[
+                  allSteps[allSteps.length - 1]?.id ?? ""
+                ] ?? totalHours}{" "}
+                ч
+              </>
+            ) : (
+              <>
+                Уровень {levelNumber} · Шаг {currentStepNumber} из {totalSteps}{" "}
+                · Итого {totalHours} ч
+              </>
+            )}
+            </Text>
+          </div>
+        </div>
+        <Link href={`/journal/${studentId}/history`}>
+          <Button type="link">История шагов</Button>
+        </Link>
+      </div>
+
+      {isProgramComplete && (
+        <Text type="secondary">Все шаги программы пройдены</Text>
+      )}
 
       <Flex vertical gap={8}>
         <Text type="secondary" className="uppercase">
@@ -208,20 +363,21 @@ export function LessonPage({
           value={attendance}
           lateMinutes={lateMinutes}
           onChange={handleAttendanceChange}
+          disabled={isSessionLoading || loadedSessionKey !== sessionDataKey}
         />
       </Flex>
 
       {attendance !== "ABSENT" && (
         <Flex vertical gap={12}>
           <Text type="secondary" className="uppercase">
-            Шаги на сегодня
+            {isProgramComplete ? "Пройдено в этот день" : "Шаги на сегодня"}
           </Text>
           <Flex vertical gap={12}>
             {visibleSteps.map((step) => (
               <StepCard
                 key={step.id}
                 step={step}
-                totalHours={cumulativeHoursByStep[step.id] ?? totalHours}
+                totalHours={getStepTotalHours(step)}
                 expanded={expandedIds.has(step.id)}
                 state={stepStates[step.id]!}
                 onToggleExpand={() => toggleExpand(step.id)}
@@ -234,7 +390,7 @@ export function LessonPage({
               type="link"
               onClick={() =>
                 setVisibleCount((c) =>
-                  Math.min(c + LOAD_MORE_COUNT, steps.length),
+                  Math.min(c + LOAD_MORE_COUNT, lessonSteps.length),
                 )
               }
               className="self-center"

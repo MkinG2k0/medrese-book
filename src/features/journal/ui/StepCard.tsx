@@ -15,6 +15,10 @@ const GRADE_OPTIONS = [
   { label: "Отлично", value: 5 },
 ] as const;
 
+const GRADE_LABEL = Object.fromEntries(
+  GRADE_OPTIONS.map((opt) => [opt.value, opt.label]),
+) as Record<number, string>;
+
 const STEP_TYPE_LABEL: Record<"LETTER" | "SURAH", string> = {
   LETTER: "Буквы",
   SURAH: "Сура",
@@ -38,6 +42,7 @@ type StepCardProps = {
   expanded: boolean;
   state: StepGradeState;
   disabled?: boolean;
+  readOnly?: boolean;
   onToggleExpand: () => void;
   onStateChange: (state: StepGradeState) => void;
 };
@@ -48,6 +53,7 @@ export function StepCard({
   expanded,
   state,
   disabled,
+  readOnly,
   onToggleExpand,
   onStateChange,
 }: StepCardProps) {
@@ -97,36 +103,53 @@ export function StepCard({
 
         {expanded && !disabled && (
           <Flex vertical gap={16} className="pt-2">
-            <div className="rounded-lg border border-[#2a2622] p-4">
-              {step.type === "LETTER" ? (
-                <LetterContent content={step.content} />
-              ) : (
-                <SurahContent content={step.content} />
-              )}
-            </div>
+            {!readOnly && (
+              <div className="rounded-lg border border-[#2a2622] p-4">
+                {step.type === "LETTER" ? (
+                  <LetterContent content={step.content} />
+                ) : (
+                  <SurahContent content={step.content} />
+                )}
+              </div>
+            )}
 
             <Flex vertical gap={8}>
               <Text type="secondary" className="uppercase">
                 Оценка
               </Text>
-              <Radio.Group
-                value={state.grade}
-                onChange={(e) => handleGradeChange(e.target.value)}
-                optionType="button"
-                buttonStyle="solid"
-              >
-                {GRADE_OPTIONS.map((opt) => (
-                  <Radio.Button key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Radio.Button>
-                ))}
-              </Radio.Group>
-              <Input.TextArea
-                placeholder="Заметка учителя..."
-                value={state.note}
-                onChange={(e) => handleNoteChange(e.target.value)}
-                rows={2}
-              />
+              {readOnly ? (
+                <>
+                  <Text>
+                    {state.grade !== null
+                      ? GRADE_LABEL[state.grade]
+                      : "—"}
+                  </Text>
+                  {state.note ? (
+                    <Text type="secondary">{state.note}</Text>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <Radio.Group
+                    value={state.grade}
+                    onChange={(e) => handleGradeChange(e.target.value)}
+                    optionType="button"
+                    buttonStyle="solid"
+                  >
+                    {GRADE_OPTIONS.map((opt) => (
+                      <Radio.Button key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </Radio.Button>
+                    ))}
+                  </Radio.Group>
+                  <Input.TextArea
+                    placeholder="Заметка учителя..."
+                    value={state.note}
+                    onChange={(e) => handleNoteChange(e.target.value)}
+                    rows={2}
+                  />
+                </>
+              )}
             </Flex>
           </Flex>
         )}

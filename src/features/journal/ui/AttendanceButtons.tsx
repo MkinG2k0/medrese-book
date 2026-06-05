@@ -13,6 +13,7 @@ type AttendanceButtonsProps = {
 	value: Attendance
 	lateMinutes: number
 	onChange: (attendance: Attendance, lateMinutes?: number) => void
+	disabled?: boolean
 }
 
 const OPTIONS: { value: Attendance; label: string; icon: React.ReactNode }[] = [
@@ -25,6 +26,7 @@ export function AttendanceButtons({
 	value,
 	lateMinutes,
 	onChange,
+	disabled = false,
 }: AttendanceButtonsProps) {
 	return (
 		<Flex vertical gap={12}>
@@ -32,6 +34,7 @@ export function AttendanceButtons({
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
 				className="w-full"
+				disabled={disabled}
 			>
 				<Flex gap={8} className="w-full">
 					{OPTIONS.map((opt) => (
@@ -56,6 +59,7 @@ export function AttendanceButtons({
 					onChange={(v) => onChange('LATE', v ?? 5)}
 					addonAfter="мин"
 					className="w-full"
+					disabled={disabled}
 				/>
 			)}
 		</Flex>

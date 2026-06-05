@@ -16,27 +16,23 @@ export async function GET(request: Request) {
 
 	if (!groupId) return error('groupId обязателен')
 
+	const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null
+
 	const group = await prisma.group.findUnique({
 		where: { id: groupId },
 		include: {
 			students: {
 				include: {
 					user: true,
-					...(dateStr
+					sessions: dayRange
 						? {
-								sessions: {
-									where: {
-										date: (() => {
-											const { start, end } =
-												getCalendarDayQueryRange(dateStr)
-											return { gte: start, lte: end }
-										})(),
-									},
-									orderBy: { date: 'desc' },
-									include: { completions: true },
+								where: {
+									date: { gte: dayRange.start, lte: dayRange.end },
 								},
+								orderBy: { date: 'desc' },
+								include: { completions: true },
 							}
-						: {}),
+						: false,
 				},
 			},
 		},
@@ -52,22 +48,17 @@ export async function GET(request: Request) {
 	}
 
 	const students = group.students.map((s) => {
-		const sessionsForDay =
-			dateStr && 'sessions' in s
-				? (
-						s as typeof s & {
-							sessions: {
-								date: Date
-								attendance: 'PRESENT' | 'LATE' | 'ABSENT'
-								completions: { grade: number }[]
-							}[]
-						}
-					).sessions.filter((session) =>
+		const todaySession =
+			dateStr && Array.isArray(s.sessions)
+				? s.sessions.find((session) =>
 						isSameCalendarDay(session.date, dateStr),
 					)
-				: []
+				: undefined
 
-		const todaySession = sessionsForDay[0]
+		const completions =
+			todaySession && 'completions' in todaySession
+				? (todaySession.completions as { grade: number }[])
+				: []
 
 		return {
 			id: s.id,
@@ -76,8 +67,8 @@ export async function GET(request: Request) {
 			groupId: s.groupId,
 			hasSessionToday: !!todaySession,
 			todayAttendance: todaySession?.attendance ?? null,
-			todayStepsCompleted: todaySession?.completions.length ?? 0,
-			todayGrades: todaySession?.completions.map((c) => c.grade) ?? [],
+			todayStepsCompleted: completions.length,
+			todayGrades: completions.map((c) => c.grade),
 		}
 	})
 
