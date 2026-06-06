@@ -64,8 +64,7 @@ export function RememberedAccountsSelect({
 		if (result?.error) return
 
 		addRememberedAccount(account)
-		router.push('/dashboard')
-		router.refresh()
+		router.replace('/dashboard')
 	}
 
 	return (

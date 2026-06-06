@@ -28,7 +28,7 @@ export const authConfig: NextAuthConfig = {
 			const { pathname } = request.nextUrl
 
 			if (pathname === '/login') {
-				if (auth?.user) return false
+				// Редirect авторизованных пользователей — в middleware.ts
 				return true
 			}
 
