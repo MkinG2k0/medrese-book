@@ -8,6 +8,12 @@ import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { getUserInfoByCode } from '@/features/auth/actions/auth-actions'
+import {
+	addRememberedAccount,
+	shouldRememberAccount,
+} from '@/features/auth/lib/remembered-accounts-storage'
+import { RememberedAccountsSelect } from '@/features/auth/ui/RememberedAccountsSelect'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
@@ -51,6 +57,16 @@ export function LoginForm() {
 			return
 		}
 
+		const user = await getUserInfoByCode(values.code)
+		if (user && shouldRememberAccount(user.role)) {
+			addRememberedAccount({
+				id: user.id,
+				name: user.name,
+				role: user.role,
+				code: values.code,
+			})
+		}
+
 		router.push('/dashboard')
 		router.refresh()
 	}
@@ -63,6 +79,8 @@ export function LoginForm() {
 			<Text type="secondary" className="text-center">
 				Введите 6-значный код доступа
 			</Text>
+
+			<RememberedAccountsSelect placeholder="Войти как…" />
 
 			<Controller
 				name="code"

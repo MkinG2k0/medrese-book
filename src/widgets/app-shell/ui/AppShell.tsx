@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
+import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
 import Text from "@/shared/ui/Text";
@@ -165,6 +166,11 @@ export function AppShell({
                 collapsed={collapsed}
               />
             )}
+            <RememberedAccountsSelect
+              currentUserId={session.user.id}
+              collapsed={collapsed}
+              placeholder="Сменить учётку"
+            />
             <Button
               type="text"
               icon={<LogoutOutlined />}
