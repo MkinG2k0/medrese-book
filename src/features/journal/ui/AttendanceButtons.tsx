@@ -5,7 +5,7 @@ import {
 	ClockCircleOutlined,
 	CloseOutlined,
 } from '@ant-design/icons'
-import { Flex, InputNumber, Radio } from 'antd'
+import { Flex, InputNumber, Radio, Space } from 'antd'
 
 type Attendance = 'PRESENT' | 'LATE' | 'ABSENT'
 
@@ -52,15 +52,17 @@ export function AttendanceButtons({
 				</Flex>
 			</Radio.Group>
 			{value === 'LATE' && (
-				<InputNumber
-					min={1}
-					max={120}
-					value={lateMinutes}
-					onChange={(v) => onChange('LATE', v ?? 5)}
-					addonAfter="мин"
-					className="w-full"
-					disabled={disabled}
-				/>
+				<Space.Compact block className="w-full">
+					<InputNumber
+						min={1}
+						max={120}
+						value={lateMinutes}
+						onChange={(v) => onChange('LATE', v ?? 5)}
+						style={{ width: '100%' }}
+						disabled={disabled}
+					/>
+					<Space.Addon>мин</Space.Addon>
+				</Space.Compact>
 			)}
 		</Flex>
 	)
