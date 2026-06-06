@@ -16,14 +16,12 @@ type TeacherOption = {
 type AnalyticsTeacherPickerProps = {
 	teachers: TeacherOption[]
 	selectedTeacher: string
-	canSelectAll: boolean
 	month: string
 }
 
 export function AnalyticsTeacherPicker({
 	teachers,
 	selectedTeacher,
-	canSelectAll,
 	month,
 }: AnalyticsTeacherPickerProps) {
 	const router = useRouter()
@@ -31,9 +29,7 @@ export function AnalyticsTeacherPicker({
 	const searchParams = useSearchParams()
 
 	const options = [
-		...(canSelectAll
-			? [{ value: ALL_TEACHERS, label: 'Все учителя' }]
-			: []),
+		{ value: ALL_TEACHERS, label: 'Все учителя' },
 		...teachers.map((teacher) => ({
 			value: teacher.id,
 			label: teacher.name,
@@ -54,7 +50,7 @@ export function AnalyticsTeacherPicker({
 				)
 			}}
 			className="w-full sm:w-56"
-			disabled={!canSelectAll && teachers.length <= 1}
+			disabled={teachers.length === 0}
 		/>
 	)
 }

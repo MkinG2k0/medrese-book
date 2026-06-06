@@ -17,20 +17,22 @@ export function resolveAnalyticsTeacherFilter(
 	teacherParam?: string,
 	validTeacherIds?: Set<string>,
 ): { filterTeacherId: string | null; selectedTeacher: string } {
-	if (role === 'TEACHER') {
-		return {
-			filterTeacherId: sessionTeacherId,
-			selectedTeacher: sessionTeacherId ?? '',
+	if (teacherParam === ALL_TEACHERS) {
+		return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
+	}
+
+	if (teacherParam) {
+		if (!validTeacherIds || validTeacherIds.has(teacherParam)) {
+			return { filterTeacherId: teacherParam, selectedTeacher: teacherParam }
 		}
 	}
 
-	if (!teacherParam || teacherParam === ALL_TEACHERS) {
-		return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
+	if (role === 'TEACHER' && sessionTeacherId) {
+		return {
+			filterTeacherId: sessionTeacherId,
+			selectedTeacher: sessionTeacherId,
+		}
 	}
 
-	if (validTeacherIds && !validTeacherIds.has(teacherParam)) {
-		return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
-	}
-
-	return { filterTeacherId: teacherParam, selectedTeacher: teacherParam }
+	return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
 }

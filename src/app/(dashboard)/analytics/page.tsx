@@ -34,14 +34,6 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		validTeacherIds,
 	)
 
-	const visibleTeachers =
-		session.user.role === 'TEACHER' && session.user.teacherId
-			? allTeachers.filter((teacher) => teacher.id === session.user.teacherId)
-			: allTeachers
-
-	const canSelectAll =
-		session.user.role === 'MANAGER' || session.user.role === 'SUPER_ADMIN'
-
 	const [topStudents, levelStats] = await Promise.all([
 		getTopStudents(month, filterTeacherId),
 		getLevelStats(month, filterTeacherId),
@@ -55,9 +47,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 				</Title>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 					<AnalyticsTeacherPicker
-						teachers={visibleTeachers}
+						teachers={allTeachers}
 						selectedTeacher={selectedTeacher}
-						canSelectAll={canSelectAll}
 						month={monthValue}
 					/>
 					<AnalyticsMonthPicker month={month} selectedTeacher={selectedTeacher} />

@@ -2,7 +2,7 @@
 
 import { message } from "antd";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   useCreateSession,
@@ -106,7 +106,27 @@ export function useLessonPage(props: LessonPageProps) {
     [allSteps, existingSession],
   );
 
-  const [nextLevelLoadedCount, setNextLevelLoadedCount] = useState(0);
+  const sessionDataKey = buildSessionDataKey(
+    studentId,
+    dateFilter,
+    existingSession,
+  );
+
+  const sessionNextLevelLoadedCount = useMemo(() => {
+    const sessionStepIds = new Set(
+      existingSession?.completions.map((completion) => completion.stepId) ??
+        [],
+    );
+    return countConsecutiveLoadedNextLevelSteps(nextLevelSteps, sessionStepIds);
+  }, [existingSession, nextLevelSteps]);
+
+  const [nextLevelUserExtraBySessionKey, setNextLevelUserExtraBySessionKey] =
+    useState<Record<string, number>>({});
+
+  const nextLevelUserExtraCount =
+    nextLevelUserExtraBySessionKey[sessionDataKey] ?? 0;
+  const nextLevelLoadedCount =
+    sessionNextLevelLoadedCount + nextLevelUserExtraCount;
   const loadedNextLevelSteps = useMemo(
     () => nextLevelSteps.slice(0, nextLevelLoadedCount),
     [nextLevelLoadedCount, nextLevelSteps],
@@ -151,11 +171,6 @@ export function useLessonPage(props: LessonPageProps) {
   );
   const [loadedSessionKey, setLoadedSessionKey] = useState<string | null>(null);
 
-  const sessionDataKey = buildSessionDataKey(
-    studentId,
-    dateFilter,
-    existingSession,
-  );
   const isSessionReady = !isSessionLoading && loadedSessionKey === sessionDataKey;
 
   const resolvedStepStates = useMemo(() => {
@@ -173,19 +188,7 @@ export function useLessonPage(props: LessonPageProps) {
     stepStates,
   ]);
 
-  useEffect(() => {
-    if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
-
-    const sessionStepIds = new Set(
-      existingSession?.completions.map((completion) => completion.stepId) ??
-        [],
-    );
-    const initialNextLevelLoadedCount = countConsecutiveLoadedNextLevelSteps(
-      nextLevelSteps,
-      sessionStepIds,
-    );
-    setNextLevelLoadedCount(initialNextLevelLoadedCount);
-
+  if (!isSessionLoading && loadedSessionKey !== sessionDataKey) {
     const effectiveLessonSteps = isProgramComplete
       ? allSteps
       : buildLessonSteps(
@@ -193,7 +196,7 @@ export function useLessonPage(props: LessonPageProps) {
           steps,
           existingSession?.completions ?? [],
           sessionStepsOutsideLevel,
-          nextLevelSteps.slice(0, initialNextLevelLoadedCount),
+          nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
         );
 
     if (existingSession) {
@@ -227,18 +230,7 @@ export function useLessonPage(props: LessonPageProps) {
     setVisibleCount(nextVisibleCount);
     setExpandedIds(nextExpandedIds);
     setLoadedSessionKey(sessionDataKey);
-  }, [
-    allSteps,
-    existingSession,
-    isProgramComplete,
-    isSessionLoading,
-    loadedSessionKey,
-    nextLevelSteps,
-    sessionDataKey,
-    sessionStepsOutsideLevel,
-    stepCompletions,
-    steps,
-  ]);
+  }
 
   const visibleSteps = lessonSteps.slice(0, visibleCount);
   const hasMore = visibleCount < lessonSteps.length;
@@ -297,7 +289,10 @@ export function useLessonPage(props: LessonPageProps) {
       nextLevelSteps.length,
     );
     const newlyLoaded = nextLevelSteps.slice(nextLevelLoadedCount, nextCount);
-    setNextLevelLoadedCount(nextCount);
+    setNextLevelUserExtraBySessionKey((prev) => ({
+      ...prev,
+      [sessionDataKey]: nextCount - sessionNextLevelLoadedCount,
+    }));
     setVisibleCount((count) => count + newlyLoaded.length);
     if (newlyLoaded[0]) {
       setExpandedIds(new Set([newlyLoaded[0].id]));
