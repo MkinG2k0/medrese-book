@@ -26,6 +26,7 @@ export default async function StudentLessonPage({ params }: Props) {
 			totalHours={lesson.totalHours}
 			steps={lesson.steps}
 			allSteps={lesson.allSteps}
+			nextLevelSteps={lesson.nextLevelSteps}
 			stepCompletions={lesson.stepCompletions}
 			nextStudent={lesson.nextStudent}
 		/>

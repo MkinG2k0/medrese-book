@@ -20,7 +20,12 @@ import {
   type StepGradeState,
 } from "@/features/journal/ui/StepCard";
 import { toSessionDate } from "@/shared/lib/calendar-date";
-import { buildLessonSteps } from "@/shared/lib/step-completion";
+import {
+  buildLessonSteps,
+  countConsecutiveLoadedNextLevelSteps,
+  isProgramComplete as checkProgramComplete,
+  isStepPassed,
+} from "@/shared/lib/step-completion";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -43,6 +48,7 @@ type LessonPageProps = {
   totalHours: number;
   steps: JournalStep[];
   allSteps: JournalStep[];
+  nextLevelSteps: JournalStep[];
   stepCompletions: StepCompletionRecord[];
   nextStudent: { id: string; name: string } | null;
 };
@@ -124,6 +130,7 @@ export function LessonPage({
   totalHours,
   steps,
   allSteps,
+  nextLevelSteps,
   stepCompletions,
   nextStudent,
 }: LessonPageProps) {
@@ -133,12 +140,11 @@ export function LessonPage({
   const { data: existingSession, isLoading: isSessionLoading } =
     useStudentSession(studentId, dateFilter);
 
-  const isProgramComplete = useMemo(() => {
-    const passedStepIds = new Set(
-      stepCompletions.filter((c) => c.grade >= 3).map((c) => c.stepId),
-    );
-    return allSteps.every((step) => passedStepIds.has(step.id));
-  }, [allSteps, stepCompletions]);
+  const isProgramComplete = useMemo(
+    () => checkProgramComplete(allSteps, stepCompletions),
+    [allSteps, stepCompletions],
+  );
+  const hasNoSteps = allSteps.length === 0;
 
   const sessionStepsOutsideLevel = useMemo((): JournalStep[] => {
     if (!existingSession?.completions) return [];
@@ -160,6 +166,12 @@ export function LessonPage({
       }));
   }, [allSteps, existingSession]);
 
+  const [nextLevelLoadedCount, setNextLevelLoadedCount] = useState(0);
+  const loadedNextLevelSteps = useMemo(
+    () => nextLevelSteps.slice(0, nextLevelLoadedCount),
+    [nextLevelLoadedCount, nextLevelSteps],
+  );
+
   const lessonSteps = useMemo(() => {
     if (isProgramComplete) return allSteps;
 
@@ -168,12 +180,14 @@ export function LessonPage({
       steps,
       existingSession?.completions ?? [],
       sessionStepsOutsideLevel,
+      loadedNextLevelSteps,
     );
   }, [
     allSteps,
     steps,
     existingSession,
     isProgramComplete,
+    loadedNextLevelSteps,
     sessionStepsOutsideLevel,
   ]);
   const [attendance, setAttendance] = useState<"PRESENT" | "LATE" | "ABSENT">(
@@ -221,12 +235,31 @@ export function LessonPage({
   useEffect(() => {
     if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
 
+    const sessionStepIds = new Set(
+      existingSession?.completions.map((completion) => completion.stepId) ?? [],
+    );
+    const initialNextLevelLoadedCount = countConsecutiveLoadedNextLevelSteps(
+      nextLevelSteps,
+      sessionStepIds,
+    );
+    setNextLevelLoadedCount(initialNextLevelLoadedCount);
+
+    const effectiveLessonSteps = isProgramComplete
+      ? allSteps
+      : buildLessonSteps(
+          allSteps,
+          steps,
+          existingSession?.completions ?? [],
+          sessionStepsOutsideLevel,
+          nextLevelSteps.slice(0, initialNextLevelLoadedCount),
+        );
+
     if (existingSession) {
       setAttendance(existingSession.attendance);
       setLateMinutes(existingSession.lateMinutes ?? 5);
       setStepStates(
         buildInitialStates(
-          lessonSteps,
+          effectiveLessonSteps,
           existingSession.completions,
           isProgramComplete ? stepCompletions : undefined,
         ),
@@ -235,7 +268,7 @@ export function LessonPage({
       const gradedStepIds = new Set(
         existingSession.completions.map((c) => c.stepId),
       );
-      const maxGradedIndex = lessonSteps.reduce(
+      const maxGradedIndex = effectiveLessonSteps.reduce(
         (max, step, index) =>
           gradedStepIds.has(step.id) ? Math.max(max, index) : max,
         -1,
@@ -244,47 +277,50 @@ export function LessonPage({
         setVisibleCount(
           Math.min(
             Math.max(INITIAL_VISIBLE, maxGradedIndex + 1),
-            lessonSteps.length,
+            effectiveLessonSteps.length,
           ),
         );
-        setExpandedIds(new Set([lessonSteps[maxGradedIndex]!.id]));
+        setExpandedIds(new Set([effectiveLessonSteps[maxGradedIndex]!.id]));
       } else if (isProgramComplete) {
-        setVisibleCount(lessonSteps.length);
-        setExpandedIds(new Set(lessonSteps.map((step) => step.id)));
+        setVisibleCount(effectiveLessonSteps.length);
+        setExpandedIds(new Set(effectiveLessonSteps.map((step) => step.id)));
       }
     } else {
       setAttendance("PRESENT");
       setLateMinutes(5);
       setStepStates(
         buildInitialStates(
-          lessonSteps,
+          effectiveLessonSteps,
           undefined,
           isProgramComplete ? stepCompletions : undefined,
         ),
       );
       setVisibleCount(
         isProgramComplete
-          ? lessonSteps.length
-          : Math.min(INITIAL_VISIBLE, lessonSteps.length),
+          ? effectiveLessonSteps.length
+          : Math.min(INITIAL_VISIBLE, effectiveLessonSteps.length),
       );
       setExpandedIds(
         isProgramComplete
-          ? new Set(lessonSteps.map((step) => step.id))
-          : lessonSteps[0]
-            ? new Set([lessonSteps[0].id])
+          ? new Set(effectiveLessonSteps.map((step) => step.id))
+          : effectiveLessonSteps[0]
+            ? new Set([effectiveLessonSteps[0].id])
             : new Set(),
       );
     }
 
     setLoadedSessionKey(sessionDataKey);
   }, [
+    allSteps,
     existingSession,
     isProgramComplete,
     isSessionLoading,
-    lessonSteps,
     loadedSessionKey,
+    nextLevelSteps,
     sessionDataKey,
+    sessionStepsOutsideLevel,
     stepCompletions,
+    steps,
   ]);
 
   const createSession = useCreateSession();
@@ -295,11 +331,24 @@ export function LessonPage({
   }).format(new Date());
   const visibleSteps = lessonSteps.slice(0, visibleCount);
   const hasMore = visibleCount < lessonSteps.length;
+  const allVisibleStepsPassed =
+    visibleSteps.length > 0 &&
+    visibleSteps.every((step) =>
+      isStepPassed(resolvedStepStates[step.id]?.grade),
+    );
+  const canLoadNextLevel =
+    !isProgramComplete &&
+    !hasMore &&
+    allVisibleStepsPassed &&
+    nextLevelLoadedCount < nextLevelSteps.length;
   const currentStepNumber = currentStepIdx + 1;
 
   const cumulativeHoursByAllSteps = useMemo(
-    () => buildCumulativeHoursMap(allSteps),
-    [allSteps],
+    () => ({
+      ...buildCumulativeHoursMap(allSteps),
+      ...buildCumulativeHoursMap(loadedNextLevelSteps, totalHours),
+    }),
+    [allSteps, loadedNextLevelSteps, totalHours],
   );
 
   const handleAttendanceChange = (
@@ -321,6 +370,19 @@ export function LessonPage({
 
   const updateStepState = (stepId: string, state: StepGradeState) => {
     setStepStates((prev) => ({ ...prev, [stepId]: state }));
+  };
+
+  const handleLoadNextLevelSteps = () => {
+    const nextCount = Math.min(
+      nextLevelLoadedCount + LOAD_MORE_COUNT,
+      nextLevelSteps.length,
+    );
+    const newlyLoaded = nextLevelSteps.slice(nextLevelLoadedCount, nextCount);
+    setNextLevelLoadedCount(nextCount);
+    setVisibleCount((count) => count + newlyLoaded.length);
+    if (newlyLoaded[0]) {
+      setExpandedIds(new Set([newlyLoaded[0].id]));
+    }
   };
 
   const saveSession = async () => {
@@ -396,7 +458,9 @@ export function LessonPage({
               {studentName}
             </Title>
             <Text type="secondary">
-              {isProgramComplete ? (
+              {hasNoSteps ? (
+                <>Уровень {levelNumber} · Шаги не настроены</>
+              ) : isProgramComplete ? (
                 <>
                   Уровень {levelNumber} · Все {totalSteps} шагов пройдены ·
                   Итого{" "}
@@ -419,6 +483,13 @@ export function LessonPage({
         </Link>
       </div>
 
+      {hasNoSteps && (
+        <Text type="secondary">
+          Для этого уровня не настроены шаги программы. Обратитесь к
+          администратору.
+        </Text>
+      )}
+
       {isProgramComplete && (
         <Text type="secondary">Все шаги программы пройдены</Text>
       )}
@@ -435,7 +506,7 @@ export function LessonPage({
         />
       </div>
 
-      {attendance !== "ABSENT" && (
+      {attendance !== "ABSENT" && !hasNoSteps && (
         <div className="flex flex-col gap-3">
           <Text type="secondary" className="uppercase">
             {isProgramComplete ? "Пройдено в этот день" : "Шаги на сегодня"}
@@ -479,6 +550,15 @@ export function LessonPage({
               className="self-center"
             >
               Загрузить ещё
+            </Button>
+          )}
+          {canLoadNextLevel && (
+            <Button
+              type="link"
+              onClick={handleLoadNextLevelSteps}
+              className="self-center"
+            >
+              Загрузить шаги
             </Button>
           )}
         </div>

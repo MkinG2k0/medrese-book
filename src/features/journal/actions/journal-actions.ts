@@ -49,6 +49,11 @@ export async function getStudentLesson(studentId: string) {
 	if (!student) return null
 	if (student.group.teacherId !== session.user.teacherId) return null
 
+	const nextLevel = await prisma.level.findFirst({
+		where: { number: student.level.number + 1 },
+		include: { steps: { orderBy: { order: 'asc' } } },
+	})
+
 	const totalProgramSteps = await getTotalProgramSteps()
 
 	const mapStep = (step: (typeof student.level.steps)[number]): JournalStep => ({
@@ -62,6 +67,16 @@ export async function getStudentLesson(studentId: string) {
 	})
 
 	const allSteps = student.level.steps.map(mapStep)
+	const nextLevelSteps =
+		nextLevel?.steps.map((step) => ({
+			id: step.id,
+			order: step.order,
+			title: step.title,
+			content: step.content as StepContent,
+			hours: step.hours,
+			levelNumber: nextLevel.number,
+			levelTitle: nextLevel.title,
+		})) ?? []
 	const completionsByStepId = getCompletionsByStepId(student.completions)
 	const incompleteSteps = filterIncompleteSteps(allSteps, completionsByStepId)
 	const totalHours = sumPassedStepHours(allSteps, completionsByStepId)
@@ -102,6 +117,7 @@ export async function getStudentLesson(studentId: string) {
 		totalProgramSteps,
 		totalHours,
 		allSteps,
+		nextLevelSteps,
 		stepCompletions: [...stepCompletionsByStep.values()],
 		steps: incompleteSteps,
 		nextStudent: nextStudent

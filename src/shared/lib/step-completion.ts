@@ -14,6 +14,18 @@ export function getCompletionsByStepId<T extends { stepId: string }>(
   return map;
 }
 
+export function isProgramComplete<T extends { id: string }>(
+  allSteps: T[],
+  completions: { stepId: string; grade: number }[],
+): boolean {
+  if (allSteps.length === 0) return false;
+
+  const passedStepIds = new Set(
+    completions.filter((c) => isStepPassed(c.grade)).map((c) => c.stepId),
+  );
+  return allSteps.every((step) => passedStepIds.has(step.id));
+}
+
 export function filterIncompleteSteps<T extends { id: string }>(
   allSteps: T[],
   completionsByStepId: Map<string, { grade: number }>,
@@ -47,16 +59,43 @@ export function countConsecutivePassedSteps<T extends { id: string }>(
   return count;
 }
 
-export function buildLessonSteps<T extends { id: string; order: number }>(
+export function sortStepsByLevel<
+  T extends { order: number; levelNumber?: number },
+>(steps: T[]): T[] {
+  return [...steps].sort((a, b) => {
+    const levelDiff = (a.levelNumber ?? 0) - (b.levelNumber ?? 0);
+    return levelDiff !== 0 ? levelDiff : a.order - b.order;
+  });
+}
+
+export function countConsecutiveLoadedNextLevelSteps<
+  T extends { id: string },
+>(
+  nextLevelSteps: T[],
+  loadedStepIds: Set<string>,
+): number {
+  let count = 0;
+  for (const step of nextLevelSteps) {
+    if (!loadedStepIds.has(step.id)) break;
+    count += 1;
+  }
+  return count;
+}
+
+export function buildLessonSteps<
+  T extends { id: string; order: number; levelNumber?: number },
+>(
   allSteps: T[],
   incompleteSteps: T[],
   sessionCompletions: { stepId: string }[] = [],
   sessionStepsOutsideLevel: T[] = [],
+  extraSteps: T[] = [],
 ): T[] {
   const sessionStepIds = new Set(sessionCompletions.map((c) => c.stepId));
   const includeIds = new Set([
     ...incompleteSteps.map((step) => step.id),
     ...sessionStepIds,
+    ...extraSteps.map((step) => step.id),
   ]);
 
   const stepsById = new Map<string, T>();
@@ -66,6 +105,9 @@ export function buildLessonSteps<T extends { id: string; order: number }>(
   for (const step of sessionStepsOutsideLevel) {
     if (sessionStepIds.has(step.id)) stepsById.set(step.id, step);
   }
+  for (const step of extraSteps) {
+    stepsById.set(step.id, step);
+  }
 
-  return [...stepsById.values()].sort((a, b) => a.order - b.order);
+  return sortStepsByLevel([...stepsById.values()]);
 }
