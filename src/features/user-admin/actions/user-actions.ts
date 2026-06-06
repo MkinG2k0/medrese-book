@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { getDefaultLevelId } from '@/shared/lib/default-level'
 import { generateUniqueCode } from '@/shared/lib/generate-unique-code'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
@@ -24,6 +25,8 @@ export async function createUser(input: unknown) {
 
 	const data = createUserSchema.parse(input)
 	const code = await generateUniqueCode()
+	const defaultLevelId =
+		data.role === 'STUDENT' ? await getDefaultLevelId() : undefined
 
 	const user = await prisma.user.create({
 		data: {
@@ -37,6 +40,7 @@ export async function createUser(input: unknown) {
 				student: {
 					create: {
 						groupId: data.groupId!,
+						levelId: defaultLevelId!,
 					},
 				},
 			}),

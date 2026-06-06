@@ -11,11 +11,5 @@ export default async function JournalHistoryRoutePage() {
 		return <Text>Группа не назначена</Text>
 	}
 
-	return (
-		<JournalHistoryPage
-			groupId={group.id}
-			levelNumber={group.level.number}
-			levelTitle={group.level.title}
-		/>
-	)
+	return <JournalHistoryPage groupId={group.id} />
 }

@@ -7,6 +7,7 @@ import {
 	getCompletionsByStepId,
 	sumPassedStepHours,
 } from '@/shared/lib/step-completion'
+import { getTotalProgramSteps } from '@/shared/lib/step-offset'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export async function getTeacherGroup() {
@@ -14,7 +15,6 @@ export async function getTeacherGroup() {
 
 	const group = await prisma.group.findFirst({
 		where: { teacherId: session.user.teacherId! },
-		include: { level: { include: { steps: { orderBy: { order: 'asc' } } } } },
 	})
 
 	return group
@@ -37,18 +37,17 @@ export async function getStudentLesson(studentId: string) {
 		include: {
 			user: true,
 			completions: { orderBy: { createdAt: 'asc' } },
-			group: {
-				include: {
-					level: { include: { steps: { orderBy: { order: 'asc' } } } },
-				},
-			},
+			level: { include: { steps: { orderBy: { order: 'asc' } } } },
+			group: true,
 		},
 	})
 
 	if (!student) return null
 	if (student.group.teacherId !== session.user.teacherId) return null
 
-	const mapStep = (step: (typeof student.group.level.steps)[number]): JournalStep => ({
+	const totalProgramSteps = await getTotalProgramSteps()
+
+	const mapStep = (step: (typeof student.level.steps)[number]): JournalStep => ({
 		id: step.id,
 		order: step.order,
 		title: step.title,
@@ -57,7 +56,7 @@ export async function getStudentLesson(studentId: string) {
 		hours: step.hours,
 	})
 
-	const allSteps = student.group.level.steps.map(mapStep)
+	const allSteps = student.level.steps.map(mapStep)
 	const completionsByStepId = getCompletionsByStepId(student.completions)
 	const incompleteSteps = filterIncompleteSteps(allSteps, completionsByStepId)
 	const totalHours = sumPassedStepHours(allSteps, completionsByStepId)
@@ -91,10 +90,11 @@ export async function getStudentLesson(studentId: string) {
 			currentStepIdx: student.currentStepIdx,
 		},
 		level: {
-			number: student.group.level.number,
-			title: student.group.level.title,
+			number: student.level.number,
+			title: student.level.title,
 		},
 		totalSteps: allSteps.length,
+		totalProgramSteps,
 		totalHours,
 		allSteps,
 		stepCompletions: [...stepCompletionsByStep.values()],
@@ -112,9 +112,8 @@ export async function getStudentStepHistory(studentId: string) {
 		where: { id: studentId },
 		include: {
 			user: true,
-			group: {
-				include: { level: true },
-			},
+			level: true,
+			group: true,
 		},
 	})
 
@@ -128,8 +127,8 @@ export async function getStudentStepHistory(studentId: string) {
 			currentStepIdx: student.currentStepIdx,
 		},
 		level: {
-			number: student.group.level.number,
-			title: student.group.level.title,
+			number: student.level.number,
+			title: student.level.title,
 		},
 	}
 }

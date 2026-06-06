@@ -38,6 +38,7 @@ type LessonPageProps = {
   currentStepIdx: number;
   levelNumber: number;
   totalSteps: number;
+  totalProgramSteps: number;
   totalHours: number;
   steps: JournalStep[];
   allSteps: JournalStep[];
@@ -100,6 +101,7 @@ export function LessonPage({
   currentStepIdx,
   levelNumber,
   totalSteps,
+  totalProgramSteps,
   totalHours,
   steps,
   allSteps,
@@ -359,7 +361,7 @@ export function LessonPage({
               ) : (
                 <>
                   Уровень {levelNumber} · Шаг {currentStepNumber} из{" "}
-                  {totalSteps} · Итого {totalHours} ч
+                  {totalProgramSteps} · Итого {totalHours} ч
                 </>
               )}
             </Text>

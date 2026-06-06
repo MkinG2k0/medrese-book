@@ -26,7 +26,7 @@ export default async function GroupDetailPage({ params }: Props) {
     <div className="flex flex-col gap-4">
       <Title level={3}>{group.name}</Title>
       <Text type="secondary">
-        Учитель: {group.teacher.user.name} · Уровень: {group.level.title}
+        Учитель: {group.teacher.user.name}
         {!editable && " · Только просмотр"}
       </Text>
 
@@ -34,6 +34,7 @@ export default async function GroupDetailPage({ params }: Props) {
         students={group.students.map((s) => ({
           id: s.id,
           name: s.user.name,
+          levelTitle: s.level.title,
           currentStepIdx: s.currentStepIdx,
         }))}
       />

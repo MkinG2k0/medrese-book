@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 			students: {
 				include: {
 					user: true,
+					level: true,
 					sessions: dayRange
 						? {
 								where: {
@@ -66,6 +67,8 @@ export async function GET(request: Request) {
 			name: s.user.name,
 			currentStepIdx: s.currentStepIdx,
 			groupId: s.groupId,
+			levelNumber: s.level.number,
+			levelTitle: s.level.title,
 			hasSessionToday: !!todaySession,
 			todayAttendance: todaySession?.attendance ?? null,
 			todayStepsCompleted: completions.filter((c) =>

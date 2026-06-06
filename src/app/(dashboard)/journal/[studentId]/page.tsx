@@ -20,6 +20,7 @@ export default async function StudentLessonPage({ params }: Props) {
 			currentStepIdx={lesson.student.currentStepIdx}
 			levelNumber={lesson.level.number}
 			totalSteps={lesson.totalSteps}
+			totalProgramSteps={lesson.totalProgramSteps}
 			totalHours={lesson.totalHours}
 			steps={lesson.steps}
 			allSteps={lesson.allSteps}

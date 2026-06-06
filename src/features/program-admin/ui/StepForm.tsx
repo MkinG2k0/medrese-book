@@ -44,25 +44,38 @@ export function StepForm({ levelId, stepId, initial }: StepFormProps) {
 	return (
 		<div className="flex max-w-3xl flex-col gap-4">
 			<Form layout="vertical">
-				<Form.Item label="Порядок">
-					<InputNumber value={order} onChange={(v) => setOrder(v ?? 1)} min={1} />
-				</Form.Item>
-				<Form.Item label="Тип">
-					<Select
-						value={type}
-						onChange={setType}
-						options={[
-							{ value: 'LETTER', label: 'Буква' },
-							{ value: 'SURAH', label: 'Сура' },
-						]}
-					/>
-				</Form.Item>
-				<Form.Item label="Название">
-					<Input value={title} onChange={(e) => setTitle(e.target.value)} />
-				</Form.Item>
-				<Form.Item label="Часы">
-					<InputNumber value={hours} onChange={(v) => setHours(v ?? 1)} min={1} />
-				</Form.Item>
+				<div className="flex gap-4">
+					<Form.Item label="Порядок" className="mb-0 w-24">
+						<InputNumber
+							className="w-full"
+							value={order}
+							onChange={(v) => setOrder(v ?? 1)}
+							min={1}
+						/>
+					</Form.Item>
+					<Form.Item label="Тип" className="mb-0 w-32">
+						<Select
+							className="w-full"
+							value={type}
+							onChange={setType}
+							options={[
+								{ value: 'LETTER', label: 'Буква' },
+								{ value: 'SURAH', label: 'Сура' },
+							]}
+						/>
+					</Form.Item>
+					<Form.Item label="Название" className="mb-0 min-w-0 flex-1">
+						<Input value={title} onChange={(e) => setTitle(e.target.value)} />
+					</Form.Item>
+					<Form.Item label="Часы" className="mb-0 w-24">
+						<InputNumber
+							className="w-full"
+							value={hours}
+							onChange={(v) => setHours(v ?? 1)}
+							min={1}
+						/>
+					</Form.Item>
+				</div>
 				<Form.Item label="Содержание">
 					<StepEditor initialContent={content} onChange={setContent} />
 				</Form.Item>

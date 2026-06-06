@@ -97,18 +97,14 @@ export async function getLevelStats(
 	const levels = await prisma.level.findMany({
 		include: {
 			steps: true,
-			groups: {
-				where: teacherId ? { teacherId } : undefined,
+			students: {
+				where: teacherId ? { group: { teacherId } } : undefined,
 				include: {
-					students: {
-						include: {
-							completions: {
-								where: { createdAt: { gte: from, lte: to } },
-							},
-							sessions: {
-								where: { date: { gte: from, lte: to } },
-							},
-						},
+					completions: {
+						where: { createdAt: { gte: from, lte: to } },
+					},
+					sessions: {
+						where: { date: { gte: from, lte: to } },
 					},
 				},
 			},
@@ -116,7 +112,7 @@ export async function getLevelStats(
 	})
 
 	return levels.map((level) => {
-		const students = level.groups.flatMap((g) => g.students)
+		const students = level.students
 		const allCompletions = students.flatMap((s) => s.completions)
 		const allSessions = students.flatMap((s) => s.sessions)
 

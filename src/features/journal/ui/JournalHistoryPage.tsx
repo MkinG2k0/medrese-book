@@ -11,15 +11,9 @@ import Title from "@/shared/ui/Title";
 
 type JournalHistoryPageProps = {
   groupId: string;
-  levelNumber: number;
-  levelTitle: string;
 };
 
-export function JournalHistoryPage({
-  groupId,
-  levelNumber,
-  levelTitle,
-}: JournalHistoryPageProps) {
+export function JournalHistoryPage({ groupId }: JournalHistoryPageProps) {
   const [studentId, setStudentId] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const { data: students, isLoading } = useStudents(groupId);
@@ -77,8 +71,8 @@ export function JournalHistoryPage({
           studentId={selectedStudent.id}
           studentName={selectedStudent.name}
           currentStepIdx={selectedStudent.currentStepIdx}
-          levelNumber={levelNumber}
-          levelTitle={levelTitle}
+          levelNumber={selectedStudent.levelNumber}
+          levelTitle={selectedStudent.levelTitle}
           dateFilter={dateFilter}
           onDateFilterChange={setDateFilter}
           showDateFilter={false}

@@ -76,7 +76,7 @@ async function main() {
     await prisma.step.create({
       data: {
         levelId: level2.id,
-        order: i,
+        order: i + 5,
         type: "SURAH",
         title: `Сура ${i}`,
         content: defaultStepContent(`Сура ${i}`),
@@ -89,7 +89,6 @@ async function main() {
     data: {
       name: "Группа Аль-Фатиха",
       teacherId: teacher1.id,
-      levelId: level1.id,
     },
   });
 
@@ -97,7 +96,6 @@ async function main() {
     data: {
       name: "Группа Ан-Нас",
       teacherId: teacher2.id,
-      levelId: level2.id,
     },
   });
 
@@ -116,7 +114,8 @@ async function main() {
       data: {
         userId: user.id,
         groupId: i < 3 ? group1.id : group2.id,
-        currentStepIdx: i,
+        levelId: i < 3 ? level1.id : level2.id,
+        currentStepIdx: i < 3 ? i : 5 + (i - 3),
       },
     });
   }

@@ -7,6 +7,8 @@ type Student = {
 	name: string
 	currentStepIdx: number
 	groupId: string
+	levelNumber: number
+	levelTitle: string
 	hasSessionToday?: boolean
 	todayAttendance?: 'PRESENT' | 'LATE' | 'ABSENT' | null
 	todayStepsCompleted?: number

@@ -52,8 +52,6 @@ model Group {
   name      String
   teacherId String
   teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  levelId   String
-  level     Level     @relation(fields: [levelId], references: [id])
   students  Student[]
 }
 
@@ -63,6 +61,8 @@ model Student {
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupId        String
   group          Group            @relation(fields: [groupId], references: [id])
+  levelId        String
+  level          Level            @relation(fields: [levelId], references: [id])
   currentStepIdx Int              @default(0)
   sessions       Session[]
   completions    StepCompletion[]
@@ -70,11 +70,11 @@ model Student {
 }
 
 model Level {
-  id      String  @id @default(cuid())
-  number  Int     @unique
-  title   String
-  groups  Group[]
-  steps   Step[]
+  id       String    @id @default(cuid())
+  number   Int       @unique
+  title    String
+  students Student[]
+  steps    Step[]
 }
 
 model Step {

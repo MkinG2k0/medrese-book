@@ -7,14 +7,13 @@ import { createGroup } from '@/features/groups/actions/group-actions'
 
 type CreateGroupFormProps = {
 	teachers: { id: string; name: string }[]
-	levels: { id: string; title: string }[]
 }
 
-export function CreateGroupForm({ teachers, levels }: CreateGroupFormProps) {
+export function CreateGroupForm({ teachers }: CreateGroupFormProps) {
 	const [isPending, startTransition] = useTransition()
 	const [form] = Form.useForm()
 
-	const onFinish = (values: { name: string; teacherId: string; levelId: string }) => {
+	const onFinish = (values: { name: string; teacherId: string }) => {
 		startTransition(async () => {
 			await createGroup(values)
 			form.resetFields()
@@ -28,9 +27,6 @@ export function CreateGroupForm({ teachers, levels }: CreateGroupFormProps) {
 			</Form.Item>
 			<Form.Item name="teacherId" label="Учитель" rules={[{ required: true }]}>
 				<Select options={teachers.map((t) => ({ value: t.id, label: t.name }))} />
-			</Form.Item>
-			<Form.Item name="levelId" label="Уровень" rules={[{ required: true }]}>
-				<Select options={levels.map((l) => ({ value: l.id, label: l.title }))} />
 			</Form.Item>
 			<Button type="primary" htmlType="submit" loading={isPending}>
 				Создать группу

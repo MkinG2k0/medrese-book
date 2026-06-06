@@ -9,7 +9,6 @@ type GroupRow = {
   id: string;
   name: string;
   teacherName: string;
-  levelTitle: string;
   studentCount: number;
 };
 
@@ -32,7 +31,6 @@ export function GroupsList({ groups }: { groups: GroupRow[] }) {
             ),
           },
           { title: "Учитель", dataIndex: "teacherName", key: "teacherName" },
-          { title: "Уровень", dataIndex: "levelTitle", key: "levelTitle" },
           {
             title: "Учеников",
             dataIndex: "studentCount",

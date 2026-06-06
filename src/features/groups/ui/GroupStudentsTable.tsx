@@ -5,6 +5,7 @@ import { Table, Tag } from "antd";
 type StudentRow = {
   id: string;
   name: string;
+  levelTitle: string;
   currentStepIdx: number;
 };
 
@@ -15,6 +16,7 @@ export function GroupStudentsTable({ students }: { students: StudentRow[] }) {
       rowKey="id"
       columns={[
         { title: "Ученик", dataIndex: "name", key: "name" },
+        { title: "Уровень", dataIndex: "levelTitle", key: "levelTitle" },
         {
           title: "Текущий шаг",
           dataIndex: "currentStepIdx",

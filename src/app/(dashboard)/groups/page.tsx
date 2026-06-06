@@ -10,7 +10,6 @@ export default async function GroupsPage() {
 		id: g.id,
 		name: g.name,
 		teacherName: g.teacher.user.name,
-		levelTitle: g.level.title,
 		studentCount: g._count.students,
 	}))
 
