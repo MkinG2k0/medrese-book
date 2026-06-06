@@ -8,7 +8,6 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { getUserInfoByCode } from "@/features/auth/actions/auth-actions";
 import {
   addRememberedAccount,
   shouldRememberAccount,
@@ -56,7 +55,6 @@ export function LoginForm() {
       setError("Неверный код доступа");
       return;
     }
-    console.log("result");
 
     const session = await getSession();
     if (!session) {
@@ -64,19 +62,15 @@ export function LoginForm() {
       return;
     }
 
-    console.log("session");
-    // const user = await getUserInfoByCode(values.code);
-    // if (user && shouldRememberAccount(user.role)) {
-    //   addRememberedAccount({
-    //     id: user.id,
-    //     name: user.name,
-    //     role: user.role,
-    //     code: values.code,
-    //   });
-    // }
-    console.log("user");
+    if (shouldRememberAccount(session.user.role)) {
+      addRememberedAccount({
+        id: session.user.id,
+        name: session.user.name,
+        role: session.user.role,
+        code: values.code,
+      });
+    }
     router.push("/dashboard");
-    console.log("push");
   };
 
   return (
