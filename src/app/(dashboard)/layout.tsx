@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 
-import { AppShell } from '@/widgets/app-shell'
+import { getSwitchableUsers } from '@/features/auth/actions/switch-user-actions'
 import { auth } from '@/shared/lib/auth'
+import { AppShell } from '@/widgets/app-shell'
 
 export default async function DashboardLayout({
 	children,
@@ -11,5 +12,11 @@ export default async function DashboardLayout({
 	const session = await auth()
 	if (!session) redirect('/login')
 
-	return <AppShell>{children}</AppShell>
+	const switchableUsers = await getSwitchableUsers()
+
+	return (
+		<AppShell session={session} switchableUsers={switchableUsers}>
+			{children}
+		</AppShell>
+	)
 }

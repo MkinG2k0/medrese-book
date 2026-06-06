@@ -1,13 +1,13 @@
-import { Table, Tag } from "antd";
+import { Tag } from "antd";
 import { notFound } from "next/navigation";
 
 import { BlockRenderer } from "@/features/program-admin/ui/BlockRenderer";
 import { getStudentProfile } from "@/features/student-portal/actions/student-actions";
+import { StudentSessionsTable } from "@/features/student-portal/ui/StudentSessionsTable";
 import { ProgressBar } from "@/shared/ui/ProgressBar";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 import { requireRole } from "@/shared/lib/session";
-import { formatDate } from "@/shared/lib/utils";
 
 export default async function StudentMePage() {
   await requireRole("STUDENT");
@@ -54,31 +54,7 @@ export default async function StudentMePage() {
 
       <div>
         <Title level={4}>История занятий</Title>
-        <Table
-          dataSource={profile.sessions}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          columns={[
-            {
-              title: "Дата",
-              dataIndex: "date",
-              key: "date",
-              render: (d: Date) => formatDate(d),
-            },
-            {
-              title: "Посещаемость",
-              dataIndex: "attendance",
-              key: "attendance",
-              render: (a: string) => <Tag>{a}</Tag>,
-            },
-            {
-              title: "Оценки",
-              key: "grades",
-              render: (_, record) =>
-                record.completions.map((c) => c.grade).join(", ") || "—",
-            },
-          ]}
-        />
+        <StudentSessionsTable sessions={profile.sessions} />
       </div>
     </div>
   );

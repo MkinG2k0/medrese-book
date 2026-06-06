@@ -31,6 +31,7 @@ export default async function GroupDetailPage({ params }: Props) {
       </Text>
 
       <GroupStudentsTable
+        editable={editable}
         students={group.students.map((s) => ({
           id: s.id,
           name: s.user.name,

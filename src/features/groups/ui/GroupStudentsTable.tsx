@@ -1,6 +1,7 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import Link from "next/link";
 
 type StudentRow = {
   id: string;
@@ -9,7 +10,13 @@ type StudentRow = {
   currentStepIdx: number;
 };
 
-export function GroupStudentsTable({ students }: { students: StudentRow[] }) {
+export function GroupStudentsTable({
+  students,
+  editable = true,
+}: {
+  students: StudentRow[];
+  editable?: boolean;
+}) {
   return (
     <Table
       dataSource={students}
@@ -21,8 +28,21 @@ export function GroupStudentsTable({ students }: { students: StudentRow[] }) {
           title: "Текущий шаг",
           dataIndex: "currentStepIdx",
           key: "currentStepIdx",
-          render: (idx: number) => <Tag>{idx + 1}</Tag>,
+          render: (idx: number) => <Tag>Шаг {idx + 1}</Tag>,
         },
+        ...(editable
+          ? [
+              {
+                title: "Действия",
+                key: "actions",
+                render: (_: unknown, record: StudentRow) => (
+                  <Link href={`/students/${record.id}/edit`}>
+                    <Button size="small">Прогресс</Button>
+                  </Link>
+                ),
+              },
+            ]
+          : []),
       ]}
     />
   );

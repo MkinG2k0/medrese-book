@@ -10,16 +10,18 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
+import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
-const { Header, Sider, Content, Footer } = Layout;
+const { Header, Sider, Content } = Layout;
 
 type MenuItem = {
   key: string;
@@ -85,14 +87,29 @@ const allMenuItems: MenuItem[] = [
   },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+type AppShellProps = {
+  children: React.ReactNode;
+  session: {
+    user: {
+      id: string;
+      name: string;
+      role: UserRole;
+    };
+  };
+  switchableUsers: SwitchableUser[];
+};
+
+export function AppShell({
+  children,
+  session,
+  switchableUsers,
+}: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = useMemo(() => {
-    const role = session?.user.role;
+    const role = session.user.role;
     if (!role) return [];
     return allMenuItems
       .filter((item) => item.roles.includes(role))
@@ -101,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         icon: item.icon,
         label: item.label,
       }));
-  }, [session?.user.role]);
+  }, [session.user.role]);
 
   const selectedKey =
     menuItems
@@ -139,21 +156,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className="border-none bg-transparent"
         />
         <div className="absolute bottom-4 left-0 right-0 px-4">
-          <Button
-            type="text"
-            icon={<LogoutOutlined />}
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="!w-full"
-          >
-            {!collapsed && "Выйти"}
-          </Button>
+          <div className="flex flex-col gap-1">
+            {switchableUsers.length > 0 && (
+              <UserSwitcher
+                users={switchableUsers}
+                currentUserId={session.user.id}
+                currentUserName={session.user.name}
+                collapsed={collapsed}
+              />
+            )}
+            <Button
+              type="text"
+              icon={<LogoutOutlined />}
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className={collapsed ? "" : "shrink-0"}
+            >
+              {!collapsed && "Выйти"}
+            </Button>
+          </div>
         </div>
       </Sider>
 
       <Layout className="flex min-h-0 flex-1 flex-col">
         <Header className="flex shrink-0 items-center justify-between gap-4 px-6 !bg-[#161412] !leading-none">
-          <Title level={4}>{session?.user.name ?? "Дневник медресе"}</Title>
-          <Text type="secondary">{session?.user.role}</Text>
+          <Title level={4}>{session.user.name}</Title>
+          <Text type="secondary">{session.user.role}</Text>
         </Header>
 
         <Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">
