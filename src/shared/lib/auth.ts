@@ -6,15 +6,12 @@ import type { UserRole } from '@/entities/user'
 import { authConfig } from '@/shared/lib/auth.config'
 import { prisma } from '@/shared/lib/prisma'
 
-const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
-
 const loginSchema = z.object({
 	code: z.string().length(6).regex(/^\d{6}$/),
 })
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	...authConfig,
-	secret: authSecret,
 	providers: [
 		Credentials({
 			id: 'code',

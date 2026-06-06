@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server'
 import type { UserRole } from '@/entities/user'
 import { getDefaultRedirect } from '@/shared/lib/get-default-redirect'
 
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
+
 function redirectTo(request: NextRequest, pathname: string): NextResponse {
 	const url = request.nextUrl.clone()
 	url.pathname = pathname
@@ -13,6 +15,7 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
 
 export const authConfig: NextAuthConfig = {
 	trustHost: true,
+	secret: authSecret,
 	session: {strategy: 'jwt'},
 	pages: {signIn: '/login'},
 	providers: [],

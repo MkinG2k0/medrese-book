@@ -2,8 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Input } from 'antd'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { getSession, signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -32,7 +31,6 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
-	const router = useRouter()
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState(false)
 
@@ -57,6 +55,12 @@ export function LoginForm() {
 			return
 		}
 
+		const session = await getSession()
+		if (!session) {
+			setError('Не удалось создать сессию. Проверьте AUTH_SECRET на сервере.')
+			return
+		}
+
 		const user = await getUserInfoByCode(values.code)
 		if (user && shouldRememberAccount(user.role)) {
 			addRememberedAccount({
@@ -67,7 +71,7 @@ export function LoginForm() {
 			})
 		}
 
-		router.replace('/dashboard')
+		window.location.assign('/dashboard')
 	}
 
 	return (
