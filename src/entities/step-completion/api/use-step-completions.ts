@@ -11,7 +11,6 @@ export type StepCompletionRow = {
   step: {
     order: number;
     title: string;
-    type: "LETTER" | "SURAH";
     hours: number;
   };
   session: {

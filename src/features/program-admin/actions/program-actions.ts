@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { prisma, type Prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
+import { createLevelSchema, updateLevelSchema } from '@/shared/lib/validations/level'
 import { createStepSchema, stepContentSchema } from '@/shared/lib/validations/step'
 
 type Tx = Prisma.TransactionClient
@@ -72,12 +73,37 @@ export async function getLevels() {
 	})
 }
 
+export async function getLevel(levelId: string) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+	return prisma.level.findUnique({ where: { id: levelId } })
+}
+
 export async function getLevelSteps(levelId: string) {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 	return prisma.level.findUnique({
 		where: { id: levelId },
 		include: { steps: { orderBy: { order: 'asc' } } },
 	})
+}
+
+export async function createLevel(input: unknown) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+	const data = createLevelSchema.parse(input)
+	const level = await prisma.level.create({ data })
+	revalidatePath('/admin/program')
+	return level
+}
+
+export async function updateLevel(levelId: string, input: unknown) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+	const data = updateLevelSchema.parse(input)
+	const level = await prisma.level.update({
+		where: { id: levelId },
+		data,
+	})
+	revalidatePath('/admin/program')
+	revalidatePath(`/admin/program/${levelId}`)
+	return level
 }
 
 export async function getStep(stepId: string) {

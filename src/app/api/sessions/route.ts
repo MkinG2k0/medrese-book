@@ -132,7 +132,6 @@ export async function GET(request: Request) {
                 id: true,
                 order: true,
                 title: true,
-                type: true,
                 content: true,
                 hours: true,
                 level: { select: { number: true, title: true } },

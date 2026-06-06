@@ -3,8 +3,7 @@
 import { DownOutlined, RightOutlined } from "@ant-design/icons";
 import { Card, Flex, Input, Radio, Tag } from "antd";
 
-import { LetterContent } from "@/features/journal/ui/StepContent/LetterContent";
-import { SurahContent } from "@/features/journal/ui/StepContent/SurahContent";
+import { BlockRenderer } from "@/features/program-admin/ui/BlockRenderer";
 import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 import Text from "@/shared/ui/Text";
@@ -19,11 +18,6 @@ const GRADE_OPTIONS = [
 const GRADE_LABEL = Object.fromEntries(
   GRADE_OPTIONS.map((opt) => [opt.value, opt.label]),
 ) as Record<number, string>;
-
-const STEP_TYPE_LABEL: Record<"LETTER" | "SURAH", string> = {
-  LETTER: "Буквы",
-  SURAH: "Сура",
-};
 
 export type StepGradeState = {
   grade: number | null;
@@ -40,7 +34,6 @@ type StepCardProps = {
     id: string;
     order: number;
     title: string;
-    type: "LETTER" | "SURAH";
     content: StepContent;
     hours: number;
   };
@@ -81,7 +74,6 @@ export function StepCard({
                 <Title level={5} className="!mb-0">
                   Шаг {step.order}
                 </Title>
-                <Tag>{STEP_TYPE_LABEL[step.type]}</Tag>
                 {state.grade !== null && (
                   <Tag color={isStepPassed(state.grade) ? "orange" : "default"}>
                     {isStepPassed(state.grade) ? "пройден" : "не пройден"}
@@ -115,11 +107,7 @@ export function StepCard({
           <Flex vertical gap={16} className="pt-2">
             {!readOnly && (
               <div className="rounded-lg border border-[#2a2622] p-4">
-                {step.type === "LETTER" ? (
-                  <LetterContent content={step.content} />
-                ) : (
-                  <SurahContent content={step.content} />
-                )}
+                <BlockRenderer blocks={step.content.blocks} />
               </div>
             )}
 

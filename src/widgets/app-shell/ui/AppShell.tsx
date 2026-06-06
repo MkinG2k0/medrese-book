@@ -106,11 +106,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const selectedKey =
     menuItems
       .filter(
-        (item) =>
-          pathname === item.key || pathname.startsWith(`${item.key}/`),
+        (item) => pathname === item.key || pathname.startsWith(`${item.key}/`),
       )
-      .sort((a, b) => b.key.length - a.key.length)[0]?.key ??
-    menuItems[0]?.key;
+      .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? menuItems[0]?.key;
 
   return (
     <Layout
@@ -154,9 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <Layout className="flex min-h-0 flex-1 flex-col">
         <Header className="flex shrink-0 items-center justify-between gap-4 px-6 !bg-[#161412] !leading-none">
-          <Title level={4}>
-            {session?.user.name ?? "Дневник медресе"}
-          </Title>
+          <Title level={4}>{session?.user.name ?? "Дневник медресе"}</Title>
           <Text type="secondary">{session?.user.role}</Text>
         </Header>
 

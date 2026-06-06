@@ -22,7 +22,6 @@ export const stepContentSchema = z.object({
 export const createStepSchema = z.object({
 	levelId: z.string(),
 	order: z.number().int().min(1),
-	type: z.enum(['LETTER', 'SURAH']),
 	title: z.string().min(1),
 	content: stepContentSchema,
 	hours: z.number().int().min(1),

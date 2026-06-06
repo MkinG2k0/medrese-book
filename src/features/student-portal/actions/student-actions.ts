@@ -44,7 +44,6 @@ export async function getStudentProfile() {
 		currentStep: currentStep
 			? {
 					title: currentStep.title,
-					type: currentStep.type,
 					content: currentStep.content as StepContent,
 				}
 			: null,

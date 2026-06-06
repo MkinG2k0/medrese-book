@@ -6,7 +6,6 @@ import Link from 'next/link'
 type StepRow = {
 	id: string
 	order: number
-	type: string
 	title: string
 	hours: number
 }
@@ -24,7 +23,6 @@ export function LevelStepsTable({
 			rowKey="id"
 			columns={[
 				{ title: '№', dataIndex: 'order', key: 'order' },
-				{ title: 'Тип', dataIndex: 'type', key: 'type' },
 				{ title: 'Название', dataIndex: 'title', key: 'title' },
 				{ title: 'Часы', dataIndex: 'hours', key: 'hours' },
 				{

@@ -32,11 +32,6 @@ const GRADE_LABEL: Record<number, string> = {
   5: "Отлично",
 };
 
-const STEP_TYPE_LABEL: Record<"LETTER" | "SURAH", string> = {
-  LETTER: "Буквы",
-  SURAH: "Сура",
-};
-
 const ATTENDANCE_LABEL: Record<
   "PRESENT" | "LATE" | "ABSENT",
   { label: string; color: string }
@@ -230,13 +225,6 @@ export function StepHistoryPage({
                 <Text strong>Шаг {record.step.order}</Text>
                 <Text type="secondary">{record.step.title}</Text>
               </div>
-            ),
-          },
-          {
-            title: "Тип",
-            key: "type",
-            render: (_, record) => (
-              <Tag>{STEP_TYPE_LABEL[record.step.type]}</Tag>
             ),
           },
           {

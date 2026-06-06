@@ -20,9 +20,14 @@ export default async function LevelStepsPage({ params }: Props) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Title level={3}>{level.title}</Title>
-        <Link href={`/admin/program/${levelId}/steps/new`}>
-          <Button type="primary">Новый шаг</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href={`/admin/program/${levelId}/edit`}>
+            <Button>Редактировать уровень</Button>
+          </Link>
+          <Link href={`/admin/program/${levelId}/steps/new`}>
+            <Button type="primary">Новый шаг</Button>
+          </Link>
+        </div>
       </div>
       <LevelStepsTable levelId={levelId} steps={level.steps} />
     </div>

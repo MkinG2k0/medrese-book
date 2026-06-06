@@ -52,7 +52,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       step: {
         order: updated.step.order,
         title: updated.step.title,
-        type: updated.step.type,
         hours: updated.step.hours,
       },
       session: updated.session,

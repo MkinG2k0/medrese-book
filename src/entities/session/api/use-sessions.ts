@@ -28,7 +28,6 @@ export type StudentSession = {
 			id: string
 			order: number
 			title: string
-			type: 'LETTER' | 'SURAH'
 			content: unknown
 			hours: number
 			level: { number: number; title: string }

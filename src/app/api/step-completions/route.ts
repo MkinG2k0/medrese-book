@@ -67,7 +67,6 @@ export async function GET(request: Request) {
       step: {
         order: completion.step.order,
         title: completion.step.title,
-        type: completion.step.type,
         hours: completion.step.hours,
       },
       session: completion.session,

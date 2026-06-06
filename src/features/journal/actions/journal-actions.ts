@@ -25,7 +25,6 @@ export type JournalStep = {
 	id: string
 	order: number
 	title: string
-	type: 'LETTER' | 'SURAH'
 	content: StepContent
 	hours: number
 	levelNumber: number
@@ -56,7 +55,6 @@ export async function getStudentLesson(studentId: string) {
 		id: step.id,
 		order: step.order,
 		title: step.title,
-		type: step.type,
 		content: step.content as StepContent,
 		hours: step.hours,
 		levelNumber: student.level.number,

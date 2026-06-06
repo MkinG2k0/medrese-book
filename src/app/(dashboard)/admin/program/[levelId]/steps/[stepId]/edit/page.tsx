@@ -23,7 +23,6 @@ export default async function EditStepPage({ params }: Props) {
         stepId={stepId}
         initial={{
           order: step.order,
-          type: step.type,
           title: step.title,
           hours: step.hours,
           content: step.content as StepContent,

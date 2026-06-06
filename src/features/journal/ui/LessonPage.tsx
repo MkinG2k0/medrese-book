@@ -153,7 +153,6 @@ export function LessonPage({
         id: completion.step!.id,
         order: completion.step!.order,
         title: completion.step!.title,
-        type: completion.step!.type,
         content: completion.step!.content as StepContent,
         hours: completion.step!.hours,
         levelNumber: completion.step!.level.number,

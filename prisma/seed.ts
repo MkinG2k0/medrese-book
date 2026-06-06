@@ -64,7 +64,6 @@ async function main() {
       data: {
         levelId: level1.id,
         order: i,
-        type: "LETTER",
         title: `Буква ${i}`,
         content: defaultStepContent(`Буква ${i}`),
         hours: 1,
@@ -77,7 +76,6 @@ async function main() {
       data: {
         levelId: level2.id,
         order: i + 5,
-        type: "SURAH",
         title: `Сура ${i}`,
         content: defaultStepContent(`Сура ${i}`),
         hours: 2,

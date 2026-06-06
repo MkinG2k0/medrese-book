@@ -20,11 +20,6 @@ enum Attendance {
   ABSENT
 }
 
-enum StepType {
-  LETTER
-  SURAH
-}
-
 enum AwardType {
   STUDY
   ACTIVITY
@@ -82,7 +77,6 @@ model Step {
   levelId     String
   level       Level            @relation(fields: [levelId], references: [id], onDelete: Cascade)
   order       Int
-  type        StepType
   title       String
   content     Json
   hours       Int
