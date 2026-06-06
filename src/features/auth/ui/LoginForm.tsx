@@ -1,119 +1,132 @@
-'use client'
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Input } from 'antd'
-import { getSession, signIn } from 'next-auth/react'
-import { useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, Button, Input } from "antd";
+import { useRouter } from "next/navigation";
+import { getSession, signIn } from "next-auth/react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { getUserInfoByCode } from '@/features/auth/actions/auth-actions'
+import { getUserInfoByCode } from "@/features/auth/actions/auth-actions";
 import {
-	addRememberedAccount,
-	shouldRememberAccount,
-} from '@/features/auth/lib/remembered-accounts-storage'
-import { RememberedAccountsSelect } from '@/features/auth/ui/RememberedAccountsSelect'
-import Text from '@/shared/ui/Text'
-import Title from '@/shared/ui/Title'
+  addRememberedAccount,
+  shouldRememberAccount,
+} from "@/features/auth/lib/remembered-accounts-storage";
+import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
+import Text from "@/shared/ui/Text";
+import Title from "@/shared/ui/Title";
 
 const loginSchema = z.object({
-	code: z
-		.string()
-		.transform((value) => value.replace(/\D/g, ''))
-		.pipe(
-			z
-				.string()
-				.length(6, 'Код должен содержать 6 цифр')
-				.regex(/^\d{6}$/, 'Только цифры'),
-		),
-})
+  code: z
+    .string()
+    .transform((value) => value.replace(/\D/g, ""))
+    .pipe(
+      z
+        .string()
+        .length(6, "Код должен содержать 6 цифр")
+        .regex(/^\d{6}$/, "Только цифры"),
+    ),
+});
 
-type LoginFormValues = z.infer<typeof loginSchema>
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-	const [error, setError] = useState<string | null>(null)
-	const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-	const { control, handleSubmit } = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema),
-		defaultValues: { code: '' },
-	})
+  const { control, handleSubmit } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { code: "" },
+  });
 
-	const onSubmit = async (values: LoginFormValues) => {
-		setLoading(true)
-		setError(null)
+  const onSubmit = async (values: LoginFormValues) => {
+    setLoading(true);
+    setError(null);
 
-		const result = await signIn('code', {
-			code: values.code,
-			redirect: false,
-		})
+    const result = await signIn("code", {
+      code: values.code,
+      redirect: false,
+    });
 
-		setLoading(false)
+    setLoading(false);
 
-		if (result?.error) {
-			setError('Неверный код доступа')
-			return
-		}
+    if (result?.error) {
+      setError("Неверный код доступа");
+      return;
+    }
 
-		const session = await getSession()
-		if (!session) {
-			setError('Не удалось создать сессию. Проверьте AUTH_SECRET на сервере.')
-			return
-		}
+    const session = await getSession();
+    if (!session) {
+      setError("Не удалось создать сессию. Проверьте AUTH_SECRET на сервере.");
+      return;
+    }
 
-		const user = await getUserInfoByCode(values.code)
-		if (user && shouldRememberAccount(user.role)) {
-			addRememberedAccount({
-				id: user.id,
-				name: user.name,
-				role: user.role,
-				code: values.code,
-			})
-		}
+    const user = await getUserInfoByCode(values.code);
+    if (user && shouldRememberAccount(user.role)) {
+      addRememberedAccount({
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        code: values.code,
+      });
+    }
 
-		window.location.assign('/dashboard')
-	}
+    router.push("/dashboard");
+  };
 
-	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4">
-			<Title level={3} className="!mb-0 !text-center">
-				Вход в дневник
-			</Title>
-			<Text type="secondary" className="text-center">
-				Введите 6-значный код доступа
-			</Text>
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex w-full max-w-sm flex-col gap-4"
+    >
+      <Title level={3} className="!mb-0 !text-center">
+        Вход в дневник
+      </Title>
+      <Text type="secondary" className="text-center">
+        Введите 6-значный код доступа
+      </Text>
 
-			<RememberedAccountsSelect placeholder="Войти как…" />
+      <RememberedAccountsSelect placeholder="Войти как…" />
 
-			<Controller
-				name="code"
-				control={control}
-				render={({ field, fieldState }) => (
-					<div>
-						<Input
-							{...field}
-							maxLength={6}
-							placeholder="000000"
-							size="large"
-							className="text-center tracking-[0.5em]"
-							inputMode="numeric"
-							autoComplete="one-time-code"
-							onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ''))}
-						/>
-						{fieldState.error && (
-							<Text type="danger" className="mt-1 block">
-								{fieldState.error.message}
-							</Text>
-						)}
-					</div>
-				)}
-			/>
+      <Controller
+        name="code"
+        control={control}
+        render={({ field, fieldState }) => (
+          <div>
+            <Input
+              {...field}
+              maxLength={6}
+              placeholder="000000"
+              size="large"
+              className="text-center tracking-[0.5em]"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              onChange={(e) =>
+                field.onChange(e.target.value.replace(/\D/g, ""))
+              }
+            />
+            {fieldState.error && (
+              <Text type="danger" className="mt-1 block">
+                {fieldState.error.message}
+              </Text>
+            )}
+          </div>
+        )}
+      />
 
-			{error && <Alert type="error" message={error} showIcon />}
+      {error && <Alert type="error" message={error} showIcon />}
 
-			<Button type="primary" htmlType="submit" size="large" loading={loading} block>
-				Войти
-			</Button>
-		</form>
-	)
+      <Button
+        type="primary"
+        htmlType="submit"
+        size="large"
+        loading={loading}
+        block
+      >
+        Войти
+      </Button>
+    </form>
+  );
 }

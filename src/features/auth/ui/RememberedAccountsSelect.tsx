@@ -1,6 +1,7 @@
 'use client'
 
 import { Select } from 'antd'
+import { useRouter } from 'next/navigation'
 import { getSession, signIn } from 'next-auth/react'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -28,6 +29,7 @@ export function RememberedAccountsSelect({
 	placeholder = 'Быстрый вход',
 	className,
 }: RememberedAccountsSelectProps) {
+	const router = useRouter()
 	const [accounts, setAccounts] = useState<RememberedAccount[]>([])
 	const [loading, setLoading] = useState(false)
 
@@ -65,7 +67,7 @@ export function RememberedAccountsSelect({
 		if (!session) return
 
 		addRememberedAccount(account)
-		window.location.assign('/dashboard')
+		router.push('/dashboard')
 	}
 
 	return (
