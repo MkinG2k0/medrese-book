@@ -56,6 +56,7 @@ export function LoginForm() {
       setError("Неверный код доступа");
       return;
     }
+    console.log("result");
 
     const session = await getSession();
     if (!session) {
@@ -63,6 +64,7 @@ export function LoginForm() {
       return;
     }
 
+    console.log("session");
     const user = await getUserInfoByCode(values.code);
     if (user && shouldRememberAccount(user.role)) {
       addRememberedAccount({
@@ -72,8 +74,9 @@ export function LoginForm() {
         code: values.code,
       });
     }
-
+    console.log("user");
     router.push("/dashboard");
+    console.log("push");
   };
 
   return (
