@@ -47,14 +47,25 @@ export function countConsecutivePassedSteps<T extends { id: string }>(
   return count;
 }
 
-export function buildLessonSteps<T extends { id: string }>(
+export function buildLessonSteps<T extends { id: string; order: number }>(
   allSteps: T[],
   incompleteSteps: T[],
-  sessionStepIds: string[],
+  sessionCompletions: { stepId: string }[] = [],
+  sessionStepsOutsideLevel: T[] = [],
 ): T[] {
+  const sessionStepIds = new Set(sessionCompletions.map((c) => c.stepId));
   const includeIds = new Set([
     ...incompleteSteps.map((step) => step.id),
     ...sessionStepIds,
   ]);
-  return allSteps.filter((step) => includeIds.has(step.id));
+
+  const stepsById = new Map<string, T>();
+  for (const step of allSteps) {
+    if (includeIds.has(step.id)) stepsById.set(step.id, step);
+  }
+  for (const step of sessionStepsOutsideLevel) {
+    if (sessionStepIds.has(step.id)) stepsById.set(step.id, step);
+  }
+
+  return [...stepsById.values()].sort((a, b) => a.order - b.order);
 }

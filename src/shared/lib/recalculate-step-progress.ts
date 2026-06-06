@@ -3,6 +3,7 @@ import { getStepOffsetForLevel } from "@/shared/lib/step-offset";
 import {
   countConsecutivePassedSteps,
   getCompletionsByStepId,
+  isStepPassed,
 } from "@/shared/lib/step-completion";
 
 export async function recalculateStudentStepIdx(studentId: string) {
@@ -26,7 +27,10 @@ export async function recalculateStudentStepIdx(studentId: string) {
   const newIdx = stepOffset + passedInCurrentLevel;
 
   const allPassed =
-    steps.length > 0 && passedInCurrentLevel === steps.length;
+    steps.length > 0 &&
+    steps.every((step) =>
+      isStepPassed(completionsByStepId.get(step.id)?.grade),
+    );
 
   if (allPassed) {
     const nextLevel = await prisma.level.findFirst({

@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 
 import { getStudentLesson } from '@/features/journal/actions/journal-actions'
+
+export const dynamic = 'force-dynamic'
 import { LessonPage } from '@/features/journal/ui/LessonPage'
 import { requireRole } from '@/shared/lib/session'
 

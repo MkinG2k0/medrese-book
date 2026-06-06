@@ -4,13 +4,14 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Avatar, Button, message } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
+import type { StepContent } from "@/shared/lib/validations/step";
 import { useJournalStore } from "@/features/journal/model/journal-store";
 import { AttendanceButtons } from "@/features/journal/ui/AttendanceButtons";
 import {
@@ -82,6 +83,24 @@ function buildInitialStates(
   );
 }
 
+function LevelProgramDivider({
+  levelNumber,
+  levelTitle,
+}: {
+  levelNumber: number;
+  levelTitle: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <div className="h-px flex-1 bg-[#2a2622]" />
+      <Text type="secondary" className="shrink-0 uppercase">
+        Уровень {levelNumber} · {levelTitle}
+      </Text>
+      <div className="h-px flex-1 bg-[#2a2622]" />
+    </div>
+  );
+}
+
 function buildCumulativeHoursMap(
   steps: { id: string; hours: number }[],
   initialHours = 0,
@@ -121,14 +140,43 @@ export function LessonPage({
     return allSteps.every((step) => passedStepIds.has(step.id));
   }, [allSteps, stepCompletions]);
 
+  const sessionStepsOutsideLevel = useMemo((): JournalStep[] => {
+    if (!existingSession?.completions) return [];
+
+    const currentLevelStepIds = new Set(allSteps.map((step) => step.id));
+    return existingSession.completions
+      .filter(
+        (completion) =>
+          completion.step && !currentLevelStepIds.has(completion.stepId),
+      )
+      .map((completion) => ({
+        id: completion.step!.id,
+        order: completion.step!.order,
+        title: completion.step!.title,
+        type: completion.step!.type,
+        content: completion.step!.content as StepContent,
+        hours: completion.step!.hours,
+        levelNumber: completion.step!.level.number,
+        levelTitle: completion.step!.level.title,
+      }));
+  }, [allSteps, existingSession]);
+
   const lessonSteps = useMemo(() => {
-    const sessionStepIds =
-      existingSession?.completions.map((c) => c.stepId) ?? [];
-    const merged = buildLessonSteps(allSteps, steps, sessionStepIds);
-    if (merged.length > 0) return merged;
     if (isProgramComplete) return allSteps;
-    return merged;
-  }, [allSteps, steps, existingSession, isProgramComplete]);
+
+    return buildLessonSteps(
+      allSteps,
+      steps,
+      existingSession?.completions ?? [],
+      sessionStepsOutsideLevel,
+    );
+  }, [
+    allSteps,
+    steps,
+    existingSession,
+    isProgramComplete,
+    sessionStepsOutsideLevel,
+  ]);
   const [attendance, setAttendance] = useState<"PRESENT" | "LATE" | "ABSENT">(
     "PRESENT",
   );
@@ -394,17 +442,32 @@ export function LessonPage({
             {isProgramComplete ? "Пройдено в этот день" : "Шаги на сегодня"}
           </Text>
           <div className="flex flex-col gap-3">
-            {visibleSteps.map((step) => (
-              <StepCard
-                key={step.id}
-                step={step}
-                totalHours={getStepTotalHours(step)}
-                expanded={expandedIds.has(step.id)}
-                state={resolvedStepStates[step.id] ?? EMPTY_STEP_GRADE_STATE}
-                onToggleExpand={() => toggleExpand(step.id)}
-                onStateChange={(state) => updateStepState(step.id, state)}
-              />
-            ))}
+            {visibleSteps.map((step, index) => {
+              const prevStep = visibleSteps[index - 1];
+              const showLevelDivider =
+                index > 0 && prevStep!.levelNumber !== step.levelNumber;
+
+              return (
+                <Fragment key={step.id}>
+                  {showLevelDivider && (
+                    <LevelProgramDivider
+                      levelNumber={step.levelNumber}
+                      levelTitle={step.levelTitle}
+                    />
+                  )}
+                  <StepCard
+                    step={step}
+                    totalHours={getStepTotalHours(step)}
+                    expanded={expandedIds.has(step.id)}
+                    state={
+                      resolvedStepStates[step.id] ?? EMPTY_STEP_GRADE_STATE
+                    }
+                    onToggleExpand={() => toggleExpand(step.id)}
+                    onStateChange={(state) => updateStepState(step.id, state)}
+                  />
+                </Fragment>
+              );
+            })}
           </div>
           {hasMore && (
             <Button

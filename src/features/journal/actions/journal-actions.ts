@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/shared/lib/prisma'
+import { recalculateStudentStepIdx } from '@/shared/lib/recalculate-step-progress'
 import { requireRole } from '@/shared/lib/session'
 import {
 	filterIncompleteSteps,
@@ -27,10 +28,14 @@ export type JournalStep = {
 	type: 'LETTER' | 'SURAH'
 	content: StepContent
 	hours: number
+	levelNumber: number
+	levelTitle: string
 }
 
 export async function getStudentLesson(studentId: string) {
 	const session = await requireRole('TEACHER')
+
+	await recalculateStudentStepIdx(studentId)
 
 	const student = await prisma.student.findUnique({
 		where: { id: studentId },
@@ -54,6 +59,8 @@ export async function getStudentLesson(studentId: string) {
 		type: step.type,
 		content: step.content as StepContent,
 		hours: step.hours,
+		levelNumber: student.level.number,
+		levelTitle: student.level.title,
 	})
 
 	const allSteps = student.level.steps.map(mapStep)

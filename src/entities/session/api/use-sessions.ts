@@ -24,6 +24,15 @@ export type StudentSession = {
 		stepId: string
 		grade: number
 		note: string | null
+		step?: {
+			id: string
+			order: number
+			title: string
+			type: 'LETTER' | 'SURAH'
+			content: unknown
+			hours: number
+			level: { number: number; title: string }
+		}
 	}[]
 }
 

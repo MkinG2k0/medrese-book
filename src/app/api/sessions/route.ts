@@ -1,3 +1,5 @@
+import { revalidatePath } from "next/cache";
+
 import { auth } from "@/shared/lib/auth";
 import {
   getCalendarDayQueryRange,
@@ -85,6 +87,9 @@ export async function POST(request: Request) {
 
   await recalculateStudentStepIdx(studentId);
 
+  revalidatePath("/journal");
+  revalidatePath(`/journal/${studentId}`);
+
   return created(savedSession);
 }
 
@@ -119,13 +124,39 @@ export async function GET(request: Request) {
         studentId,
         date: { gte: dayRange.start, lte: dayRange.end },
       },
-      include: { completions: true },
+      include: {
+        completions: {
+          include: {
+            step: {
+              select: {
+                id: true,
+                order: true,
+                title: true,
+                type: true,
+                content: true,
+                hours: true,
+                level: { select: { number: true, title: true } },
+              },
+            },
+          },
+        },
+      },
       orderBy: { date: "desc" },
     });
     const daySession =
       daySessions.find((s) => isSameCalendarDay(s.date, dateStr)) ?? null;
 
-    return success(daySession);
+    if (!daySession) return success(null);
+
+    return success({
+      ...daySession,
+      completions: daySession.completions.map((completion) => ({
+        stepId: completion.stepId,
+        grade: completion.grade,
+        note: completion.note,
+        step: completion.step,
+      })),
+    });
   }
 
   const sessions = await prisma.session.findMany({
