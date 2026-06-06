@@ -1,15 +1,6 @@
 import type { NextAuthConfig } from 'next-auth'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
 import type { UserRole } from '@/entities/user'
-import { getDefaultRedirect } from '@/shared/lib/get-default-redirect'
-
-function redirectTo(request: NextRequest, pathname: string): NextResponse {
-	const url = request.nextUrl.clone()
-	url.pathname = pathname
-	return NextResponse.redirect(url)
-}
 
 export const authConfig: NextAuthConfig = {
 	trustHost: true,
@@ -35,20 +26,10 @@ export const authConfig: NextAuthConfig = {
 		},
 		authorized({ auth, request }) {
 			const { pathname } = request.nextUrl
-			const session = auth
 
 			if (pathname === '/login') {
-				if (session?.user) {
-					return redirectTo(request, getDefaultRedirect(session.user.role))
-				}
+				if (auth?.user) return false
 				return true
-			}
-
-			if (pathname === '/' || pathname === '/dashboard') {
-				if (session?.user) {
-					return redirectTo(request, getDefaultRedirect(session.user.role))
-				}
-				return redirectTo(request, '/login')
 			}
 
 			const roleRoutes: Record<string, UserRole[]> = {
@@ -61,13 +42,13 @@ export const authConfig: NextAuthConfig = {
 
 			for (const [prefix, roles] of Object.entries(roleRoutes)) {
 				if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
-					if (!session?.user) {
-						return redirectTo(request, '/login')
-					}
-					if (!roles.includes(session.user.role)) {
-						return redirectTo(request, getDefaultRedirect(session.user.role))
-					}
+					if (!auth?.user) return false
+					return roles.includes(auth.user.role)
 				}
+			}
+
+			if (pathname === '/' || pathname === '/dashboard') {
+				return !!auth?.user
 			}
 
 			return true
