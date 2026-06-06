@@ -65,15 +65,15 @@ export function LoginForm() {
     }
 
     console.log("session");
-    const user = await getUserInfoByCode(values.code);
-    if (user && shouldRememberAccount(user.role)) {
-      addRememberedAccount({
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        code: values.code,
-      });
-    }
+    // const user = await getUserInfoByCode(values.code);
+    // if (user && shouldRememberAccount(user.role)) {
+    //   addRememberedAccount({
+    //     id: user.id,
+    //     name: user.name,
+    //     role: user.role,
+    //     code: values.code,
+    //   });
+    // }
     console.log("user");
     router.push("/dashboard");
     console.log("push");
