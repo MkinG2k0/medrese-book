@@ -29,6 +29,7 @@ export type StudentSession = {
 			order: number
 			title: string
 			content: unknown
+			description?: string
 			hours: number
 			level: { number: number; title: string }
 		}

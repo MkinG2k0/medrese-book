@@ -79,6 +79,7 @@ model Step {
   order       Int
   title       String
   content     Json
+  description String           @default("")
   hours       Int
   completions StepCompletion[]
 

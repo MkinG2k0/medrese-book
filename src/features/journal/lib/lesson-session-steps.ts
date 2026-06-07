@@ -19,6 +19,7 @@ export function mapSessionStepsOutsideLevel(
       order: completion.step!.order,
       title: completion.step!.title,
       content: completion.step!.content as StepContent,
+      description: completion.step!.description ?? "",
       hours: completion.step!.hours,
       levelNumber: completion.step!.level.number,
       levelTitle: completion.step!.level.title,

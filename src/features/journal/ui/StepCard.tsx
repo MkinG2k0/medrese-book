@@ -35,6 +35,7 @@ type StepCardProps = {
     order: number;
     title: string;
     content: StepContent;
+    description?: string;
     hours: number;
   };
   totalHours: number;
@@ -105,6 +106,15 @@ export function StepCard({
 
         {expanded && !disabled && (
           <Flex vertical gap={16} className="pt-2">
+            {step.description?.trim() && (
+              <div className="rounded-lg border border-[#3d3528] bg-[#1f1c18] p-4">
+                <Text type="secondary" className="mb-2 block uppercase">
+                  Что проверять
+                </Text>
+                <Text>{step.description}</Text>
+              </div>
+            )}
+
             {!readOnly && (
               <div className="rounded-lg border border-[#2a2622] p-4">
                 <BlockRenderer blocks={step.content.blocks} />

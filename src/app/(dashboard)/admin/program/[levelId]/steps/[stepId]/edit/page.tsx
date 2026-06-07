@@ -16,7 +16,7 @@ export default async function EditStepPage({ params }: Props) {
   if (!step) notFound();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       <Title level={3}>Редактирование: {step.title}</Title>
       <StepForm
         levelId={levelId}
@@ -26,6 +26,7 @@ export default async function EditStepPage({ params }: Props) {
           title: step.title,
           hours: step.hours,
           content: step.content as StepContent,
+          description: step.description,
         }}
       />
     </div>

@@ -9,7 +9,7 @@ export default async function NewStepPage({ params }: Props) {
   const { levelId } = await params;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
       <Title level={3}>Новый шаг</Title>
       <StepForm levelId={levelId} />
     </div>
