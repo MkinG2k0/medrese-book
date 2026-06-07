@@ -2,6 +2,15 @@ import "dotenv/config";
 
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
+import {
+  LEVEL1_TITLE,
+  LEVEL2_TITLE,
+} from "./lib/parse-level1-docx";
+import {
+  buildContent,
+  loadAllLevel1Steps,
+  type StepDef,
+} from "./lib/level1-import-utils";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -12,14 +21,33 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
 
-const defaultStepContent = (title: string) => ({
-  blocks: [
-    { type: "text", value: `Урок: ${title}` },
-    { type: "arabic", value: "بِسْمِ اللَّهِ", size: "lg" },
-  ],
-});
+async function createLevelWithSteps(
+  number: number,
+  title: string,
+  steps: StepDef[],
+) {
+  const level = await prisma.level.create({
+    data: { number, title },
+  });
+
+  for (const step of steps) {
+    await prisma.step.create({
+      data: {
+        levelId: level.id,
+        order: step.order,
+        title: step.title,
+        content: buildContent(step),
+        hours: step.hours,
+      },
+    });
+  }
+
+  return level;
+}
 
 async function main() {
+  const docxSteps = loadAllLevel1Steps();
+
   await prisma.stepCompletion.deleteMany();
   await prisma.session.deleteMany();
   await prisma.award.deleteMany();
@@ -52,36 +80,8 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const level1 = await prisma.level.create({
-    data: { number: 1, title: "Уровень 1 — Буквы" },
-  });
-  const level2 = await prisma.level.create({
-    data: { number: 2, title: "Уровень 2 — Суры" },
-  });
-
-  for (let i = 1; i <= 5; i++) {
-    await prisma.step.create({
-      data: {
-        levelId: level1.id,
-        order: i,
-        title: `Буква ${i}`,
-        content: defaultStepContent(`Буква ${i}`),
-        hours: 1,
-      },
-    });
-  }
-
-  for (let i = 1; i <= 5; i++) {
-    await prisma.step.create({
-      data: {
-        levelId: level2.id,
-        order: i + 5,
-        title: `Сура ${i}`,
-        content: defaultStepContent(`Сура ${i}`),
-        hours: 2,
-      },
-    });
-  }
+  const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, docxSteps);
+  const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, docxSteps);
 
   const group1 = await prisma.group.create({
     data: {
@@ -99,8 +99,10 @@ async function main() {
 
   const studentNames = ["Али", "Усман", "Билал", "Халид", "Зайд"];
   const studentCodes = ["300001", "300002", "300003", "300004", "300005"];
+  const level2StepOffset = docxSteps.length;
 
   for (let i = 0; i < studentNames.length; i++) {
+    const onLevel1 = i < 3;
     const user = await prisma.user.create({
       data: {
         name: studentNames[i]!,
@@ -111,14 +113,17 @@ async function main() {
     await prisma.student.create({
       data: {
         userId: user.id,
-        groupId: i < 3 ? group1.id : group2.id,
-        levelId: i < 3 ? level1.id : level2.id,
-        currentStepIdx: i < 3 ? i : 5 + (i - 3),
+        groupId: onLevel1 ? group1.id : group2.id,
+        levelId: onLevel1 ? level1.id : level2.id,
+        currentStepIdx: onLevel1 ? i : level2StepOffset + (i - 3),
       },
     });
   }
 
   console.log("Seed completed:");
+  console.log(
+    `  Глава 1 и 2: по ${docxSteps.length} шагов (${docxSteps.reduce((sum, step) => sum + step.hours, 0)}ч.) из DOCX`,
+  );
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);
   console.log(`  TEACHER 1: ${teacher1User.code}`);

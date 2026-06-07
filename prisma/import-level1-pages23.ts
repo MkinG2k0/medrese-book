@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { LEVEL1_TITLE } from "./lib/parse-level1-docx";
 import {
   buildContent,
   loadLevel1PageSteps,
@@ -50,6 +51,11 @@ async function main() {
         },
       });
     }
+
+    await tx.level.update({
+      where: { id: level.id },
+      data: { title: LEVEL1_TITLE },
+    });
   });
 
   const totalSteps = level.steps.length - deleteIds.length + newSteps.length;

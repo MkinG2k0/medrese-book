@@ -27,14 +27,9 @@ export function LevelsTable({ levels }: { levels: LevelRow[] }) {
 					title: 'Действия',
 					key: 'actions',
 					render: (_, record) => (
-						<div className="flex gap-2">
-							<Link href={`/admin/program/${record.id}`}>
-								<Button size="small">Шаги</Button>
-							</Link>
-							<Link href={`/admin/program/${record.id}/edit`}>
-								<Button size="small">Редактировать</Button>
-							</Link>
-						</div>
+						<Link href={`/admin/program/${record.id}`}>
+							<Button size="small">Редактировать</Button>
+						</Link>
 					),
 				},
 			]}

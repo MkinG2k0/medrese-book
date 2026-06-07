@@ -13,12 +13,25 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
 		<div className="flex flex-col gap-4">
 			{blocks.map((block, index) => {
 				switch (block.type) {
-					case 'text':
+					case 'text': {
+						const isHeading = /^<h[1-6]>/.test(block.value)
+						if (isHeading) {
+							return (
+								<div
+									key={index}
+									className="text-[#E8E0D0] [&_h1]:font-display [&_h1]:text-3xl [&_h2]:font-display [&_h2]:text-2xl [&_h3]:text-xl [&_strong]:font-bold [&_em]:italic"
+									dangerouslySetInnerHTML={{ __html: block.value }}
+								/>
+							)
+						}
 						return (
-							<p key={index} className="text-[#E8E0D0]">
-								{block.value}
-							</p>
+							<p
+								key={index}
+								className="text-[#E8E0D0] [&_strong]:font-bold [&_em]:italic"
+								dangerouslySetInnerHTML={{ __html: block.value }}
+							/>
 						)
+					}
 					case 'arabic': {
 						const sizeClass =
 							block.size === 'xl'

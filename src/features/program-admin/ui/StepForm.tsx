@@ -64,7 +64,11 @@ export function StepForm({ levelId, stepId, initial }: StepFormProps) {
 					</Form.Item>
 				</div>
 				<Form.Item label="Содержание">
-					<StepEditor initialContent={content} onChange={setContent} />
+					<StepEditor
+						key={stepId ?? 'new'}
+						initialContent={initial?.content}
+						onChange={setContent}
+					/>
 				</Form.Item>
 				<div className="flex gap-2">
 					<Button type="primary" onClick={handleSubmit} loading={isPending}>

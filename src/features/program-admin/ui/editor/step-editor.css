@@ -1,0 +1,156 @@
+.step-editor {
+	border: 1px solid #2a2622;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #1a1816;
+}
+
+.step-editor-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px;
+	padding: 6px 8px;
+	border-bottom: 1px solid #2a2622;
+	background: #141210;
+}
+
+.step-editor-toolbar-divider {
+	width: 1px;
+	height: 20px;
+	margin: 0 4px;
+	background: #2a2622;
+}
+
+.step-editor-content {
+	min-height: 240px;
+	max-height: 480px;
+	overflow-y: auto;
+	padding: 16px 20px;
+	color: #e8e0d0;
+	cursor: text;
+}
+
+.step-editor-content:focus {
+	outline: none;
+}
+
+.step-editor .tiptap {
+	min-height: 200px;
+}
+
+.step-editor .tiptap > * + * {
+	margin-top: 0.75em;
+}
+
+.step-editor .tiptap p.is-empty::before {
+	content: attr(data-placeholder);
+	float: left;
+	color: #5c564c;
+	pointer-events: none;
+	height: 0;
+}
+
+.step-editor .tiptap h1,
+.step-editor .tiptap h2,
+.step-editor .tiptap h3 {
+	font-family: var(--font-display), 'Cormorant Garamond', Georgia, serif;
+	font-weight: 600;
+	line-height: 1.3;
+	color: #f0e8d8;
+}
+
+.step-editor .tiptap h1 {
+	font-size: 1.75rem;
+}
+
+.step-editor .tiptap h2 {
+	font-size: 1.4rem;
+}
+
+.step-editor .tiptap h3 {
+	font-size: 1.2rem;
+}
+
+.step-editor .tiptap p {
+	line-height: 1.6;
+}
+
+.step-editor .tiptap strong {
+	font-weight: 700;
+	color: #f5efe3;
+}
+
+.step-editor .tiptap em {
+	font-style: italic;
+}
+
+.step-editor .tiptap ul,
+.step-editor .tiptap ol {
+	padding-left: 1.5rem;
+}
+
+.step-editor .tiptap ul {
+	list-style-type: disc;
+}
+
+.step-editor .tiptap ol {
+	list-style-type: decimal;
+}
+
+.step-editor .tiptap li {
+	line-height: 1.6;
+}
+
+.step-editor .tiptap li p {
+	margin: 0;
+}
+
+.step-editor .tiptap img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+	margin: 8px 0;
+}
+
+.step-editor .tiptap img.ProseMirror-selectednode {
+	outline: 2px solid #f07d00;
+	outline-offset: 2px;
+}
+
+.step-editor .arabic-block-node {
+	margin: 12px 0;
+}
+
+.step-editor .arabic-block-node[data-selected='true'] .arabic-block-inner {
+	outline: 2px solid #f07d00;
+	outline-offset: 2px;
+}
+
+.step-editor .arabic-block-inner {
+	padding: 12px 16px;
+	border-radius: 8px;
+	background: #221f1b;
+	border: 1px solid #2a2622;
+	font-family: var(--font-arabic), Amiri, serif;
+	color: #e8e0d0;
+	line-height: 1.8;
+	text-align: right;
+}
+
+.step-editor .arabic-block-inner.size-md {
+	font-size: 1.5rem;
+}
+
+.step-editor .arabic-block-inner.size-lg {
+	font-size: 1.875rem;
+}
+
+.step-editor .arabic-block-inner.size-xl {
+	font-size: 2.25rem;
+}
+
+.step-editor .arabic-block-placeholder {
+	color: #5c564c;
+	font-style: italic;
+}

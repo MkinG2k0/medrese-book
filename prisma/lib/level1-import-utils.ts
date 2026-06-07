@@ -1,5 +1,10 @@
-import { readFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+import {
+  parseAllLevel1DocxPages,
+  parseLevel1DocxPage,
+} from "./parse-level1-docx";
 
 export type StepDef = {
   order: number;
@@ -11,29 +16,17 @@ export type StepDef = {
 };
 
 export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
-  return JSON.parse(
-    readFileSync(
-      join(process.cwd(), `prisma/data/level1-page${page}.json`),
-      "utf8",
-    ),
-  ) as StepDef[];
+  return parseLevel1DocxPage(page);
+}
+
+export function loadAllLevel1Steps(): StepDef[] {
+  return parseAllLevel1DocxPages();
 }
 
 export function getPageOrderRange(page: 1 | 2 | 3): { from: number; to: number } {
   const steps = loadLevel1PageSteps(page);
   const orders = steps.map((step) => step.order);
   return { from: Math.min(...orders), to: Math.max(...orders) };
-}
-
-/** Смещение для глобальной нумерации шагов (1-й уровень = 0, 2-й = 33, …). */
-export function applyGlobalOrderOffset(
-  steps: StepDef[],
-  offset: number,
-): StepDef[] {
-  return steps.map((step, index) => ({
-    ...step,
-    order: offset + index + 1,
-  }));
 }
 
 export function hasArabic(text: string) {
@@ -70,4 +63,16 @@ export function buildContent(step: StepDef) {
   }
 
   return { blocks };
+}
+
+/** Сохраняет JSON-снимок из DOCX (опционально, не используется при seed). */
+export function syncLevel1JsonFromDocx() {
+  for (const page of [1, 2, 3] as const) {
+    const steps = parseLevel1DocxPage(page);
+    writeFileSync(
+      join(process.cwd(), `prisma/data/level1-page${page}.json`),
+      `${JSON.stringify(steps, null, 2)}\n`,
+      "utf8",
+    );
+  }
 }

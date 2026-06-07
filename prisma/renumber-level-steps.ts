@@ -78,7 +78,8 @@ async function main() {
   });
 
   for (const level of levels) {
-    if (level.number === 1) continue;
+    // Каждая глава хранит локальную нумерацию 1–33 из DOCX.
+    if (level.number <= 2) continue;
     await renumberLevelSteps(level.number);
   }
 }

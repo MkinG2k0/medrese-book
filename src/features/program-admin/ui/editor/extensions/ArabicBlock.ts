@@ -1,9 +1,14 @@
 import { mergeAttributes, Node } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+
+import { ArabicBlockView } from '@/features/program-admin/ui/editor/ArabicBlockView'
 
 export const ArabicBlock = Node.create({
 	name: 'arabicBlock',
 	group: 'block',
 	atom: true,
+	selectable: true,
+	draggable: true,
 
 	addAttributes() {
 		return {
@@ -22,9 +27,12 @@ export const ArabicBlock = Node.create({
 			mergeAttributes(HTMLAttributes, {
 				'data-type': 'arabic-block',
 				dir: 'rtl',
-				style: 'font-family: Amiri, serif',
 			}),
 			HTMLAttributes.value,
 		]
+	},
+
+	addNodeView() {
+		return ReactNodeViewRenderer(ArabicBlockView)
 	},
 })
