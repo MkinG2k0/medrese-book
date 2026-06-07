@@ -1,9 +1,10 @@
 'use client'
 
 import { Button, Form, Input, Select, Table } from 'antd'
-import { useTransition } from 'react'
+import { useMemo, useTransition } from 'react'
 
 import { createAward, deleteAward } from '@/features/awards/actions/award-actions'
+import { StudentSelectOption } from '@/features/awards/ui/StudentSelectOption'
 
 type AwardRow = {
 	id: string
@@ -13,14 +14,36 @@ type AwardRow = {
 	date: Date
 }
 
+type StudentOption = {
+	id: string
+	name: string
+	currentStepIdx: number
+	absences: number
+	lateCount: number
+}
+
 type AwardsManagerProps = {
 	awards: AwardRow[]
-	students: { id: string; name: string }[]
+	students: StudentOption[]
 }
 
 export function AwardsManager({ awards, students }: AwardsManagerProps) {
 	const [isPending, startTransition] = useTransition()
 	const [form] = Form.useForm()
+
+	const studentOptions = useMemo(
+		() =>
+			[...students]
+				.sort((a, b) => b.currentStepIdx - a.currentStepIdx)
+				.map((s) => ({
+					value: s.id,
+					label: s.name,
+					stepNumber: s.currentStepIdx + 1,
+					absences: s.absences,
+					lateCount: s.lateCount,
+				})),
+		[students],
+	)
 
 	const onFinish = (values: { studentId: string; type: 'STUDY' | 'ACTIVITY'; title: string }) => {
 		startTransition(async () => {
@@ -41,8 +64,20 @@ export function AwardsManager({ awards, students }: AwardsManagerProps) {
 				<Form.Item name="studentId" rules={[{ required: true }]}>
 					<Select
 						placeholder="Ученик"
-						style={{ width: 200 }}
-						options={students.map((s) => ({ value: s.id, label: s.name }))}
+						className="min-w-[280px]"
+						showSearch
+						optionFilterProp="label"
+						popupMatchSelectWidth={false}
+						styles={{ popup: { root: { minWidth: 360 } } }}
+						options={studentOptions}
+						optionRender={(option) => (
+							<StudentSelectOption
+								name={String(option.label)}
+								stepNumber={option.data.stepNumber}
+								absences={option.data.absences}
+								lateCount={option.data.lateCount}
+							/>
+						)}
 					/>
 				</Form.Item>
 				<Form.Item name="type" rules={[{ required: true }]}>

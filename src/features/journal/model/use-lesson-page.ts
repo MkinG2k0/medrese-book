@@ -20,8 +20,11 @@ import {
 } from "@/features/journal/lib/lesson-session-steps";
 import { buildInitialStepStates } from "@/features/journal/lib/lesson-step-states";
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
-import { useJournalStore } from "@/features/journal/model/journal-store";
-import type { StepGradeState } from "@/features/journal/ui/StepCard";
+import { useJournalStore, selectSessionStepStates } from "@/features/journal/model/journal-store";
+import {
+  EMPTY_STEP_GRADE_STATE,
+  type StepGradeState,
+} from "@/features/journal/ui/StepCard";
 import { toSessionDate } from "@/shared/lib/calendar-date";
 import {
   buildLessonSteps,
@@ -89,7 +92,8 @@ export function useLessonPage(props: LessonPageProps) {
   } = props;
 
   const router = useRouter();
-  const { dateFilter } = useJournalStore();
+  const { dateFilter, initSessionCompletions, setSessionStepState } =
+    useJournalStore();
 
   const { data: existingSession, isLoading: isSessionLoading } =
     useStudentSession(studentId, dateFilter);
@@ -110,6 +114,10 @@ export function useLessonPage(props: LessonPageProps) {
     studentId,
     dateFilter,
     existingSession,
+  );
+
+  const sessionStepStates = useJournalStore(
+    selectSessionStepStates(sessionDataKey),
   );
 
   const sessionNextLevelLoadedCount = useMemo(() => {
@@ -161,14 +169,6 @@ export function useLessonPage(props: LessonPageProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() =>
     lessonSteps[0] ? new Set([lessonSteps[0].id]) : new Set(),
   );
-  const [stepStates, setStepStates] = useState<Record<string, StepGradeState>>(
-    () =>
-      buildInitialStepStates(
-        lessonSteps,
-        undefined,
-        isProgramComplete ? stepCompletions : undefined,
-      ),
-  );
   const [loadedSessionKey, setLoadedSessionKey] = useState<string | null>(null);
 
   const isSessionReady = !isSessionLoading && loadedSessionKey === sessionDataKey;
@@ -179,13 +179,13 @@ export function useLessonPage(props: LessonPageProps) {
       existingSession?.completions,
       isProgramComplete ? stepCompletions : undefined,
     );
-    return { ...baseline, ...stepStates };
+    return { ...baseline, ...sessionStepStates };
   }, [
     lessonSteps,
     existingSession,
     isProgramComplete,
     stepCompletions,
-    stepStates,
+    sessionStepStates,
   ]);
 
   if (!isSessionLoading && loadedSessionKey !== sessionDataKey) {
@@ -202,7 +202,8 @@ export function useLessonPage(props: LessonPageProps) {
     if (existingSession) {
       setAttendance(existingSession.attendance);
       setLateMinutes(existingSession.lateMinutes ?? 5);
-      setStepStates(
+      initSessionCompletions(
+        sessionDataKey,
         buildInitialStepStates(
           effectiveLessonSteps,
           existingSession.completions,
@@ -212,7 +213,8 @@ export function useLessonPage(props: LessonPageProps) {
     } else {
       setAttendance("PRESENT");
       setLateMinutes(5);
-      setStepStates(
+      initSessionCompletions(
+        sessionDataKey,
         buildInitialStepStates(
           effectiveLessonSteps,
           undefined,
@@ -233,6 +235,13 @@ export function useLessonPage(props: LessonPageProps) {
   }
 
   const visibleSteps = lessonSteps.slice(0, visibleCount);
+  const gradedStepCount = useMemo(
+    () =>
+      visibleSteps.filter(
+        (step) => resolvedStepStates[step.id]?.grade !== null,
+      ).length,
+    [visibleSteps, resolvedStepStates],
+  );
   const hasMore = visibleCount < lessonSteps.length;
   const allVisibleStepsPassed =
     visibleSteps.length > 0 &&
@@ -264,6 +273,15 @@ export function useLessonPage(props: LessonPageProps) {
     if (minutes !== undefined) setLateMinutes(minutes);
   };
 
+  const handleClearSessionCompletions = () => {
+    initSessionCompletions(
+      sessionDataKey,
+      Object.fromEntries(
+        lessonSteps.map((step) => [step.id, EMPTY_STEP_GRADE_STATE]),
+      ),
+    );
+  };
+
   const toggleExpand = (stepId: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -274,7 +292,7 @@ export function useLessonPage(props: LessonPageProps) {
   };
 
   const updateStepState = (stepId: string, state: StepGradeState) => {
-    setStepStates((prev) => ({ ...prev, [stepId]: state }));
+    setSessionStepState(sessionDataKey, stepId, state);
   };
 
   const loadMoreSteps = () => {
@@ -375,8 +393,10 @@ export function useLessonPage(props: LessonPageProps) {
     cumulativeHoursByAllSteps,
     isSessionReady,
     isSaving: createSession.isPending,
+    gradedStepCount,
     getStepTotalHours,
     handleAttendanceChange,
+    handleClearSessionCompletions,
     toggleExpand,
     updateStepState,
     loadMoreSteps,

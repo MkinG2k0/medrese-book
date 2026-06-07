@@ -24,11 +24,13 @@ type LessonStepsSectionProps = {
   resolvedStepStates: Record<string, StepGradeState>;
   hasMore: boolean;
   canLoadNextLevel: boolean;
+  gradedStepCount: number;
   getStepTotalHours: (step: JournalStep) => number;
   onAttendanceChange: (
     value: "PRESENT" | "LATE" | "ABSENT",
     minutes?: number,
   ) => void;
+  onClearSessionCompletions: () => void;
   onToggleExpand: (stepId: string) => void;
   onStepStateChange: (stepId: string, state: StepGradeState) => void;
   onLoadMoreSteps: () => void;
@@ -46,8 +48,10 @@ export function LessonStepsSection({
   resolvedStepStates,
   hasMore,
   canLoadNextLevel,
+  gradedStepCount,
   getStepTotalHours,
   onAttendanceChange,
+  onClearSessionCompletions,
   onToggleExpand,
   onStepStateChange,
   onLoadMoreSteps,
@@ -75,6 +79,8 @@ export function LessonStepsSection({
           lateMinutes={lateMinutes}
           onChange={onAttendanceChange}
           disabled={!isSessionReady}
+          gradedStepCount={gradedStepCount}
+          onClearCompletions={onClearSessionCompletions}
         />
       </div>
 

@@ -45,6 +45,51 @@ async function createLevelWithSteps(
   return level;
 }
 
+const PASSING_GRADE = 3;
+
+async function seedStudentCompletions(
+  studentId: string,
+  passedStepIds: string[],
+) {
+  if (passedStepIds.length === 0) return;
+
+  const session = await prisma.session.create({
+    data: {
+      studentId,
+      date: new Date(),
+      attendance: "PRESENT",
+      note: "Seed data",
+    },
+  });
+
+  await prisma.stepCompletion.createMany({
+    data: passedStepIds.map((stepId) => ({
+      studentId,
+      stepId,
+      sessionId: session.id,
+      grade: PASSING_GRADE,
+    })),
+  });
+}
+
+function getPassedStepIds(
+  currentStepIdx: number,
+  level1Steps: { id: string }[],
+  level2Steps: { id: string }[],
+  level2StepOffset: number,
+  onLevel1: boolean,
+): string[] {
+  if (onLevel1) {
+    return level1Steps.slice(0, currentStepIdx).map((step) => step.id);
+  }
+
+  const localStepIndex = currentStepIdx - level2StepOffset;
+  return [
+    ...level1Steps.map((step) => step.id),
+    ...level2Steps.slice(0, localStepIndex).map((step) => step.id),
+  ];
+}
+
 async function main() {
   const docxSteps = loadAllLevel1Steps();
 
@@ -83,6 +128,19 @@ async function main() {
   const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, docxSteps);
   const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, docxSteps);
 
+  const [level1Steps, level2Steps] = await Promise.all([
+    prisma.step.findMany({
+      where: { levelId: level1.id },
+      orderBy: { order: "asc" },
+      select: { id: true },
+    }),
+    prisma.step.findMany({
+      where: { levelId: level2.id },
+      orderBy: { order: "asc" },
+      select: { id: true },
+    }),
+  ]);
+
   const group1 = await prisma.group.create({
     data: {
       name: "Группа Аль-Фатиха",
@@ -103,6 +161,7 @@ async function main() {
 
   for (let i = 0; i < studentNames.length; i++) {
     const onLevel1 = i < 3;
+    const currentStepIdx = onLevel1 ? i : level2StepOffset + (i - 3);
     const user = await prisma.user.create({
       data: {
         name: studentNames[i]!,
@@ -110,14 +169,25 @@ async function main() {
         role: "STUDENT",
       },
     });
-    await prisma.student.create({
+    const student = await prisma.student.create({
       data: {
         userId: user.id,
         groupId: onLevel1 ? group1.id : group2.id,
         levelId: onLevel1 ? level1.id : level2.id,
-        currentStepIdx: onLevel1 ? i : level2StepOffset + (i - 3),
+        currentStepIdx,
       },
     });
+
+    await seedStudentCompletions(
+      student.id,
+      getPassedStepIds(
+        currentStepIdx,
+        level1Steps,
+        level2Steps,
+        level2StepOffset,
+        onLevel1,
+      ),
+    );
   }
 
   console.log("Seed completed:");

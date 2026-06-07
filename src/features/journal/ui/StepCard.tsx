@@ -1,9 +1,9 @@
 "use client";
 
 import { DownOutlined, RightOutlined } from "@ant-design/icons";
-import { Card, Flex, Input, Radio, Tag } from "antd";
+import { Card, Flex, Form, Input, Radio, Tag } from "antd";
 
-import { BlockRenderer } from "@/features/program-admin/ui/BlockRenderer";
+import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
 import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 import Text from "@/shared/ui/Text";
@@ -66,9 +66,17 @@ export function StepCard({
   };
 
   return (
-    <Card className="w-full">
+    <Card
+      className={`w-full${!expanded ? " cursor-pointer" : ""}`}
+      onClick={!expanded ? onToggleExpand : undefined}
+    >
       <Flex vertical gap={8}>
-        <Flex align="flex-start" gap={12}>
+        <Flex
+          align="flex-start"
+          gap={12}
+          className={expanded ? "cursor-pointer" : undefined}
+          onClick={expanded ? onToggleExpand : undefined}
+        >
           <Flex vertical gap={4} className="min-w-0 flex-1">
             <Flex align="center" justify="space-between" gap={8}>
               <Flex align="center" gap={8} wrap>
@@ -81,12 +89,7 @@ export function StepCard({
                   </Tag>
                 )}
               </Flex>
-              <Flex
-                align="center"
-                gap={8}
-                className="shrink-0 cursor-pointer"
-                onClick={onToggleExpand}
-              >
+              <Flex align="center" gap={8} className="shrink-0">
                 <div className="flex gap-2">
                   <Text type="secondary">{step.hours}ч</Text>
                   {/* <Text type="secondary">итого {totalHours}ч</Text> */}
@@ -94,32 +97,23 @@ export function StepCard({
                 {expanded ? <DownOutlined /> : <RightOutlined />}
               </Flex>
             </Flex>
-            <Text
-              type="secondary"
-              className="cursor-pointer"
-              onClick={onToggleExpand}
-            >
-              {step.title}
-            </Text>
+            <Text type="secondary">{step.title}</Text>
           </Flex>
         </Flex>
 
         {expanded && !disabled && (
           <Flex vertical gap={16} className="pt-2">
-            {step.description?.trim() && (
-              <div className="rounded-lg border border-[#3d3528] bg-[#1f1c18] p-4">
-                <Text type="secondary" className="mb-2 block uppercase">
-                  Что проверять
-                </Text>
-                <Text>{step.description}</Text>
-              </div>
-            )}
+            <Form layout="vertical">
+              <Form.Item label="Содержание" className="mb-4">
+                <StepContentPreview content={step.content} />
+              </Form.Item>
 
-            {!readOnly && (
-              <div className="rounded-lg border border-[#2a2622] p-4">
-                <BlockRenderer blocks={step.content.blocks} />
-              </div>
-            )}
+              {step.description?.trim() && (
+                <Form.Item label="Описание для учителя" className="mb-0">
+                  <Text>{step.description}</Text>
+                </Form.Item>
+              )}
+            </Form>
 
             <Flex vertical gap={8}>
               <Text type="secondary" className="uppercase">
@@ -128,9 +122,7 @@ export function StepCard({
               {readOnly ? (
                 <>
                   <Text>
-                    {state.grade !== null
-                      ? GRADE_LABEL[state.grade]
-                      : "—"}
+                    {state.grade !== null ? GRADE_LABEL[state.grade] : "—"}
                   </Text>
                   {state.note ? (
                     <Text type="secondary">{state.note}</Text>

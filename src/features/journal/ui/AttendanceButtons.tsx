@@ -5,7 +5,9 @@ import {
 	ClockCircleOutlined,
 	CloseOutlined,
 } from '@ant-design/icons'
-import { Flex, InputNumber, Radio, Space } from 'antd'
+import { Flex, InputNumber, Modal, Radio, Space } from 'antd'
+
+import { useJournalStore } from '@/features/journal/model/journal-store'
 
 type Attendance = 'PRESENT' | 'LATE' | 'ABSENT'
 
@@ -14,6 +16,8 @@ type AttendanceButtonsProps = {
 	lateMinutes: number
 	onChange: (attendance: Attendance, lateMinutes?: number) => void
 	disabled?: boolean
+	gradedStepCount: number
+	onClearCompletions: () => void
 }
 
 const OPTIONS: { value: Attendance; label: string; icon: React.ReactNode }[] = [
@@ -27,12 +31,45 @@ export function AttendanceButtons({
 	lateMinutes,
 	onChange,
 	disabled = false,
+	gradedStepCount,
+	onClearCompletions,
 }: AttendanceButtonsProps) {
+	const setPendingAbsentConfirm = useJournalStore(
+		(store) => store.setPendingAbsentConfirm,
+	)
+
+	const handleAttendanceSelect = (newValue: Attendance) => {
+		if (
+			newValue === 'ABSENT' &&
+			value !== 'ABSENT' &&
+			gradedStepCount > 0
+		) {
+			setPendingAbsentConfirm(true)
+			Modal.confirm({
+				title: 'Подтвердите прогул',
+				content: `Вы выставили оценки за ${gradedStepCount} шагов. При прогуле они будут удалены. Продолжить?`,
+				okText: 'Да, прогул',
+				cancelText: 'Отмена',
+				onOk: () => {
+					onClearCompletions()
+					onChange('ABSENT')
+					setPendingAbsentConfirm(false)
+				},
+				onCancel: () => {
+					setPendingAbsentConfirm(false)
+				},
+			})
+			return
+		}
+
+		onChange(newValue)
+	}
+
 	return (
 		<Flex vertical gap={12}>
 			<Radio.Group
 				value={value}
-				onChange={(e) => onChange(e.target.value)}
+				onChange={(e) => handleAttendanceSelect(e.target.value)}
 				className="w-full"
 				disabled={disabled}
 			>

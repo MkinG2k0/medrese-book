@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 
+import '@/features/program-admin/ui/editor/step-editor.css'
 import type { ContentBlock } from '@/shared/lib/validations/step'
 
 type BlockRendererProps = {
@@ -33,20 +34,12 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
 						)
 					}
 					case 'arabic': {
-						const sizeClass =
-							block.size === 'xl'
-								? 'text-4xl'
-								: block.size === 'lg'
-									? 'text-3xl'
-									: 'text-2xl'
+						const size = block.size ?? 'lg'
 						return (
-							<div
-								key={index}
-								dir="rtl"
-								className={`font-[family-name:var(--font-arabic)] ${sizeClass} text-[#E8E0D0]`}
-								style={{ fontFamily: 'Amiri, serif' }}
-							>
-								{block.value}
+							<div key={index} className="arabic-block-node">
+								<div dir="rtl" className={`arabic-block-inner size-${size}`}>
+									{block.value}
+								</div>
 							</div>
 						)
 					}

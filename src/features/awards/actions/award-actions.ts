@@ -22,10 +22,21 @@ export async function getAwards() {
 
 export async function getStudentsForAwards() {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
-	return prisma.student.findMany({
-		include: { user: true },
-		orderBy: { user: { name: 'asc' } },
+	const students = await prisma.student.findMany({
+		include: {
+			user: true,
+			sessions: { select: { attendance: true, lateMinutes: true } },
+		},
+		orderBy: { currentStepIdx: 'desc' },
 	})
+
+	return students.map((student) => ({
+		id: student.id,
+		name: student.user.name,
+		currentStepIdx: student.currentStepIdx,
+		absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
+		lateCount: student.sessions.filter((s) => s.attendance === 'LATE').length,
+	}))
 }
 
 export async function createAward(input: unknown) {

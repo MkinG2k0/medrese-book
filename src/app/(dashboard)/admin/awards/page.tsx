@@ -25,7 +25,7 @@ export default async function AdminAwardsPage() {
           title: a.title,
           date: a.date,
         }))}
-        students={students.map((s) => ({ id: s.id, name: s.user.name }))}
+        students={students}
       />
     </div>
   );

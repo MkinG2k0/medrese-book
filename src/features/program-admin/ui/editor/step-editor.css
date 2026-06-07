@@ -118,7 +118,7 @@
 	outline-offset: 2px;
 }
 
-.step-editor .arabic-block-node {
+.arabic-block-node {
 	margin: 12px 0;
 }
 
@@ -127,7 +127,7 @@
 	outline-offset: 2px;
 }
 
-.step-editor .arabic-block-inner {
+.arabic-block-inner {
 	padding: 12px 16px;
 	border-radius: 8px;
 	background: #221f1b;
@@ -138,19 +138,30 @@
 	text-align: right;
 }
 
-.step-editor .arabic-block-inner.size-md {
+.arabic-block-inner.size-md {
 	font-size: 1.5rem;
 }
 
-.step-editor .arabic-block-inner.size-lg {
+.arabic-block-inner.size-lg {
 	font-size: 1.875rem;
 }
 
-.step-editor .arabic-block-inner.size-xl {
+.arabic-block-inner.size-xl {
 	font-size: 2.25rem;
 }
 
-.step-editor .arabic-block-placeholder {
+.arabic-block-placeholder {
 	color: #5c564c;
 	font-style: italic;
+}
+
+.step-content-preview {
+	padding: 16px 20px;
+	color: #e8e0d0;
+	max-height: 480px;
+	overflow-y: auto;
+}
+
+.step-content-preview .flex.flex-col > * + * {
+	margin-top: 0.75em;
 }
