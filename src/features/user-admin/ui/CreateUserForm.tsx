@@ -4,43 +4,56 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Form, Input, Select } from 'antd'
 import { useTransition } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { z } from 'zod'
 
-import { createUser } from '@/features/user-admin/actions/user-actions'
-import { createUserSchema } from '@/shared/lib/validations/user'
-
-type CreateUserFormValues = z.infer<typeof createUserSchema>
+import { createUsers } from '@/features/user-admin/actions/user-actions'
+import {
+	createUserFormSchema,
+	parseUserNames,
+	type CreateUserFormInput,
+} from '@/shared/lib/validations/user'
 
 type CreateUserFormProps = {
 	groups: { id: string; name: string }[]
-	onSuccess: (code: string) => void
+	onSuccess: (users: { name: string; code: string }[]) => void
 }
 
 export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const [isPending, startTransition] = useTransition()
 
-	const { control, handleSubmit, watch } = useForm<CreateUserFormValues>({
-		resolver: zodResolver(createUserSchema),
-		defaultValues: { name: '', role: 'STUDENT' },
+	const { control, handleSubmit, watch } = useForm<CreateUserFormInput>({
+		resolver: zodResolver(createUserFormSchema),
+		defaultValues: { names: '', role: 'STUDENT' },
 	})
 
 	const role = watch('role')
 
-	const onSubmit = (values: CreateUserFormValues) => {
+	const onSubmit = (values: CreateUserFormInput) => {
 		startTransition(async () => {
-			const result = await createUser(values)
-			onSuccess(result.code)
+			const result = await createUsers({
+				names: parseUserNames(values.names),
+				role: values.role,
+				groupId: values.groupId,
+			})
+			onSuccess(result.users)
 		})
 	}
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 			<Controller
-				name="name"
+				name="names"
 				control={control}
 				render={({ field, fieldState }) => (
-					<Form.Item label="Имя" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-						<Input {...field} />
+					<Form.Item
+						label="Имена"
+						validateStatus={fieldState.error ? 'error' : ''}
+						help={fieldState.error?.message ?? 'Через запятую или с новой строки'}
+					>
+						<Input.TextArea
+							{...field}
+							rows={4}
+							placeholder={'Магомед, Амина\nПатимат'}
+						/>
 					</Form.Item>
 				)}
 			/>

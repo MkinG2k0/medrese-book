@@ -20,9 +20,15 @@ import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsS
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
 import Text from "@/shared/ui/Text";
-import Title from "@/shared/ui/Title";
 
 const { Header, Sider, Content } = Layout;
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  SUPER_ADMIN: "Админ",
+  MANAGER: "Менеджер",
+  TEACHER: "Учитель",
+  STUDENT: "Ученик",
+};
 
 type MenuItem = {
   key: string;
@@ -184,9 +190,13 @@ export function AppShell({
       </Sider>
 
       <Layout className="flex min-h-0 flex-1 flex-col">
-        <Header className="flex shrink-0 items-center justify-between gap-4 px-6 !bg-[#161412] !leading-none">
-          <Title level={4}>{session.user.name}</Title>
-          <Text type="secondary">{session.user.role}</Text>
+        <Header className="flex shrink-0 items-center justify-end gap-4 px-6 !bg-[#161412] !leading-none">
+          <div className="text-right">
+            <Text className="block">{session.user.name}</Text>
+            <Text type="secondary" className="block">
+              {ROLE_LABELS[session.user.role]}
+            </Text>
+          </div>
         </Header>
 
         <Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">

@@ -15,6 +15,11 @@ type UserRow = {
   groupName?: string;
 };
 
+type CreatedUser = {
+  name: string;
+  code: string;
+};
+
 type UsersTableProps = {
   users: UserRow[];
   groups: { id: string; name: string }[];
@@ -23,13 +28,14 @@ type UsersTableProps = {
 
 export function UsersTable({ users, groups, canResetCode }: UsersTableProps) {
   const [isPending, startTransition] = useTransition();
-  const [codeModal, setCodeModal] = useState<string | null>(null);
+  const [codeModal, setCodeModal] = useState<CreatedUser[] | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const handleReset = (userId: string) => {
     startTransition(async () => {
+      const user = users.find((u) => u.id === userId);
       const result = await resetUserCode(userId);
-      setCodeModal(result.code);
+      setCodeModal([{ name: user?.name ?? "Пользователь", code: result.code }]);
     });
   };
 
@@ -92,15 +98,15 @@ export function UsersTable({ users, groups, canResetCode }: UsersTableProps) {
       >
         <CreateUserForm
           groups={groups}
-          onSuccess={(code) => {
+          onSuccess={(createdUsers) => {
             setShowCreate(false);
-            setCodeModal(code);
+            setCodeModal(createdUsers);
           }}
         />
       </Modal>
 
       <Modal
-        title="Код доступа"
+        title={codeModal && codeModal.length > 1 ? "Коды доступа" : "Код доступа"}
         open={!!codeModal}
         onCancel={() => setCodeModal(null)}
         footer={
@@ -110,11 +116,18 @@ export function UsersTable({ users, groups, canResetCode }: UsersTableProps) {
         }
       >
         <Typography.Paragraph>
-          Сохраните код — он показывается один раз:
+          Сохраните коды — они показываются один раз:
         </Typography.Paragraph>
-        <Title level={2} className="!text-center tracking-[0.5em]">
-          {codeModal}
-        </Title>
+        <div className="flex flex-col gap-4">
+          {codeModal?.map((user) => (
+            <div key={user.name} className="flex flex-col gap-1">
+              <Typography.Text strong>{user.name}</Typography.Text>
+              <Title level={3} className="!text-center tracking-[0.5em]">
+                {user.code}
+              </Title>
+            </div>
+          ))}
+        </div>
       </Modal>
     </div>
   );
