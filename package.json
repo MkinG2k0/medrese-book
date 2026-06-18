@@ -16,7 +16,10 @@
     "db:import-level1-page1": "tsx prisma/import-level1-page1.ts",
     "db:import-level1-pages23": "tsx prisma/import-level1-pages23.ts",
     "db:renumber-steps": "tsx prisma/renumber-level-steps.ts",
-    "db:sync-level1-json": "tsx prisma/sync-level1-json.ts"
+    "db:sync-level1-json": "tsx prisma/sync-level1-json.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -59,6 +62,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.15.5",

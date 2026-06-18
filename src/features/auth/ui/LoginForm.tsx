@@ -3,11 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Input } from "antd";
 import { useRouter } from "next/navigation";
-import { getSession, signIn } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { loginWithCode } from "@/features/auth/actions/login-actions";
 import {
   addRememberedAccount,
   shouldRememberAccount,
@@ -44,15 +45,12 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
 
-    const result = await signIn("code", {
-      code: values.code,
-      redirect: false,
-    });
+    const result = await loginWithCode(values.code);
 
     setLoading(false);
 
-    if (result?.error) {
-      setError("Неверный код доступа");
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
 

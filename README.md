@@ -63,3 +63,17 @@ src/
 - `pnpm db:migrate` — миграции
 - `pnpm db:seed` — демо-данные
 - `pnpm db:studio` — Prisma Studio
+- `pnpm test:e2e` — e2e-тесты (Playwright)
+- `pnpm test:e2e:ui` — e2e в интерактивном режиме
+
+## E2E-тесты (Playwright)
+
+Используется отдельный файл **`.env.test`** (не `.env`!) — желательно с отдельной тестовой БД.
+
+```bash
+cp .env.test.example .env.test   # заполнить DATABASE_URL и AUTH_SECRET
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Перед тестами автоматически выполняется `pnpm db:seed`. Пропуск seed: `E2E_SKIP_SEED=1 pnpm test:e2e`.

@@ -2,9 +2,10 @@
 
 import { Select } from "antd";
 import { useRouter } from "next/navigation";
-import { getSession, signIn } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 
+import { loginWithCode } from "@/features/auth/actions/login-actions";
 import {
   addRememberedAccount,
   getRememberedAccounts,
@@ -55,13 +56,10 @@ export function RememberedAccountsSelect({
     if (!account) return;
 
     setLoading(true);
-    const result = await signIn("code", {
-      code: account.code,
-      redirect: false,
-    });
+    const result = await loginWithCode(account.code);
     setLoading(false);
 
-    if (result?.error) return;
+    if (!result.ok) return;
 
     const session = await getSession();
     if (!session) return;

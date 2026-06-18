@@ -30,6 +30,7 @@ model User {
   name      String
   code      String   @unique
   role      Role
+  phone     String?
   teacher   Teacher?
   student   Student?
   createdAt DateTime @default(now())
@@ -54,6 +55,9 @@ model Student {
   id             String           @id @default(cuid())
   userId         String           @unique
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName       String?
+  phone          String?
+  guardianPhone  String?
   groupId        String
   group          Group            @relation(fields: [groupId], references: [id])
   levelId        String

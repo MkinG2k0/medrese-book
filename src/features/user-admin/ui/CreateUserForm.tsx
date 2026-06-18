@@ -2,38 +2,89 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Form, Input, Select } from 'antd'
-import { useTransition } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useMemo, useTransition } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 
 import { createUsers } from '@/features/user-admin/actions/user-actions'
 import {
+	buildCreateUsersPayload,
 	createUserFormSchema,
-	parseUserNames,
+	parseStudentEntries,
 	type CreateUserFormInput,
 } from '@/shared/lib/validations/user'
 
+type LevelOption = {
+	id: string
+	number: number
+	title: string
+	steps: { id: string; order: number; title: string }[]
+}
+
 type CreateUserFormProps = {
 	groups: { id: string; name: string }[]
+	levels: LevelOption[]
 	onSuccess: (users: { name: string; code: string }[]) => void
 }
 
-export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
-	const [isPending, startTransition] = useTransition()
+function getStepOffset(levels: LevelOption[], levelNumber: number): number {
+	let offset = 0
+	for (const level of levels) {
+		if (level.number >= levelNumber) break
+		offset += level.steps.length
+	}
+	return offset
+}
 
-	const { control, handleSubmit, watch } = useForm<CreateUserFormInput>({
+export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProps) {
+	const [isPending, startTransition] = useTransition()
+	const defaultLevelId = levels[0]?.id ?? ''
+
+	const { control, handleSubmit, setValue } = useForm<CreateUserFormInput>({
 		resolver: zodResolver(createUserFormSchema),
-		defaultValues: { names: '', role: 'STUDENT' },
+		defaultValues: {
+			names: '',
+			role: 'STUDENT',
+			phone: '',
+			studentPhone: '',
+			guardianPhone: '',
+			levelId: defaultLevelId,
+			localStepIndex: 0,
+		},
 	})
 
-	const role = watch('role')
+	const role = useWatch({ control, name: 'role' })
+	const names = useWatch({ control, name: 'names' })
+	const levelId = useWatch({ control, name: 'levelId' })
+	const localStepIndex = useWatch({ control, name: 'localStepIndex' })
+
+	const parsedEntries = useMemo(
+		() => parseStudentEntries(names ?? ''),
+		[names],
+	)
+	const isSingleStudent = role === 'STUDENT' && parsedEntries.length === 1
+	const isMultipleStudents = role === 'STUDENT' && parsedEntries.length > 1
+
+	const selectedLevel = levels.find((level) => level.id === levelId)
+
+	useEffect(() => {
+		if (!selectedLevel) return
+		if (localStepIndex > selectedLevel.steps.length) {
+			setValue('localStepIndex', selectedLevel.steps.length)
+		}
+	}, [selectedLevel, localStepIndex, setValue])
+
+	const stepOptions = useMemo(() => {
+		if (!selectedLevel) return []
+		const offset = getStepOffset(levels, selectedLevel.number)
+		return selectedLevel.steps.map((step, index) => ({
+			value: index,
+			label: `Шаг ${offset + index + 1}: ${step.title}`,
+		}))
+	}, [levels, selectedLevel])
 
 	const onSubmit = (values: CreateUserFormInput) => {
 		startTransition(async () => {
-			const result = await createUsers({
-				names: parseUserNames(values.names),
-				role: values.role,
-				groupId: values.groupId,
-			})
+			const result = await createUsers(buildCreateUsersPayload(values))
 			onSuccess(result.users)
 		})
 	}
@@ -45,14 +96,27 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 				control={control}
 				render={({ field, fieldState }) => (
 					<Form.Item
-						label="Имена"
+						label={role === 'STUDENT' ? 'ФИО' : 'Имена'}
 						validateStatus={fieldState.error ? 'error' : ''}
-						help={fieldState.error?.message ?? 'Через запятую или с новой строки'}
+						help={
+							fieldState.error?.message ??
+							(role === 'STUDENT'
+								? isMultipleStudents
+									? 'Каждый ученик с новой строки: Имя - телефон'
+									: 'ФИО ученика'
+								: 'Через запятую или с новой строки')
+						}
 					>
 						<Input.TextArea
 							{...field}
 							rows={4}
-							placeholder={'Магомед, Амина\nПатимат'}
+							placeholder={
+								role === 'STUDENT' && isMultipleStudents
+									? 'Камал - 89676123456\nЗака - 89676789012'
+									: role === 'STUDENT'
+										? 'Ибрагимов Камал Ахмедович'
+										: 'Магомед, Амина\nПатимат'
+							}
 						/>
 					</Form.Item>
 				)}
@@ -75,20 +139,111 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 				)}
 			/>
 
-			{role === 'STUDENT' && (
+			{role !== 'STUDENT' && (
 				<Controller
-					name="groupId"
+					name="phone"
 					control={control}
-					render={({ field, fieldState }) => (
-						<Form.Item label="Группа" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-							<Select
-								{...field}
-								options={groups.map((g) => ({ value: g.id, label: g.name }))}
-								placeholder="Выберите группу"
-							/>
+					render={({ field }) => (
+						<Form.Item label="Телефон">
+							<Input {...field} placeholder="89676123456" />
 						</Form.Item>
 					)}
 				/>
+			)}
+
+			{role === 'STUDENT' && (
+				<>
+					<Controller
+						name="studentPhone"
+						control={control}
+						render={({ field }) => (
+							<Form.Item
+								label="Телефон ученика"
+								help={isMultipleStudents ? 'Укажите телефоны в поле ФИО' : undefined}
+							>
+								<Input
+									{...field}
+									disabled={isMultipleStudents}
+									placeholder="89676123456"
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="guardianPhone"
+						control={control}
+						render={({ field }) => (
+							<Form.Item label="Телефон опекуна">
+								<Input
+									{...field}
+									disabled={isMultipleStudents}
+									placeholder="89676123456"
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="groupId"
+						control={control}
+						render={({ field, fieldState }) => (
+							<Form.Item
+								label="Группа"
+								validateStatus={fieldState.error ? 'error' : ''}
+								help={fieldState.error?.message}
+							>
+								<Select
+									{...field}
+									options={groups.map((g) => ({ value: g.id, label: g.name }))}
+									placeholder="Выберите группу"
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="levelId"
+						control={control}
+						render={({ field, fieldState }) => (
+							<Form.Item
+								label="Уровень"
+								validateStatus={fieldState.error ? 'error' : ''}
+								help={fieldState.error?.message}
+							>
+								<Select
+									{...field}
+									onChange={(value) => {
+										field.onChange(value)
+										setValue('localStepIndex', 0)
+									}}
+									options={levels.map((level) => ({
+										value: level.id,
+										label: `Уровень ${level.number}: ${level.title}`,
+									}))}
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="localStepIndex"
+						control={control}
+						render={({ field, fieldState }) => (
+							<Form.Item
+								label="Текущий шаг"
+								validateStatus={fieldState.error ? 'error' : ''}
+								help={fieldState.error?.message}
+							>
+								<Select
+									{...field}
+									options={stepOptions}
+									disabled={!selectedLevel}
+								/>
+							</Form.Item>
+						)}
+					/>
+				</>
 			)}
 
 			<Button type="primary" htmlType="submit" loading={isPending} block>
