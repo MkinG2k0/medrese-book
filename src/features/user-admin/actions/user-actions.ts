@@ -8,7 +8,11 @@ import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
 import { syncCompletionsForProgress } from '@/shared/lib/sync-completions-for-progress'
 import { getStepOffsetForLevel } from '@/shared/lib/step-offset'
-import { createUsersSchema } from '@/shared/lib/validations/user'
+import {
+	createUsersSchema,
+	updateStaffUserSchema,
+	updateStudentUserSchema,
+} from '@/shared/lib/validations/user'
 
 export async function getUsers() {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
@@ -124,6 +128,90 @@ export async function createUsers(input: unknown) {
 
 	revalidatePath('/admin/users')
 	return { users }
+}
+
+export async function updateUser(userId: string, input: unknown) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		include: { student: true },
+	})
+
+	if (!user) {
+		throw new Error('Пользователь не найден')
+	}
+
+	if (user.role === 'STUDENT' && user.student) {
+		const data = updateStudentUserSchema.parse(input)
+
+		const level = await prisma.level.findUnique({
+			where: { id: data.levelId },
+			include: { steps: { orderBy: { order: 'asc' } } },
+		})
+
+		if (!level) {
+			throw new Error('Уровень не найден')
+		}
+
+		if (data.localStepIndex > level.steps.length) {
+			throw new Error('Шаг выходит за пределы уровня')
+		}
+
+		const previousGroupId = user.student.groupId
+		const stepOffset = await getStepOffsetForLevel(level.number)
+		const currentStepIdx = stepOffset + data.localStepIndex
+
+		await prisma.$transaction(async (tx) => {
+			await syncCompletionsForProgress(
+				tx,
+				user.student!.id,
+				level.steps,
+				data.localStepIndex,
+			)
+
+			await tx.student.update({
+				where: { id: user.student!.id },
+				data: {
+					fullName: data.name,
+					phone: data.phone,
+					guardianPhone: data.guardianPhone,
+					groupId: data.groupId,
+					levelId: data.levelId,
+					currentStepIdx,
+				},
+			})
+
+			await tx.user.update({
+				where: { id: userId },
+				data: { name: data.name },
+			})
+		})
+
+		revalidatePath('/admin/users')
+		revalidatePath('/groups')
+		revalidatePath(`/groups/${data.groupId}`)
+		if (previousGroupId !== data.groupId) {
+			revalidatePath(`/groups/${previousGroupId}`)
+		}
+		revalidatePath('/journal')
+		revalidatePath(`/journal/${user.student.id}`)
+		revalidatePath(`/students/${user.student.id}/edit`)
+		revalidatePath('/student/me')
+		return
+	}
+
+	const data = updateStaffUserSchema.parse(input)
+
+	await prisma.user.update({
+		where: { id: userId },
+		data: {
+			name: data.name,
+			phone: data.phone,
+		},
+	})
+
+	revalidatePath('/admin/users')
 }
 
 export async function resetUserCode(userId: string) {

@@ -203,6 +203,8 @@ export function UsersTable({ users, groups, levels, canResetCode }: UsersTablePr
 
       <UserDetailModal
         user={selectedUser}
+        groups={groups}
+        levels={levels}
         onClose={() => setSelectedUser(null)}
         canResetCode={canResetCode}
         onResetCode={handleReset}

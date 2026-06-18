@@ -25,6 +25,7 @@ test.describe("Админ-панель менеджера", () => {
     await expect(detailDialog.getByText("Ученик")).toBeVisible();
     await expect(detailDialog.getByText(TEST_USERS.group1)).toBeVisible();
     await expect(detailDialog.getByRole("heading", { level: 4 })).toHaveText(/^\d{6}$/);
+    await expect(detailDialog.getByRole("button", { name: "Сохранить" })).toBeVisible();
 
     await detailDialog.getByRole("button", { name: "Закрыть" }).click();
     await expect(detailDialog).toBeHidden();

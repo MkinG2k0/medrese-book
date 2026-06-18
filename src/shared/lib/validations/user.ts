@@ -95,6 +95,39 @@ export const createUserFormSchema = z
 		path: ['levelId'],
 	})
 
+export const updateStudentUserSchema = z.object({
+	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
+	phone: optionalPhoneSchema,
+	guardianPhone: optionalPhoneSchema,
+	groupId: z.string().min(1, 'Выберите группу'),
+	levelId: z.string().min(1, 'Выберите уровень'),
+	localStepIndex: z.number().int().min(0),
+})
+
+export const updateStaffUserSchema = z.object({
+	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
+	phone: optionalPhoneSchema,
+})
+
+export const updateStudentUserFormSchema = z.object({
+	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
+	phone: z.string().optional(),
+	guardianPhone: z.string().optional(),
+	groupId: z.string().min(1, 'Выберите группу'),
+	levelId: z.string().min(1, 'Выберите уровень'),
+	localStepIndex: z.number().int().min(0),
+})
+
+export const updateStaffUserFormSchema = z.object({
+	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
+	phone: z.string().optional(),
+})
+
+export type UpdateStudentUserInput = z.infer<typeof updateStudentUserSchema>
+export type UpdateStaffUserInput = z.infer<typeof updateStaffUserSchema>
+export type UpdateStudentUserFormInput = z.infer<typeof updateStudentUserFormSchema>
+export type UpdateStaffUserFormInput = z.infer<typeof updateStaffUserFormSchema>
+
 export type CreateUsersInput = z.infer<typeof createUsersSchema>
 export type CreateUserFormInput = z.infer<typeof createUserFormSchema>
 
