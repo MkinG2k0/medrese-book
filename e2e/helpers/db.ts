@@ -110,19 +110,29 @@ export async function countStudentAdjustmentSessionsInMonth(
   return Number(result.rows[0]?.count ?? 0);
 }
 
-/** Read-only AuditEvent count; returns 0 until FND-04 migration (plan 05). */
-export async function countAuditEvents(action?: string): Promise<number> {
-  try {
-    const result = action
-      ? await getPool().query<{ count: string }>(
-          `SELECT COUNT(*)::text AS count FROM "AuditEvent" WHERE action = $1`,
-          [action],
-        )
-      : await getPool().query<{ count: string }>(
-          `SELECT COUNT(*)::text AS count FROM "AuditEvent"`,
-        );
+/** Read-only AuditEvent count for e2e assertions. */
+export async function countAuditEvents(
+  action?: string,
+  entityId?: string,
+): Promise<number> {
+  if (action && entityId) {
+    const result = await getPool().query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM "AuditEvent" WHERE action = $1 AND "entityId" = $2`,
+      [action, entityId],
+    );
     return Number(result.rows[0]?.count ?? 0);
-  } catch {
-    return 0;
   }
+
+  if (action) {
+    const result = await getPool().query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM "AuditEvent" WHERE action = $1`,
+      [action],
+    );
+    return Number(result.rows[0]?.count ?? 0);
+  }
+
+  const result = await getPool().query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count FROM "AuditEvent"`,
+  );
+  return Number(result.rows[0]?.count ?? 0);
 }

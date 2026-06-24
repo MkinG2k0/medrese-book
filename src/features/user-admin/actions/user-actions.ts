@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { getDefaultLevelId } from '@/shared/lib/default-level'
+import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { generateUniqueCode } from '@/shared/lib/generate-unique-code'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
@@ -38,7 +39,7 @@ export async function getLevelsForCreateUser() {
 }
 
 export async function createUsers(input: unknown) {
-	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
 	const data = createUsersSchema.parse(input)
 
@@ -106,6 +107,23 @@ export async function createUsers(input: unknown) {
 					localStepIndex,
 				)
 
+				await dispatchDomainEvent(
+					{
+						actorId: session.user.id,
+						action: 'STUDENT_CREATED',
+						entityType: 'Student',
+						entityId: user.student!.id,
+						payload: {
+							userId: user.id,
+							levelId: level.id,
+							currentStepIdx,
+							localStepIndex,
+							groupId: data.groupId,
+						},
+					},
+					tx,
+				)
+
 				return user
 			})
 
@@ -133,7 +151,7 @@ export async function createUsers(input: unknown) {
 }
 
 export async function updateUser(userId: string, input: unknown) {
-	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
 	const user = await prisma.user.findUnique({
 		where: { id: userId },
@@ -161,6 +179,8 @@ export async function updateUser(userId: string, input: unknown) {
 		}
 
 		const previousGroupId = user.student.groupId
+		const previousLevelId = user.student.levelId
+		const previousStepIdx = user.student.currentStepIdx
 		const stepOffset = await getStepOffsetForLevel(level.number)
 		const currentStepIdx = stepOffset + data.localStepIndex
 
@@ -188,6 +208,26 @@ export async function updateUser(userId: string, input: unknown) {
 				where: { id: userId },
 				data: { name: data.name },
 			})
+
+			await dispatchDomainEvent(
+				{
+					actorId: session.user.id,
+					action: 'STUDENT_UPDATED',
+					entityType: 'Student',
+					entityId: user.student!.id,
+					payload: {
+						userId,
+						previousGroupId,
+						previousLevelId,
+						previousStepIdx,
+						groupId: data.groupId,
+						levelId: data.levelId,
+						currentStepIdx,
+						localStepIndex: data.localStepIndex,
+					},
+				},
+				tx,
+			)
 		})
 
 		revalidatePath('/admin/users')

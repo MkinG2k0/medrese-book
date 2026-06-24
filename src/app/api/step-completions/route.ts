@@ -10,6 +10,7 @@ import {
   isValidCalendarDate,
 } from "@/shared/lib/calendar-date";
 import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
+import { dispatchDomainEvent } from "@/shared/lib/domain-events";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
 import { deleteStepCompletionsSchema } from "@/shared/lib/validations/step-completion";
@@ -103,10 +104,26 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    await prisma.stepCompletion.deleteMany({
-      where: { id: { in: parsed.data.ids } },
+    await prisma.$transaction(async (tx) => {
+      await tx.stepCompletion.deleteMany({
+        where: { id: { in: parsed.data.ids } },
+      });
+      await recalculateStudentStepIdx(studentId, tx);
+      await dispatchDomainEvent(
+        {
+          actorId: authResult.session.user.id,
+          action: "COMPLETION_CHANGED",
+          entityType: "StepCompletion",
+          entityId: studentId,
+          payload: {
+            operation: "delete",
+            completionIds: parsed.data.ids,
+            studentId,
+          },
+        },
+        tx,
+      );
     });
-    await recalculateStudentStepIdx(studentId);
     return success({ deleted: parsed.data.ids.length });
   } catch (err) {
     return serverError(err);

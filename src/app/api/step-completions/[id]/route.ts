@@ -5,6 +5,7 @@ import {
   success,
 } from "@/shared/api";
 import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
+import { dispatchDomainEvent } from "@/shared/lib/domain-events";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
 import { updateStepCompletionSchema } from "@/shared/lib/validations/step-completion";
@@ -30,19 +31,39 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (!parsed.success) return error(parsed.error.message);
 
   try {
-    const updated = await prisma.stepCompletion.update({
-      where: { id },
-      data: {
-        grade: parsed.data.grade,
-        note: parsed.data.note ?? null,
-      },
-      include: {
-        step: true,
-        session: { select: { id: true, date: true, attendance: true } },
-      },
-    });
+    const updated = await prisma.$transaction(async (tx) => {
+      const completion = await tx.stepCompletion.update({
+        where: { id },
+        data: {
+          grade: parsed.data.grade,
+          note: parsed.data.note ?? null,
+        },
+        include: {
+          step: true,
+          session: { select: { id: true, date: true, attendance: true } },
+        },
+      });
 
-    await recalculateStudentStepIdx(updated.studentId);
+      await recalculateStudentStepIdx(completion.studentId, tx);
+
+      await dispatchDomainEvent(
+        {
+          actorId: authResult.session.user.id,
+          action: "COMPLETION_CHANGED",
+          entityType: "StepCompletion",
+          entityId: completion.id,
+          payload: {
+            operation: "update",
+            studentId: completion.studentId,
+            previousGrade: existing.grade,
+            grade: completion.grade,
+          },
+        },
+        tx,
+      );
+
+      return completion;
+    });
 
     return success({
       id: updated.id,

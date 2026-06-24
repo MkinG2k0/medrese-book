@@ -15,7 +15,7 @@ export async function writeAuditEvent(
 			action: event.action,
 			entityType: event.entityType,
 			entityId: event.entityId,
-			payload: event.payload,
+			payload: event.payload as Prisma.InputJsonValue,
 		},
 	})
 }

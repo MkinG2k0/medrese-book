@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { requireStudentEditAccess } from '@/shared/lib/authorize-student-access'
+import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { prisma } from '@/shared/lib/prisma'
 import {
 	getStepOffsetForLevel,
@@ -55,7 +56,7 @@ export async function getStudentProgressEdit(studentId: string) {
 }
 
 export async function updateStudentProgress(studentId: string, input: unknown) {
-	const { student } = await requireStudentEditAccess(studentId)
+	const { session, student } = await requireStudentEditAccess(studentId)
 	if (!student) throw new Error('Ученик не найден')
 
 	const data = updateStudentProgressSchema.parse(input)
@@ -73,6 +74,8 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 
 	const stepOffset = await getStepOffsetForLevel(level.number)
 	const currentStepIdx = stepOffset + data.localStepIndex
+	const previousLevelId = student.levelId
+	const previousStepIdx = student.currentStepIdx
 
 	await prisma.$transaction(async (tx) => {
 		await syncCompletionsForProgress(
@@ -91,6 +94,23 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 		})
 
 		await recalculateStudentStepIdx(studentId, tx)
+
+		await dispatchDomainEvent(
+			{
+				actorId: session.user.id,
+				action: 'STUDENT_PROGRESS_CHANGED',
+				entityType: 'Student',
+				entityId: studentId,
+				payload: {
+					previousLevelId,
+					previousStepIdx,
+					levelId: data.levelId,
+					currentStepIdx,
+					localStepIndex: data.localStepIndex,
+				},
+			},
+			tx,
+		)
 	})
 
 	revalidatePath('/groups')

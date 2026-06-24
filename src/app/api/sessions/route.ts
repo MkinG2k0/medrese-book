@@ -11,6 +11,7 @@ import {
   toSessionDate,
 } from "@/shared/lib/calendar-date";
 import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
+import { dispatchDomainEvent } from "@/shared/lib/domain-events";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
 import { createSessionSchema } from "@/shared/lib/validations/session";
@@ -85,6 +86,23 @@ export async function POST(request: Request) {
         });
 
     await recalculateStudentStepIdx(studentId, tx);
+
+    await dispatchDomainEvent(
+      {
+        actorId: authResult.session.user.id,
+        action: "SESSION_SAVED",
+        entityType: "Session",
+        entityId: session.id,
+        payload: {
+          studentId,
+          attendance,
+          completionCount: completions.length,
+          isUpdate: Boolean(existingSession),
+        },
+      },
+      tx,
+    );
+
     return session;
   });
 

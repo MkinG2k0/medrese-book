@@ -16,7 +16,12 @@ export async function selectStudentProgressStep(
   const stepField = page
     .locator(".ant-form-item")
     .filter({ hasText: "Текущий шаг" })
-    .locator(".ant-select");
-  await stepField.click();
-  await page.locator(".ant-select-item-option").nth(localStepIndex).click();
+    .getByRole("combobox");
+  await stepField.scrollIntoViewIfNeeded();
+  await stepField.click({ force: true });
+  const option = page
+    .locator(".ant-select-dropdown:visible .ant-select-item-option")
+    .nth(localStepIndex);
+  await option.scrollIntoViewIfNeeded();
+  await option.click();
 }
