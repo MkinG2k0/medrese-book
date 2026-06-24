@@ -97,9 +97,11 @@ None yet.
 | 260625-2mj | интегрируй иконку в приложение | 2026-06-24 | e79075f | [260625-2mj-integrate-app-icon](./quick/260625-2mj-integrate-app-icon/) |
 | 260625-2ov | добавь кнопку создать группу в /groups | 2026-06-24 | c3ed60c | [260625-2ov-groups](./quick/260625-2ov-groups/) |
 | 260625-2sa | улучшить UI ученика: уроки на отдельной странице, скрыть смену учётки | 2026-06-24 | 0e67df9 | [260625-2sa-ui-student](./quick/260625-2sa-ui-student/) |
+| 260625-33a | дублирование данных и ученики в «Сменить учётку» | 2026-06-24 | bfd031f | [260625-33a-deduplikatsiya-uchenikov](./quick/260625-33a-deduplikatsiya-uchenikov/) |
 
 ## Session Continuity
 
+Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
 Last session: 2026-06-24T17:00:10.797Z
 Stopped at: Completed 00-foundation-03-PLAN.md
 Resume file: None
