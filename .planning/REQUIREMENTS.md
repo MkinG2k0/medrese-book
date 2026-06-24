@@ -7,7 +7,7 @@
 
 ### Foundation (техническая база)
 
-- [ ] **FND-01**: Единый фильтр аналитики исключает сессии-корректировки и шаги «зачтено ранее» из метрик
+- [x] **FND-01**: Единый фильтр аналитики исключает сессии-корректировки и шаги «зачтено ранее» из метрик
 - [ ] **FND-02**: Общий `authorizeApiRequest()` для всех API routes с default-deny
 - [ ] **FND-03**: Централизованный модуль `student-progress` для пересчёта `currentStepIdx` и prior credit
 - [ ] **FND-04**: `dispatchDomainEvent` для fan-out в audit и notifications без cross-feature imports
@@ -129,7 +129,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | Phase 0 | Pending |
+| FND-01 | Phase 0 | Complete |
 | FND-02 | Phase 0 | Pending |
 | FND-03 | Phase 0 | Pending |
 | FND-04 | Phase 0 | Pending |
