@@ -31,6 +31,18 @@ enum StudentStatus {
   ARCHIVE
 }
 
+enum LeaveRequestType {
+  VACATION
+  DAY_OFF
+  SICK_LEAVE
+}
+
+enum LeaveRequestStatus {
+  CREATED
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -43,11 +55,15 @@ model User {
 }
 
 model Teacher {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  groups           Group[]
-  teachingSessions TeachingSession[]
+  id                         String            @id @default(cuid())
+  userId                     String            @unique
+  user                       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups                     Group[]
+  teachingSessions           TeachingSession[]
+  leaveRequests              LeaveRequest[]    @relation("LeaveRequestTeacher")
+  leaveRequestsAsSubstitute  LeaveRequest[]    @relation("LeaveRequestSubstitute")
+  substitutionsAsAbsent      Substitution[]    @relation("SubstitutionAbsent")
+  substitutionsAsSubstitute  Substitution[]    @relation("SubstitutionSubstitute")
 }
 
 model Group {
@@ -162,4 +178,42 @@ model AuditEvent {
 
   @@index([createdAt])
   @@index([entityType, entityId])
+}
+
+model LeaveRequest {
+  id                  String             @id @default(cuid())
+  teacherId           String
+  teacher             Teacher            @relation("LeaveRequestTeacher", fields: [teacherId], references: [id])
+  type                LeaveRequestType
+  status              LeaveRequestStatus @default(CREATED)
+  startDate           DateTime
+  endDate             DateTime
+  description         String
+  rejectionReason     String?
+  substituteTeacherId String?
+  substituteTeacher   Teacher?           @relation("LeaveRequestSubstitute", fields: [substituteTeacherId], references: [id])
+  substitutionId      String?            @unique
+  substitution        Substitution?      @relation(fields: [substitutionId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([teacherId, status])
+  @@index([startDate, endDate])
+}
+
+model Substitution {
+  id                  String   @id @default(cuid())
+  absentTeacherId     String
+  absentTeacher       Teacher  @relation("SubstitutionAbsent", fields: [absentTeacherId], references: [id])
+  substituteTeacherId String
+  substituteTeacher   Teacher  @relation("SubstitutionSubstitute", fields: [substituteTeacherId], references: [id])
+  leaveRequestId      String?       @unique
+  leaveRequest        LeaveRequest?
+  startDate           DateTime
+  endDate             DateTime
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([substituteTeacherId, isActive])
 }
