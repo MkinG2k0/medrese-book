@@ -36,8 +36,8 @@ Plans:
 - [x] 00-01-PLAN.md — Wave 0: vitest + E2E test scaffolding (RED)
 - [x] 00-02-PLAN.md — FND-01: Prisma flags, backfill, analytics-queries
 - [x] 00-03-PLAN.md — FND-02: authorizeApiRequest + middleware + API refactor
-- [ ] 00-04-PLAN.md — FND-03: student-progress module + atomic mutations
-- [ ] 00-05-PLAN.md — FND-04: dispatchDomainEvent + AuditEvent
+- [x] 00-04-PLAN.md — FND-03: student-progress module + atomic mutations
+- [x] 00-05-PLAN.md — FND-04: dispatchDomainEvent + AuditEvent
 
 ### Phase 1: Student Analytics & History
 **Goal**: Учитель, менеджер и ученик видят реальный прогресс обучения — время, шаги, историю и предупреждения о нормативах
