@@ -8,7 +8,7 @@ Brownfield-развитие журнала медресе: сначала тех
 
 **Phase Numbering:**
 - Phase 0: обязательный технический пролог перед пользовательскими фичами
-- Phases 1–7: последовательная поставка по утверждённому бэклогу
+- Phases 1–9: последовательная поставка по утверждённому бэклогу
 
 - [ ] **Phase 0: Foundation** — фильтры аналитики, API auth, student-progress, domain-events
 - [ ] **Phase 1: Student Analytics & History** — таймер урока, метрики, история, норматив 48ч
@@ -133,7 +133,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 | 5. Session Security | 0/TBD | Not started | - |
 | 6. Notifications | 0/TBD | Not started | - |
 | 7. Audit, Teacher Analytics & Chat | 0/TBD | Not started | - |
-| 8. Leave Requests | 0/TBD | Not planned | - |
+| 8. Leave Requests | 0/5 | Planned | - |
 | 9. Realtime & Web Push | 0/TBD | Not planned | - |
 
 ### Phase 8: Leave Requests — отпуска, отгулы и больничные
@@ -147,10 +147,14 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
   4. При принятии менеджер выбирает замещающего преподавателя на период отсутствия; замещение активируется автоматически
   5. Замещающий получает уведомление и может войти в учётку замещаемого через «Сменить учётку»; без активного замещения преподаватели не переключают чужие учётки
 **Context**: `.planning/phases/08-leave-requests/08-CONTEXT.md`
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD (run `/gsd-plan-phase 8` to break down)
+- [ ] 08-01-PLAN.md — Prisma LeaveRequest/Substitution, validations, domain events, migration
+- [ ] 08-02-PLAN.md — Server actions, API, substitution auth (TCHR-01/03/04)
+- [ ] 08-03-PLAN.md — Teacher calendar UI (/calendar, LEAV-02/05)
+- [ ] 08-04-PLAN.md — Manager calendar + grid, approve/reject (checkpoint)
+- [ ] 08-05-PLAN.md — E2E leave-requests.spec.ts + domain events smoke
 
 ### Phase 9: Realtime notifications and Web Push API with VAPID keys
 **Goal**: Пользователи получают уведомления в реальном времени и через Web Push; колокольчик работает для всех ролей
