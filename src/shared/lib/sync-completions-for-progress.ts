@@ -30,6 +30,7 @@ export async function syncCompletionsForProgress(
 	let adjustmentSession = await tx.session.findFirst({
 		where: {
 			studentId,
+			isAdjustment: true,
 			date: { gte: dayRange.start, lte: dayRange.end },
 		},
 	})
@@ -41,6 +42,7 @@ export async function syncCompletionsForProgress(
 				date: toSessionDate(today),
 				attendance: 'PRESENT',
 				note: 'Корректировка прогресса',
+				isAdjustment: true,
 			},
 		})
 	}
@@ -59,7 +61,7 @@ export async function syncCompletionsForProgress(
 			if (existing.grade < PASSING_GRADE) {
 				await tx.stepCompletion.update({
 					where: { id: existing.id },
-					data: { grade: PASSING_GRADE },
+					data: { grade: PASSING_GRADE, isPriorCredit: true },
 				})
 			}
 		} else {
@@ -69,6 +71,7 @@ export async function syncCompletionsForProgress(
 					stepId,
 					sessionId: adjustmentSession.id,
 					grade: PASSING_GRADE,
+					isPriorCredit: true,
 				},
 			})
 		}
