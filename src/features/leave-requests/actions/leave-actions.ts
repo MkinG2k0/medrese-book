@@ -241,6 +241,24 @@ export async function getLeaveRequestTeachers() {
 	}))
 }
 
+export async function getSubstituteTeacherCandidates(excludeTeacherId: string) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+
+	const teachers = await prisma.teacher.findMany({
+		where: {
+			id: { not: excludeTeacherId },
+			user: { role: 'TEACHER' },
+		},
+		include: { user: { select: { name: true } } },
+		orderBy: { user: { name: 'asc' } },
+	})
+
+	return teachers.map((teacher) => ({
+		id: teacher.id,
+		name: teacher.user.name,
+	}))
+}
+
 export async function listLeaveRequests(filters: LeaveRequestListFilters = {}) {
 	const session = await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
 

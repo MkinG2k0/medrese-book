@@ -5,15 +5,21 @@ import { useEffect, useState } from 'react'
 import { useLeaveRequests } from '@/entities/leave-request/api/use-leave-requests'
 import type { LeaveRequestListItem } from '@/entities/leave-request/model/types'
 import { getLeaveRequestTeachers } from '@/features/leave-requests/actions/leave-actions'
+import { ApproveLeaveModal } from '@/features/leave-requests/ui/ApproveLeaveModal'
 import { LeaveCalendar } from '@/features/leave-requests/ui/LeaveCalendar'
 import { LeaveDetailModal } from '@/features/leave-requests/ui/LeaveDetailModal'
 import { LeaveRequestsTable } from '@/features/leave-requests/ui/LeaveRequestsTable'
+import { RejectLeaveModal } from '@/features/leave-requests/ui/RejectLeaveModal'
 import Title from '@/shared/ui/Title'
 
 export function ManagerLeaveCalendarPage() {
 	const { data: requests = [], isLoading } = useLeaveRequests()
 	const [teachers, setTeachers] = useState<{ id: string; name: string }[]>([])
 	const [selectedRequest, setSelectedRequest] =
+		useState<LeaveRequestListItem | null>(null)
+	const [approveRequest, setApproveRequest] =
+		useState<LeaveRequestListItem | null>(null)
+	const [rejectRequest, setRejectRequest] =
 		useState<LeaveRequestListItem | null>(null)
 
 	useEffect(() => {
@@ -23,13 +29,13 @@ export function ManagerLeaveCalendarPage() {
 	}, [])
 
 	const openApprove = (request: LeaveRequestListItem) => {
-		void request
 		setSelectedRequest(null)
+		setApproveRequest(request)
 	}
 
 	const openReject = (request: LeaveRequestListItem) => {
-		void request
 		setSelectedRequest(null)
+		setRejectRequest(request)
 	}
 
 	return (
@@ -60,6 +66,16 @@ export function ManagerLeaveCalendarPage() {
 				onClose={() => setSelectedRequest(null)}
 				onApprove={openApprove}
 				onReject={openReject}
+			/>
+
+			<ApproveLeaveModal
+				request={approveRequest}
+				onClose={() => setApproveRequest(null)}
+			/>
+
+			<RejectLeaveModal
+				request={rejectRequest}
+				onClose={() => setRejectRequest(null)}
 			/>
 		</div>
 	)
