@@ -12,7 +12,7 @@ const createGroupSchema = z.object({
 })
 
 export async function getGroups() {
-	await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 
 	return prisma.group.findMany({
 		include: {
@@ -23,8 +23,28 @@ export async function getGroups() {
 	})
 }
 
+export async function getMyGroup() {
+	const session = await requireRoles(['TEACHER'])
+
+	if (!session.user.teacherId) return null
+
+	return prisma.group.findFirst({
+		where: { teacherId: session.user.teacherId },
+		include: {
+			teacher: { include: { user: true } },
+			students: {
+				include: {
+					user: true,
+					level: true,
+				},
+				orderBy: { user: { name: 'asc' } },
+			},
+		},
+	})
+}
+
 export async function getGroup(groupId: string) {
-	const session = await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
+	const session = await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 
 	const group = await prisma.group.findUnique({
 		where: { id: groupId },
@@ -35,6 +55,7 @@ export async function getGroup(groupId: string) {
 					user: true,
 					level: true,
 				},
+				orderBy: { user: { name: 'asc' } },
 			},
 		},
 	})
@@ -48,6 +69,7 @@ export async function createGroup(input: unknown) {
 
 	const group = await prisma.group.create({ data })
 	revalidatePath('/groups')
+	revalidatePath('/my-group')
 	revalidatePath('/admin/groups')
 	return group
 }

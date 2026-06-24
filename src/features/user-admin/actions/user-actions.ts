@@ -38,6 +38,15 @@ export async function getLevelsForCreateUser() {
 	})
 }
 
+export async function getLevelsForStudentProfile() {
+	await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
+
+	return prisma.level.findMany({
+		include: { steps: { orderBy: { order: 'asc' } } },
+		orderBy: { number: 'asc' },
+	})
+}
+
 export async function createUsers(input: unknown) {
 	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
@@ -232,6 +241,7 @@ export async function updateUser(userId: string, input: unknown) {
 
 		revalidatePath('/admin/users')
 		revalidatePath('/groups')
+		revalidatePath('/my-group')
 		revalidatePath(`/groups/${data.groupId}`)
 		if (previousGroupId !== data.groupId) {
 			revalidatePath(`/groups/${previousGroupId}`)

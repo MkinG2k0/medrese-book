@@ -114,6 +114,7 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 	})
 
 	revalidatePath('/groups')
+	revalidatePath('/my-group')
 	revalidatePath(`/groups/${student.groupId}`)
 	revalidatePath('/journal')
 	revalidatePath(`/journal/${studentId}`)

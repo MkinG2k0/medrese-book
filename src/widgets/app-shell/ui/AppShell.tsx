@@ -52,10 +52,16 @@ const allMenuItems: MenuItem[] = [
     roles: ["TEACHER"],
   },
   {
+    key: "/my-group",
+    icon: <TeamOutlined />,
+    label: "Моя группа",
+    roles: ["TEACHER"],
+  },
+  {
     key: "/groups",
     icon: <TeamOutlined />,
     label: "Группы",
-    roles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
+    roles: ["MANAGER", "SUPER_ADMIN"],
   },
   {
     key: "/analytics",

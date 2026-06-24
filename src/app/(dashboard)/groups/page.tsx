@@ -3,7 +3,7 @@ import { GroupsList } from '@/features/groups/ui/GroupsList'
 import { requireRoles } from '@/shared/lib/session'
 
 export default async function GroupsPage() {
-	await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 	const groups = await getGroups()
 
 	const rows = groups.map((g) => ({

@@ -1,29 +1,26 @@
 import { notFound } from "next/navigation";
 
 import { getGroup } from "@/features/groups/actions/group-actions";
-import { getLevelsForCreateUser } from "@/features/user-admin/actions/user-actions";
+import { GroupStudentsTable } from "@/features/groups/ui/GroupStudentsTable";
+import {
+  getLevelsForCreateUser,
+} from "@/features/user-admin/actions/user-actions";
 import { mapUsersToDetails } from "@/features/user-admin/lib/map-users-to-details";
-import { UsersTable } from "@/features/user-admin/ui/UsersTable";
 import { prisma } from "@/shared/lib/prisma";
 import { requireRoles } from "@/shared/lib/session";
-import Text from "@/shared/ui/Text";
 
 type Props = { params: Promise<{ groupId: string }> };
 
 export default async function GroupDetailPage({ params }: Props) {
-  const session = await requireRoles(["TEACHER", "MANAGER", "SUPER_ADMIN"]);
+  const session = await requireRoles(["MANAGER", "SUPER_ADMIN"]);
   const { groupId } = await params;
-  const { group } = await getGroup(groupId);
+  const [groups, levels, { group }] = await Promise.all([
+    prisma.group.findMany({ select: { id: true, name: true } }),
+    getLevelsForCreateUser(),
+    getGroup(groupId),
+  ]);
 
   if (!group) notFound();
-
-  const canManageUsers =
-    session.user.role === "SUPER_ADMIN" || session.user.role === "MANAGER";
-
-  const [groups, levels] = await Promise.all([
-    prisma.group.findMany({ select: { id: true, name: true } }),
-    canManageUsers ? getLevelsForCreateUser() : Promise.resolve([]),
-  ]);
 
   const levelOptions = levels.map((level) => ({
     id: level.id,
@@ -44,23 +41,16 @@ export default async function GroupDetailPage({ params }: Props) {
     },
   }));
 
-  const rows = mapUsersToDetails(studentUsers, levelOptions);
+  const users = mapUsersToDetails(studentUsers, levelOptions);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Text type="secondary">Учитель: {group.teacher.user.name}</Text>
-
-      <UsersTable
-        users={rows}
-        groups={groups}
-        levels={levelOptions}
-        canResetCode={session.user.role === "SUPER_ADMIN"}
-        title={group.name}
-        showCreateButton={false}
-        hideRoleColumn
-        hideGroupColumn
-        enableRowClick={canManageUsers}
-      />
-    </div>
+    <GroupStudentsTable
+      title={group.name}
+      subtitle={`Учитель: ${group.teacher.user.name}`}
+      users={users}
+      groups={groups}
+      levels={levelOptions}
+      canResetCode={session.user.role === "SUPER_ADMIN"}
+    />
   );
 }

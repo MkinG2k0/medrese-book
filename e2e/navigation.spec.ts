@@ -7,11 +7,12 @@ test.describe("Навигация по ролям", () => {
   test.describe("учитель", () => {
     test.use({ storageState: AUTH_STATE.teacher1 });
 
-    test("видит пункты журнала и групп", async ({ page }) => {
+    test("видит пункты журнала и мою группу", async ({ page }) => {
       await page.goto("/journal");
       await expect(page.getByRole("menuitem", { name: "Журнал" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "История шагов" })).toBeVisible();
-      await expect(page.getByRole("menuitem", { name: "Группы" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Моя группа" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Группы" })).toHaveCount(0);
       await expect(page.getByRole("menuitem", { name: "Аналитика" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Пользователи" })).toHaveCount(0);
     });
@@ -42,17 +43,32 @@ test.describe("Навигация по ролям", () => {
   });
 });
 
-test.describe("Группы", () => {
+test.describe("Моя группа", () => {
   test.describe("первый учитель", () => {
     test.use({ storageState: AUTH_STATE.teacher1 });
 
-    test("видит свою группу", async ({ page }) => {
+    test("видит учеников своей группы", async ({ page }) => {
+      await page.goto("/my-group");
+      await expect(page.getByRole("heading", { name: "Моя группа" })).toBeVisible();
+      await expect(page.getByText(TEST_USERS.group1)).toBeVisible();
+      await expect(page.getByRole("main").getByText(TEST_USERS.studentAli)).toBeVisible();
+      await expect(page.getByRole("main").getByText(TEST_USERS.studentUsman)).toBeVisible();
+      await expect(page.getByRole("main").getByText(TEST_USERS.studentBilal)).toBeVisible();
+    });
+  });
+});
+
+test.describe("Группы", () => {
+  test.describe("менеджер", () => {
+    test.use({ storageState: AUTH_STATE.manager });
+
+    test("видит все группы", async ({ page }) => {
       await page.goto("/groups");
       await expect(page.getByRole("heading", { name: "Группы" })).toBeVisible();
       const group1Row = page.getByRole("row", { name: new RegExp(TEST_USERS.group1) });
       await expect(group1Row.getByRole("link", { name: TEST_USERS.group1 })).toBeVisible();
-      const studentCount = Number(await group1Row.getByRole("cell").nth(2).textContent());
-      expect(studentCount).toBeGreaterThanOrEqual(3);
+      const group2Row = page.getByRole("row", { name: new RegExp(TEST_USERS.group2) });
+      await expect(group2Row.getByRole("link", { name: TEST_USERS.group2 })).toBeVisible();
     });
 
     test("открывает список учеников группы", async ({ page }) => {
@@ -62,17 +78,6 @@ test.describe("Группы", () => {
       await expect(page.getByRole("main").getByText(TEST_USERS.studentAli)).toBeVisible();
       await expect(page.getByRole("main").getByText(TEST_USERS.studentUsman)).toBeVisible();
       await expect(page.getByRole("main").getByText(TEST_USERS.studentBilal)).toBeVisible();
-    });
-  });
-
-  test.describe("второй учитель", () => {
-    test.use({ storageState: AUTH_STATE.teacher2 });
-
-    test("видит другую группу", async ({ page }) => {
-      await page.goto("/groups");
-      const group2Row = page.getByRole("row", { name: new RegExp(TEST_USERS.group2) });
-      await expect(group2Row.getByRole("link", { name: TEST_USERS.group2 })).toBeVisible();
-      await expect(group2Row.getByText("2")).toBeVisible();
     });
   });
 });

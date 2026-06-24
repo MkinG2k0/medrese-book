@@ -58,6 +58,7 @@ type UserDetailModalProps = {
   levels: LevelOption[];
   onClose: () => void;
   canResetCode: boolean;
+  readOnly?: boolean;
   onResetCode?: (userId: string) => void;
   isResetting?: boolean;
 };
@@ -102,11 +103,13 @@ function StudentEditFields({
   setValue,
   groups,
   levels,
+  readOnly = false,
 }: {
   control: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["control"];
   setValue: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["setValue"];
   groups: { id: string; name: string }[];
   levels: LevelOption[];
+  readOnly?: boolean;
 }) {
   const levelId = useWatch({ control, name: "levelId" });
   const localStepIndex = useWatch({ control, name: "localStepIndex" });
@@ -135,7 +138,7 @@ function StudentEditFields({
         control={control}
         render={({ field }) => (
           <Form.Item label="Телефон">
-            <Input {...field} placeholder="89676123456" />
+            <Input {...field} placeholder="89676123456" disabled={readOnly} />
           </Form.Item>
         )}
       />
@@ -145,7 +148,7 @@ function StudentEditFields({
         control={control}
         render={({ field }) => (
           <Form.Item label="Телефон опекуна">
-            <Input {...field} placeholder="89676123456" />
+            <Input {...field} placeholder="89676123456" disabled={readOnly} />
           </Form.Item>
         )}
       />
@@ -161,6 +164,7 @@ function StudentEditFields({
           >
             <Select
               {...field}
+              disabled={readOnly}
               options={groups.map((group) => ({
                 value: group.id,
                 label: group.name,
@@ -182,6 +186,7 @@ function StudentEditFields({
           >
             <Select
               {...field}
+              disabled={readOnly}
               onChange={(value) => {
                 field.onChange(value);
                 setValue("localStepIndex", 0);
@@ -207,7 +212,7 @@ function StudentEditFields({
             <Select
               {...field}
               options={stepOptions}
-              disabled={!selectedLevel}
+              disabled={readOnly || !selectedLevel}
             />
           </Form.Item>
         )}
@@ -222,6 +227,7 @@ export function UserDetailModal({
   levels,
   onClose,
   canResetCode,
+  readOnly = false,
   onResetCode,
   isResetting,
 }: UserDetailModalProps) {
@@ -285,23 +291,25 @@ export function UserDetailModal({
       onCancel={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          {canResetCode && onResetCode && user && (
+          {!readOnly && canResetCode && onResetCode && user && (
             <Button onClick={() => onResetCode(user.id)} loading={isResetting}>
               Сбросить код
             </Button>
           )}
           <Button onClick={onClose}>Закрыть</Button>
-          <Button
-            type="primary"
-            loading={isPending}
-            onClick={
-              isStudent
-                ? studentForm.handleSubmit(handleStudentSubmit)
-                : staffForm.handleSubmit(handleStaffSubmit)
-            }
-          >
-            Сохранить
-          </Button>
+          {!readOnly && (
+            <Button
+              type="primary"
+              loading={isPending}
+              onClick={
+                isStudent
+                  ? studentForm.handleSubmit(handleStudentSubmit)
+                  : staffForm.handleSubmit(handleStaffSubmit)
+              }
+            >
+              Сохранить
+            </Button>
+          )}
         </div>
       }
     >
@@ -333,7 +341,7 @@ export function UserDetailModal({
                       validateStatus={fieldState.error ? "error" : ""}
                       help={fieldState.error?.message}
                     >
-                      <Input {...field} />
+                      <Input {...field} disabled={readOnly} />
                     </Form.Item>
                   )}
                 />
@@ -343,6 +351,7 @@ export function UserDetailModal({
                   setValue={studentForm.setValue}
                   groups={groups}
                   levels={levels}
+                  readOnly={readOnly}
                 />
               </Form>
             </form>
@@ -358,7 +367,7 @@ export function UserDetailModal({
                       validateStatus={fieldState.error ? "error" : ""}
                       help={fieldState.error?.message}
                     >
-                      <Input {...field} />
+                      <Input {...field} disabled={readOnly} />
                     </Form.Item>
                   )}
                 />
@@ -368,7 +377,7 @@ export function UserDetailModal({
                   control={staffForm.control}
                   render={({ field }) => (
                     <Form.Item label="Телефон">
-                      <Input {...field} placeholder="89676123456" />
+                      <Input {...field} placeholder="89676123456" disabled={readOnly} />
                     </Form.Item>
                   )}
                 />
