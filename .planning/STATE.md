@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 00-foundation-03-PLAN.md
-last_updated: "2026-06-24T17:00:10.801Z"
-last_activity: 2026-06-24 - Completed quick task 260624-sk2: Оптимизировать POST /api/sessions (5 сек)
+last_updated: "2026-06-24T18:10:45.734Z"
+last_activity: 2026-06-24 - Completed quick task 260625-0pl: разлогинить ТОЛЬКО преподавателя при неактивности в 1 час
 progress:
   total_phases: 8
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 0 — Foundation
+**Current focus:** Phase 00 — foundation
 
 ## Current Position
 
-Phase: 0 (Foundation) — EXECUTING
-Plan: 4 of 5
-Status: Ready to execute
-Last activity: 2026-06-24 - Completed quick task 260624-sk2: Оптимизировать POST /api/sessions (5 сек)
+Phase: 00 (foundation) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 00
+Last activity: 2026-06-24 -- Phase 00 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -88,6 +88,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260624-psw | Убрать переключение ролей кроме менеджера/админа, исключить учеников | 2026-06-24 | ee3858c | [260624-psw-restrict-user-switcher](./quick/260624-psw-restrict-user-switcher/) |
 | 260624-sk2 | Оптимизировать POST /api/sessions (5 сек) | 2026-06-24 | 24142ec | [260624-sk2-post-api-sessions-5](./quick/260624-sk2-post-api-sessions-5/) |
+| 260625-0pl | разлогинить ТОЛЬКО преподавателя при неактивности в 1 час | 2026-06-24 | 15396b1 | [260625-0pl-1](./quick/260625-0pl-1/) |
 
 ## Session Continuity
 
