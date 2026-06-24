@@ -15,9 +15,8 @@ test.describe("Личный кабинет ученика", () => {
     await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toHaveCount(0);
   });
 
-  test("показывает раздел наград", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Награды" })).toBeVisible();
-    await expect(page.getByText("Пока нет наград")).toBeVisible();
+  test("не показывает раздел наград на странице прогресса", async ({ page }) => {
+    await expect(page.getByRole("heading", { name: "Награды" })).toHaveCount(0);
   });
 
   test("не показывает смену учётки", async ({ page }) => {
@@ -30,31 +29,36 @@ test.describe("Личный кабинет ученика", () => {
   });
 });
 
-test.describe("Уроки ученика", () => {
+test.describe("Награды ученика", () => {
   test.use({ storageState: AUTH_STATE.studentAli });
 
-  test("отображает текущий урок", async ({ page }) => {
-    await page.goto("/student/lessons");
-    await expect(page.getByRole("heading", { name: "Уроки" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toBeVisible();
-  });
-
-  test("показывает историю занятий", async ({ page }) => {
-    await page.goto("/student/lessons");
-    await expect(page.getByRole("heading", { name: "История занятий" })).toBeVisible();
+  test("отображает страницу наград", async ({ page }) => {
+    await page.goto("/student/awards");
+    await expect(page.getByRole("heading", { name: "Награды", level: 3 })).toBeVisible();
+    await expect(page.getByText("Пока нет наград")).toBeVisible();
   });
 });
 
-test.describe("Личный кабинет ученика с историей", () => {
-  test.use({ storageState: AUTH_STATE.studentUsman });
+test.describe("Уроки ученика", () => {
+  test.use({ storageState: AUTH_STATE.studentAli });
 
-  test("ученик с пройденными шагами видит занятия и оценки на странице уроков", async ({
-    page,
-  }) => {
+  test("отображает список всех уроков уровня", async ({ page }) => {
     await page.goto("/student/lessons");
     await expect(page.getByRole("heading", { name: "Уроки" })).toBeVisible();
+    await expect(page.getByText(/Урок 1:/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "История занятий" })).toHaveCount(0);
+  });
+});
+
+test.describe("История занятий ученика", () => {
+  test.use({ storageState: AUTH_STATE.studentUsman });
+
+  test("ученик с пройденными шагами видит занятия и оценки", async ({
+    page,
+  }) => {
+    await page.goto("/student/history");
     await expect(page.getByRole("heading", { name: "История занятий" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "Пришёл" })).toBeVisible();
-    await expect(page.getByText(/: 3/)).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Хорошо" })).toBeVisible();
   });
 });

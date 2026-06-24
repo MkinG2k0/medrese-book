@@ -7,6 +7,7 @@ import {
 	getStepOffsetForLevel,
 	getTotalProgramSteps,
 } from '@/shared/lib/student-progress'
+import { getCompletionsByStepId } from '@/shared/lib/step-completion'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export async function getStudentProfile() {
@@ -17,7 +18,6 @@ export async function getStudentProfile() {
 		include: {
 			user: true,
 			level: true,
-			awards: { orderBy: { date: 'desc' } },
 		},
 	})
 
@@ -30,8 +30,22 @@ export async function getStudentProfile() {
 		currentStepIdx: student.currentStepIdx,
 		totalSteps,
 		levelTitle: `${student.level.number}й уровень — ${student.level.title}`,
-		awards: student.awards,
 	}
+}
+
+export async function getStudentAwards() {
+	const session = await requireRole('STUDENT')
+
+	const student = await prisma.student.findUnique({
+		where: { id: session.user.studentId! },
+		include: {
+			awards: { orderBy: { date: 'desc' } },
+		},
+	})
+
+	if (!student) return null
+
+	return { awards: student.awards }
 }
 
 export async function getStudentLessons() {
@@ -41,6 +55,42 @@ export async function getStudentLessons() {
 		where: { id: session.user.studentId! },
 		include: {
 			level: { include: { steps: { orderBy: { order: 'asc' } } } },
+			completions: {
+				select: { stepId: true, grade: true },
+				orderBy: { createdAt: 'asc' },
+			},
+		},
+	})
+
+	if (!student) return null
+
+	const steps = student.level.steps
+	const stepIds = new Set(steps.map((step) => step.id))
+	const completionsByStepId = getCompletionsByStepId(
+		student.completions.filter((c) => stepIds.has(c.stepId)),
+	)
+	const stepOffset = await getStepOffsetForLevel(student.level.number)
+	const localStepIdx = getLocalStepIdx(student.currentStepIdx, stepOffset)
+
+	return {
+		levelTitle: student.level.title,
+		lessons: steps.map((step, index) => ({
+			id: step.id,
+			number: index + 1,
+			title: step.title,
+			content: step.content as StepContent,
+			grade: completionsByStepId.get(step.id)?.grade ?? null,
+			isCurrent: index === localStepIdx,
+		})),
+	}
+}
+
+export async function getStudentSessionHistory() {
+	const session = await requireRole('STUDENT')
+
+	const student = await prisma.student.findUnique({
+		where: { id: session.user.studentId! },
+		include: {
 			sessions: {
 				include: { completions: { include: { step: true } } },
 				orderBy: { date: 'desc' },
@@ -51,21 +101,5 @@ export async function getStudentLessons() {
 
 	if (!student) return null
 
-	const steps = student.level.steps
-	const stepOffset = await getStepOffsetForLevel(student.level.number)
-	const localStepIdx = getLocalStepIdx(student.currentStepIdx, stepOffset)
-	const currentStep =
-		localStepIdx >= 0 && localStepIdx < steps.length
-			? steps[localStepIdx]
-			: undefined
-
-	return {
-		currentStep: currentStep
-			? {
-					title: currentStep.title,
-					content: currentStep.content as StepContent,
-				}
-			: null,
-		sessions: student.sessions,
-	}
+	return { sessions: student.sessions }
 }

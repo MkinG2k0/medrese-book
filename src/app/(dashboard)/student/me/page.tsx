@@ -1,4 +1,3 @@
-import { Tag } from "antd";
 import { notFound } from "next/navigation";
 
 import { getStudentProfile } from "@/features/student-portal/actions/student-actions";
@@ -26,21 +25,6 @@ export default async function StudentMePage() {
           current={profile.currentStepIdx}
           total={profile.totalSteps}
         />
-      </div>
-
-      <div>
-        <Title level={4}>Награды</Title>
-        {profile.awards.length === 0 ? (
-          <Text type="secondary">Пока нет наград</Text>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {profile.awards.map((award) => (
-              <Tag key={award.id} color="gold">
-                {award.title} ({award.type})
-              </Tag>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

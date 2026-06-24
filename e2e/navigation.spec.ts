@@ -21,10 +21,12 @@ test.describe("Навигация по ролям", () => {
   test.describe("ученик", () => {
     test.use({ storageState: AUTH_STATE.studentAli });
 
-    test("видит пункты прогресса и уроков", async ({ page }) => {
+    test("видит пункты прогресса, уроков, истории и наград", async ({ page }) => {
       await page.goto("/student/me");
       await expect(page.getByRole("menuitem", { name: "Мой прогресс" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Уроки" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "История занятий" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Награды" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Журнал" })).toHaveCount(0);
       await expect(page.getByRole("menuitem", { name: "Группы" })).toHaveCount(0);
       await expect(page.getByText("Сменить учётку")).toHaveCount(0);

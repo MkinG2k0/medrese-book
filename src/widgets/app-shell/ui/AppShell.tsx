@@ -89,6 +89,18 @@ const allMenuItems: MenuItem[] = [
     roles: ["STUDENT"],
   },
   {
+    key: "/student/history",
+    icon: <HistoryOutlined />,
+    label: "История занятий",
+    roles: ["STUDENT"],
+  },
+  {
+    key: "/student/awards",
+    icon: <TrophyOutlined />,
+    label: "Награды",
+    roles: ["STUDENT"],
+  },
+  {
     key: "/admin/users",
     icon: <UserOutlined />,
     label: "Пользователи",
