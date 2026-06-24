@@ -1,6 +1,7 @@
 "use client";
 
-import { Table } from "antd";
+import { Button, Table } from "antd";
+import { useState } from "react";
 import {
   Bar,
   BarChart,
@@ -11,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { StudentStudyHistoryModal } from "@/features/analytics/ui/StudentStudyHistoryModal";
 import type { TopEntry } from "@/shared/lib/analytics";
 import { formatMinutesAsHours } from "@/shared/lib/format-minutes-as-hours";
 import Title from "@/shared/ui/Title";
@@ -22,6 +24,11 @@ export function TopStudents({
   data: TopEntry[];
   monthLabel: string;
 }) {
+  const [selectedStudent, setSelectedStudent] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   return (
     <div className="flex flex-col gap-4">
       <Title level={4}>Топ учеников за {monthLabel}</Title>
@@ -43,7 +50,22 @@ export function TopStudents({
         rowKey={(r) => r.student.id}
         pagination={{ pageSize: 10, showSizeChanger: false }}
         columns={[
-          { title: "Ученик", dataIndex: ["student", "name"], key: "name" },
+          {
+            title: "Ученик",
+            dataIndex: ["student", "name"],
+            key: "name",
+            render: (name: string, record: TopEntry) => (
+              <Button
+                type="link"
+                className="!p-0"
+                onClick={() =>
+                  setSelectedStudent({ id: record.student.id, name })
+                }
+              >
+                {name}
+              </Button>
+            ),
+          },
           { title: "Шагов", dataIndex: "stepsCompleted", key: "steps" },
           { title: "Ср. оценка", dataIndex: "avgGrade", key: "avg" },
           { title: "Прогулы", dataIndex: "absences", key: "absences" },
@@ -54,6 +76,13 @@ export function TopStudents({
             render: (minutes: number) => formatMinutesAsHours(minutes),
           },
         ]}
+      />
+
+      <StudentStudyHistoryModal
+        open={selectedStudent !== null}
+        studentId={selectedStudent?.id ?? null}
+        studentName={selectedStudent?.name ?? ""}
+        onClose={() => setSelectedStudent(null)}
       />
     </div>
   );

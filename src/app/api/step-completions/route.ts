@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   }
 
   const authResult = await authorizeApiRequest({
-    allowedRoles: ["TEACHER"],
+    allowedRoles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
     context: { studentId },
   });
   if ("error" in authResult) return authResult.error;
