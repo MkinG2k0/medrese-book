@@ -11,7 +11,34 @@ export type RememberedAccount = {
 };
 
 export function shouldRememberAccount(role: UserRole): boolean {
-  return role !== "SUPER_ADMIN" && role !== "MANAGER";
+  return role === "TEACHER";
+}
+
+function isRememberedAccount(value: unknown): value is RememberedAccount {
+  if (typeof value !== "object" || value === null) return false;
+  const account = value as RememberedAccount;
+  return (
+    typeof account.id === "string" &&
+    typeof account.name === "string" &&
+    typeof account.role === "string" &&
+    typeof account.code === "string"
+  );
+}
+
+function normalizeRememberedAccounts(
+  accounts: RememberedAccount[],
+): RememberedAccount[] {
+  const seenCodes = new Set<string>();
+  const normalized: RememberedAccount[] = [];
+
+  for (const account of accounts) {
+    if (!shouldRememberAccount(account.role)) continue;
+    if (seenCodes.has(account.code)) continue;
+    seenCodes.add(account.code);
+    normalized.push(account);
+  }
+
+  return normalized.slice(0, MAX_ACCOUNTS);
 }
 
 export function getRememberedAccounts(): RememberedAccount[] {
@@ -20,16 +47,17 @@ export function getRememberedAccounts(): RememberedAccount[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as RememberedAccount[];
+    const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (account) =>
-        typeof account.id === "string" &&
-        typeof account.name === "string" &&
-        typeof account.role === "string" &&
-        typeof account.code === "string" &&
-        shouldRememberAccount(account.role),
-    );
+
+    const valid = parsed.filter(isRememberedAccount);
+    const normalized = normalizeRememberedAccounts(valid);
+
+    if (JSON.stringify(normalized) !== JSON.stringify(valid)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    }
+
+    return normalized;
   } catch {
     return [];
   }
@@ -39,9 +67,9 @@ export function addRememberedAccount(account: RememberedAccount): void {
   if (!shouldRememberAccount(account.role)) return;
 
   const existing = getRememberedAccounts().filter(
-    (item) => item.id !== account.id,
+    (item) => item.code !== account.code,
   );
-  const updated = [account, ...existing].slice(0, MAX_ACCOUNTS);
+  const updated = normalizeRememberedAccounts([account, ...existing]);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   window.dispatchEvent(new Event("remembered-accounts-change"));
 }
