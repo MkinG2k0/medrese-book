@@ -30,7 +30,14 @@ Brownfield-развитие журнала медресе: сначала тех
   2. Неавторизованный или непривилегированный запрос к API не возвращает чужие данные (default-deny)
   3. Смена уровня или шага ученика даёт согласованный прогресс в журнале, портале и аналитике
   4. Критические доменные мутации автоматически порождают записи аудита через единый механизм событий
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 00-01-PLAN.md — Wave 0: vitest + E2E test scaffolding (RED)
+- [ ] 00-02-PLAN.md — FND-01: Prisma flags, backfill, analytics-queries
+- [ ] 00-03-PLAN.md — FND-02: authorizeApiRequest + middleware + API refactor
+- [ ] 00-04-PLAN.md — FND-03: student-progress module + atomic mutations
+- [ ] 00-05-PLAN.md — FND-04: dispatchDomainEvent + AuditEvent
 
 ### Phase 1: Student Analytics & History
 **Goal**: Учитель, менеджер и ученик видят реальный прогресс обучения — время, шаги, историю и предупреждения о нормативах
@@ -116,7 +123,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Foundation | 0/TBD | Not started | - |
+| 0. Foundation | 0/5 | Not started | - |
 | 1. Student Analytics & History | 0/TBD | Not started | - |
 | 2. Student Management | 0/TBD | Not started | - |
 | 3. Additional Assignments | 0/TBD | Not started | - |
