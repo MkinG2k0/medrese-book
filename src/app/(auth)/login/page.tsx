@@ -1,9 +1,15 @@
 import { LoginForm } from '@/features/auth/ui/LoginForm'
 
-export default function LoginPage() {
+type LoginPageProps = {
+	searchParams: Promise<{ reason?: string }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+	const { reason } = await searchParams
+
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-[#0D1117] p-6">
-			<LoginForm />
+			<LoginForm logoutReason={reason} />
 		</div>
 	)
 }

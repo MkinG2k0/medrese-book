@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
+import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
@@ -135,10 +136,12 @@ export function AppShell({
       .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? menuItems[0]?.key;
 
   return (
-    <Layout
-      className="h-screen min-h-screen"
-      style={{ minHeight: "100vh", height: "100vh" }}
-    >
+    <>
+      <IdleSessionGuard role={session.user.role} />
+      <Layout
+        className="h-screen min-h-screen"
+        style={{ minHeight: "100vh", height: "100vh" }}
+      >
       <Sider
         collapsible
         collapsed={collapsed}
@@ -204,5 +207,6 @@ export function AppShell({
         </Content>
       </Layout>
     </Layout>
+    </>
   );
 }

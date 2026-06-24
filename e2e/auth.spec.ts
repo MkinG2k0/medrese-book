@@ -46,4 +46,34 @@ test.describe("Авторизация", () => {
     await page.getByRole("button", { name: "Выйти" }).click();
     await expect(page).toHaveURL(/\/login/);
   });
+
+  test("учитель разлогинивается после часа неактивности", async ({
+    page,
+    context,
+  }) => {
+    await context.clock.install();
+    await loginAs(page, TEST_CODES.teacher1);
+    await expect(page).toHaveURL(/\/journal/);
+
+    await context.clock.fastForward(60 * 60 * 1000 + 1000);
+
+    await expect(page).toHaveURL(/\/login\?reason=idle/);
+    await expect(
+      page.getByText("Сессия завершена из-за неактивности"),
+    ).toBeVisible();
+  });
+
+  test("менеджер не разлогинивается после часа неактивности", async ({
+    page,
+    context,
+  }) => {
+    await context.clock.install();
+    await loginAs(page, TEST_CODES.manager);
+    await expect(page).toHaveURL(/\/admin\/users/);
+
+    await context.clock.fastForward(60 * 60 * 1000 + 1000);
+
+    await expect(page).toHaveURL(/\/admin\/users/);
+    await expect(page.getByRole("heading", { name: "Пользователи" })).toBeVisible();
+  });
 });

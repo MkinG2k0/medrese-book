@@ -31,7 +31,11 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+type LoginFormProps = {
+  logoutReason?: string;
+};
+
+export function LoginForm({ logoutReason }: LoginFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,6 +86,14 @@ export function LoginForm() {
       <Text type="secondary" className="text-center">
         Введите 6-значный код доступа
       </Text>
+
+      {logoutReason === "idle" && (
+        <Alert
+          type="info"
+          message="Сессия завершена из-за неактивности"
+          showIcon
+        />
+      )}
 
       {/* <RememberedAccountsSelect placeholder="Войти как…" /> */}
 
