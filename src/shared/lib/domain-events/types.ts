@@ -9,6 +9,18 @@ export type DomainEventAction =
 	| 'USER_LOGOUT'
 	| 'LESSON_STARTED'
 	| 'LESSON_ENDED'
+	| 'LEAVE_REQUEST_CREATED'
+	| 'LEAVE_REQUEST_APPROVED'
+	| 'LEAVE_REQUEST_REJECTED'
+	| 'SUBSTITUTION_ACTIVATED'
+
+export type LeaveDomainEventPayload = {
+	teacherId: string
+	substituteTeacherId?: string | null
+	startDate: string
+	endDate: string
+	type: 'VACATION' | 'DAY_OFF' | 'SICK_LEAVE'
+}
 
 export type DomainEvent = {
 	actorId: string
