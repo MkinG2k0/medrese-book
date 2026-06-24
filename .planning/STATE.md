@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 00-foundation-03-PLAN.md
-last_updated: "2026-06-24T18:10:45.734Z"
-last_activity: 2026-06-24 - Completed quick task 260625-2sa: улучшить UI ученика
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-06-24T23:48:34.944Z"
+last_activity: 2026-06-24
 progress:
   total_phases: 10
-  completed_phases: 0
-  total_plans: 5
-  completed_plans: 3
+  completed_phases: 1
+  total_plans: 10
+  completed_plans: 6
   percent: 60
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 00 — foundation
+**Current focus:** Phase 08 — leave-requests
 
 ## Current Position
 
-Phase: 00 (foundation) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 00
-Last activity: 2026-06-24 -- Phase 00 execution started
+Phase: 08 (leave-requests) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-06-24
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 00-foundation P01 | 12 | 3 tasks | 9 files |
 | Phase 00-foundation P02 | 35 | 3 tasks | 8 files |
 | Phase 00-foundation P03 | 50 | 3 tasks | 8 files |
+| Phase 08-leave-requests P01 | 25 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 00-foundation]: Neon drift resolved via migrate resolve before foundation_analytics_flags deploy
 - [Phase 00-foundation]: API 401 JSON in auth.config authorized callback; matcher already covers /api/*
 - [Phase 00-foundation]: GET /api/sessions studentId scope before date branch closes CONCERNS leak
+- [Phase 08]: LeaveRequest↔Substitution: FK substitutionId на LeaveRequest; leaveRequestId скаляр
+- [Phase 08]: Drift add_student_status resolved via migrate resolve before leave migration
 
 ### Pending Todos
 
@@ -80,7 +83,13 @@ None yet.
 
 - **Phase 1:** уточнить норматив 48ч — по часам программы (`Step.hours`) или по фактическому времени таймера
 - **Phase 4:** правила auto-substitute при одобрении отпуска — менеджер выбирает vs автоматический matching
+- **Phase 8:** больничный — отдельный тип или подтип отгула; границы с Phase 4
 - **Phase 0:** middleware для `/api/*` vs per-route `authorizeApiRequest` — решить при планировании
+
+### Roadmap Evolution
+
+- Phase 8 added: отпуска, отгулы и больничные — заявки преподавателя, согласование менеджером, замещение
+- Phase 9 added: realtime-уведомления и Web Push API с VAPID-ключами (отдельно от in-app Phase 6)
 
 ### Quick Tasks Completed
 
@@ -102,6 +111,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-24T17:00:10.797Z
-Stopped at: Completed 00-foundation-03-PLAN.md
+Last session: 2026-06-24T23:48:34.941Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
