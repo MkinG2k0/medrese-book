@@ -84,3 +84,41 @@ test.describe("Статусы учеников в журнале", () => {
     ).toBeVisible();
   });
 });
+
+test.describe("Статус ученика — учитель", () => {
+  test.use({ storageState: AUTH_STATE.teacher1 });
+
+  let usmanId: string;
+
+  test.beforeAll(async () => {
+    usmanId = await getStudentIdByCode(TEST_CODES.studentUsman);
+  });
+
+  test.afterEach(async () => {
+    await setStudentStatus(usmanId, "ACTIVE");
+  });
+
+  test("меняет статус в «Моя группа»", async ({ page }) => {
+    await page.goto("/my-group");
+    await page.getByRole("main").getByText(TEST_USERS.studentUsman).click();
+
+    const dialog = page.getByRole("dialog", { name: TEST_USERS.studentUsman });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Сохранить" })).toBeVisible();
+
+    await dialog.locator(".ant-select").filter({ hasText: "Активен" }).click();
+    await page.getByTitle("Пауза").click();
+    await dialog.getByRole("button", { name: "Сохранить" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    await page.goto("/journal");
+    await startLessonIfNeeded(page);
+    const usmanRow = page.getByRole("row", {
+      name: new RegExp(TEST_USERS.studentUsman),
+    });
+    await usmanRow.click();
+    await expect(
+      page.getByRole("dialog", { name: "Вывести ученика из паузы?" }),
+    ).toBeVisible();
+  });
+});

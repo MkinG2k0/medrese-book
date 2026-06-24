@@ -44,6 +44,7 @@ export default async function MyGroupPage() {
       groups={[{ id: group.id, name: group.name }]}
       levels={levelOptions}
       readOnly
+      canEditStatus
     />
   );
 }

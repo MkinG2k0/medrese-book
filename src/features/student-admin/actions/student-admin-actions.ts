@@ -11,6 +11,7 @@ import {
 	syncCompletionsForProgress,
 } from '@/shared/lib/student-progress'
 import { updateStudentProgressSchema } from '@/shared/lib/validations/student-progress'
+import { updateStudentStatusSchema } from '@/shared/lib/validations/student-status'
 
 export async function getStudentProgressEdit(studentId: string) {
 	const { student } = await requireStudentEditAccess(studentId)
@@ -122,4 +123,43 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 	revalidatePath('/student/me')
 
 	return { currentStepIdx }
+}
+
+export async function updateStudentStatus(studentId: string, input: unknown) {
+	const { session, student } = await requireStudentEditAccess(studentId)
+	if (!student) throw new Error('Ученик не найден')
+
+	const { status } = updateStudentStatusSchema.parse(input)
+	const previousStatus = student.status
+
+	if (previousStatus === status) {
+		return { status }
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await tx.student.update({
+			where: { id: studentId },
+			data: { status },
+		})
+
+		await dispatchDomainEvent(
+			{
+				actorId: session.user.id,
+				action: 'STUDENT_STATUS_CHANGED',
+				entityType: 'Student',
+				entityId: studentId,
+				payload: { previousStatus, status },
+			},
+			tx,
+		)
+	})
+
+	revalidatePath('/admin/users')
+	revalidatePath('/groups')
+	revalidatePath('/my-group')
+	revalidatePath(`/groups/${student.groupId}`)
+	revalidatePath('/journal')
+	revalidatePath(`/journal/${studentId}`)
+
+	return { status }
 }

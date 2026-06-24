@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
+import { updateStudentStatus } from "@/features/student-admin/actions/student-admin-actions";
 import { updateUser } from "@/features/user-admin/actions/user-actions";
 import { formatDate } from "@/shared/lib/utils";
 import {
@@ -65,6 +66,7 @@ type UserDetailModalProps = {
   onClose: () => void;
   canResetCode: boolean;
   readOnly?: boolean;
+  canEditStatus?: boolean;
   onResetCode?: (userId: string) => void;
   isResetting?: boolean;
 };
@@ -111,12 +113,14 @@ function StudentEditFields({
   groups,
   levels,
   readOnly = false,
+  canEditStatus = false,
 }: {
   control: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["control"];
   setValue: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["setValue"];
   groups: { id: string; name: string }[];
   levels: LevelOption[];
   readOnly?: boolean;
+  canEditStatus?: boolean;
 }) {
   const levelId = useWatch({ control, name: "levelId" });
   const localStepIndex = useWatch({ control, name: "localStepIndex" });
@@ -225,26 +229,28 @@ function StudentEditFields({
         )}
       />
 
-      <Controller
-        name="status"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Form.Item
-            label="Статус"
-            validateStatus={fieldState.error ? "error" : ""}
-            help={fieldState.error?.message}
-          >
-            <Select
-              {...field}
-              disabled={readOnly}
-              options={STUDENT_STATUS_VALUES.map((value) => ({
-                value,
-                label: STUDENT_STATUS_LABELS[value],
-              }))}
-            />
-          </Form.Item>
-        )}
-      />
+      {(canEditStatus || !readOnly) && (
+        <Controller
+          name="status"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Form.Item
+              label="Статус"
+              validateStatus={fieldState.error ? "error" : ""}
+              help={fieldState.error?.message}
+            >
+              <Select
+                {...field}
+                disabled={readOnly && !canEditStatus}
+                options={STUDENT_STATUS_VALUES.map((value) => ({
+                  value,
+                  label: STUDENT_STATUS_LABELS[value],
+                }))}
+              />
+            </Form.Item>
+          )}
+        />
+      )}
     </>
   );
 }
@@ -256,12 +262,15 @@ export function UserDetailModal({
   onClose,
   canResetCode,
   readOnly = false,
+  canEditStatus = false,
   onResetCode,
   isResetting,
 }: UserDetailModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isStudent = user?.role === "STUDENT" && !!user.student;
+  const statusOnlyMode = readOnly && canEditStatus && isStudent;
+  const showSaveButton = !readOnly || statusOnlyMode;
 
   const studentForm = useForm<UpdateStudentUserFormInput>({
     resolver: zodResolver(updateStudentUserFormSchema),
@@ -313,6 +322,32 @@ export function UserDetailModal({
     });
   };
 
+  const handleStatusOnlySubmit = () => {
+    if (!user?.student) return;
+
+    startTransition(async () => {
+      await updateStudentStatus(user.student!.id, {
+        status: studentForm.getValues("status"),
+      });
+      router.refresh();
+      onClose();
+    });
+  };
+
+  const handleSave = () => {
+    if (statusOnlyMode) {
+      handleStatusOnlySubmit();
+      return;
+    }
+
+    if (isStudent) {
+      studentForm.handleSubmit(handleStudentSubmit)();
+      return;
+    }
+
+    staffForm.handleSubmit(handleStaffSubmit)();
+  };
+
   return (
     <Modal
       title={user?.name}
@@ -326,16 +361,8 @@ export function UserDetailModal({
             </Button>
           )}
           <Button onClick={onClose}>Закрыть</Button>
-          {!readOnly && (
-            <Button
-              type="primary"
-              loading={isPending}
-              onClick={
-                isStudent
-                  ? studentForm.handleSubmit(handleStudentSubmit)
-                  : staffForm.handleSubmit(handleStaffSubmit)
-              }
-            >
+          {showSaveButton && (
+            <Button type="primary" loading={isPending} onClick={handleSave}>
               Сохранить
             </Button>
           )}
@@ -356,7 +383,7 @@ export function UserDetailModal({
             <Descriptions.Item label="Создан">
               {formatDate(user.createdAt)}
             </Descriptions.Item>
-            {isStudent && user.student && (
+            {isStudent && user.student && !canEditStatus && (
               <Descriptions.Item label="Статус">
                 <Tag>{STUDENT_STATUS_LABELS[user.student.status]}</Tag>
               </Descriptions.Item>
@@ -386,6 +413,7 @@ export function UserDetailModal({
                   groups={groups}
                   levels={levels}
                   readOnly={readOnly}
+                  canEditStatus={canEditStatus}
                 />
               </Form>
             </form>

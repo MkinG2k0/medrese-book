@@ -12,6 +12,10 @@ import {
   UserDetailModal,
   type UserDetail,
 } from "@/features/user-admin/ui/UserDetailModal";
+import {
+  STUDENT_STATUS_LABELS,
+  type StudentStatus,
+} from "@/shared/lib/student-status";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -23,6 +27,13 @@ type GroupStudentsTableProps = {
   levels: LevelOption[];
   canResetCode?: boolean;
   readOnly?: boolean;
+  canEditStatus?: boolean;
+};
+
+const STATUS_TAG_COLORS: Record<StudentStatus, string> = {
+  ACTIVE: "green",
+  PAUSE: "gold",
+  ARCHIVE: "default",
 };
 
 export function GroupStudentsTable({
@@ -33,6 +44,7 @@ export function GroupStudentsTable({
   levels,
   canResetCode = false,
   readOnly = false,
+  canEditStatus = false,
 }: GroupStudentsTableProps) {
   const [isPending, startTransition] = useTransition();
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
@@ -124,6 +136,18 @@ export function GroupStudentsTable({
         render: (_, record) => record.student?.levelTitle ?? "—",
       },
       {
+        title: "Статус",
+        key: "status",
+        render: (_, record) => {
+          const status = record.student?.status ?? "ACTIVE";
+          return (
+            <Tag color={STATUS_TAG_COLORS[status]}>
+              {STUDENT_STATUS_LABELS[status]}
+            </Tag>
+          );
+        },
+      },
+      {
         title: "Текущий шаг",
         key: "currentStepIdx",
         render: (_, record) => (
@@ -157,6 +181,7 @@ export function GroupStudentsTable({
         onClose={() => setSelectedUser(null)}
         canResetCode={canResetCode}
         readOnly={readOnly}
+        canEditStatus={canEditStatus}
         onResetCode={canResetCode ? handleReset : undefined}
         isResetting={isPending}
       />
