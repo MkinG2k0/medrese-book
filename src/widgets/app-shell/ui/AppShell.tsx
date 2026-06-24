@@ -17,7 +17,6 @@ import { useMemo, useState } from "react";
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
 import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
 import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
-import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
 import { AppLogo } from "@/shared/ui/AppLogo";
@@ -203,13 +202,6 @@ export function AppShell({
                 currentUserId={session.user.id}
                 currentUserName={session.user.name}
                 collapsed={collapsed}
-              />
-            )}
-            {session.user.role !== "STUDENT" && (
-              <RememberedAccountsSelect
-                currentUserId={session.user.id}
-                collapsed={collapsed}
-                placeholder="Сменить учётку"
               />
             )}
             <Button

@@ -18,6 +18,8 @@ Brownfield-развитие журнала медресе: сначала тех
 - [ ] **Phase 5: Session Security** — автовыход и логирование входов/выходов
 - [ ] **Phase 6: Notifications** — колокольчик и событийные уведомления
 - [ ] **Phase 7: Audit, Teacher Analytics & Chat** — журнал аудита, аналитика преподавателя, чат
+- [ ] **Phase 8: Leave Requests** — отпуска, отгулы, больничные: заявки, календарь, согласование, замещение
+- [ ] **Phase 9: Realtime & Web Push** — realtime-доставка уведомлений, Web Push API с VAPID
 
 ## Phase Details
 
@@ -119,7 +121,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -131,7 +133,41 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 5. Session Security | 0/TBD | Not started | - |
 | 6. Notifications | 0/TBD | Not started | - |
 | 7. Audit, Teacher Analytics & Chat | 0/TBD | Not started | - |
+| 8. Leave Requests | 0/TBD | Not planned | - |
+| 9. Realtime & Web Push | 0/TBD | Not planned | - |
+
+### Phase 8: Leave Requests — отпуска, отгулы и больничные
+**Goal**: Преподаватель подаёт заявку на отсутствие через календарь; менеджер согласовывает в календаре и гриде; при одобрении назначается замещающий; переключение учётки преподавателя — только через активное замещение
+**Depends on**: Phase 2, Phase 4, Phase 6
+**Requirements**: LEAV-01, LEAV-02, LEAV-03, LEAV-04, TCHR-01, TCHR-03, TCHR-04, TCHR-05 (+ новые LEAV-05… при планировании: больничный, календарь учителя)
+**Success Criteria** (what must be TRUE):
+  1. Преподаватель на странице «Календарь» создаёт отпуск или отгул через модалку (диапазон дат + описание); заявка получает статус «Создана»
+  2. Менеджер видит новую заявку в in-app уведомлениях (Phase 6) и на календаре всех отпусков: «Создана» — серым, «Подтверждена» — зелёным; отклонённые не показываются
+  3. Грид заявок под календарём: менеджер принимает или отклоняет; при отклонении — обязательная причина
+  4. При принятии менеджер выбирает замещающего преподавателя на период отсутствия; замещение активируется автоматически
+  5. Замещающий получает уведомление и может войти в учётку замещаемого через «Сменить учётку»; без активного замещения преподаватели не переключают чужие учётки
+**Context**: `.planning/phases/08-leave-requests/08-CONTEXT.md`
+**Plans**: TBD
+
+Plans:
+- [ ] TBD (run `/gsd-plan-phase 8` to break down)
+
+### Phase 9: Realtime notifications and Web Push API with VAPID keys
+**Goal**: Пользователи получают уведомления в реальном времени и через Web Push; колокольчик работает для всех ролей
+**Depends on**: Phase 6, Phase 8
+**Requirements**: NOTF-05… (новые: realtime, web-push, vapid — добавить при планировании)
+**Success Criteria** (what must be TRUE):
+  1. Новое in-app уведомление появляется без перезагрузки страницы (realtime-канал)
+  2. Пользователь может подписаться на Web Push; push приходит при ключевых событиях (заявка, решение, замещение)
+  3. VAPID-ключи настроены через env; service worker регистрируется корректно
+  4. Колокольчик и счётчик непрочитанных доступны всем ролям
+**Context**: `.planning/phases/09-realtime-notifications-and-web-push-api-with-vapid-keys/09-CONTEXT.md`
+**Plans**: TBD
+
+Plans:
+- [ ] TBD (run `/gsd-plan-phase 9` to break down)
 
 ---
 *Roadmap created: 2026-06-24*
-*Granularity: standard (8 phases)*
+*Updated: 2026-06-25 — Phases 8–9 added*
+*Granularity: extended (10 phases)*

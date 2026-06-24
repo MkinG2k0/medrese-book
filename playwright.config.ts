@@ -4,7 +4,7 @@ import { loadTestEnv } from "./e2e/helpers/load-test-env";
 
 loadTestEnv();
 
-const testPort = process.env.PLAYWRIGHT_PORT ?? "3001";
+const testPort = process.env.PLAYWRIGHT_PORT ?? "3005";
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${testPort}`;
 
@@ -59,7 +59,7 @@ export default defineConfig({
   ],
   globalSetup: "./e2e/global-setup.ts",
   webServer: {
-    command: "pnpm dev --port 3005",
+    command: `pnpm dev --port ${testPort}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 10_000,

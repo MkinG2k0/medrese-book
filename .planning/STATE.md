@@ -7,7 +7,7 @@ stopped_at: Completed 00-foundation-03-PLAN.md
 last_updated: "2026-06-24T18:10:45.734Z"
 last_activity: 2026-06-24 - Completed quick task 260625-2sa: улучшить UI ученика
 progress:
-  total_phases: 8
+  total_phases: 10
   completed_phases: 0
   total_plans: 5
   completed_plans: 3

@@ -9,11 +9,6 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { loginWithCode } from "@/features/auth/actions/login-actions";
-import {
-  addRememberedAccount,
-  shouldRememberAccount,
-} from "@/features/auth/lib/remembered-accounts-storage";
-import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -65,14 +60,6 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
       return;
     }
 
-    if (shouldRememberAccount(session.user.role)) {
-      addRememberedAccount({
-        id: session.user.id,
-        name: session.user.name,
-        role: session.user.role,
-        code: values.code,
-      });
-    }
     router.push("/dashboard");
   };
 
@@ -98,8 +85,6 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
           showIcon
         />
       )}
-
-      {/* <RememberedAccountsSelect placeholder="Войти как…" /> */}
 
       <Controller
         name="code"
