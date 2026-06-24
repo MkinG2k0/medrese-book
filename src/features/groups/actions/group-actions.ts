@@ -70,7 +70,6 @@ export async function createGroup(input: unknown) {
 	const group = await prisma.group.create({ data })
 	revalidatePath('/groups')
 	revalidatePath('/my-group')
-	revalidatePath('/admin/groups')
 	return group
 }
 

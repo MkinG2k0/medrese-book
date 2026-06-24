@@ -35,7 +35,7 @@ test.describe("Навигация по ролям", () => {
     test("видит админ-разделы", async ({ page }) => {
       await page.goto("/admin/users");
       await expect(page.getByRole("menuitem", { name: "Пользователи" })).toBeVisible();
-      await expect(page.getByRole("menuitem", { name: "Группы (админ)" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Группы" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Программа" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Награды" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Журнал" })).toHaveCount(0);

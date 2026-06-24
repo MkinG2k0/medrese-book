@@ -1,8 +1,11 @@
 "use client";
 
-import { Button, Table, Tag } from "antd";
+import { Button, Modal, Table, Tag } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
+import { CreateGroupForm } from "@/features/groups/ui/CreateGroupForm";
 import Title from "@/shared/ui/Title";
 
 type GroupRow = {
@@ -12,14 +15,22 @@ type GroupRow = {
   studentCount: number;
 };
 
-export function GroupsList({ groups }: { groups: GroupRow[] }) {
+type GroupsListProps = {
+  groups: GroupRow[];
+  teachers: { id: string; name: string }[];
+};
+
+export function GroupsList({ groups, teachers }: GroupsListProps) {
+  const [showCreate, setShowCreate] = useState(false);
+  const router = useRouter();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Title level={3}>Группы</Title>
-        <Link href="/admin/groups">
-          <Button type="primary">Создать группу</Button>
-        </Link>
+        <Button type="primary" onClick={() => setShowCreate(true)}>
+          Создать группу
+        </Button>
       </div>
       <Table
         dataSource={groups}
@@ -44,6 +55,22 @@ export function GroupsList({ groups }: { groups: GroupRow[] }) {
           },
         ]}
       />
+
+      <Modal
+        title="Создать группу"
+        open={showCreate}
+        onCancel={() => setShowCreate(false)}
+        footer={null}
+        destroyOnHidden
+      >
+        <CreateGroupForm
+          teachers={teachers}
+          onSuccess={() => {
+            setShowCreate(false);
+            router.refresh();
+          }}
+        />
+      </Modal>
     </div>
   );
 }

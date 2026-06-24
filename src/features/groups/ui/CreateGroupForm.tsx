@@ -7,9 +7,10 @@ import { createGroup } from '@/features/groups/actions/group-actions'
 
 type CreateGroupFormProps = {
 	teachers: { id: string; name: string }[]
+	onSuccess?: () => void
 }
 
-export function CreateGroupForm({ teachers }: CreateGroupFormProps) {
+export function CreateGroupForm({ teachers, onSuccess }: CreateGroupFormProps) {
 	const [isPending, startTransition] = useTransition()
 	const [form] = Form.useForm()
 
@@ -17,11 +18,12 @@ export function CreateGroupForm({ teachers }: CreateGroupFormProps) {
 		startTransition(async () => {
 			await createGroup(values)
 			form.resetFields()
+			onSuccess?.()
 		})
 	}
 
 	return (
-		<Form form={form} layout="vertical" onFinish={onFinish} className="max-w-md">
+		<Form form={form} layout="vertical" onFinish={onFinish}>
 			<Form.Item name="name" label="Название" rules={[{ required: true }]}>
 				<Input />
 			</Form.Item>

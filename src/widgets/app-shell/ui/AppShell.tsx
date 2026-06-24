@@ -89,12 +89,6 @@ const allMenuItems: MenuItem[] = [
     roles: ["MANAGER", "SUPER_ADMIN"],
   },
   {
-    key: "/admin/groups",
-    icon: <TeamOutlined />,
-    label: "Группы (админ)",
-    roles: ["MANAGER", "SUPER_ADMIN"],
-  },
-  {
     key: "/admin/program",
     icon: <BookOutlined />,
     label: "Программа",
