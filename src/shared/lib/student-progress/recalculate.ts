@@ -18,15 +18,24 @@ export async function recalculateStudentStepIdx(
 	const student = await db.student.findUnique({
 		where: { id: studentId },
 		include: {
-			completions: true,
 			level: { include: { steps: { orderBy: { order: 'asc' } } } },
 		},
 	})
 
 	if (!student) return
 
+	const levelStepIds = student.level.steps.map((step) => step.id)
+	const levelCompletions =
+		levelStepIds.length === 0
+			? []
+			: await db.stepCompletion.findMany({
+					where: { studentId, stepId: { in: levelStepIds } },
+					select: { stepId: true, grade: true },
+					orderBy: { createdAt: 'asc' },
+				})
+
 	const stepOffset = await getStepOffsetForLevel(student.level.number)
-	const completionsByStepId = getCompletionsByStepId(student.completions)
+	const completionsByStepId = getCompletionsByStepId(levelCompletions)
 	const steps = student.level.steps
 	const passedInCurrentLevel = countConsecutivePassedSteps(
 		steps,

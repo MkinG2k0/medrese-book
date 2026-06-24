@@ -26,12 +26,6 @@ export async function POST(request: Request) {
   });
   if ("error" in authResult) return authResult.error;
 
-  const student = await prisma.student.findUnique({
-    where: { id: studentId },
-  });
-
-  if (!student) return error("Ученик не найден", 404);
-
   const calendarDay = getLocalDateString(new Date(date));
   const dayRange = getCalendarDayQueryRange(calendarDay);
   const existingSessions = await prisma.session.findMany({
@@ -51,41 +45,44 @@ export async function POST(request: Request) {
     note,
   };
 
-  const savedSession = existingSession
-    ? await prisma.session.update({
-        where: { id: existingSession.id },
-        data: {
-          ...sessionData,
-          completions: {
-            deleteMany: {},
-            create: completions.map((c) => ({
-              studentId,
-              stepId: c.stepId,
-              grade: c.grade,
-              note: c.note,
-            })),
+  const savedSession = await prisma.$transaction(async (tx) => {
+    const session = existingSession
+      ? await tx.session.update({
+          where: { id: existingSession.id },
+          data: {
+            ...sessionData,
+            completions: {
+              deleteMany: {},
+              create: completions.map((c) => ({
+                studentId,
+                stepId: c.stepId,
+                grade: c.grade,
+                note: c.note,
+              })),
+            },
           },
-        },
-        include: { completions: true },
-      })
-    : await prisma.session.create({
-        data: {
-          studentId,
-          date: toSessionDate(calendarDay),
-          ...sessionData,
-          completions: {
-            create: completions.map((c) => ({
-              studentId,
-              stepId: c.stepId,
-              grade: c.grade,
-              note: c.note,
-            })),
+          include: { completions: true },
+        })
+      : await tx.session.create({
+          data: {
+            studentId,
+            date: toSessionDate(calendarDay),
+            ...sessionData,
+            completions: {
+              create: completions.map((c) => ({
+                studentId,
+                stepId: c.stepId,
+                grade: c.grade,
+                note: c.note,
+              })),
+            },
           },
-        },
-        include: { completions: true },
-      });
+          include: { completions: true },
+        });
 
-  await recalculateStudentStepIdx(studentId);
+    await recalculateStudentStepIdx(studentId, tx);
+    return session;
+  });
 
   revalidatePath("/journal");
   revalidatePath(`/journal/${studentId}`);

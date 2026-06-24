@@ -6,5 +6,6 @@ export {
 	getLocalStepIdx,
 	toGlobalStepNumber,
 	getTotalProgramSteps,
+	invalidateStepOffsetCache,
 } from './offsets'
 export { isCountableCompletion, isRealLessonSession } from './filters'
