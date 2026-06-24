@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { UserRole } from '@/entities/user'
 import { authConfig } from '@/shared/lib/auth.config'
 import { prisma } from '@/shared/lib/prisma'
+import { getActiveSubstitutionsForSubstitute } from '@/shared/lib/substitution-access'
 
 const loginSchema = z.object({
 	code: z.string().length(6).regex(/^\d{6}$/),
@@ -40,14 +41,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				if (typeof rawSwitchOwnerId === 'string' && rawSwitchOwnerId) {
 					const owner = await prisma.user.findUnique({
 						where: { id: rawSwitchOwnerId },
-						select: { role: true },
+						select: { role: true, teacher: { select: { id: true } } },
 					})
-					if (
-						owner &&
-						(owner.role === 'SUPER_ADMIN' || owner.role === 'MANAGER') &&
-						rawSwitchOwnerId !== user.id
-					) {
-						switchOwnerId = rawSwitchOwnerId
+
+					if (owner && rawSwitchOwnerId !== user.id) {
+						if (owner.role === 'SUPER_ADMIN' || owner.role === 'MANAGER') {
+							switchOwnerId = rawSwitchOwnerId
+						} else if (
+							owner.role === 'TEACHER' &&
+							owner.teacher?.id &&
+							user.teacher
+						) {
+							const active = await getActiveSubstitutionsForSubstitute(
+								owner.teacher.id,
+							)
+							if (
+								active.some(
+									(substitution) =>
+										substitution.absentTeacherId === user.teacher!.id,
+								)
+							) {
+								switchOwnerId = rawSwitchOwnerId
+							}
+						}
 					}
 				}
 

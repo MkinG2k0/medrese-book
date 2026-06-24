@@ -3,6 +3,7 @@ import type { NextResponse } from 'next/server'
 
 import { forbidden, unauthorized } from '@/shared/api'
 import { auth } from '@/shared/lib/auth'
+import { canAccessGroupAsTeacher } from '@/shared/lib/group-access'
 import { prisma, type Role } from '@/shared/lib/prisma'
 
 export type ApiAuthContext = {
@@ -18,6 +19,13 @@ type AuthorizeOptions = {
 
 type AuthorizeSuccess = { session: Session }
 type AuthorizeFailure = { error: NextResponse }
+
+async function teacherCanAccessGroupTeacher(
+	teacherId: string | null,
+	groupTeacherId: string,
+): Promise<boolean> {
+	return canAccessGroupAsTeacher(teacherId, groupTeacherId)
+}
 
 export async function authorizeApiRequest(
 	options: AuthorizeOptions = {},
@@ -51,7 +59,13 @@ export async function authorizeApiRequest(
 			where: { id: ctx.completionId },
 			include: { student: { include: { group: true } } },
 		})
-		if (!completion || completion.student.group.teacherId !== teacherId) {
+		if (
+			!completion ||
+			!(await teacherCanAccessGroupTeacher(
+				teacherId,
+				completion.student.group.teacherId,
+			))
+		) {
 			return { error: forbidden() }
 		}
 	}
@@ -61,14 +75,22 @@ export async function authorizeApiRequest(
 			where: { id: ctx.studentId },
 			include: { group: true },
 		})
-		if (!student || student.group.teacherId !== teacherId) {
+		if (
+			!student ||
+			!(await teacherCanAccessGroupTeacher(teacherId, student.group.teacherId))
+		) {
 			return { error: forbidden() }
 		}
 	}
 
 	if (role === 'TEACHER' && ctx.groupId) {
 		const group = await prisma.group.findUnique({ where: { id: ctx.groupId } })
-		if (!group || group.teacherId !== teacherId) return { error: forbidden() }
+		if (
+			!group ||
+			!(await teacherCanAccessGroupTeacher(teacherId, group.teacherId))
+		) {
+			return { error: forbidden() }
+		}
 	}
 
 	return { session }
