@@ -43,6 +43,16 @@ export const authConfig: NextAuthConfig = {
 			const {pathname} = request.nextUrl
 			const session = auth
 
+			if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
+				if (!session?.user) {
+					return NextResponse.json(
+						{data: null, error: 'Требуется авторизация'},
+						{status: 401},
+					)
+				}
+				return true
+			}
+
 			if (pathname === '/login') {
 				if (session?.user) {
 					return redirectTo(request, getDefaultRedirect(session.user.role))
