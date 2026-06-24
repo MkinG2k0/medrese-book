@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 00-foundation-03-PLAN.md
 last_updated: "2026-06-24T18:10:45.734Z"
-last_activity: 2026-06-24 - Completed quick task 260625-22r: модалка истории учёбы из аналитики
+last_activity: 2026-06-25 - Completed quick task 260625-28w: статусы учеников (активен/пауза/архив)
 progress:
   total_phases: 8
   completed_phases: 0
@@ -93,6 +93,7 @@ None yet.
 | 260625-1jf | Аналитика учителей: грид уроков, вход/старт/конец/длительность, день или диапазон | 2026-06-24 | f12a9a6 | [260625-1jf-teacher-lessons-analytics](./quick/260625-1jf-teacher-lessons-analytics/) |
 | 260625-1q6 | Страница группы — список учеников через UsersTable | 2026-06-24 | 7efadcd | [260625-1q6-userstable](./quick/260625-1q6-userstable/) |
 | 260625-22r | Модалка истории учёбы по клику на ученика в аналитике | 2026-06-24 | 732781a | [260625-22r-analytics-student-history-modal](./quick/260625-22r-analytics-student-history-modal/) |
+| 260625-28w | Статусы учеников: активен / пауза / архив | 2026-06-25 | c9e78cd | [260625-28w-student-status](./quick/260625-28w-student-status/) |
 
 ## Session Continuity
 
