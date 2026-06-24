@@ -3,6 +3,7 @@
 import {
   BarChartOutlined,
   BookOutlined,
+  CalendarOutlined,
   HistoryOutlined,
   LogoutOutlined,
   TeamOutlined,
@@ -55,6 +56,12 @@ const allMenuItems: MenuItem[] = [
     key: "/my-group",
     icon: <TeamOutlined />,
     label: "Моя группа",
+    roles: ["TEACHER"],
+  },
+  {
+    key: "/calendar",
+    icon: <CalendarOutlined />,
+    label: "Календарь",
     roles: ["TEACHER"],
   },
   {

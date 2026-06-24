@@ -69,6 +69,7 @@ export const authConfig: NextAuthConfig = {
 
 			const roleRoutes: Record<string, UserRole[]> = {
 				'/admin': ['SUPER_ADMIN', 'MANAGER'],
+				'/calendar': ['TEACHER'],
 				'/journal': ['TEACHER'],
 				'/my-group': ['TEACHER'],
 				'/groups': ['MANAGER', 'SUPER_ADMIN'],
