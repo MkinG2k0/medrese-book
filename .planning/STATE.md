@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Roadmap initialization complete
-last_updated: "2026-06-24T15:56:52.063Z"
-last_activity: 2026-06-24 -- Phase 0 planning complete
+stopped_at: Completed 00-foundation-01-PLAN.md
+last_updated: "2026-06-24T16:05:06.299Z"
+last_activity: 2026-06-24
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 0 of 7 (Foundation)
-Plan: Not started
+Phase: 0 (Foundation) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-24 -- Phase 0 planning complete
+Last activity: 2026-06-24
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 00-foundation P01 | 12 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,7 @@ Recent decisions affecting current work:
 - Roadmap: Phase 0 (foundation) обязателен до пользовательских фич
 - Roadmap: аналитика ученика (Phase 1) — ядро ценности; чат в Phase 7
 - Roadmap: security (idle timeout) отделён от substitution auth (Phase 4 vs 5)
+- [Phase 00-foundation]: e2e db helper uses pg Pool not Prisma to avoid Playwright ESM errors
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-24
-Stopped at: Roadmap initialization complete
+Last session: 2026-06-24T16:05:06.297Z
+Stopped at: Completed 00-foundation-01-PLAN.md
 Resume file: None

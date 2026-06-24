@@ -33,7 +33,7 @@ Brownfield-развитие журнала медресе: сначала тех
 **Plans**: 5 plans
 
 Plans:
-- [ ] 00-01-PLAN.md — Wave 0: vitest + E2E test scaffolding (RED)
+- [x] 00-01-PLAN.md — Wave 0: vitest + E2E test scaffolding (RED)
 - [ ] 00-02-PLAN.md — FND-01: Prisma flags, backfill, analytics-queries
 - [ ] 00-03-PLAN.md — FND-02: authorizeApiRequest + middleware + API refactor
 - [ ] 00-04-PLAN.md — FND-03: student-progress module + atomic mutations
