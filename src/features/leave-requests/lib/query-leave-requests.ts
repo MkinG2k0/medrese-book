@@ -65,6 +65,7 @@ export async function queryLeaveRequests(
 
 	return requests.map((request) => ({
 		id: request.id,
+		teacherId: request.teacherId,
 		type: request.type,
 		status: request.status,
 		startDate: request.startDate.toISOString(),

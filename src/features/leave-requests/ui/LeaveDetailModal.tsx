@@ -1,6 +1,6 @@
 'use client'
 
-import { Descriptions, Modal, Tag } from 'antd'
+import { Descriptions, Modal, Tag, Button } from 'antd'
 import dayjs from 'dayjs'
 
 import type { LeaveRequestListItem } from '@/entities/leave-request/model/types'
@@ -35,11 +35,25 @@ function formatPeriod(startDate: string, endDate: string) {
 
 type LeaveDetailModalProps = {
 	request: LeaveRequestListItem | null
+	variant?: 'teacher' | 'manager'
 	onClose: () => void
+	onApprove?: (request: LeaveRequestListItem) => void
+	onReject?: (request: LeaveRequestListItem) => void
 }
 
-export function LeaveDetailModal({ request, onClose }: LeaveDetailModalProps) {
+export function LeaveDetailModal({
+	request,
+	variant = 'teacher',
+	onClose,
+	onApprove,
+	onReject,
+}: LeaveDetailModalProps) {
 	const title = request ? 'Заявка на отсутствие' : ''
+	const showManagerActions =
+		variant === 'manager' &&
+		request?.status === 'CREATED' &&
+		onApprove != null &&
+		onReject != null
 
 	return (
 		<Modal
@@ -48,10 +62,30 @@ export function LeaveDetailModal({ request, onClose }: LeaveDetailModalProps) {
 			onCancel={onClose}
 			destroyOnHidden
 			width={480}
-			footer={null}
+			footer={
+				showManagerActions && request
+					? [
+							<Button key="reject" danger onClick={() => onReject(request)}>
+								Отклонить
+							</Button>,
+							<Button
+								key="approve"
+								type="primary"
+								onClick={() => onApprove(request)}
+							>
+								Подтвердить
+							</Button>,
+						]
+					: null
+			}
 		>
 			{request && (
 				<Descriptions column={1} size="small" className="pt-2">
+					{variant === 'manager' && (
+						<Descriptions.Item label="Преподаватель">
+							{request.teacherName}
+						</Descriptions.Item>
+					)}
 					<Descriptions.Item label="Статус">
 						<Tag color={LEAVE_STATUS_TAG_COLORS[request.status]}>
 							{getLeaveRequestStatusLabel(request.status)}
@@ -68,6 +102,11 @@ export function LeaveDetailModal({ request, onClose }: LeaveDetailModalProps) {
 					<Descriptions.Item label="Описание">
 						{request.description}
 					</Descriptions.Item>
+					{request.substituteName && (
+						<Descriptions.Item label="Замещающий">
+							{request.substituteName}
+						</Descriptions.Item>
+					)}
 					{request.status === 'REJECTED' && request.rejectionReason && (
 						<Descriptions.Item label="Причина отклонения">
 							{request.rejectionReason}

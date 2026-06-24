@@ -12,9 +12,12 @@ import {
 } from '@/features/leave-requests/lib/leave-labels'
 import Text from '@/shared/ui/Text'
 
+type LeaveCalendarMode = 'teacher' | 'manager'
+
 type LeaveCalendarProps = {
 	requests: LeaveRequestListItem[]
 	loading?: boolean
+	mode?: LeaveCalendarMode
 	onDateClick: (request: LeaveRequestListItem) => void
 }
 
@@ -47,13 +50,27 @@ function getBadgeClassName(status: LeaveRequestListItem['status']) {
 	return 'bg-neutral-600/40 text-neutral-300'
 }
 
-function getCellLabel(request: LeaveRequestListItem) {
+function abbreviateTeacherSurname(fullName: string) {
+	const parts = fullName.trim().split(/\s+/)
+	const surname = parts.length > 1 ? parts[parts.length - 1] : parts[0]
+	if (surname.length <= 4) return surname
+	return `${surname.slice(0, 3)}.`
+}
+
+function getCellLabel(
+	request: LeaveRequestListItem,
+	mode: LeaveCalendarMode,
+) {
+	if (mode === 'manager') {
+		return abbreviateTeacherSurname(request.teacherName)
+	}
 	return `${getLeaveRequestTypeLabel(request.type)} · ${getLeaveRequestStatusLabel(request.status)}`
 }
 
 export function LeaveCalendar({
 	requests,
 	loading = false,
+	mode = 'teacher',
 	onDateClick,
 }: LeaveCalendarProps) {
 	const requestsByDay = useMemo(
@@ -80,15 +97,19 @@ export function LeaveCalendar({
 	}
 
 	if (visibleRequestCount === 0) {
+		const emptyHeading =
+			mode === 'manager' ? 'Нет заявок в этом месяце' : 'Заявок пока нет'
+		const emptyBody =
+			mode === 'manager'
+				? 'Новые заявки отображаются серым; после подтверждения — зелёным.'
+				: 'Создайте отпуск, отгул или больничный — заявка появится здесь после отправки.'
+
 		return (
 			<div className="flex flex-col gap-2 py-8 text-center">
 				<Text strong className="text-base">
-					Заявок пока нет
+					{emptyHeading}
 				</Text>
-				<Text type="secondary">
-					Создайте отпуск, отгул или больничный — заявка появится здесь после
-					отправки.
-				</Text>
+				<Text type="secondary">{emptyBody}</Text>
 			</div>
 		)
 	}
@@ -115,7 +136,7 @@ export function LeaveCalendar({
 							onDateClick(request)
 						}}
 					>
-						{getCellLabel(request)}
+						{getCellLabel(request, mode)}
 					</button>
 				))}
 				{overflow > 0 && (

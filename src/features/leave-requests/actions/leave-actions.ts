@@ -226,6 +226,21 @@ export async function rejectLeaveRequest(input: unknown) {
 	return serializeLeaveRequest(updated)
 }
 
+export async function getLeaveRequestTeachers() {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+
+	const teachers = await prisma.teacher.findMany({
+		where: { user: { role: 'TEACHER' } },
+		include: { user: { select: { name: true } } },
+		orderBy: { user: { name: 'asc' } },
+	})
+
+	return teachers.map((teacher) => ({
+		id: teacher.id,
+		name: teacher.user.name,
+	}))
+}
+
 export async function listLeaveRequests(filters: LeaveRequestListFilters = {}) {
 	const session = await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
 

@@ -2,6 +2,7 @@ import type { LeaveRequestStatus, LeaveRequestType } from '@/shared/lib/prisma'
 
 export type LeaveRequestListItem = {
 	id: string
+	teacherId: string
 	type: LeaveRequestType
 	status: LeaveRequestStatus
 	startDate: string
