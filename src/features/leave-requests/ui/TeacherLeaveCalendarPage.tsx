@@ -5,7 +5,9 @@ import { useState } from 'react'
 
 import { useLeaveRequests } from '@/entities/leave-request/api/use-leave-requests'
 import type { LeaveRequestListItem } from '@/entities/leave-request/model/types'
+import { CreateLeaveModal } from '@/features/leave-requests/ui/CreateLeaveModal'
 import { LeaveCalendar } from '@/features/leave-requests/ui/LeaveCalendar'
+import { LeaveDetailModal } from '@/features/leave-requests/ui/LeaveDetailModal'
 import type { LeaveRequestType } from '@/shared/lib/prisma'
 import Title from '@/shared/ui/Title'
 
@@ -49,11 +51,17 @@ export function TeacherLeaveCalendarPage() {
 			/>
 
 			{createLeaveType != null && (
-				<span className="sr-only">{createLeaveType}</span>
+				<CreateLeaveModal
+					open
+					leaveType={createLeaveType}
+					onClose={() => setCreateLeaveType(null)}
+				/>
 			)}
-			{selectedRequest != null && (
-				<span className="sr-only">{selectedRequest.id}</span>
-			)}
+
+			<LeaveDetailModal
+				request={selectedRequest}
+				onClose={() => setSelectedRequest(null)}
+			/>
 		</div>
 	)
 }
