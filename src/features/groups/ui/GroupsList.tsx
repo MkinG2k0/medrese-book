@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
 import Link from "next/link";
 
 import Title from "@/shared/ui/Title";
@@ -15,7 +15,12 @@ type GroupRow = {
 export function GroupsList({ groups }: { groups: GroupRow[] }) {
   return (
     <div className="flex flex-col gap-4">
-      <Title level={3}>Группы</Title>
+      <div className="flex items-center justify-between">
+        <Title level={3}>Группы</Title>
+        <Link href="/admin/groups">
+          <Button type="primary">Создать группу</Button>
+        </Link>
+      </div>
       <Table
         dataSource={groups}
         rowKey="id"
