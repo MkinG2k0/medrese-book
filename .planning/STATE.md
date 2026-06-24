@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 00-foundation-03-PLAN.md
 last_updated: "2026-06-24T18:10:45.734Z"
-last_activity: 2026-06-24 - Completed quick task 260625-2ov: добавь кнопку создать группу в /groups
+last_activity: 2026-06-24 - Completed quick task 260625-2sa: улучшить UI ученика
 progress:
   total_phases: 8
   completed_phases: 0
@@ -96,6 +96,7 @@ None yet.
 | 260625-28w | Статусы учеников: активен / пауза / архив | 2026-06-25 | c9e78cd | [260625-28w-student-status](./quick/260625-28w-student-status/) |
 | 260625-2mj | интегрируй иконку в приложение | 2026-06-24 | e79075f | [260625-2mj-integrate-app-icon](./quick/260625-2mj-integrate-app-icon/) |
 | 260625-2ov | добавь кнопку создать группу в /groups | 2026-06-24 | c3ed60c | [260625-2ov-groups](./quick/260625-2ov-groups/) |
+| 260625-2sa | улучшить UI ученика: уроки на отдельной странице, скрыть смену учётки | 2026-06-24 | 0e67df9 | [260625-2sa-ui-student](./quick/260625-2sa-ui-student/) |
 
 ## Session Continuity
 
