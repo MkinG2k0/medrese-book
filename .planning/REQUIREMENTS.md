@@ -129,13 +129,66 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmapper) | | |
+| FND-01 | Phase 0 | Pending |
+| FND-02 | Phase 0 | Pending |
+| FND-03 | Phase 0 | Pending |
+| FND-04 | Phase 0 | Pending |
+| ANLY-01 | Phase 1 | Pending |
+| ANLY-02 | Phase 1 | Pending |
+| ANLY-03 | Phase 1 | Pending |
+| ANLY-04 | Phase 1 | Pending |
+| ANLY-05 | Phase 1 | Pending |
+| ANLY-06 | Phase 1 | Pending |
+| ANLY-07 | Phase 1 | Pending |
+| ANLY-08 | Phase 1 | Pending |
+| ANLY-09 | Phase 1 | Pending |
+| ANLY-10 | Phase 1 | Pending |
+| STUD-01 | Phase 2 | Pending |
+| STUD-02 | Phase 2 | Pending |
+| STUD-03 | Phase 2 | Pending |
+| STUD-04 | Phase 2 | Pending |
+| STUD-05 | Phase 2 | Pending |
+| STUD-06 | Phase 2 | Pending |
+| STUD-07 | Phase 2 | Pending |
+| ASGN-01 | Phase 3 | Pending |
+| ASGN-02 | Phase 3 | Pending |
+| ASGN-03 | Phase 3 | Pending |
+| ASGN-04 | Phase 3 | Pending |
+| ASGN-05 | Phase 3 | Pending |
+| ASGN-06 | Phase 3 | Pending |
+| ASGN-07 | Phase 3 | Pending |
+| TCHR-01 | Phase 4 | Pending |
+| TCHR-02 | Phase 4 | Pending |
+| TCHR-03 | Phase 4 | Pending |
+| TCHR-04 | Phase 4 | Pending |
+| TCHR-05 | Phase 4 | Pending |
+| LEAV-01 | Phase 4 | Pending |
+| LEAV-02 | Phase 4 | Pending |
+| LEAV-03 | Phase 4 | Pending |
+| LEAV-04 | Phase 4 | Pending |
+| SECU-01 | Phase 5 | Pending |
+| SECU-02 | Phase 5 | Pending |
+| NOTF-01 | Phase 6 | Pending |
+| NOTF-02 | Phase 6 | Pending |
+| NOTF-03 | Phase 6 | Pending |
+| NOTF-04 | Phase 6 | Pending |
+| AUDT-01 | Phase 7 | Pending |
+| AUDT-02 | Phase 7 | Pending |
+| AUDT-03 | Phase 7 | Pending |
+| AUDT-04 | Phase 7 | Pending |
+| TANL-01 | Phase 7 | Pending |
+| TANL-02 | Phase 7 | Pending |
+| TANL-03 | Phase 7 | Pending |
+| TANL-04 | Phase 7 | Pending |
+| CHAT-01 | Phase 7 | Pending |
+| CHAT-02 | Phase 7 | Pending |
+| CHAT-03 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 52 total
-- Mapped to phases: pending
-- Unmapped: pending
+- v1 requirements: 54 total
+- Mapped to phases: 54/54 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-24*
-*Last updated: 2026-06-24 after initial definition*
+*Last updated: 2026-06-24 after roadmap traceability*
