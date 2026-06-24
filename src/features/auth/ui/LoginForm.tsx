@@ -83,7 +83,7 @@ export function LoginForm() {
         Введите 6-значный код доступа
       </Text>
 
-      <RememberedAccountsSelect placeholder="Войти как…" />
+      {/* <RememberedAccountsSelect placeholder="Войти как…" /> */}
 
       <Controller
         name="code"
@@ -98,6 +98,7 @@ export function LoginForm() {
               className="text-center tracking-[0.5em]"
               inputMode="numeric"
               autoComplete="one-time-code"
+              type="password"
               onChange={(e) =>
                 field.onChange(e.target.value.replace(/\D/g, ""))
               }

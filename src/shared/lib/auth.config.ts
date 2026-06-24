@@ -26,6 +26,7 @@ export const authConfig: NextAuthConfig = {
 				token.role = user.role
 				token.teacherId = user.teacherId ?? null
 				token.studentId = user.studentId ?? null
+				token.switchOwnerId = user.switchOwnerId ?? null
 			}
 			return token
 		},
@@ -34,6 +35,8 @@ export const authConfig: NextAuthConfig = {
 			session.user.role = token.role as UserRole
 			session.user.teacherId = (token.teacherId as string | null) ?? null
 			session.user.studentId = (token.studentId as string | null) ?? null
+			session.user.switchOwnerId =
+				(token.switchOwnerId as string | null) ?? null
 			return session
 		},
 		authorized({auth, request}) {

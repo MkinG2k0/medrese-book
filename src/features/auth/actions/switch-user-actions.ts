@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { auth, signIn } from '@/shared/lib/auth'
 import { prisma } from '@/shared/lib/prisma'
 
-import { canSwitchUser } from '../lib/can-switch-user'
+import { resolveSwitchAccess } from '../lib/resolve-switch-access'
 
 export type SwitchableUser = {
 	id: string
@@ -15,7 +15,10 @@ export type SwitchableUser = {
 
 export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 	const session = await auth()
-	if (!session || !canSwitchUser(session.user.role)) return []
+	if (!session) return []
+
+	const access = await resolveSwitchAccess(session)
+	if (!access.allowed) return []
 
 	return prisma.user.findMany({
 		where: { role: { not: 'STUDENT' } },
@@ -26,7 +29,10 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 
 export async function switchUser(userId: string) {
 	const session = await auth()
-	if (!session || !canSwitchUser(session.user.role)) {
+	if (!session) throw new Error('Недостаточно прав')
+
+	const access = await resolveSwitchAccess(session)
+	if (!access.allowed || !access.switchOwnerId) {
 		throw new Error('Недостаточно прав')
 	}
 
@@ -39,6 +45,13 @@ export async function switchUser(userId: string) {
 	if (!user) throw new Error('Пользователь не найден')
 	if (user.role === 'STUDENT') throw new Error('Недостаточно прав')
 
-	await signIn('code', { code: user.code, redirect: false })
+	const switchOwnerId =
+		userId === access.switchOwnerId ? undefined : access.switchOwnerId
+
+	await signIn('code', {
+		code: user.code,
+		switchOwnerId,
+		redirect: false,
+	})
 	redirect('/dashboard')
 }

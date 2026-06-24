@@ -18,6 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			name: 'Код доступа',
 			credentials: {
 				code: { label: 'Код доступа', type: 'text' },
+				switchOwnerId: { label: 'Switch owner', type: 'text' },
 			},
 			async authorize(credentials) {
 				const rawCode = credentials?.code
@@ -34,12 +35,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				})
 				if (!user) return null
 
+				let switchOwnerId: string | null = null
+				const rawSwitchOwnerId = credentials?.switchOwnerId
+				if (typeof rawSwitchOwnerId === 'string' && rawSwitchOwnerId) {
+					const owner = await prisma.user.findUnique({
+						where: { id: rawSwitchOwnerId },
+						select: { role: true },
+					})
+					if (
+						owner &&
+						(owner.role === 'SUPER_ADMIN' || owner.role === 'MANAGER') &&
+						rawSwitchOwnerId !== user.id
+					) {
+						switchOwnerId = rawSwitchOwnerId
+					}
+				}
+
 				return {
 					id: user.id,
 					name: user.name,
 					role: user.role as UserRole,
 					teacherId: user.teacher?.id ?? null,
 					studentId: user.student?.id ?? null,
+					switchOwnerId,
 				}
 			},
 		}),

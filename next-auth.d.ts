@@ -8,6 +8,7 @@ declare module 'next-auth' {
 		role: UserRole
 		teacherId: string | null
 		studentId: string | null
+		switchOwnerId?: string | null
 	}
 
 	interface Session {
@@ -17,6 +18,7 @@ declare module 'next-auth' {
 			role: UserRole
 			teacherId: string | null
 			studentId: string | null
+			switchOwnerId: string | null
 		}
 	}
 }
@@ -27,5 +29,6 @@ declare module 'next-auth/jwt' {
 		role?: UserRole
 		teacherId?: string | null
 		studentId?: string | null
+		switchOwnerId?: string | null
 	}
 }
