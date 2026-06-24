@@ -83,6 +83,12 @@ const allMenuItems: MenuItem[] = [
     roles: ["MANAGER", "SUPER_ADMIN"],
   },
   {
+    key: "/admin/leave-calendar",
+    icon: <CalendarOutlined />,
+    label: "Календарь отпусков",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
     key: "/student/me",
     icon: <UserOutlined />,
     label: "Мой прогресс",
