@@ -8,7 +8,7 @@ import {
 } from "@/shared/lib/calendar-date";
 import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { prisma } from "@/shared/lib/prisma";
-import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
+import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
 import { createSessionSchema } from "@/shared/lib/validations/session";
 import { created, error, success } from "@/shared/api";
 

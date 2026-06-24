@@ -6,7 +6,7 @@ import {
 } from "@/shared/api";
 import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { prisma } from "@/shared/lib/prisma";
-import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
+import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
 import { updateStepCompletionSchema } from "@/shared/lib/validations/step-completion";
 
 type RouteContext = { params: Promise<{ id: string }> };

@@ -6,8 +6,10 @@ import { getDefaultLevelId } from '@/shared/lib/default-level'
 import { generateUniqueCode } from '@/shared/lib/generate-unique-code'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
-import { syncCompletionsForProgress } from '@/shared/lib/sync-completions-for-progress'
-import { getStepOffsetForLevel } from '@/shared/lib/step-offset'
+import {
+	getStepOffsetForLevel,
+	syncCompletionsForProgress,
+} from '@/shared/lib/student-progress'
 import {
 	createUsersSchema,
 	updateStaffUserSchema,

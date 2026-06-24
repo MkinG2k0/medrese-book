@@ -4,8 +4,11 @@ import { revalidatePath } from 'next/cache'
 
 import { requireStudentEditAccess } from '@/shared/lib/authorize-student-access'
 import { prisma } from '@/shared/lib/prisma'
-import { syncCompletionsForProgress } from '@/shared/lib/sync-completions-for-progress'
-import { getStepOffsetForLevel } from '@/shared/lib/step-offset'
+import {
+	getStepOffsetForLevel,
+	recalculateStudentStepIdx,
+	syncCompletionsForProgress,
+} from '@/shared/lib/student-progress'
 import { updateStudentProgressSchema } from '@/shared/lib/validations/student-progress'
 
 export async function getStudentProgressEdit(studentId: string) {
@@ -86,6 +89,8 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 				currentStepIdx,
 			},
 		})
+
+		await recalculateStudentStepIdx(studentId, tx)
 	})
 
 	revalidatePath('/groups')

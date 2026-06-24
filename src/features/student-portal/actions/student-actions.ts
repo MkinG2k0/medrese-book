@@ -6,7 +6,7 @@ import {
 	getLocalStepIdx,
 	getStepOffsetForLevel,
 	getTotalProgramSteps,
-} from '@/shared/lib/step-offset'
+} from '@/shared/lib/student-progress'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export async function getStudentProfile() {

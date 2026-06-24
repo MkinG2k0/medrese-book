@@ -1,14 +1,16 @@
 'use server'
 
 import { prisma } from '@/shared/lib/prisma'
-import { recalculateStudentStepIdx } from '@/shared/lib/recalculate-step-progress'
+import {
+	getTotalProgramSteps,
+	recalculateStudentStepIdx,
+} from '@/shared/lib/student-progress'
 import { requireRole } from '@/shared/lib/session'
 import {
 	filterIncompleteSteps,
 	getCompletionsByStepId,
 	sumPassedStepHours,
 } from '@/shared/lib/step-completion'
-import { getTotalProgramSteps } from '@/shared/lib/step-offset'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export async function getTeacherGroup() {
