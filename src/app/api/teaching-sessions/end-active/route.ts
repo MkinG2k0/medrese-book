@@ -16,9 +16,6 @@ export async function POST() {
 	if (!active) return success(null)
 
 	const endedAt = new Date()
-	const active = await findActiveTeachingSession(teacherId)
-	if (!active) return success(null)
-
 	const saved = await prisma.$transaction(async (tx) => {
 		const updated = await tx.teachingSession.update({
 			where: { id: active.id },
@@ -35,7 +32,7 @@ export async function POST() {
 					groupId: updated.groupId,
 					startedAt: updated.startedAt.toISOString(),
 					endedAt: endedAt.toISOString(),
-					durationMinutes: Math.round(
+					durationMinutes: Math.ceil(
 						(endedAt.getTime() - updated.startedAt.getTime()) / 60_000,
 					),
 					reason: 'logout',

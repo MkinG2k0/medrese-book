@@ -15,6 +15,14 @@ export function isValidCalendarDate(dateStr: string): boolean {
   return CALENDAR_DATE_FORMAT.test(dateStr);
 }
 
+/** Календарный день позже «сегодня» в часовом поясе приложения. */
+export function isFutureCalendarDay(
+  calendarDay: string,
+  today: string = getLocalDateString(),
+): boolean {
+  return calendarDay > today;
+}
+
 /** Совпадает ли момент времени с календарным днём YYYY-MM-DD. */
 export function isSameCalendarDay(
   date: Date,

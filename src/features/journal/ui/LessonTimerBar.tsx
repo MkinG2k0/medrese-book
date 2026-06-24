@@ -1,8 +1,8 @@
 "use client";
 
 import { PlayCircleOutlined, StopOutlined } from "@ant-design/icons";
-import { Button, message } from "antd";
-import { useEffect, useState } from "react";
+import { App, Button } from "antd";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   useEndTeachingSession,
@@ -10,6 +10,10 @@ import {
   useTeachingSession,
 } from "@/entities/teaching-session/api/use-teaching-session";
 import { formatElapsedMs } from "@/features/journal/lib/format-elapsed";
+import {
+  formatTeachingSessionDurationLabel,
+  getTeachingSessionDurationMs,
+} from "@/features/journal/lib/teaching-session";
 import { getLocalDateString } from "@/shared/lib/calendar-date";
 import Text from "@/shared/ui/Text";
 
@@ -18,25 +22,62 @@ type LessonTimerBarProps = {
   date: string;
 };
 
+function getLessonStatusTitle(
+  isToday: boolean,
+  isPast: boolean,
+  isActive: boolean,
+  session: { endedAt: string | null } | null | undefined,
+) {
+  if (isActive) return "Урок идёт";
+  if (session?.endedAt) return isPast ? "Урок проведён" : "Урок завершён";
+  if (isPast) return "Урок";
+  return "Урок не начат";
+}
+
+function getLessonStatusSubtitle(
+  isToday: boolean,
+  isPast: boolean,
+  isActive: boolean,
+  session: Parameters<typeof formatTeachingSessionDurationLabel>[0],
+  elapsedLabel: string,
+) {
+  if (isActive) return `Длительность: ${elapsedLabel}`;
+  if (session?.endedAt) {
+    return `Длительность: ${formatTeachingSessionDurationLabel(session)}`;
+  }
+  if (isPast) return "Время не учтено";
+  if (isToday) {
+    return "Нажмите «Начать урок», чтобы открыть журнал учеников";
+  }
+  return "Время не учтено";
+}
+
 export function LessonTimerBar({
   groupId,
   date,
 }: LessonTimerBarProps) {
-  const isToday = date === getLocalDateString();
+  const { message } = App.useApp();
+  const today = getLocalDateString();
+  const isToday = date === today;
+  const isPast = date < today;
   const { data: session, isLoading } = useTeachingSession(groupId, date);
   const startMutation = useStartTeachingSession(groupId, date);
   const endMutation = useEndTeachingSession(groupId, date);
   const [elapsedLabel, setElapsedLabel] = useState("0:00");
 
   const isActive = session?.isActive === true;
+  const statusTitle = useMemo(
+    () => getLessonStatusTitle(isToday, isPast, isActive, session),
+    [isToday, isPast, isActive, session],
+  );
+  const statusSubtitle = useMemo(
+    () =>
+      getLessonStatusSubtitle(isToday, isPast, isActive, session, elapsedLabel),
+    [isToday, isPast, isActive, session, elapsedLabel],
+  );
 
   useEffect(() => {
-    if (!session?.isActive) {
-      if (session?.durationMinutes != null) {
-        setElapsedLabel(formatElapsedMs(session.durationMinutes * 60_000));
-      }
-      return;
-    }
+    if (!session?.isActive) return;
 
     const startedAt = new Date(session.startedAt).getTime();
     const tick = () => setElapsedLabel(formatElapsedMs(Date.now() - startedAt));
@@ -74,12 +115,10 @@ export function LessonTimerBar({
     <div className="flex flex-col gap-3 rounded-lg border border-[#2a2622] bg-[#1a1714] p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <Text strong className="block">
-          {isActive ? "Урок идёт" : session ? "Урок завершён" : "Урок не начат"}
+          {statusTitle}
         </Text>
         <Text type="secondary" className="block">
-          {isActive || session
-            ? `Длительность: ${elapsedLabel}`
-            : "Нажмите «Начать урок», чтобы открыть журнал учеников"}
+          {statusSubtitle}
         </Text>
       </div>
 

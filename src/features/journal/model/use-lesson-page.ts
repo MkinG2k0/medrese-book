@@ -2,7 +2,7 @@
 
 import { message } from "antd";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   useCreateSession,
@@ -208,7 +208,9 @@ export function useLessonPage(props: LessonPageProps) {
     sessionStepStates,
   ]);
 
-  if (!isSessionLoading && loadedSessionKey !== sessionDataKey) {
+  useEffect(() => {
+    if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
+
     const effectiveLessonSteps = isProgramComplete
       ? allSteps
       : buildLessonSteps(
@@ -252,7 +254,20 @@ export function useLessonPage(props: LessonPageProps) {
     setVisibleCount(nextVisibleCount);
     setExpandedIds(nextExpandedIds);
     setLoadedSessionKey(sessionDataKey);
-  }
+  }, [
+    isSessionLoading,
+    loadedSessionKey,
+    sessionDataKey,
+    existingSession,
+    isProgramComplete,
+    allSteps,
+    steps,
+    sessionStepsOutsideLevel,
+    nextLevelSteps,
+    sessionNextLevelLoadedCount,
+    stepCompletions,
+    initSessionCompletions,
+  ]);
 
   const visibleSteps = lessonSteps.slice(0, visibleCount);
   const gradedStepCount = useMemo(

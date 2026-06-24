@@ -5,6 +5,16 @@ import {
 } from '@/shared/lib/calendar-date'
 import { prisma } from '@/shared/lib/prisma'
 
+function isTeachingSessionOnCalendarDay(
+	session: { date: Date; startedAt: Date },
+	calendarDay: string,
+) {
+	return (
+		isSameCalendarDay(session.date, calendarDay) ||
+		isSameCalendarDay(session.startedAt, calendarDay)
+	)
+}
+
 export async function findTeachingSessionForDay(
 	teacherId: string,
 	groupId: string,
@@ -15,14 +25,18 @@ export async function findTeachingSessionForDay(
 		where: {
 			teacherId,
 			groupId,
-			date: { gte: dayRange.start, lte: dayRange.end },
+			OR: [
+				{ date: { gte: dayRange.start, lte: dayRange.end } },
+				{ startedAt: { gte: dayRange.start, lte: dayRange.end } },
+			],
 		},
 		orderBy: { startedAt: 'desc' },
 	})
 
 	return (
-		sessions.find((session) => isSameCalendarDay(session.date, calendarDay)) ??
-		null
+		sessions.find((session) =>
+			isTeachingSessionOnCalendarDay(session, calendarDay),
+		) ?? null
 	)
 }
 

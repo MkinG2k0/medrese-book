@@ -1,6 +1,8 @@
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { serializeTeachingSession } from '@/features/journal/lib/teaching-session'
+import { resolveTeachingSessionStart } from '@/features/journal/lib/teaching-session-start'
 import {
+	endTeachingSessionById,
 	findActiveTeachingSession,
 	findTeachingSessionForDay,
 	teachingSessionDate,
@@ -56,16 +58,20 @@ export async function POST(request: Request) {
 	}
 
 	const existing = await findTeachingSessionForDay(teacherId, groupId, date)
-	if (existing?.endedAt == null) {
-		return error('Урок уже начат')
+	const startDecision = resolveTeachingSessionStart(existing)
+	if (startDecision.action === 'resume') {
+		return success(serializeTeachingSession(existing!))
 	}
-	if (existing?.endedAt != null) {
+	if (startDecision.action === 'already_ended') {
 		return error('Урок на этот день уже завершён')
 	}
 
 	const activeElsewhere = await findActiveTeachingSession(teacherId)
-	if (activeElsewhere && activeElsewhere.groupId !== groupId) {
-		return error('Сначала завершите урок в другой группе')
+	if (activeElsewhere) {
+		const activeDay = getLocalDateString(activeElsewhere.startedAt)
+		if (activeDay !== date || activeElsewhere.groupId !== groupId) {
+			await endTeachingSessionById(activeElsewhere.id)
+		}
 	}
 
 	const startedAt = new Date()

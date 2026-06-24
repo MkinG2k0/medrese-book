@@ -15,7 +15,7 @@ import {
   type AttendanceFilterValue,
 } from "@/features/journal/ui/AttendanceFilter";
 import { JournalStudentsTable } from "@/features/journal/ui/JournalStudentsTable";
-import { getLocalDateString } from "@/shared/lib/calendar-date";
+import { getLocalDateString, isFutureCalendarDay } from "@/shared/lib/calendar-date";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -54,8 +54,12 @@ export function StudentList({ groupId }: StudentListProps) {
         <Title level={3}>Журнал на сегодня</Title>
         <DatePicker
           value={dayjs(dateFilter)}
+          disabledDate={(current) =>
+            current != null &&
+            isFutureCalendarDay(current.format("YYYY-MM-DD"))
+          }
           onChange={(d) =>
-            setDateFilter(d ? d.format("YYYY-MM-DD") : dateFilter)
+            setDateFilter(d ? d.format("YYYY-MM-DD") : getLocalDateString())
           }
         />
       </div>

@@ -71,11 +71,16 @@ export const authConfig: NextAuthConfig = {
 				'/admin': ['SUPER_ADMIN', 'MANAGER'],
 				'/journal': ['TEACHER'],
 				'/groups': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
+				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],
 				'/analytics': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 				'/student': ['STUDENT'],
 			}
 
-			for (const [prefix, roles] of Object.entries(roleRoutes)) {
+			const sortedRoutes = Object.entries(roleRoutes).sort(
+				([a], [b]) => b.length - a.length,
+			)
+
+			for (const [prefix, roles] of sortedRoutes) {
 				if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
 					if (!session?.user) {
 						return redirectTo(request, '/login')

@@ -1,6 +1,6 @@
 "use client";
 
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, App, theme } from "antd";
 import ruRU from "antd/locale/ru_RU";
 
 export function AntdProvider({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
         algorithm: theme.darkAlgorithm,
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   );
 }

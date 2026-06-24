@@ -44,7 +44,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 					groupId: updated.groupId,
 					startedAt: updated.startedAt.toISOString(),
 					endedAt: endedAt.toISOString(),
-					durationMinutes: Math.round(
+					durationMinutes: Math.ceil(
 						(endedAt.getTime() - updated.startedAt.getTime()) / 60_000,
 					),
 				},

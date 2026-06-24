@@ -64,6 +64,12 @@ const allMenuItems: MenuItem[] = [
     roles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
   },
   {
+    key: "/analytics/teachers",
+    icon: <TeamOutlined />,
+    label: "Аналитика учителей",
+    roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
     key: "/student/me",
     icon: <UserOutlined />,
     label: "Мой прогресс",
