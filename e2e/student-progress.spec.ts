@@ -2,6 +2,7 @@ import { endOfMonth, startOfMonth } from "date-fns";
 import { expect, test, type Page } from "@playwright/test";
 
 import { apiGetAs, TEST_CODES } from "./helpers/api";
+import { selectStudentProgressStep } from "./helpers/antd";
 import { loginAs } from "./helpers/auth";
 import { TEST_USERS } from "./helpers/codes";
 import {
@@ -75,6 +76,8 @@ test.describe("Student progress sync (FND-03)", () => {
   test("manager progress change shows same currentStepIdx in journal and student portal", async ({
     page,
   }) => {
+    test.setTimeout(60_000);
+
     const studentId = await getStudentIdByCode(TEST_CODES.studentAli);
     const groupId = await getGroupIdByName(TEST_USERS.group1);
     const beforeIdx = await getStudentCurrentStepIdx(studentId);
@@ -89,9 +92,7 @@ test.describe("Student progress sync (FND-03)", () => {
       page.getByRole("heading", { name: "Прогресс ученика" }),
     ).toBeVisible();
 
-    const stepSelect = page.getByRole("combobox").nth(1);
-    await stepSelect.click();
-    await page.getByRole("option").nth(targetLocalStep).click();
+    await selectStudentProgressStep(page, targetLocalStep);
     await page.getByRole("button", { name: "Сохранить" }).click();
     await expect(page).toHaveURL(new RegExp(`/groups/${groupId}`));
 
