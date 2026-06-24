@@ -1,27 +1,20 @@
 import {
   error,
-  forbidden,
   notFound,
   serverError,
   success,
-  unauthorized,
 } from "@/shared/api";
 import {
   getCalendarDayQueryRange,
   isSameCalendarDay,
   isValidCalendarDate,
 } from "@/shared/lib/calendar-date";
-import { auth } from "@/shared/lib/auth";
+import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
-import { authorizeTeacherStudent } from "@/shared/lib/authorize-student";
 import { deleteStepCompletionsSchema } from "@/shared/lib/validations/step-completion";
 
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session) return unauthorized();
-  if (session.user.role !== "TEACHER") return forbidden();
-
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
   if (!studentId) return error("studentId обязателен");
@@ -31,9 +24,16 @@ export async function GET(request: Request) {
     return error("Некорректная дата");
   }
 
-  const authResult = await authorizeTeacherStudent(studentId);
-  if (authResult.error) return authResult.error;
-  if (!authResult.student) return notFound("Ученик");
+  const authResult = await authorizeApiRequest({
+    allowedRoles: ["TEACHER"],
+    context: { studentId },
+  });
+  if ("error" in authResult) return authResult.error;
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+  });
+  if (!student) return notFound("Ученик");
 
   const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null;
 
@@ -75,10 +75,6 @@ export async function GET(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await auth();
-  if (!session) return unauthorized();
-  if (session.user.role !== "TEACHER") return forbidden();
-
   const body = await request.json();
   const parsed = deleteStepCompletionsSchema.safeParse(body);
   if (!parsed.success) return error(parsed.error.message);
@@ -96,8 +92,11 @@ export async function DELETE(request: Request) {
   }
 
   const studentId = completions[0]!.studentId;
-  const authResult = await authorizeTeacherStudent(studentId);
-  if (authResult.error) return authResult.error;
+  const authResult = await authorizeApiRequest({
+    allowedRoles: ["TEACHER"],
+    context: { studentId },
+  });
+  if ("error" in authResult) return authResult.error;
 
   if (completions.length !== parsed.data.ids.length) {
     return error("Некоторые записи не найдены", 404);

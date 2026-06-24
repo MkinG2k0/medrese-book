@@ -1,22 +1,18 @@
 import { revalidatePath } from "next/cache";
 
-import { auth } from "@/shared/lib/auth";
 import {
   getCalendarDayQueryRange,
   getLocalDateString,
   isSameCalendarDay,
   toSessionDate,
 } from "@/shared/lib/calendar-date";
+import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
 import { createSessionSchema } from "@/shared/lib/validations/session";
-import { created, error, forbidden, success, unauthorized } from "@/shared/api";
+import { created, error, success } from "@/shared/api";
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session) return unauthorized();
-  if (session.user.role !== "TEACHER") return forbidden();
-
   const body = await request.json();
   const parsed = createSessionSchema.safeParse(body);
   if (!parsed.success) return error(parsed.error.message);
@@ -24,13 +20,17 @@ export async function POST(request: Request) {
   const { studentId, date, attendance, lateMinutes, note, completions } =
     parsed.data;
 
+  const authResult = await authorizeApiRequest({
+    allowedRoles: ["TEACHER"],
+    context: { studentId },
+  });
+  if ("error" in authResult) return authResult.error;
+
   const student = await prisma.student.findUnique({
     where: { id: studentId },
-    include: { group: true },
   });
 
   if (!student) return error("Ученик не найден", 404);
-  if (student.group.teacherId !== session.user.teacherId) return forbidden();
 
   const calendarDay = getLocalDateString(new Date(date));
   const dayRange = getCalendarDayQueryRange(calendarDay);
@@ -94,29 +94,24 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session) return unauthorized();
-
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
   if (!studentId) return error("studentId обязателен");
+
+  const authResult = await authorizeApiRequest({
+    allowedRoles: ["TEACHER", "MANAGER", "SUPER_ADMIN", "STUDENT"],
+    context: { studentId },
+  });
+  if ("error" in authResult) return authResult.error;
 
   const dateStr = searchParams.get("date");
 
   if (dateStr) {
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      include: { group: true },
     });
 
     if (!student) return error("Ученик не найден", 404);
-
-    if (
-      session.user.role === "TEACHER" &&
-      session.user.teacherId !== student.group.teacherId
-    ) {
-      return forbidden();
-    }
 
     const dayRange = getCalendarDayQueryRange(dateStr);
     const daySessions = await prisma.session.findMany({

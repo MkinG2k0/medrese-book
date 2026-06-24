@@ -1,21 +1,24 @@
-import { auth } from '@/shared/lib/auth'
 import {
 	getCalendarDayQueryRange,
 	isSameCalendarDay,
 } from '@/shared/lib/calendar-date'
+import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { prisma } from '@/shared/lib/prisma'
 import { isStepPassed } from '@/shared/lib/step-completion'
-import { error, forbidden, success, unauthorized } from '@/shared/api'
+import { error, success } from '@/shared/api'
 
 export async function GET(request: Request) {
-	const session = await auth()
-	if (!session) return unauthorized()
-
 	const { searchParams } = new URL(request.url)
 	const groupId = searchParams.get('groupId')
 	const dateStr = searchParams.get('date')
 
 	if (!groupId) return error('groupId обязателен')
+
+	const authResult = await authorizeApiRequest({
+		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT'],
+		context: { groupId },
+	})
+	if ('error' in authResult) return authResult.error
 
 	const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null
 
@@ -41,13 +44,6 @@ export async function GET(request: Request) {
 	})
 
 	if (!group) return error('Группа не найдена', 404)
-
-	if (
-		session.user.role === 'TEACHER' &&
-		session.user.teacherId !== group.teacherId
-	) {
-		return forbidden()
-	}
 
 	const students = group.students.map((s) => {
 		const todaySession =

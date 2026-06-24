@@ -1,28 +1,29 @@
 import {
   error,
-  forbidden,
   notFound,
   serverError,
   success,
-  unauthorized,
 } from "@/shared/api";
-import { auth } from "@/shared/lib/auth";
+import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/recalculate-step-progress";
-import { authorizeTeacherCompletion } from "@/shared/lib/authorize-student";
 import { updateStepCompletionSchema } from "@/shared/lib/validations/step-completion";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const session = await auth();
-  if (!session) return unauthorized();
-  if (session.user.role !== "TEACHER") return forbidden();
-
   const { id } = await context.params;
-  const authResult = await authorizeTeacherCompletion(id);
-  if (authResult.error) return authResult.error;
-  if (!authResult.completion) return notFound("Запись");
+
+  const authResult = await authorizeApiRequest({
+    allowedRoles: ["TEACHER"],
+    context: { completionId: id },
+  });
+  if ("error" in authResult) return authResult.error;
+
+  const existing = await prisma.stepCompletion.findUnique({
+    where: { id },
+  });
+  if (!existing) return notFound("Запись");
 
   const body = await request.json();
   const parsed = updateStepCompletionSchema.safeParse(body);

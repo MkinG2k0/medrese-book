@@ -1,13 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { auth } from '@/shared/lib/auth'
-import { created, forbidden, unauthorized } from '@/shared/api'
+import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import { created } from '@/shared/api'
 
 export async function POST(request: Request) {
-	const session = await auth()
-	if (!session) return unauthorized()
-	if (!['SUPER_ADMIN', 'MANAGER'].includes(session.user.role)) return forbidden()
+	const authResult = await authorizeApiRequest({
+		allowedRoles: ['SUPER_ADMIN', 'MANAGER'],
+	})
+	if ('error' in authResult) return authResult.error
 
 	const formData = await request.formData()
 	const file = formData.get('file')
