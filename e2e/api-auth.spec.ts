@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 import {
   apiGetAs,
@@ -35,5 +35,21 @@ test.describe("API authorization (FND-02)", () => {
       `/api/sessions?studentId=${foreignStudentId}`,
     );
     await expectForbidden(response);
+  });
+
+  test("teacher — can read own group roster", async () => {
+    const ownGroupId = await getGroupIdByName(TEST_USERS.group1);
+    const response = await apiGetAs(
+      TEST_CODES.teacher1,
+      `/api/students?groupId=${ownGroupId}`,
+    );
+    expect(response.status(), "expected HTTP 200 OK").toBe(200);
+    const json = (await response.json()) as {
+      data: unknown[] | null;
+      error: string | null;
+    };
+    expect(json.error).toBeNull();
+    expect(Array.isArray(json.data)).toBeTruthy();
+    expect(json.data!.length).toBeGreaterThan(0);
   });
 });
