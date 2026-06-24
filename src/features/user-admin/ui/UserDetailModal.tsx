@@ -331,7 +331,7 @@ export function UserDetailModal({
 
           {isStudent ? (
             <form onSubmit={studentForm.handleSubmit(handleStudentSubmit)}>
-              <Form {...FORM_LAYOUT}>
+              <Form {...FORM_LAYOUT} component="div">
                 <Controller
                   name="name"
                   control={studentForm.control}
@@ -357,7 +357,7 @@ export function UserDetailModal({
             </form>
           ) : (
             <form onSubmit={staffForm.handleSubmit(handleStaffSubmit)}>
-              <Form {...FORM_LAYOUT}>
+              <Form {...FORM_LAYOUT} component="div">
                 <Controller
                   name="name"
                   control={staffForm.control}
