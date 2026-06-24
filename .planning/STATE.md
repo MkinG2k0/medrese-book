@@ -5,7 +5,7 @@ milestone_name: milestone
 status: executing
 stopped_at: Completed 00-foundation-03-PLAN.md
 last_updated: "2026-06-24T18:10:45.734Z"
-last_activity: 2026-06-24 - Completed quick task 260625-0wt: трекинг времени уроков
+last_activity: 2026-06-24 - Completed quick task 260625-1jf: аналитика учителей
 progress:
   total_phases: 8
   completed_phases: 0
@@ -90,6 +90,7 @@ None yet.
 | 260624-sk2 | Оптимизировать POST /api/sessions (5 сек) | 2026-06-24 | 24142ec | [260624-sk2-post-api-sessions-5](./quick/260624-sk2-post-api-sessions-5/) |
 | 260625-0pl | разлогинить ТОЛЬКО преподавателя при неактивности в 1 час | 2026-06-24 | 15396b1 | [260625-0pl-1](./quick/260625-0pl-1/) |
 | 260625-0wt | Трекинг времени уроков: вход, начать/закончить урок, блокировка таблицы, авто-stop при logout | 2026-06-24 | 125e978 | [260625-0wt-lesson-time-tracking](./quick/260625-0wt-lesson-time-tracking/) |
+| 260625-1jf | Аналитика учителей: грид уроков, вход/старт/конец/длительность, день или диапазон | 2026-06-24 | f12a9a6 | [260625-1jf-teacher-lessons-analytics](./quick/260625-1jf-teacher-lessons-analytics/) |
 
 ## Session Continuity
 
