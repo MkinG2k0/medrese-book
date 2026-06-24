@@ -152,7 +152,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 Plans:
 - [x] 08-01-PLAN.md — Prisma LeaveRequest/Substitution, validations, domain events, migration
 - [x] 08-02-PLAN.md — Server actions, API, substitution auth (TCHR-01/03/04)
-- [ ] 08-03-PLAN.md — Teacher calendar UI (/calendar, LEAV-02/05)
+- [x] 08-03-PLAN.md — Teacher calendar UI (/calendar, LEAV-02/05)
 - [ ] 08-04-PLAN.md — Manager calendar + grid, approve/reject (checkpoint)
 - [ ] 08-05-PLAN.md — E2E leave-requests.spec.ts + domain events smoke
 
