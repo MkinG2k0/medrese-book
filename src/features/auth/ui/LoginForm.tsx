@@ -14,6 +14,7 @@ import {
   shouldRememberAccount,
 } from "@/features/auth/lib/remembered-accounts-storage";
 import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
+import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -80,9 +81,12 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
       onSubmit={handleSubmit(onSubmit)}
       className="flex w-full max-w-sm flex-col gap-4"
     >
-      <Title level={3} className="!mb-0 !text-center">
-        Вход в дневник
-      </Title>
+      <div className="flex flex-col items-center gap-3">
+        <AppLogo size={72} priority />
+        <Title level={3} className="!mb-0 !text-center">
+          Вход в дневник
+        </Title>
+      </div>
       <Text type="secondary" className="text-center">
         Введите 6-значный код доступа
       </Text>

@@ -20,6 +20,7 @@ import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import type { UserRole } from "@/entities/user";
+import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
 
 const { Header, Sider, Content } = Layout;
@@ -165,9 +166,14 @@ export function AppShell({
         <div className="flex h-16 items-center justify-center px-4">
           <Link
             href="/dashboard"
-            className="font-display text-lg text-[#E8E0D0] no-underline"
+            className="flex items-center gap-2 no-underline"
           >
-            {collapsed ? "М" : "Дневник медресе"}
+            <AppLogo size={collapsed ? 36 : 32} />
+            {!collapsed && (
+              <span className="font-display text-lg text-[#E8E0D0]">
+                Дневник медресе
+              </span>
+            )}
           </Link>
         </div>
         <Menu

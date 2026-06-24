@@ -28,6 +28,10 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Дневник медресе",
   description: "Электронный дневник посещаемости и успеваемости учеников медресе",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export const viewport: Viewport = {
