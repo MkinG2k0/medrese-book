@@ -473,23 +473,12 @@ export async function GET(request: Request) {
 | A3 | `enqueueNotifications` no-op приемлем до Phase 6 | Pattern 4 | FND-04 формально выполнен только audit path |
 | A4 | Vitest опционален; Playwright API tests достаточны для gate | Validation | Медленнее feedback на pure functions |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Middleware для `/api/*` — в Phase 0 или отдельным plan?**
-   - What we know: STATE.md blocker; per-route alone не защищает от забытых handlers.
-   - Recommendation: включить authentication-only gate в Phase 0 plan 1; resource auth — `authorizeApiRequest`.
-
-2. **Убрать `recalculateStudentStepIdx` из `getStudentLesson()` read path?**
-   - What we know: performance concern в CONCERNS.md.
-   - Recommendation: отложить в Phase 1 если нет регрессий; Phase 0 — гарантировать write-path consistency.
-
-3. **MANAGER доступ к step-completions API?**
-   - What we know: сейчас TEACHER-only.
-   - Recommendation: оставить TEACHER-only (default-deny); расширить в Phase 2 при карточке ученика.
-
-4. **Seed sessions с note «Seed data» — помечать isAdjustment?**
-   - What we know: seed создаёт обычные PRESENT sessions для demo completions.
-   - Recommendation: оставить `isAdjustment: false` — это demo lessons, не admin corrections.
+1. **Middleware для `/api/*` — в Phase 0 или отдельным plan?** — **RESOLVED:** включён в Plan 03 (authentication-only gate) + per-route `authorizeApiRequest`.
+2. **Убрать `recalculateStudentStepIdx` из `getStudentLesson()` read path?** — **RESOLVED:** отложено в Phase 1; Plan 04 фокусируется на write-path consistency.
+3. **MANAGER доступ к step-completions API?** — **RESOLVED:** TEACHER-only (default-deny) до Phase 2; зафиксировано в Plan 03.
+4. **Seed sessions с note «Seed data» — помечать isAdjustment?** — **RESOLVED:** `isAdjustment: false` для demo lessons; backfill только по note «Корректировка прогресса» (Plan 02).
 
 ## Environment Availability
 
