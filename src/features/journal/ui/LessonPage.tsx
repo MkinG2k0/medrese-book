@@ -38,6 +38,7 @@ export function LessonPage(props: LessonPageProps) {
         resolvedStepStates={lesson.resolvedStepStates}
         hasMore={lesson.hasMore}
         canLoadNextLevel={lesson.canLoadNextLevel}
+        isLoadingNextLevel={lesson.isLoadingNextLevel}
         gradedStepCount={lesson.gradedStepCount}
         getStepTotalHours={lesson.getStepTotalHours}
         onAttendanceChange={lesson.handleAttendanceChange}

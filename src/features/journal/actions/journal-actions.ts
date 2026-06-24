@@ -1,10 +1,16 @@
 'use server'
 
-import { prisma } from '@/shared/lib/prisma'
 import {
-	getTotalProgramSteps,
-	recalculateStudentStepIdx,
-} from '@/shared/lib/student-progress'
+	getLessonCalendarDay,
+	getLessonDayRange,
+	isLessonCalendarDay,
+	mapStepMeta,
+	type JournalStep,
+} from '@/features/journal/lib/journal-step'
+import { serializeDaySession } from '@/features/journal/lib/get-student-session'
+import type { ClientDaySession } from '@/features/journal/lib/get-student-session'
+import { prisma } from '@/shared/lib/prisma'
+import { getTotalProgramSteps } from '@/shared/lib/student-progress'
 import { requireRole } from '@/shared/lib/session'
 import {
 	filterIncompleteSteps,
@@ -13,87 +19,210 @@ import {
 } from '@/shared/lib/step-completion'
 import type { StepContent } from '@/shared/lib/validations/step'
 
+export type { JournalStep } from '@/features/journal/lib/journal-step'
+
+async function requireTeacherStudent(studentId: string) {
+	const session = await requireRole('TEACHER')
+
+	const student = await prisma.student.findUnique({
+		where: { id: studentId },
+		select: {
+			id: true,
+			group: { select: { teacherId: true } },
+		},
+	})
+
+	if (!student || student.group.teacherId !== session.user.teacherId) {
+		return null
+	}
+
+	return session
+}
+
+async function fetchSessionOutsideLevelSteps(
+	levelStepIds: Set<string>,
+	completions: { stepId: string }[],
+): Promise<JournalStep[]> {
+	const outsideIds = [
+		...new Set(
+			completions
+				.map((completion) => completion.stepId)
+				.filter((stepId) => !levelStepIds.has(stepId)),
+		),
+	]
+
+	if (outsideIds.length === 0) return []
+
+	const steps = await prisma.step.findMany({
+		where: { id: { in: outsideIds } },
+		select: {
+			id: true,
+			order: true,
+			title: true,
+			description: true,
+			hours: true,
+			level: { select: { number: true, title: true } },
+		},
+	})
+
+	return steps.map((step) =>
+		mapStepMeta(
+			step,
+			step.level.number,
+			step.level.title,
+		),
+	)
+}
+
 export async function getTeacherGroup() {
 	const session = await requireRole('TEACHER')
 
-	const group = await prisma.group.findFirst({
+	return prisma.group.findFirst({
 		where: { teacherId: session.user.teacherId! },
 	})
-
-	return group
 }
 
-export type JournalStep = {
-	id: string
-	order: number
-	title: string
-	content: StepContent
-	description: string
-	hours: number
-	levelNumber: number
-	levelTitle: string
+export async function getJournalStepContent(
+	stepId: string,
+): Promise<StepContent | null> {
+	await requireRole('TEACHER')
+
+	const step = await prisma.step.findUnique({
+		where: { id: stepId },
+		select: { content: true },
+	})
+
+	if (!step) return null
+	return step.content as StepContent
+}
+
+export async function getNextLevelJournalSteps(
+	studentId: string,
+): Promise<JournalStep[]> {
+	const access = await requireTeacherStudent(studentId)
+	if (!access) return []
+
+	const student = await prisma.student.findUnique({
+		where: { id: studentId },
+		select: {
+			level: { select: { number: true, title: true } },
+		},
+	})
+
+	if (!student) return []
+
+	const nextLevel = await prisma.level.findFirst({
+		where: { number: student.level.number + 1 },
+		include: {
+			steps: {
+				select: {
+					id: true,
+					order: true,
+					title: true,
+					description: true,
+					hours: true,
+				},
+				orderBy: { order: 'asc' },
+			},
+		},
+	})
+
+	if (!nextLevel) return []
+
+	return nextLevel.steps.map((step) =>
+		mapStepMeta(step, nextLevel.number, nextLevel.title),
+	)
 }
 
 export async function getStudentLesson(studentId: string) {
 	const session = await requireRole('TEACHER')
-
-	await recalculateStudentStepIdx(studentId)
+	const today = getLessonCalendarDay()
+	const dayRange = getLessonDayRange(today)
 
 	const student = await prisma.student.findUnique({
 		where: { id: studentId },
 		include: {
 			user: true,
-			completions: { orderBy: { createdAt: 'asc' } },
-			level: { include: { steps: { orderBy: { order: 'asc' } } } },
-			group: true,
+			group: {
+				include: {
+					students: {
+						include: { user: { select: { name: true } } },
+					},
+				},
+			},
+			level: {
+				include: {
+					steps: {
+						select: {
+							id: true,
+							order: true,
+							title: true,
+							description: true,
+							hours: true,
+						},
+						orderBy: { order: 'asc' },
+					},
+				},
+			},
+			completions: {
+				where: {
+					step: { level: { students: { some: { id: studentId } } } },
+				},
+				select: { stepId: true, grade: true, note: true },
+				orderBy: { createdAt: 'asc' },
+			},
+			sessions: {
+				where: {
+					date: { gte: dayRange.start, lte: dayRange.end },
+				},
+				select: {
+					id: true,
+					studentId: true,
+					date: true,
+					attendance: true,
+					lateMinutes: true,
+					note: true,
+					completions: {
+						select: { stepId: true, grade: true, note: true },
+					},
+				},
+				orderBy: { date: 'desc' },
+			},
 		},
 	})
 
 	if (!student) return null
 	if (student.group.teacherId !== session.user.teacherId) return null
 
-	const nextLevel = await prisma.level.findFirst({
-		where: { number: student.level.number + 1 },
-		include: { steps: { orderBy: { order: 'asc' } } },
-	})
+	const levelStepIds = new Set(student.level.steps.map((step) => step.id))
+	const daySession =
+		student.sessions.find((item) => isLessonCalendarDay(item.date, today)) ??
+		null
 
-	const totalProgramSteps = await getTotalProgramSteps()
+	const [hasNextLevel, totalProgramSteps, prefetchedSessionSteps] =
+		await Promise.all([
+			prisma.level.findFirst({
+				where: { number: student.level.number + 1 },
+				select: { id: true },
+			}),
+			getTotalProgramSteps(),
+			fetchSessionOutsideLevelSteps(
+				levelStepIds,
+				daySession?.completions ?? [],
+			),
+		])
 
-	const mapStep = (step: (typeof student.level.steps)[number]): JournalStep => ({
-		id: step.id,
-		order: step.order,
-		title: step.title,
-		content: step.content as StepContent,
-		description: step.description,
-		hours: step.hours,
-		levelNumber: student.level.number,
-		levelTitle: student.level.title,
-	})
-
-	const allSteps = student.level.steps.map(mapStep)
-	const nextLevelSteps =
-		nextLevel?.steps.map((step) => ({
-			id: step.id,
-			order: step.order,
-			title: step.title,
-			content: step.content as StepContent,
-			description: step.description,
-			hours: step.hours,
-			levelNumber: nextLevel.number,
-			levelTitle: nextLevel.title,
-		})) ?? []
+	const allSteps = student.level.steps.map((step) =>
+		mapStepMeta(step, student.level.number, student.level.title),
+	)
 	const completionsByStepId = getCompletionsByStepId(student.completions)
 	const incompleteSteps = filterIncompleteSteps(allSteps, completionsByStepId)
 	const totalHours = sumPassedStepHours(allSteps, completionsByStepId)
 
-	const groupStudents = await prisma.student.findMany({
-		where: { groupId: student.groupId },
-		include: { user: true },
-	})
-	const sortedStudents = [...groupStudents].sort((a, b) =>
+	const sortedStudents = [...student.group.students].sort((a, b) =>
 		a.user.name.localeCompare(b.user.name),
 	)
-	const currentIndex = sortedStudents.findIndex((s) => s.id === studentId)
+	const currentIndex = sortedStudents.findIndex((item) => item.id === studentId)
 	const nextStudent = sortedStudents[currentIndex + 1] ?? null
 
 	const stepCompletionsByStep = new Map<
@@ -101,12 +230,12 @@ export async function getStudentLesson(studentId: string) {
 		{ stepId: string; grade: number; note: string | null }
 	>()
 	for (const completion of student.completions) {
-		stepCompletionsByStep.set(completion.stepId, {
-			stepId: completion.stepId,
-			grade: completion.grade,
-			note: completion.note,
-		})
+		stepCompletionsByStep.set(completion.stepId, completion)
 	}
+
+	const initialSession: ClientDaySession | null = daySession
+		? serializeDaySession(daySession)
+		: null
 
 	return {
 		student: {
@@ -122,12 +251,16 @@ export async function getStudentLesson(studentId: string) {
 		totalProgramSteps,
 		totalHours,
 		allSteps,
-		nextLevelSteps,
+		hasNextLevel: hasNextLevel != null,
+		prefetchedSessionSteps,
+		nextLevelSteps: [] as JournalStep[],
 		stepCompletions: [...stepCompletionsByStep.values()],
 		steps: incompleteSteps,
 		nextStudent: nextStudent
 			? { id: nextStudent.id, name: nextStudent.user.name }
 			: null,
+		initialSession,
+		sessionDate: today,
 	}
 }
 

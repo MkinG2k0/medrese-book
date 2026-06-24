@@ -24,19 +24,21 @@ export type StudentSession = {
 		stepId: string
 		grade: number
 		note: string | null
-		step?: {
-			id: string
-			order: number
-			title: string
-			content: unknown
-			description?: string
-			hours: number
-			level: { number: number; title: string }
-		}
 	}[]
 }
 
-export function useStudentSession(studentId: string, date: string) {
+type UseStudentSessionOptions = {
+	initialSession: StudentSession | null
+	seededDate: string
+}
+
+export function useStudentSession(
+	studentId: string,
+	date: string,
+	options?: UseStudentSessionOptions,
+) {
+	const isSeededDate = options?.seededDate === date
+
 	return useQuery<StudentSession | null>({
 		queryKey: ['student-session', studentId, date],
 		queryFn: async () => {
@@ -47,6 +49,8 @@ export function useStudentSession(studentId: string, date: string) {
 			return json.data
 		},
 		enabled: !!studentId && !!date,
+		initialData: isSeededDate ? options!.initialSession : undefined,
+		staleTime: isSeededDate ? 60_000 : 0,
 	})
 }
 

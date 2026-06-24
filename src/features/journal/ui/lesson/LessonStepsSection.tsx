@@ -24,6 +24,7 @@ type LessonStepsSectionProps = {
   resolvedStepStates: Record<string, StepGradeState>;
   hasMore: boolean;
   canLoadNextLevel: boolean;
+  isLoadingNextLevel?: boolean;
   gradedStepCount: number;
   getStepTotalHours: (step: JournalStep) => number;
   onAttendanceChange: (
@@ -34,7 +35,7 @@ type LessonStepsSectionProps = {
   onToggleExpand: (stepId: string) => void;
   onStepStateChange: (stepId: string, state: StepGradeState) => void;
   onLoadMoreSteps: () => void;
-  onLoadNextLevelSteps: () => void;
+  onLoadNextLevelSteps: () => void | Promise<void>;
 };
 
 export function LessonStepsSection({
@@ -48,6 +49,7 @@ export function LessonStepsSection({
   resolvedStepStates,
   hasMore,
   canLoadNextLevel,
+  isLoadingNextLevel = false,
   gradedStepCount,
   getStepTotalHours,
   onAttendanceChange,
@@ -129,7 +131,8 @@ export function LessonStepsSection({
           {canLoadNextLevel && (
             <Button
               type="link"
-              onClick={onLoadNextLevelSteps}
+              loading={isLoadingNextLevel}
+              onClick={() => void onLoadNextLevelSteps()}
               className="self-center"
             >
               Загрузить шаги

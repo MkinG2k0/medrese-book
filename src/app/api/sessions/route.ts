@@ -1,6 +1,10 @@
 import { revalidatePath } from "next/cache";
 
 import {
+  findStudentSessionForDay,
+  serializeDaySession,
+} from "@/features/journal/lib/get-student-session";
+import {
   getCalendarDayQueryRange,
   getLocalDateString,
   isSameCalendarDay,
@@ -104,50 +108,11 @@ export async function GET(request: Request) {
   const dateStr = searchParams.get("date");
 
   if (dateStr) {
-    const student = await prisma.student.findUnique({
-      where: { id: studentId },
-    });
-
-    if (!student) return error("Ученик не найден", 404);
-
-    const dayRange = getCalendarDayQueryRange(dateStr);
-    const daySessions = await prisma.session.findMany({
-      where: {
-        studentId,
-        date: { gte: dayRange.start, lte: dayRange.end },
-      },
-      include: {
-        completions: {
-          include: {
-            step: {
-              select: {
-                id: true,
-                order: true,
-                title: true,
-                content: true,
-                hours: true,
-                level: { select: { number: true, title: true } },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { date: "desc" },
-    });
-    const daySession =
-      daySessions.find((s) => isSameCalendarDay(s.date, dateStr)) ?? null;
+    const daySession = await findStudentSessionForDay(studentId, dateStr);
 
     if (!daySession) return success(null);
 
-    return success({
-      ...daySession,
-      completions: daySession.completions.map((completion) => ({
-        stepId: completion.stepId,
-        grade: completion.grade,
-        note: completion.note,
-        step: completion.step,
-      })),
-    });
+    return success(serializeDaySession(daySession));
   }
 
   const sessions = await prisma.session.findMany({

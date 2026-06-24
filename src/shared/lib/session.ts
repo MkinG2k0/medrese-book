@@ -1,11 +1,14 @@
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 
 import type { Role } from '@/shared/lib/prisma'
 
 import { auth } from './auth'
 
+export const getCachedAuth = cache(auth)
+
 export async function requireAuth() {
-	const session = await auth()
+	const session = await getCachedAuth()
 	if (!session) redirect('/login')
 	return session
 }

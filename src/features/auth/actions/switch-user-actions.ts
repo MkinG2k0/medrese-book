@@ -2,8 +2,9 @@
 
 import { redirect } from 'next/navigation'
 
-import { auth, signIn } from '@/shared/lib/auth'
+import { signIn } from '@/shared/lib/auth'
 import { prisma } from '@/shared/lib/prisma'
+import { getCachedAuth } from '@/shared/lib/session'
 
 import { resolveSwitchAccess } from '../lib/resolve-switch-access'
 
@@ -14,7 +15,7 @@ export type SwitchableUser = {
 }
 
 export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
-	const session = await auth()
+	const session = await getCachedAuth()
 	if (!session) return []
 
 	const access = await resolveSwitchAccess(session)
@@ -28,7 +29,7 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 }
 
 export async function switchUser(userId: string) {
-	const session = await auth()
+	const session = await getCachedAuth()
 	if (!session) throw new Error('Недостаточно прав')
 
 	const access = await resolveSwitchAccess(session)

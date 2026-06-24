@@ -1,9 +1,12 @@
 "use client";
 
 import { DownOutlined, RightOutlined } from "@ant-design/icons";
-import { Card, Flex, Form, Input, Radio, Tag } from "antd";
+import { Card, Flex, Form, Input, Radio, Spin, Tag } from "antd";
+import { useEffect, useState } from "react";
 
+import { getJournalStepContent } from "@/features/journal/actions/journal-actions";
 import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
+import { EMPTY_STEP_CONTENT } from "@/features/journal/lib/journal-step";
 import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 import Text from "@/shared/ui/Text";
@@ -57,6 +60,32 @@ export function StepCard({
   onToggleExpand,
   onStateChange,
 }: StepCardProps) {
+  const [content, setContent] = useState<StepContent>(step.content);
+  const [isContentLoading, setIsContentLoading] = useState(false);
+
+  useEffect(() => {
+    setContent(step.content);
+  }, [step.id, step.content]);
+
+  useEffect(() => {
+    if (!expanded || content.blocks.length > 0) return;
+
+    let cancelled = false;
+    setIsContentLoading(true);
+
+    void getJournalStepContent(step.id)
+      .then((loaded) => {
+        if (!cancelled && loaded) setContent(loaded);
+      })
+      .finally(() => {
+        if (!cancelled) setIsContentLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [expanded, step.id, content.blocks.length]);
+
   const handleGradeChange = (grade: number) => {
     onStateChange({ ...state, grade });
   };
@@ -105,7 +134,11 @@ export function StepCard({
           <Flex vertical gap={16} className="pt-2">
             <Form layout="vertical">
               <Form.Item label="Содержание" className="mb-4">
-                <StepContentPreview content={step.content} />
+                {isContentLoading ? (
+                  <Spin />
+                ) : (
+                  <StepContentPreview content={content ?? EMPTY_STEP_CONTENT} />
+                )}
               </Form.Item>
 
               {step.description?.trim() && (

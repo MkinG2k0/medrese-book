@@ -8,7 +8,10 @@ import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
-import type { JournalStep } from "@/features/journal/actions/journal-actions";
+import {
+  getNextLevelJournalSteps,
+  type JournalStep,
+} from "@/features/journal/actions/journal-actions";
 import {
   INITIAL_VISIBLE_STEPS,
   LOAD_MORE_STEPS_COUNT,
@@ -85,18 +88,35 @@ export function useLessonPage(props: LessonPageProps) {
     studentId,
     steps,
     allSteps,
-    nextLevelSteps,
+    hasNextLevel,
+    prefetchedSessionSteps,
+    nextLevelSteps: initialNextLevelSteps,
     stepCompletions,
     nextStudent,
     totalHours,
+    initialSession,
+    sessionDate,
   } = props;
+
+  const [fetchedNextLevelSteps, setFetchedNextLevelSteps] = useState<JournalStep[]>(
+    initialNextLevelSteps,
+  );
+  const [isLoadingNextLevel, setIsLoadingNextLevel] = useState(false);
+
+  const nextLevelSteps = useMemo(
+    () => [...prefetchedSessionSteps, ...fetchedNextLevelSteps],
+    [prefetchedSessionSteps, fetchedNextLevelSteps],
+  );
 
   const router = useRouter();
   const { dateFilter, initSessionCompletions, setSessionStepState } =
     useJournalStore();
 
   const { data: existingSession, isLoading: isSessionLoading } =
-    useStudentSession(studentId, dateFilter);
+    useStudentSession(studentId, dateFilter, {
+      initialSession,
+      seededDate: sessionDate,
+    });
   const createSession = useCreateSession();
 
   const isProgramComplete = useMemo(
@@ -106,8 +126,8 @@ export function useLessonPage(props: LessonPageProps) {
   const hasNoSteps = allSteps.length === 0;
 
   const sessionStepsOutsideLevel = useMemo(
-    () => mapSessionStepsOutsideLevel(allSteps, existingSession),
-    [allSteps, existingSession],
+    () => mapSessionStepsOutsideLevel(allSteps, nextLevelSteps, existingSession),
+    [allSteps, nextLevelSteps, existingSession],
   );
 
   const sessionDataKey = buildSessionDataKey(
@@ -252,7 +272,9 @@ export function useLessonPage(props: LessonPageProps) {
     !isProgramComplete &&
     !hasMore &&
     allVisibleStepsPassed &&
-    nextLevelLoadedCount < nextLevelSteps.length;
+    hasNextLevel &&
+    (nextLevelLoadedCount < nextLevelSteps.length ||
+      fetchedNextLevelSteps.length === 0);
 
   const cumulativeHoursByAllSteps = useMemo(
     () => ({
@@ -301,12 +323,32 @@ export function useLessonPage(props: LessonPageProps) {
     );
   };
 
-  const loadNextLevelSteps = () => {
+  const loadNextLevelSteps = async () => {
+    let stepsPool = nextLevelSteps;
+
+    if (hasNextLevel && fetchedNextLevelSteps.length === 0) {
+      setIsLoadingNextLevel(true);
+      try {
+        const fetched = await getNextLevelJournalSteps(studentId);
+        setFetchedNextLevelSteps(fetched);
+        stepsPool = [...prefetchedSessionSteps, ...fetched];
+      } catch (err) {
+        message.error(
+          err instanceof Error
+            ? err.message
+            : "Не удалось загрузить следующий уровень",
+        );
+        return;
+      } finally {
+        setIsLoadingNextLevel(false);
+      }
+    }
+
     const nextCount = Math.min(
       nextLevelLoadedCount + LOAD_MORE_STEPS_COUNT,
-      nextLevelSteps.length,
+      stepsPool.length,
     );
-    const newlyLoaded = nextLevelSteps.slice(nextLevelLoadedCount, nextCount);
+    const newlyLoaded = stepsPool.slice(nextLevelLoadedCount, nextCount);
     setNextLevelUserExtraBySessionKey((prev) => ({
       ...prev,
       [sessionDataKey]: nextCount - sessionNextLevelLoadedCount,
@@ -403,6 +445,7 @@ export function useLessonPage(props: LessonPageProps) {
     loadNextLevelSteps,
     handleSave,
     handleSaveAndNext,
+    isLoadingNextLevel,
   };
 }
 

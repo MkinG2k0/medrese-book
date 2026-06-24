@@ -4,12 +4,10 @@ import { getStudentLesson } from '@/features/journal/actions/journal-actions'
 
 export const dynamic = 'force-dynamic'
 import { LessonPage } from '@/features/journal/ui/LessonPage'
-import { requireRole } from '@/shared/lib/session'
 
 type Props = { params: Promise<{ studentId: string }> }
 
 export default async function StudentLessonPage({ params }: Props) {
-	await requireRole('TEACHER')
 	const { studentId } = await params
 	const lesson = await getStudentLesson(studentId)
 
@@ -26,9 +24,13 @@ export default async function StudentLessonPage({ params }: Props) {
 			totalHours={lesson.totalHours}
 			steps={lesson.steps}
 			allSteps={lesson.allSteps}
+			hasNextLevel={lesson.hasNextLevel}
+			prefetchedSessionSteps={lesson.prefetchedSessionSteps}
 			nextLevelSteps={lesson.nextLevelSteps}
 			stepCompletions={lesson.stepCompletions}
 			nextStudent={lesson.nextStudent}
+			initialSession={lesson.initialSession}
+			sessionDate={lesson.sessionDate}
 		/>
 	)
 }

@@ -1,9 +1,11 @@
 import { prisma } from '@/shared/lib/prisma'
 
 let cachedOffsets: Map<number, number> | null = null
+let cachedTotalProgramSteps: number | null = null
 
 export function invalidateStepOffsetCache() {
 	cachedOffsets = null
+	cachedTotalProgramSteps = null
 }
 
 export async function getStepOffsetForLevel(
@@ -16,7 +18,10 @@ export async function getStepOffsetForLevel(
 }
 
 export async function getTotalProgramSteps(): Promise<number> {
-	return prisma.step.count()
+	if (cachedTotalProgramSteps === null) {
+		cachedTotalProgramSteps = await prisma.step.count()
+	}
+	return cachedTotalProgramSteps
 }
 
 export async function getLevelStepOffsets(): Promise<Map<number, number>> {
