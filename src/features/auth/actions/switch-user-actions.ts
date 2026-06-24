@@ -18,6 +18,7 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 	if (!session || !canSwitchUser(session.user.role)) return []
 
 	return prisma.user.findMany({
+		where: { role: { not: 'STUDENT' } },
 		select: { id: true, name: true, role: true },
 		orderBy: [{ role: 'asc' }, { name: 'asc' }],
 	})
@@ -33,9 +34,10 @@ export async function switchUser(userId: string) {
 
 	const user = await prisma.user.findUnique({
 		where: { id: userId },
-		select: { code: true },
+		select: { code: true, role: true },
 	})
 	if (!user) throw new Error('Пользователь не найден')
+	if (user.role === 'STUDENT') throw new Error('Недостаточно прав')
 
 	await signIn('code', { code: user.code, redirect: false })
 	redirect('/dashboard')
