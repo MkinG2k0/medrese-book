@@ -252,6 +252,7 @@ export async function updateUser(userId: string, input: unknown) {
 		revalidatePath(`/journal/${user.student.id}`)
 		revalidatePath(`/students/${user.student.id}/edit`)
 		revalidatePath('/student/me')
+		revalidatePath('/student/lessons')
 		return
 	}
 

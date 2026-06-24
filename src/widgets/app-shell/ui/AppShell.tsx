@@ -83,6 +83,12 @@ const allMenuItems: MenuItem[] = [
     roles: ["STUDENT"],
   },
   {
+    key: "/student/lessons",
+    icon: <BookOutlined />,
+    label: "Уроки",
+    roles: ["STUDENT"],
+  },
+  {
     key: "/admin/users",
     icon: <UserOutlined />,
     label: "Пользователи",
@@ -187,11 +193,13 @@ export function AppShell({
                 collapsed={collapsed}
               />
             )}
-            <RememberedAccountsSelect
-              currentUserId={session.user.id}
-              collapsed={collapsed}
-              placeholder="Сменить учётку"
-            />
+            {session.user.role !== "STUDENT" && (
+              <RememberedAccountsSelect
+                currentUserId={session.user.id}
+                collapsed={collapsed}
+                placeholder="Сменить учётку"
+              />
+            )}
             <Button
               type="text"
               icon={<LogoutOutlined />}

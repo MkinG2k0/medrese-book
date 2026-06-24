@@ -1,9 +1,7 @@
 import { Tag } from "antd";
 import { notFound } from "next/navigation";
 
-import { BlockRenderer } from "@/features/program-admin/ui/BlockRenderer";
 import { getStudentProfile } from "@/features/student-portal/actions/student-actions";
-import { StudentSessionsTable } from "@/features/student-portal/ui/StudentSessionsTable";
 import { ProgressBar } from "@/shared/ui/ProgressBar";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -30,13 +28,6 @@ export default async function StudentMePage() {
         />
       </div>
 
-      {profile.currentStep && (
-        <div>
-          <Title level={4}>Текущий урок: {profile.currentStep.title}</Title>
-          <BlockRenderer blocks={profile.currentStep.content.blocks} />
-        </div>
-      )}
-
       <div>
         <Title level={4}>Награды</Title>
         {profile.awards.length === 0 ? (
@@ -50,11 +41,6 @@ export default async function StudentMePage() {
             ))}
           </div>
         )}
-      </div>
-
-      <div>
-        <Title level={4}>История занятий</Title>
-        <StudentSessionsTable sessions={profile.sessions} />
       </div>
     </div>
   );

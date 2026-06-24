@@ -121,6 +121,7 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 	revalidatePath(`/journal/${studentId}`)
 	revalidatePath(`/students/${studentId}/edit`)
 	revalidatePath('/student/me')
+	revalidatePath('/student/lessons')
 
 	return { currentStepIdx }
 }

@@ -12,7 +12,7 @@ test.describe("Личный кабинет ученика", () => {
 
   test("отображает профиль и прогресс", async ({ page }) => {
     await expect(page.getByText(/Прогресс: шаг \d+ из \d+/)).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toHaveCount(0);
   });
 
   test("показывает раздел наград", async ({ page }) => {
@@ -20,8 +20,8 @@ test.describe("Личный кабинет ученика", () => {
     await expect(page.getByText("Пока нет наград")).toBeVisible();
   });
 
-  test("показывает историю занятий", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "История занятий" })).toBeVisible();
+  test("не показывает смену учётки", async ({ page }) => {
+    await expect(page.getByText("Сменить учётку")).toHaveCount(0);
   });
 
   test("не имеет доступа к журналу учителя", async ({ page }) => {
@@ -30,16 +30,31 @@ test.describe("Личный кабинет ученика", () => {
   });
 });
 
+test.describe("Уроки ученика", () => {
+  test.use({ storageState: AUTH_STATE.studentAli });
+
+  test("отображает текущий урок", async ({ page }) => {
+    await page.goto("/student/lessons");
+    await expect(page.getByRole("heading", { name: "Уроки" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toBeVisible();
+  });
+
+  test("показывает историю занятий", async ({ page }) => {
+    await page.goto("/student/lessons");
+    await expect(page.getByRole("heading", { name: "История занятий" })).toBeVisible();
+  });
+});
+
 test.describe("Личный кабинет ученика с историей", () => {
   test.use({ storageState: AUTH_STATE.studentUsman });
 
-  test("ученик с пройденными шагами видит занятия в истории", async ({
+  test("ученик с пройденными шагами видит занятия и оценки на странице уроков", async ({
     page,
   }) => {
-    await page.goto("/student/me");
-    await expect(page.getByRole("heading", { name: "Усман" })).toBeVisible();
+    await page.goto("/student/lessons");
+    await expect(page.getByRole("heading", { name: "Уроки" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "История занятий" })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "PRESENT" })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "3" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Пришёл" })).toBeVisible();
+    await expect(page.getByText(/: 3/)).toBeVisible();
   });
 });

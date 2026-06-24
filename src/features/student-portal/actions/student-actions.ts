@@ -16,13 +16,36 @@ export async function getStudentProfile() {
 		where: { id: session.user.studentId! },
 		include: {
 			user: true,
+			level: true,
+			awards: { orderBy: { date: 'desc' } },
+		},
+	})
+
+	if (!student) return null
+
+	const totalSteps = await getTotalProgramSteps()
+
+	return {
+		name: student.user.name,
+		currentStepIdx: student.currentStepIdx,
+		totalSteps,
+		levelTitle: `${student.level.number}й уровень — ${student.level.title}`,
+		awards: student.awards,
+	}
+}
+
+export async function getStudentLessons() {
+	const session = await requireRole('STUDENT')
+
+	const student = await prisma.student.findUnique({
+		where: { id: session.user.studentId! },
+		include: {
 			level: { include: { steps: { orderBy: { order: 'asc' } } } },
 			sessions: {
 				include: { completions: { include: { step: true } } },
 				orderBy: { date: 'desc' },
-				take: 20,
+				take: 50,
 			},
-			awards: { orderBy: { date: 'desc' } },
 		},
 	})
 
@@ -30,7 +53,6 @@ export async function getStudentProfile() {
 
 	const steps = student.level.steps
 	const stepOffset = await getStepOffsetForLevel(student.level.number)
-	const totalSteps = await getTotalProgramSteps()
 	const localStepIdx = getLocalStepIdx(student.currentStepIdx, stepOffset)
 	const currentStep =
 		localStepIdx >= 0 && localStepIdx < steps.length
@@ -38,17 +60,12 @@ export async function getStudentProfile() {
 			: undefined
 
 	return {
-		name: student.user.name,
-		currentStepIdx: student.currentStepIdx,
-		totalSteps,
 		currentStep: currentStep
 			? {
 					title: currentStep.title,
 					content: currentStep.content as StepContent,
 				}
 			: null,
-		levelTitle: student.level.title,
 		sessions: student.sessions,
-		awards: student.awards,
 	}
 }

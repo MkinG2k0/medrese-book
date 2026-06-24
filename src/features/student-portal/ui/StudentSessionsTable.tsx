@@ -8,7 +8,13 @@ type SessionRow = {
   id: string;
   date: Date | string;
   attendance: string;
-  completions: { grade: number }[];
+  completions: { grade: number; step: { title: string } }[];
+};
+
+const ATTENDANCE_LABELS: Record<string, { label: string; color: string }> = {
+  PRESENT: { label: "Пришёл", color: "green" },
+  LATE: { label: "Опоздал", color: "orange" },
+  ABSENT: { label: "Не пришёл", color: "red" },
 };
 
 export function StudentSessionsTable({ sessions }: { sessions: SessionRow[] }) {
@@ -28,13 +34,26 @@ export function StudentSessionsTable({ sessions }: { sessions: SessionRow[] }) {
           title: "Посещаемость",
           dataIndex: "attendance",
           key: "attendance",
-          render: (a: string) => <Tag>{a}</Tag>,
+          render: (a: string) => {
+            const info = ATTENDANCE_LABELS[a] ?? { label: a, color: "default" };
+            return <Tag color={info.color}>{info.label}</Tag>;
+          },
         },
         {
           title: "Оценки",
           key: "grades",
           render: (_, record) =>
-            record.completions.map((c) => c.grade).join(", ") || "—",
+            record.completions.length === 0 ? (
+              "—"
+            ) : (
+              <div className="flex flex-col gap-1">
+                {record.completions.map((c, i) => (
+                  <span key={i}>
+                    {c.step.title}: <strong>{c.grade}</strong>
+                  </span>
+                ))}
+              </div>
+            ),
         },
       ]}
     />
