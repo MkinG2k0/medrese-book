@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 Phase: 0 of 7 (Foundation)
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-06-24 — Roadmap created, 54 v1 requirements mapped to 8 phases
+Last activity: 2026-06-24 - Completed quick task 260624-psw: ограничить переключение пользователей
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,12 @@ None yet.
 - **Phase 1:** уточнить норматив 48ч — по часам программы (`Step.hours`) или по фактическому времени таймера
 - **Phase 4:** правила auto-substitute при одобрении отпуска — менеджер выбирает vs автоматический matching
 - **Phase 0:** middleware для `/api/*` vs per-route `authorizeApiRequest` — решить при планировании
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260624-psw | Убрать переключение ролей кроме менеджера/админа, исключить учеников | 2026-06-24 | ee3858c | [260624-psw-restrict-user-switcher](./quick/260624-psw-restrict-user-switcher/) |
 
 ## Session Continuity
 
