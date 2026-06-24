@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
   useTransition,
+  type Key,
 } from "react";
 
 import { resetUserCode } from "@/features/user-admin/actions/user-actions";
@@ -36,16 +37,23 @@ type CreatedUser = {
   code: string;
 };
 
+type LevelOption = {
+  id: string;
+  number: number;
+  title: string;
+  steps: { id: string; order: number; title: string }[];
+};
+
 type UsersTableProps = {
   users: UserDetail[];
   groups: { id: string; name: string }[];
-  levels: {
-    id: string;
-    number: number;
-    title: string;
-    steps: { id: string; order: number; title: string }[];
-  }[];
+  levels: LevelOption[];
   canResetCode: boolean;
+  title?: string;
+  showCreateButton?: boolean;
+  hideRoleColumn?: boolean;
+  hideGroupColumn?: boolean;
+  enableRowClick?: boolean;
 };
 
 function matchesGroupFilter(record: UserDetail, groupName: string) {
@@ -60,6 +68,11 @@ export function UsersTable({
   groups,
   levels,
   canResetCode,
+  title = "Пользователи",
+  showCreateButton = true,
+  hideRoleColumn = false,
+  hideGroupColumn = false,
+  enableRowClick = true,
 }: UsersTableProps) {
   const [isPending, startTransition] = useTransition();
   const [codeModal, setCodeModal] = useState<CreatedUser[] | null>(null);
@@ -156,34 +169,44 @@ export function UsersTable({
           },
         },
       },
-      {
-        title: "Роль",
-        dataIndex: "role",
-        key: "role",
-        filters: ROLE_OPTIONS.map((option) => ({
-          text: option.label,
-          value: option.value,
-        })),
-        filterSearch: true,
-        onFilter: (value, record) => record.role === value,
-        render: (role: string) => <Tag>{ROLE_LABELS[role] ?? role}</Tag>,
-      },
+      ...(!hideRoleColumn
+        ? [
+            {
+              title: "Роль",
+              dataIndex: "role",
+              key: "role",
+              filters: ROLE_OPTIONS.map((option) => ({
+                text: option.label,
+                value: option.value,
+              })),
+              filterSearch: true,
+              onFilter: (value: boolean | Key, record: UserDetail) =>
+                record.role === value,
+              render: (role: string) => <Tag>{ROLE_LABELS[role] ?? role}</Tag>,
+            },
+          ]
+        : []),
       {
         title: "Код",
         dataIndex: "code",
         key: "code",
         render: (code: string) => `••••${code.slice(-2)}`,
       },
-      {
-        title: "Группа",
-        dataIndex: "groupName",
-        key: "groupName",
-        filters: groupFilters,
-        filterSearch: true,
-        onFilter: (value, record) => matchesGroupFilter(record, String(value)),
-        render: (groupName: string | undefined, record) =>
-          groupName ?? record.teacherGroupNames?.join(", ") ?? "—",
-      },
+      ...(!hideGroupColumn
+        ? [
+            {
+              title: "Группа",
+              dataIndex: "groupName",
+              key: "groupName",
+              filters: groupFilters,
+              filterSearch: true,
+              onFilter: (value: boolean | Key, record: UserDetail) =>
+                matchesGroupFilter(record, String(value)),
+              render: (groupName: string | undefined, record: UserDetail) =>
+                groupName ?? record.teacherGroupNames?.join(", ") ?? "—",
+            },
+          ]
+        : []),
       ...(canResetCode
         ? [
             {
@@ -205,16 +228,18 @@ export function UsersTable({
           ]
         : []),
     ],
-    [canResetCode, groupFilters, handleReset, isPending],
+    [canResetCode, groupFilters, handleReset, hideGroupColumn, hideRoleColumn, isPending],
   );
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <Title level={3}>Пользователи</Title>
-        <Button type="primary" onClick={() => setShowCreate(true)}>
-          Создать пользователя
-        </Button>
+        <Title level={3}>{title}</Title>
+        {showCreateButton && (
+          <Button type="primary" onClick={() => setShowCreate(true)}>
+            Создать пользователя
+          </Button>
+        )}
       </div>
 
       <Table
@@ -222,10 +247,14 @@ export function UsersTable({
         columns={columns}
         rowKey="id"
         pagination={{ pageSize: 20 }}
-        onRow={(record) => ({
-          onClick: () => setSelectedUser(record),
-          className: "cursor-pointer",
-        })}
+        onRow={
+          enableRowClick
+            ? (record) => ({
+                onClick: () => setSelectedUser(record),
+                className: "cursor-pointer",
+              })
+            : undefined
+        }
       />
 
       <UserDetailModal
