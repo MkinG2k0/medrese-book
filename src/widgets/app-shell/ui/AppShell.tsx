@@ -163,7 +163,7 @@ export function AppShell({
           className="border-none bg-transparent"
         />
         <div className="absolute bottom-4 left-0 right-0 px-4">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             {switchableUsers.length > 0 && (
               <UserSwitcher
                 users={switchableUsers}
