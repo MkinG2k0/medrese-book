@@ -10,9 +10,7 @@ const baseURL =
 
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 if (!authSecret) {
-  throw new Error(
-    "AUTH_SECRET не задан. Заполните AUTH_SECRET в .env.test.",
-  );
+  throw new Error("AUTH_SECRET не задан. Заполните AUTH_SECRET в .env.test.");
 }
 
 const webServerEnv: Record<string, string> = {
@@ -34,7 +32,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: [["list"], ["html", { open: "never" }]],
-  timeout: 10_000,
+  timeout: 30_000,
   expect: { timeout: 10_000 },
   use: {
     baseURL,
@@ -45,13 +43,23 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
+      name: "api",
+      testMatch: /api-.*\.spec\.ts/,
+    },
+    {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+      testIgnore: [/auth\.setup\.ts/, /api-.*\.spec\.ts/],
     },
   ],
   globalSetup: "./e2e/global-setup.ts",
   webServer: {
-    command: "pnpm dev",
+    command: "pnpm dev --port 3005",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 10_000,

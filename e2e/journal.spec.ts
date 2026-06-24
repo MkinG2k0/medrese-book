@@ -1,17 +1,19 @@
 import { expect, test } from "@playwright/test";
 
+import { AUTH_STATE } from "./helpers/auth-state";
 import { clickRadioButton } from "./helpers/antd";
-import { loginAs } from "./helpers/auth";
-import { TEST_CODES, TEST_USERS } from "./helpers/codes";
+import { TEST_USERS } from "./helpers/codes";
 
 test.describe("Журнал учителя", () => {
+  test.use({ storageState: AUTH_STATE.teacher1 });
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, TEST_CODES.teacher1);
-    await expect(page).toHaveURL(/\/journal/);
+    await page.goto("/journal");
+    await expect(page.getByRole("heading", { name: "Журнал на сегодня" })).toBeVisible();
   });
 
   test("отображает учеников группы Аль-Фатиха", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Журнал на сегодня" })).toBeVisible();
     await expect(page.getByRole("link", { name: TEST_USERS.studentAli })).toBeVisible();
     await expect(page.getByRole("link", { name: TEST_USERS.studentUsman })).toBeVisible();
     await expect(page.getByRole("link", { name: TEST_USERS.studentBilal })).toBeVisible();

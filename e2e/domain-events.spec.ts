@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { TEST_CODES } from "./helpers/api";
 import { selectStudentProgressStep } from "./helpers/antd";
-import { loginAs } from "./helpers/auth";
+import { AUTH_STATE } from "./helpers/auth-state";
 import { TEST_USERS } from "./helpers/codes";
 import {
   countAuditEvents,
@@ -12,6 +12,8 @@ import {
 } from "./helpers/db";
 
 test.describe("Domain events (FND-04)", () => {
+  test.use({ storageState: AUTH_STATE.manager });
+
   test("updateStudentProgress creates AuditEvent STUDENT_PROGRESS_CHANGED", async ({
     page,
   }) => {
@@ -26,7 +28,6 @@ test.describe("Domain events (FND-04)", () => {
       studentId,
     );
 
-    await loginAs(page, TEST_CODES.manager);
     await page.goto(`/students/${studentId}/edit`);
     await expect(page.getByRole("heading", { name: "Прогресс ученика" })).toBeVisible();
 

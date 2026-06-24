@@ -1,16 +1,18 @@
 import { expect, test } from "@playwright/test";
 
-import { loginAs } from "./helpers/auth";
-import { TEST_CODES, TEST_USERS } from "./helpers/codes";
+import { AUTH_STATE } from "./helpers/auth-state";
+import { TEST_USERS } from "./helpers/codes";
 
 test.describe("Админ-панель менеджера", () => {
+  test.use({ storageState: AUTH_STATE.manager });
+
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, TEST_CODES.manager);
-    await expect(page).toHaveURL(/\/admin\/users/);
+    await page.goto("/admin/users");
+    await expect(page.getByRole("heading", { name: "Пользователи" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Али", exact: true })).toBeVisible();
   });
 
   test("отображает список пользователей", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Пользователи" })).toBeVisible();
     await expect(
       page.getByRole("cell", { name: "Учитель Ахмад", exact: true }),
     ).toBeVisible();
@@ -108,9 +110,11 @@ test.describe("Админ-панель менеджера", () => {
 });
 
 test.describe("Админ-панель супер-админа", () => {
+  test.use({ storageState: AUTH_STATE.superAdmin });
+
   test("может сбросить код пользователя", async ({ page }) => {
-    await loginAs(page, TEST_CODES.superAdmin);
-    await expect(page).toHaveURL(/\/admin\/users/);
+    await page.goto("/admin/users");
+    await expect(page.getByRole("heading", { name: "Пользователи" })).toBeVisible();
 
     const resetButton = page
       .getByRole("row", { name: /Зайд/ })

@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { apiGetAs, TEST_CODES } from "./helpers/api";
 import { selectStudentProgressStep } from "./helpers/antd";
+import { AUTH_STATE } from "./helpers/auth-state";
 import { loginAs } from "./helpers/auth";
 import { TEST_USERS } from "./helpers/codes";
 import {
@@ -73,6 +74,8 @@ async function getAnalyticsStepsCompleted(
 }
 
 test.describe("Student progress sync (FND-03)", () => {
+  test.use({ storageState: AUTH_STATE.manager });
+
   test("manager progress change shows same currentStepIdx in journal and student portal", async ({
     page,
   }) => {
@@ -86,7 +89,6 @@ test.describe("Student progress sync (FND-03)", () => {
     const priorCreditsBefore =
       await countStudentPriorCreditCompletions(studentId);
 
-    await loginAs(page, TEST_CODES.manager);
     await page.goto(`/students/${studentId}/edit`);
     await expect(
       page.getByRole("heading", { name: "Прогресс ученика" }),

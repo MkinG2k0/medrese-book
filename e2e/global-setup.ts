@@ -4,7 +4,7 @@ import path from "node:path";
 import { loadTestEnv } from "./helpers/load-test-env";
 
 function runSeed(cwd: string) {
-  execSync("pnpm db:seed", {
+  execSync("pnpm db:seed:e2e", {
     cwd,
     stdio: "inherit",
     env: process.env,
@@ -38,7 +38,7 @@ export default async function globalSetup() {
     } catch {
       if (attempt === maxAttempts) {
         throw new Error(
-          "Не удалось выполнить pnpm db:seed. Проверьте DATABASE_URL в .env.test. " +
+          "Не удалось выполнить pnpm db:seed:e2e. Проверьте DATABASE_URL в .env.test. " +
             "Для пропуска seed задайте E2E_SKIP_SEED=1.",
         );
       }
