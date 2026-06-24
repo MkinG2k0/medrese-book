@@ -9,6 +9,11 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { updateUser } from "@/features/user-admin/actions/user-actions";
 import { formatDate } from "@/shared/lib/utils";
 import {
+  STUDENT_STATUS_LABELS,
+  STUDENT_STATUS_VALUES,
+  type StudentStatus,
+} from "@/shared/lib/student-status";
+import {
   updateStaffUserFormSchema,
   updateStudentUserFormSchema,
   type UpdateStaffUserFormInput,
@@ -49,6 +54,7 @@ export type UserDetail = {
     levelTitle?: string;
     groupId: string;
     localStepIndex: number;
+    status: StudentStatus;
   };
 };
 
@@ -80,6 +86,7 @@ function getStudentDefaultValues(user: UserDetail): UpdateStudentUserFormInput {
     groupId: user.student?.groupId ?? "",
     levelId: user.student?.levelId ?? "",
     localStepIndex: user.student?.localStepIndex ?? 0,
+    status: user.student?.status ?? "ACTIVE",
   };
 }
 
@@ -217,6 +224,27 @@ function StudentEditFields({
           </Form.Item>
         )}
       />
+
+      <Controller
+        name="status"
+        control={control}
+        render={({ field, fieldState }) => (
+          <Form.Item
+            label="Статус"
+            validateStatus={fieldState.error ? "error" : ""}
+            help={fieldState.error?.message}
+          >
+            <Select
+              {...field}
+              disabled={readOnly}
+              options={STUDENT_STATUS_VALUES.map((value) => ({
+                value,
+                label: STUDENT_STATUS_LABELS[value],
+              }))}
+            />
+          </Form.Item>
+        )}
+      />
     </>
   );
 }
@@ -265,6 +293,7 @@ export function UserDetailModal({
         groupId: values.groupId,
         levelId: values.levelId,
         localStepIndex: values.localStepIndex,
+        status: values.status,
       });
       router.refresh();
       onClose();
@@ -327,6 +356,11 @@ export function UserDetailModal({
             <Descriptions.Item label="Создан">
               {formatDate(user.createdAt)}
             </Descriptions.Item>
+            {isStudent && user.student && (
+              <Descriptions.Item label="Статус">
+                <Tag>{STUDENT_STATUS_LABELS[user.student.status]}</Tag>
+              </Descriptions.Item>
+            )}
           </Descriptions>
 
           {isStudent ? (

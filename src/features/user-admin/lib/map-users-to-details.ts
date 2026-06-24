@@ -1,4 +1,5 @@
 import type { UserDetail } from '@/features/user-admin/ui/UserDetailModal'
+import type { StudentStatus } from '@/shared/lib/student-status'
 
 export type LevelOption = {
 	id: string
@@ -23,6 +24,7 @@ type UserWithRelations = {
 		currentStepIdx: number
 		levelId: string
 		groupId: string
+		status: StudentStatus
 		level: { title: string }
 		group?: { name: string } | null
 	} | null
@@ -77,6 +79,7 @@ export function mapUsersToDetails(
 						levelTitle: user.student.level.title,
 						groupId: user.student.groupId,
 						localStepIndex,
+						status: user.student.status,
 					}
 				: undefined,
 		}

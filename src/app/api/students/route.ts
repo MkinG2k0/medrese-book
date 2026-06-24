@@ -4,6 +4,7 @@ import {
 } from '@/shared/lib/calendar-date'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { prisma } from '@/shared/lib/prisma'
+import { isJournalVisibleStatus } from '@/shared/lib/student-status'
 import { isStepPassed } from '@/shared/lib/step-completion'
 import { error, success } from '@/shared/api'
 
@@ -45,7 +46,9 @@ export async function GET(request: Request) {
 
 	if (!group) return error('Группа не найдена', 404)
 
-	const students = group.students.map((s) => {
+	const students = group.students
+		.filter((s) => isJournalVisibleStatus(s.status))
+		.map((s) => {
 		const todaySession =
 			dateStr && Array.isArray(s.sessions)
 				? s.sessions.find((session) =>
@@ -61,6 +64,7 @@ export async function GET(request: Request) {
 		return {
 			id: s.id,
 			name: s.user.name,
+			status: s.status,
 			currentStepIdx: s.currentStepIdx,
 			groupId: s.groupId,
 			levelNumber: s.level.number,

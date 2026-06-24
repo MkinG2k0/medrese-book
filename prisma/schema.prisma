@@ -25,6 +25,12 @@ enum AwardType {
   ACTIVITY
 }
 
+enum StudentStatus {
+  ACTIVE
+  PAUSE
+  ARCHIVE
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -65,6 +71,7 @@ model Student {
   levelId        String
   level          Level            @relation(fields: [levelId], references: [id])
   currentStepIdx Int              @default(0)
+  status         StudentStatus    @default(ACTIVE)
   sessions       Session[]
   completions    StepCompletion[]
   awards         Award[]

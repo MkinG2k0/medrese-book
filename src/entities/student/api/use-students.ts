@@ -2,9 +2,12 @@
 
 import { useQuery } from '@tanstack/react-query'
 
+import type { StudentStatus } from '@/shared/lib/student-status'
+
 type Student = {
 	id: string
 	name: string
+	status: StudentStatus
 	currentStepIdx: number
 	groupId: string
 	levelNumber: number

@@ -1,14 +1,18 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Modal, Table, Tag } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
+import { resumeStudentFromPause } from "@/features/journal/actions/journal-actions";
+import type { StudentStatus } from "@/shared/lib/student-status";
 import Text from "@/shared/ui/Text";
 
 type JournalStudentRow = {
   id: string;
   name: string;
+  status: StudentStatus;
   currentStepIdx: number;
   hasSessionToday?: boolean;
   todayAttendance?: "PRESENT" | "LATE" | "ABSENT" | null;
@@ -38,6 +42,32 @@ function AttendanceCell({
   return <Tag color={color}>{label}</Tag>;
 }
 
+function StudentNameCell({
+  name,
+  status,
+  studentId,
+  blocked,
+}: {
+  name: string;
+  status: StudentStatus;
+  studentId: string;
+  blocked: boolean;
+}) {
+  if (blocked) {
+    return <span>{name}</span>;
+  }
+
+  if (status === "PAUSE") {
+    return <Text type="warning">{name}</Text>;
+  }
+
+  return (
+    <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
+      {name}
+    </Link>
+  );
+}
+
 export function JournalStudentsTable({
   students,
   blocked = false,
@@ -46,6 +76,34 @@ export function JournalStudentsTable({
   blocked?: boolean;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const openLesson = (studentId: string) => {
+    router.push(`/journal/${studentId}`);
+  };
+
+  const handlePausedStudentClick = (record: JournalStudentRow) => {
+    Modal.confirm({
+      title: "Вывести ученика из паузы?",
+      content: `${record.name} сейчас на паузе. Открыть урок?`,
+      okText: "Да",
+      cancelText: "Нет",
+      onOk: async () => {
+        await resumeStudentFromPause(record.id);
+        await queryClient.invalidateQueries({ queryKey: ["students"] });
+        openLesson(record.id);
+      },
+    });
+  };
+
+  const handleRowClick = (record: JournalStudentRow) => {
+    if (record.status === "PAUSE") {
+      handlePausedStudentClick(record);
+      return;
+    }
+
+    openLesson(record.id);
+  };
 
   return (
     <div className="relative">
@@ -63,9 +121,7 @@ export function JournalStudentsTable({
         pagination={false}
         className={blocked ? "pointer-events-none opacity-50" : undefined}
         onRow={(record) => ({
-          onClick: blocked
-            ? undefined
-            : () => router.push(`/journal/${record.id}`),
+          onClick: blocked ? undefined : () => handleRowClick(record),
           className: blocked ? undefined : "cursor-pointer",
         })}
         columns={[
@@ -73,47 +129,44 @@ export function JournalStudentsTable({
             title: "Ученик",
             dataIndex: "name",
             key: "name",
-            render: (name: string, record) =>
-              blocked ? (
-                <span>{name}</span>
-              ) : (
-                <Link
-                  href={`/journal/${record.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {name}
-                </Link>
-              ),
+            render: (name: string, record) => (
+              <StudentNameCell
+                name={name}
+                status={record.status}
+                studentId={record.id}
+                blocked={blocked}
+              />
+            ),
           },
-        {
-          title: "Посещаемость",
-          key: "attendance",
-          render: (_, record) => (
-            <AttendanceCell attendance={record.todayAttendance} />
-          ),
-        },
-        {
-          title: "Текущий шаг",
-          dataIndex: "currentStepIdx",
-          key: "currentStepIdx",
-          render: (idx: number) => <Tag>Шаг {idx + 1}</Tag>,
-        },
-        {
-          title: "Пройдено сегодня",
-          dataIndex: "todayStepsCompleted",
-          key: "todayStepsCompleted",
-          render: (count: number | undefined) => count ?? 0,
-        },
-        {
-          title: "Оценки",
-          key: "grades",
-          render: (_, record) =>
-            record.todayGrades?.length
-              ? record.todayGrades.join(", ")
-              : "—",
-        },
-      ]}
-    />
+          {
+            title: "Посещаемость",
+            key: "attendance",
+            render: (_, record) => (
+              <AttendanceCell attendance={record.todayAttendance} />
+            ),
+          },
+          {
+            title: "Текущий шаг",
+            dataIndex: "currentStepIdx",
+            key: "currentStepIdx",
+            render: (idx: number) => <Tag>Шаг {idx + 1}</Tag>,
+          },
+          {
+            title: "Пройдено сегодня",
+            dataIndex: "todayStepsCompleted",
+            key: "todayStepsCompleted",
+            render: (count: number | undefined) => count ?? 0,
+          },
+          {
+            title: "Оценки",
+            key: "grades",
+            render: (_, record) =>
+              record.todayGrades?.length
+                ? record.todayGrades.join(", ")
+                : "—",
+          },
+        ]}
+      />
     </div>
   );
 }

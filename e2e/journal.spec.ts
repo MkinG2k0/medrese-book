@@ -2,15 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import { AUTH_STATE } from "./helpers/auth-state";
 import { clickRadioButton } from "./helpers/antd";
+import { startLessonIfNeeded } from "./helpers/journal";
 import { TEST_USERS } from "./helpers/codes";
-
-async function startLessonIfNeeded(page: import("@playwright/test").Page) {
-  const startButton = page.getByRole("button", { name: "Начать урок" });
-  if (await startButton.isVisible()) {
-    await startButton.click();
-    await expect(page.getByText("Урок идёт")).toBeVisible();
-  }
-}
 
 test.describe("Журнал учителя", () => {
   test.use({ storageState: AUTH_STATE.teacher1 });

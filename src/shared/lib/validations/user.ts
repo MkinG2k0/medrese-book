@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { STUDENT_STATUS_VALUES } from '@/shared/lib/student-status'
+
 export type ParsedStudentEntry = {
 	name: string
 	phone?: string
@@ -102,6 +104,7 @@ export const updateStudentUserSchema = z.object({
 	groupId: z.string().min(1, 'Выберите группу'),
 	levelId: z.string().min(1, 'Выберите уровень'),
 	localStepIndex: z.number().int().min(0),
+	status: z.enum(STUDENT_STATUS_VALUES),
 })
 
 export const updateStaffUserSchema = z.object({
@@ -116,6 +119,7 @@ export const updateStudentUserFormSchema = z.object({
 	groupId: z.string().min(1, 'Выберите группу'),
 	levelId: z.string().min(1, 'Выберите уровень'),
 	localStepIndex: z.number().int().min(0),
+	status: z.enum(STUDENT_STATUS_VALUES),
 })
 
 export const updateStaffUserFormSchema = z.object({

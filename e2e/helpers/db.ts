@@ -58,6 +58,16 @@ export async function getStudentCurrentStepIdx(studentId: string): Promise<numbe
   return student.currentStepIdx;
 }
 
+export async function setStudentStatus(
+  studentId: string,
+  status: "ACTIVE" | "PAUSE" | "ARCHIVE",
+): Promise<void> {
+  await getPool().query(
+    `UPDATE "Student" SET status = $2::"StudentStatus" WHERE id = $1`,
+    [studentId, status],
+  );
+}
+
 export async function countStudentCountableCompletionsInMonth(
   studentId: string,
   monthStart: Date,

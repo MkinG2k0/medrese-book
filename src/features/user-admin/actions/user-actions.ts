@@ -210,6 +210,7 @@ export async function updateUser(userId: string, input: unknown) {
 					groupId: data.groupId,
 					levelId: data.levelId,
 					currentStepIdx,
+					status: data.status,
 				},
 			})
 
@@ -233,6 +234,7 @@ export async function updateUser(userId: string, input: unknown) {
 						levelId: data.levelId,
 						currentStepIdx,
 						localStepIndex: data.localStepIndex,
+						status: data.status,
 					},
 				},
 				tx,

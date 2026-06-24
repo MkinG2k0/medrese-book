@@ -1,5 +1,7 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+
 import {
 	getLessonCalendarDay,
 	getLessonDayRange,
@@ -11,6 +13,7 @@ import { serializeDaySession } from '@/features/journal/lib/get-student-session'
 import type { ClientDaySession } from '@/features/journal/lib/get-student-session'
 import { prisma } from '@/shared/lib/prisma'
 import { getTotalProgramSteps } from '@/shared/lib/student-progress'
+import { isActiveForLesson } from '@/shared/lib/student-status'
 import { requireRole } from '@/shared/lib/session'
 import {
 	filterIncompleteSteps,
@@ -80,6 +83,33 @@ export async function getTeacherGroup() {
 	return prisma.group.findFirst({
 		where: { teacherId: session.user.teacherId! },
 	})
+}
+
+export async function resumeStudentFromPause(studentId: string) {
+	const session = await requireRole('TEACHER')
+
+	const student = await prisma.student.findUnique({
+		where: { id: studentId },
+		include: { group: { select: { teacherId: true } } },
+	})
+
+	if (!student || student.group.teacherId !== session.user.teacherId) {
+		throw new Error('Ученик не найден')
+	}
+
+	if (student.status !== 'PAUSE') {
+		throw new Error('Ученик не на паузе')
+	}
+
+	await prisma.student.update({
+		where: { id: studentId },
+		data: { status: 'ACTIVE' },
+	})
+
+	revalidatePath('/journal')
+	revalidatePath(`/journal/${studentId}`)
+
+	return { ok: true as const }
 }
 
 export async function getJournalStepContent(
@@ -193,6 +223,7 @@ export async function getStudentLesson(studentId: string) {
 
 	if (!student) return null
 	if (student.group.teacherId !== session.user.teacherId) return null
+	if (student.status === 'ARCHIVE') return null
 
 	const levelStepIds = new Set(student.level.steps.map((step) => step.id))
 	const daySession =
@@ -219,11 +250,13 @@ export async function getStudentLesson(studentId: string) {
 	const incompleteSteps = filterIncompleteSteps(allSteps, completionsByStepId)
 	const totalHours = sumPassedStepHours(allSteps, completionsByStepId)
 
-	const sortedStudents = [...student.group.students].sort((a, b) =>
-		a.user.name.localeCompare(b.user.name),
+	const sortedActiveStudents = [...student.group.students]
+		.filter((item) => isActiveForLesson(item.status))
+		.sort((a, b) => a.user.name.localeCompare(b.user.name))
+	const currentIndex = sortedActiveStudents.findIndex(
+		(item) => item.id === studentId,
 	)
-	const currentIndex = sortedStudents.findIndex((item) => item.id === studentId)
-	const nextStudent = sortedStudents[currentIndex + 1] ?? null
+	const nextStudent = sortedActiveStudents[currentIndex + 1] ?? null
 
 	const stepCompletionsByStep = new Map<
 		string,
