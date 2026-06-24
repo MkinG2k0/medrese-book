@@ -1,6 +1,5 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
 import { useIdleTimer } from 'react-idle-timer'
 
 import type { UserRole } from '@/entities/user'
@@ -9,12 +8,14 @@ import {
 	TEACHER_IDLE_LOGOUT_CALLBACK,
 	TEACHER_IDLE_TIMEOUT_MS,
 } from '@/features/auth/lib/idle-session'
+import { signOutWithLessonCleanup } from '@/features/auth/lib/sign-out'
 
 type IdleSessionGuardProps = {
 	role: UserRole
+	userId: string
 }
 
-export function IdleSessionGuard({ role }: IdleSessionGuardProps) {
+export function IdleSessionGuard({ role, userId }: IdleSessionGuardProps) {
 	const enabled = isTeacherIdleLogoutEnabled(role)
 
 	useIdleTimer({
@@ -24,7 +25,11 @@ export function IdleSessionGuard({ role }: IdleSessionGuardProps) {
 		crossTab: true,
 		events: ['mousedown', 'keydown', 'touchstart', 'scroll', 'click'],
 		onIdle: () => {
-			void signOut({ callbackUrl: TEACHER_IDLE_LOGOUT_CALLBACK })
+			void signOutWithLessonCleanup({
+				callbackUrl: TEACHER_IDLE_LOGOUT_CALLBACK,
+				role,
+				userId,
+			})
 		},
 	})
 

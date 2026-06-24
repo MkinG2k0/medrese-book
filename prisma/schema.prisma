@@ -37,18 +37,20 @@ model User {
 }
 
 model Teacher {
-  id     String  @id @default(cuid())
-  userId String  @unique
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  groups Group[]
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups           Group[]
+  teachingSessions TeachingSession[]
 }
 
 model Group {
-  id        String    @id @default(cuid())
-  name      String
-  teacherId String
-  teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  students  Student[]
+  id               String            @id @default(cuid())
+  name             String
+  teacherId        String
+  teacher          Teacher           @relation(fields: [teacherId], references: [id])
+  students         Student[]
+  teachingSessions TeachingSession[]
 }
 
 model Student {
@@ -124,6 +126,22 @@ model Award {
   type      AwardType
   title     String
   date      DateTime  @default(now())
+}
+
+model TeachingSession {
+  id        String    @id @default(cuid())
+  teacherId String
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  groupId   String
+  group     Group     @relation(fields: [groupId], references: [id])
+  date      DateTime
+  startedAt DateTime
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([teacherId, date])
+  @@index([groupId, date])
 }
 
 model AuditEvent {

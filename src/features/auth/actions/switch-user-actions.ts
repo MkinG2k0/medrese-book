@@ -7,6 +7,8 @@ import { prisma } from '@/shared/lib/prisma'
 import { getCachedAuth } from '@/shared/lib/session'
 
 import { resolveSwitchAccess } from '../lib/resolve-switch-access'
+import { recordUserLogin } from '../lib/auth-audit'
+import type { UserRole } from '@/entities/user'
 
 export type SwitchableUser = {
 	id: string
@@ -53,6 +55,9 @@ export async function switchUser(userId: string) {
 		code: user.code,
 		switchOwnerId,
 		redirect: false,
+	})
+	await recordUserLogin(userId, user.role as UserRole, {
+		switchOwnerId: switchOwnerId ?? access.switchOwnerId,
 	})
 	redirect('/dashboard')
 }

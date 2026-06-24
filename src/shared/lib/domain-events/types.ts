@@ -4,6 +4,10 @@ export type DomainEventAction =
 	| 'STUDENT_UPDATED'
 	| 'SESSION_SAVED'
 	| 'COMPLETION_CHANGED'
+	| 'USER_LOGIN'
+	| 'USER_LOGOUT'
+	| 'LESSON_STARTED'
+	| 'LESSON_ENDED'
 
 export type DomainEvent = {
 	actorId: string

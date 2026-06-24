@@ -10,12 +10,12 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
+import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
 import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { RememberedAccountsSelect } from "@/features/auth/ui/RememberedAccountsSelect";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
@@ -137,7 +137,7 @@ export function AppShell({
 
   return (
     <>
-      <IdleSessionGuard role={session.user.role} />
+      <IdleSessionGuard role={session.user.role} userId={session.user.id} />
       <Layout
         className="h-screen min-h-screen"
         style={{ minHeight: "100vh", height: "100vh" }}
@@ -183,7 +183,13 @@ export function AppShell({
             <Button
               type="text"
               icon={<LogoutOutlined />}
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() =>
+                void signOutWithLessonCleanup({
+                  callbackUrl: "/login",
+                  role: session.user.role,
+                  userId: session.user.id,
+                })
+              }
               className={collapsed ? "" : "shrink-0"}
             >
               {!collapsed && "Выйти"}
