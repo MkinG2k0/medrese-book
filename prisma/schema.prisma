@@ -125,3 +125,16 @@ model Award {
   title     String
   date      DateTime  @default(now())
 }
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  payload    Json
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
