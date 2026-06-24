@@ -58,6 +58,58 @@ export async function getStudentCurrentStepIdx(studentId: string): Promise<numbe
   return student.currentStepIdx;
 }
 
+export async function countStudentCountableCompletionsInMonth(
+  studentId: string,
+  monthStart: Date,
+  monthEnd: Date,
+): Promise<number> {
+  const result = await getPool().query<{ count: string }>(
+    `
+      SELECT COUNT(*)::text AS count
+      FROM "StepCompletion"
+      WHERE "studentId" = $1
+        AND "isPriorCredit" = false
+        AND "createdAt" >= $2
+        AND "createdAt" <= $3
+    `,
+    [studentId, monthStart.toISOString(), monthEnd.toISOString()],
+  );
+  return Number(result.rows[0]?.count ?? 0);
+}
+
+export async function countStudentPriorCreditCompletions(
+  studentId: string,
+): Promise<number> {
+  const result = await getPool().query<{ count: string }>(
+    `
+      SELECT COUNT(*)::text AS count
+      FROM "StepCompletion"
+      WHERE "studentId" = $1 AND "isPriorCredit" = true
+    `,
+    [studentId],
+  );
+  return Number(result.rows[0]?.count ?? 0);
+}
+
+export async function countStudentAdjustmentSessionsInMonth(
+  studentId: string,
+  monthStart: Date,
+  monthEnd: Date,
+): Promise<number> {
+  const result = await getPool().query<{ count: string }>(
+    `
+      SELECT COUNT(*)::text AS count
+      FROM "Session"
+      WHERE "studentId" = $1
+        AND "isAdjustment" = true
+        AND date >= $2
+        AND date <= $3
+    `,
+    [studentId, monthStart.toISOString(), monthEnd.toISOString()],
+  );
+  return Number(result.rows[0]?.count ?? 0);
+}
+
 /** Read-only AuditEvent count; returns 0 until FND-04 migration (plan 05). */
 export async function countAuditEvents(action?: string): Promise<number> {
   try {

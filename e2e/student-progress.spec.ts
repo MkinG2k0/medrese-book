@@ -1,9 +1,13 @@
+import { endOfMonth, startOfMonth } from "date-fns";
 import { expect, test, type Page } from "@playwright/test";
 
 import { apiGetAs, TEST_CODES } from "./helpers/api";
 import { loginAs } from "./helpers/auth";
 import { TEST_USERS } from "./helpers/codes";
 import {
+  countStudentAdjustmentSessionsInMonth,
+  countStudentCountableCompletionsInMonth,
+  countStudentPriorCreditCompletions,
   getGroupIdByName,
   getStudentCurrentStepIdx,
   getStudentIdByCode,
@@ -15,6 +19,11 @@ function todayDateParam(): string {
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
+}
+
+function currentMonthRange(): { start: Date; end: Date } {
+  const now = new Date();
+  return { start: startOfMonth(now), end: endOfMonth(now) };
 }
 
 async function getJournalStepIdx(
@@ -32,15 +41,34 @@ async function getJournalStepIdx(
   };
   expect(json.error).toBeNull();
   const student = json.data?.find((row) => row.name === studentName);
-  expect(student, `student ${studentName} not found in journal API`).toBeTruthy();
+  expect(
+    student,
+    `student ${studentName} not found in journal API`,
+  ).toBeTruthy();
   return student!.currentStepIdx;
 }
 
 async function getPortalStepIdx(page: Page): Promise<number> {
-  const progressText = await page.getByText(/Прогресс: шаг \d+ из \d+/).textContent();
+  const progressText = await page
+    .getByText(/Прогресс: шаг \d+ из \d+/)
+    .textContent();
   const match = progressText?.match(/Прогресс: шаг (\d+) из \d+/);
   expect(match, "student portal progress text missing").toBeTruthy();
   return Number(match![1]) - 1;
+}
+
+async function getAnalyticsStepsCompleted(
+  page: Page,
+  studentName: string,
+): Promise<number> {
+  await page.goto("/analytics");
+  await expect(page.getByRole("heading", { name: "Аналитика" })).toBeVisible();
+
+  const row = page.getByRole("row", { name: new RegExp(studentName) });
+  await expect(row).toBeVisible();
+  const stepsCell = row.getByRole("cell").nth(1);
+  const stepsText = await stepsCell.textContent();
+  return Number(stepsText?.trim() ?? NaN);
 }
 
 test.describe("Student progress sync (FND-03)", () => {
@@ -51,17 +79,19 @@ test.describe("Student progress sync (FND-03)", () => {
     const groupId = await getGroupIdByName(TEST_USERS.group1);
     const beforeIdx = await getStudentCurrentStepIdx(studentId);
     const targetLocalStep = beforeIdx === 0 ? 1 : 0;
+    const { start: monthStart, end: monthEnd } = currentMonthRange();
+    const priorCreditsBefore =
+      await countStudentPriorCreditCompletions(studentId);
 
     await loginAs(page, TEST_CODES.manager);
     await page.goto(`/students/${studentId}/edit`);
-    await expect(page.getByRole("heading", { name: "Прогресс ученика" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Прогресс ученика" }),
+    ).toBeVisible();
 
-    const stepField = page
-      .locator(".ant-form-item")
-      .filter({ hasText: "Текущий шаг" })
-      .locator(".ant-select");
-    await stepField.click();
-    await page.locator(".ant-select-item-option").nth(targetLocalStep).click();
+    const stepSelect = page.getByRole("combobox").nth(1);
+    await stepSelect.click();
+    await page.getByRole("option").nth(targetLocalStep).click();
     await page.getByRole("button", { name: "Сохранить" }).click();
     await expect(page).toHaveURL(new RegExp(`/groups/${groupId}`));
 
@@ -69,11 +99,37 @@ test.describe("Student progress sync (FND-03)", () => {
     const journalIdx = await getJournalStepIdx(groupId, TEST_USERS.studentAli);
 
     await loginAs(page, TEST_CODES.studentAli);
-    await expect(page).toHaveURL(/\/student\/me/);
+    await page.goto("/student/me");
     const portalIdx = await getPortalStepIdx(page);
 
     expect(journalIdx).toBe(dbIdx);
     expect(portalIdx).toBe(dbIdx);
     expect(journalIdx).toBe(portalIdx);
+
+    const priorCreditsAfter =
+      await countStudentPriorCreditCompletions(studentId);
+    if (targetLocalStep > 0) {
+      expect(priorCreditsAfter).toBeGreaterThan(priorCreditsBefore);
+    }
+
+    const adjustmentSessions = await countStudentAdjustmentSessionsInMonth(
+      studentId,
+      monthStart,
+      monthEnd,
+    );
+    expect(adjustmentSessions).toBeGreaterThan(0);
+
+    const countableCompletions = await countStudentCountableCompletionsInMonth(
+      studentId,
+      monthStart,
+      monthEnd,
+    );
+
+    await loginAs(page, TEST_CODES.manager);
+    const analyticsSteps = await getAnalyticsStepsCompleted(
+      page,
+      TEST_USERS.studentAli,
+    );
+    expect(analyticsSteps).toBe(countableCompletions);
   });
 });

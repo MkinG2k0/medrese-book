@@ -4,7 +4,13 @@ import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Modal, Table, Tag, Typography } from "antd";
 import type { InputRef } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
 import { resetUserCode } from "@/features/user-admin/actions/user-actions";
 import { CreateUserForm } from "@/features/user-admin/ui/CreateUserForm";
@@ -49,7 +55,12 @@ function matchesGroupFilter(record: UserDetail, groupName: string) {
   );
 }
 
-export function UsersTable({ users, groups, levels, canResetCode }: UsersTableProps) {
+export function UsersTable({
+  users,
+  groups,
+  levels,
+  canResetCode,
+}: UsersTableProps) {
   const [isPending, startTransition] = useTransition();
   const [codeModal, setCodeModal] = useState<CreatedUser[] | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -64,14 +75,19 @@ export function UsersTable({ users, groups, levels, canResetCode }: UsersTablePr
     [groups],
   );
 
-  const handleReset = (userId: string) => {
-    startTransition(async () => {
-      const user = users.find((u) => u.id === userId);
-      const result = await resetUserCode(userId);
-      setSelectedUser(null);
-      setCodeModal([{ name: user?.name ?? "Пользователь", code: result.code }]);
-    });
-  };
+  const handleReset = useCallback(
+    (userId: string) => {
+      startTransition(async () => {
+        const user = users.find((u) => u.id === userId);
+        const result = await resetUserCode(userId);
+        setSelectedUser(null);
+        setCodeModal([
+          { name: user?.name ?? "Пользователь", code: result.code },
+        ]);
+      });
+    },
+    [users],
+  );
 
   const columns: ColumnsType<UserDetail> = useMemo(
     () => [
@@ -79,13 +95,24 @@ export function UsersTable({ users, groups, levels, canResetCode }: UsersTablePr
         title: "Имя",
         dataIndex: "name",
         key: "name",
-        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
-          <div className="flex flex-col gap-3 p-2" onKeyDown={(e) => e.stopPropagation()}>
+        filterDropdown: ({
+          setSelectedKeys,
+          selectedKeys,
+          confirm,
+          clearFilters,
+          close,
+        }) => (
+          <div
+            className="flex flex-col gap-3 p-2"
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <Input
               ref={nameSearchInput}
               placeholder="Поиск по имени"
-              value={selectedKeys[0]}
-              onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+              value={String(selectedKeys[0] ?? "")}
+              onChange={(e) =>
+                setSelectedKeys(e.target.value ? [e.target.value] : [])
+              }
               onPressEnter={() => confirm()}
               className="block"
             />
@@ -178,7 +205,7 @@ export function UsersTable({ users, groups, levels, canResetCode }: UsersTablePr
           ]
         : []),
     ],
-    [canResetCode, groupFilters, isPending],
+    [canResetCode, groupFilters, handleReset, isPending],
   );
 
   return (
@@ -229,7 +256,9 @@ export function UsersTable({ users, groups, levels, canResetCode }: UsersTablePr
       </Modal>
 
       <Modal
-        title={codeModal && codeModal.length > 1 ? "Коды доступа" : "Код доступа"}
+        title={
+          codeModal && codeModal.length > 1 ? "Коды доступа" : "Код доступа"
+        }
         open={!!codeModal}
         onCancel={() => setCodeModal(null)}
         footer={
