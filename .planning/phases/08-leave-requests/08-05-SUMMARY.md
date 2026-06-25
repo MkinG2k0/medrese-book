@@ -64,16 +64,23 @@ completed: 2026-06-25
 ## Accomplishments
 
 - **Task 1:** `e2e/helpers/leave-requests.ts` — UI-хелперы с dialog scoping и testid для описания/причины
-- **Task 2:** `e2e/leave-requests.spec.ts` — 10 chromium-тестов в serial-режиме (create vacation/sick/dayoff, manager approve/reject, teacher grid resubmit, role guard, substitution journal)
+- **Task 2:** `e2e/leave-requests.spec.ts` — 10 chromium-тестов в serial-режиме (create vacation/sick/dayoff, manager approve/reject, teacher grid REJECTED + resubmit, role guard, substitution label + journal)
 - **Task 3:** `domain-events.spec.ts` — smoke `LEAVE_REQUEST_CREATED`; `notifications.ts` — JSDoc для Phase 6 consumers
 - **navigation.spec.ts** — teacher видит «Календарь», manager — «Календарь отпусков»
 - **db helpers** — `deactivateSubstitutionsForE2E` синхронизирует test и dev DB при `PLAYWRIGHT_BASE_URL=localhost:3000`
 
 ## Test status
 
-- Основной serial-flow: **13/13 passed** (локально, `E2E_SKIP_SEED=1`, dev server :3000)
-- Resubmit/substitution: зависят от полной serial-цепочки; при обрыве — `test.skip` с пояснением
+- **leave-requests.spec.ts: 16/16 passed** (6 setup + 10 chromium, `E2E_SKIP_SEED=1`, dev server :3000)
+- Post-checkpoint из 08-04: грид учителя с REJECTED, edit/resubmit, метка «Учитель — Замещение» в header
+- `domain-events.spec.ts` leave smoke: skip если `LeaveRequest` schema недоступна в test DB (audit пишется в app DB)
 - `db:seed:e2e` может падать при нестабильном Neon — использовать `E2E_SKIP_SEED=1` для прогона против существующих данных
+
+## Task Commits
+
+1. **Task 1: E2E helpers** — `7d67d0c`, `19aaf2c`
+2. **Task 2: leave-requests.spec + navigation** — `495b459`, `db10fec`
+3. **Task 3: domain events + notifications** — `495b459`
 
 ## Deviations
 
