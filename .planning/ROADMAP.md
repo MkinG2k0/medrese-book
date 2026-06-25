@@ -170,7 +170,7 @@ Plans:
 
 Plans:
 - [x] 09-01-PLAN.md — Prisma Notification/PushSubscription, enqueue, dispatch return, migration
-- [ ] 09-02-PLAN.md — REST API, React Query hooks, NotificationBell в AppShell (NOTF-01/02/04)
+- [x] 09-02-PLAN.md — REST API, React Query hooks, NotificationBell в AppShell (NOTF-01/02/04)
 - [ ] 09-03-PLAN.md — SSE stream, useNotificationStream, middleware sw.js, E2E realtime
 - [ ] 09-04-PLAN.md — web-push, VAPID, sw.js, subscribe API, deliverNotifications push
 - [ ] 09-05-PLAN.md — E2E notifications.spec.ts, send-push unit tests, NOTF-03 deferral

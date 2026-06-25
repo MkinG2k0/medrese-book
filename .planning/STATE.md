@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-06-25T07:04:28.056Z"
+stopped_at: Completed 09-02-PLAN.md
+last_updated: "2026-06-25T07:09:09.273Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
-  percent: 73
+  completed_plans: 12
+  percent: 80
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 09 (realtime-notifications-and-web-push-api-with-vapid-keys) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-06-25
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-leave-requests P03 | 30 | 3 tasks | 7 files |
 | Phase 08-leave-requests P04 | 45 | 4 tasks | 16 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P01 | 25 | 3 tasks | 9 files |
+| Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P02 | 15 | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 08]: LeaveCalendar mode manager — REJECTED hidden on calendar, visible in grid filter
 - [Phase 09]: Notification copy and type labels in shared/lib without feature imports
 - [Phase 09]: dispatchDomainEvent returns Notification[] for post-commit deliverNotifications
+- [Phase 09]: NotificationBell без RoleGuard для всех dashboard-ролей
+- [Phase 09]: useUnreadCount refetchInterval 60s до SSE в 09-03
 
 ### Pending Todos
 
@@ -123,6 +126,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-25T07:04:28.053Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-06-25T07:09:09.270Z
+Stopped at: Completed 09-02-PLAN.md
 Resume file: None
