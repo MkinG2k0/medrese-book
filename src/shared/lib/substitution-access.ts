@@ -32,6 +32,22 @@ export async function getActiveSubstitutionsForSubstitute(
 	return substitutions.filter((s) => isSubstitutionCurrentlyActive(s))
 }
 
+export async function getActiveSubstitutionsForAbsentTeacher(
+	absentTeacherId: string,
+) {
+	const substitutions = await prisma.substitution.findMany({
+		where: {
+			absentTeacherId,
+			isActive: true,
+		},
+		include: {
+			substituteTeacher: { include: { user: true } },
+		},
+	})
+
+	return substitutions.filter((s) => isSubstitutionCurrentlyActive(s))
+}
+
 export async function canSubstituteAccessGroup(
 	substituteTeacherId: string,
 	groupTeacherId: string,

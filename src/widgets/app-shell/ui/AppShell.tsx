@@ -18,8 +18,10 @@ import { useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
 import { getDisplayRoleLabel } from "@/features/auth/lib/role-labels";
+import type { SubstitutionHeaderLine } from "@/features/auth/lib/get-substitution-header-info";
 import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
 import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
+import { SubstitutionHeaderInfo } from "@/features/auth/ui/SubstitutionHeaderInfo";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import { NotificationBell } from "@/features/notifications";
 import type { UserRole } from "@/entities/user";
@@ -145,12 +147,14 @@ type AppShellProps = {
     };
   };
   switchableUsers: SwitchableUser[];
+  substitutionHeaderLines: SubstitutionHeaderLine[];
 };
 
 export function AppShell({
   children,
   session,
   switchableUsers,
+  substitutionHeaderLines,
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -246,12 +250,19 @@ export function AppShell({
 
       <Layout className="flex min-h-0 flex-1 flex-col">
         <Header className="flex shrink-0 items-center justify-end gap-4 px-6 !bg-[#161412] !leading-none">
+          <SubstitutionHeaderInfo lines={substitutionHeaderLines} />
           <NotificationBell />
           <div className="text-right">
             <Text className="block">{session.user.name}</Text>
             <Text type="secondary" className="block">
               {getDisplayRoleLabel(session.user.role, { isSubstituting })}
             </Text>
+            <div className="sm:hidden">
+              <SubstitutionHeaderInfo
+                lines={substitutionHeaderLines}
+                variant="inline"
+              />
+            </div>
           </div>
         </Header>
 
