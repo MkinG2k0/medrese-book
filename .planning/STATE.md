@@ -135,10 +135,11 @@ None yet.
 | 260625-33a | дублирование данных и ученики в «Сменить учётку» | 2026-06-24 | bfd031f | [260625-33a-deduplikatsiya-uchenikov](./quick/260625-33a-deduplikatsiya-uchenikov/) |
 | 260625-krf | простой мессенджер: менеджер↔учителя/ученики, учитель↔менеджеры и свои ученики, ученик↔свой учитель и менеджер | 2026-06-25 | 044094d | [260625-krf-messenger](./quick/260625-krf-messenger/) |
 | 260625-lbe | если учителя кто-то замещает — показывать в хедере кто и до какого; у замещающего тоже до какого | 2026-06-25 | 19198ab | [260625-lbe-substitution-header](./quick/260625-lbe-substitution-header/) |
+| 260625-ljc | PWA для установки на телефон с push-уведомлениями (сообщения, отпуска) | 2026-06-25 | 1a368a5 | [260625-ljc-pwa](./quick/260625-ljc-pwa/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-25 - Completed quick task 260625-lbe: замещение в хедере
+Last activity: 2026-06-25 - Completed quick task 260625-ljc: PWA install + push
 Last session: 2026-06-25T07:58:54.147Z
 Stopped at: Completed 09-05-PLAN.md
 Resume file: None
