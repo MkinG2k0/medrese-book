@@ -1,9 +1,21 @@
 import type { Notification } from '@/shared/lib/prisma'
+import { sendPushToUser } from '@/shared/lib/push/send-push'
 
 /**
  * Post-commit delivery hook for persisted notifications.
- * Push + SSE delivery will be implemented in plans 09-03 and 09-04.
+ * Web Push is fire-and-forget; errors must not propagate to callers.
  */
-export async function deliverNotifications(_notifications: Notification[]) {
-	// intentionally empty — push + SSE in 09-03/09-04
+export async function deliverNotifications(notifications: Notification[]): Promise<void> {
+	if (notifications.length === 0) return
+
+	await Promise.allSettled(
+		notifications.map((notification) =>
+			sendPushToUser(notification.userId, {
+				title: notification.title,
+				body: notification.body,
+				url: notification.link ?? '/',
+				notificationId: notification.id,
+			}),
+		),
+	)
 }
