@@ -12,6 +12,7 @@ export const TEST_CODES = {
 
 export const TEST_USERS = {
   teacher1Name: "Учитель Ахмад",
+  teacher2Name: "Учитель Ибрагим",
   studentAli: "Али",
   studentUsman: "Усман",
   studentBilal: "Билал",
