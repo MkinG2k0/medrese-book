@@ -47,8 +47,7 @@ next-env.d.ts
 
 /generated
 
-# PWA / Workbox (@ducanh2912/next-pwa, генерируются при next build)
-/public/sw.js
+# PWA / Workbox (workbox artifacts from next build — static sw.js is tracked)
 /public/workbox-*.js
 /public/swe-worker-*.js
 /public/fallback-*.js
