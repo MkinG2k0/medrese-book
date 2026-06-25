@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-06-24T23:54:38.084Z"
-last_activity: 2026-06-24
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-06-25T00:08:15.629Z"
+last_activity: 2026-06-25
 progress:
   total_phases: 10
   completed_phases: 1
   total_plans: 10
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 90
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 08 (leave-requests) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
-Last activity: 2026-06-24
+Last activity: 2026-06-25
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-leave-requests P01 | 25 | 3 tasks | 8 files |
 | Phase 08-leave-requests P02 | 35 | 3 tasks | 13 files |
 | Phase 08-leave-requests P03 | 30 | 3 tasks | 7 files |
+| Phase 08-leave-requests P04 | 45 | 4 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 08]: substitution-access в shared/lib для auth без импорта features
 - [Phase 08]: Client zod schema для CreateLeaveModal отдельно от server schema (Dayjs RangePicker)
 - [Phase 08]: REJECTED заявки скрыты на календаре учителя, видны только в detail modal
+- [Phase 08]: Post-checkpoint: teacher grid shows all statuses; edit/resubmit CREATED/REJECTED; substitution label in header/switcher
+- [Phase 08]: LeaveCalendar mode manager — REJECTED hidden on calendar, visible in grid filter
 
 ### Pending Todos
 
@@ -117,6 +120,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-24T23:54:38.081Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-06-25T00:08:15.626Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
