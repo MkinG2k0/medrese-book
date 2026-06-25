@@ -43,15 +43,24 @@ enum LeaveRequestStatus {
   REJECTED
 }
 
+enum NotificationType {
+  LEAVE_REQUEST_CREATED
+  LEAVE_REQUEST_APPROVED
+  LEAVE_REQUEST_REJECTED
+  SUBSTITUTION_ACTIVATED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  code      String   @unique
-  role      Role
-  phone     String?
-  teacher   Teacher?
-  student   Student?
-  createdAt DateTime @default(now())
+  id                String             @id @default(cuid())
+  name              String
+  code              String             @unique
+  role              Role
+  phone             String?
+  teacher           Teacher?
+  student           Student?
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
+  createdAt         DateTime           @default(now())
 }
 
 model Teacher {
@@ -216,4 +225,33 @@ model Substitution {
   updatedAt           DateTime @updatedAt
 
   @@index([substituteTeacherId, isActive])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  payload   Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
