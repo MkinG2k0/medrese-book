@@ -154,7 +154,7 @@ Plans:
 - [x] 08-02-PLAN.md — Server actions, API, substitution auth (TCHR-01/03/04)
 - [x] 08-03-PLAN.md — Teacher calendar UI (/calendar, LEAV-02/05)
 - [x] 08-04-PLAN.md — Manager calendar + grid, approve/reject (checkpoint)
-- [ ] 08-05-PLAN.md — E2E leave-requests.spec.ts + domain events smoke
+- [x] 08-05-PLAN.md — E2E leave-requests.spec.ts + domain events smoke
 
 ### Phase 9: Realtime notifications and Web Push API with VAPID keys
 **Goal**: Пользователи получают уведомления в реальном времени и через Web Push; колокольчик работает для всех ролей
