@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useNotificationStream, useUnreadCount } from "@/entities/notification";
 
 import { NotificationList } from "./NotificationList";
+import { PushSubscribePrompt } from "./PushSubscribePrompt";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -23,6 +24,7 @@ export function NotificationBell() {
       popupRender={() => (
         <div className="w-[360px] overflow-hidden rounded-lg border border-white/10 bg-[#1a1816] shadow-lg">
           <NotificationList onClose={() => setOpen(false)} />
+          <PushSubscribePrompt />
         </div>
       )}
     >
