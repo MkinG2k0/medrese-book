@@ -32,7 +32,7 @@ type GradeRow = {
 };
 
 function buildGradeRows(sessions: SessionRow[]): GradeRow[] {
-  return sessions.flatMap((session) => {
+  return sessions.flatMap((session): GradeRow[] => {
     if (session.completions.length === 0) {
       return [
         {
