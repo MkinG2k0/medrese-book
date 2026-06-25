@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 08-05-PLAN.md
-last_updated: "2026-06-25T00:57:29.462Z"
-last_activity: 2026-06-25 -- Phase 09 planning complete
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-06-25T07:04:28.056Z"
+last_activity: 2026-06-25
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 15
-  completed_plans: 10
-  percent: 67
+  completed_plans: 11
+  percent: 73
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 08 — leave-requests
+**Current focus:** Phase 09 — realtime-notifications-and-web-push-api-with-vapid-keys
 
 ## Current Position
 
-Phase: 09
-Plan: Not started
+Phase: 09 (realtime-notifications-and-web-push-api-with-vapid-keys) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-25 -- Phase 09 planning complete
+Last activity: 2026-06-25
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-leave-requests P02 | 35 | 3 tasks | 13 files |
 | Phase 08-leave-requests P03 | 30 | 3 tasks | 7 files |
 | Phase 08-leave-requests P04 | 45 | 4 tasks | 16 files |
+| Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P01 | 25 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 08]: REJECTED заявки скрыты на календаре учителя, видны только в detail modal
 - [Phase 08]: Post-checkpoint: teacher grid shows all statuses; edit/resubmit CREATED/REJECTED; substitution label in header/switcher
 - [Phase 08]: LeaveCalendar mode manager — REJECTED hidden on calendar, visible in grid filter
+- [Phase 09]: Notification copy and type labels in shared/lib without feature imports
+- [Phase 09]: dispatchDomainEvent returns Notification[] for post-commit deliverNotifications
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-25T00:51:49.514Z
-Stopped at: Completed 08-05-PLAN.md
+Last session: 2026-06-25T07:04:28.053Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None
