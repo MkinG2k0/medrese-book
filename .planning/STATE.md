@@ -136,10 +136,11 @@ None yet.
 | 260625-krf | простой мессенджер: менеджер↔учителя/ученики, учитель↔менеджеры и свои ученики, ученик↔свой учитель и менеджер | 2026-06-25 | 044094d | [260625-krf-messenger](./quick/260625-krf-messenger/) |
 | 260625-lbe | если учителя кто-то замещает — показывать в хедере кто и до какого; у замещающего тоже до какого | 2026-06-25 | 19198ab | [260625-lbe-substitution-header](./quick/260625-lbe-substitution-header/) |
 | 260625-ljc | PWA для установки на телефон с push-уведомлениями (сообщения, отпуска) | 2026-06-25 | 1a368a5 | [260625-ljc-pwa](./quick/260625-ljc-pwa/) |
+| 260625-m6v | адаптируй приложение под мобилки | 2026-06-25 | baeab63 | [260625-m6v-mobile](./quick/260625-m6v-mobile/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-25 - Completed quick task 260625-ljc: PWA install + push
+Last activity: 2026-06-25 - Completed quick task 260625-m6v: адаптация под мобилки
 Last session: 2026-06-25T07:58:54.147Z
 Stopped at: Completed 09-05-PLAN.md
 Resume file: None
