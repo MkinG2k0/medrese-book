@@ -134,7 +134,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 | 6. Notifications | 0/TBD | Not started | - |
 | 7. Audit, Teacher Analytics & Chat | 0/TBD | Not started | - |
 | 8. Leave Requests | 0/5 | Planned | - |
-| 9. Realtime & Web Push | 0/TBD | Not planned | - |
+| 9. Realtime & Web Push | 0/5 | Planned | - |
 
 ### Phase 8: Leave Requests — отпуска, отгулы и больничные
 **Goal**: Преподаватель подаёт заявку на отсутствие через календарь; менеджер согласовывает в календаре и гриде; при одобрении назначается замещающий; переключение учётки преподавателя — только через активное замещение
@@ -159,17 +159,21 @@ Plans:
 ### Phase 9: Realtime notifications and Web Push API with VAPID keys
 **Goal**: Пользователи получают уведомления в реальном времени и через Web Push; колокольчик работает для всех ролей
 **Depends on**: Phase 6, Phase 8
-**Requirements**: NOTF-05… (новые: realtime, web-push, vapid — добавить при планировании)
+**Requirements**: NOTF-01, NOTF-02, NOTF-04, NOTF-05 (realtime SSE), NOTF-06 (web push); NOTF-03 отложен
 **Success Criteria** (what must be TRUE):
   1. Новое in-app уведомление появляется без перезагрузки страницы (realtime-канал)
   2. Пользователь может подписаться на Web Push; push приходит при ключевых событиях (заявка, решение, замещение)
   3. VAPID-ключи настроены через env; service worker регистрируется корректно
   4. Колокольчик и счётчик непрочитанных доступны всем ролям
 **Context**: `.planning/phases/09-realtime-notifications-and-web-push-api-with-vapid-keys/09-CONTEXT.md`
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD (run `/gsd-plan-phase 9` to break down)
+- [ ] 09-01-PLAN.md — Prisma Notification/PushSubscription, enqueue, dispatch return, migration
+- [ ] 09-02-PLAN.md — REST API, React Query hooks, NotificationBell в AppShell (NOTF-01/02/04)
+- [ ] 09-03-PLAN.md — SSE stream, useNotificationStream, middleware sw.js, E2E realtime
+- [ ] 09-04-PLAN.md — web-push, VAPID, sw.js, subscribe API, deliverNotifications push
+- [ ] 09-05-PLAN.md — E2E notifications.spec.ts, send-push unit tests, NOTF-03 deferral
 
 ---
 *Roadmap created: 2026-06-24*
