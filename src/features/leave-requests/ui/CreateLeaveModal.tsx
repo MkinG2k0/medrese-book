@@ -175,6 +175,7 @@ export function CreateLeaveModal({
 						render={({ field }) => (
 							<Input.TextArea
 								{...field}
+								data-testid="leave-description-input"
 								rows={3}
 								maxLength={500}
 								showCount

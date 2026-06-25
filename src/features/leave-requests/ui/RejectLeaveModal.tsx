@@ -113,6 +113,7 @@ export function RejectLeaveModal({ request, onClose }: RejectLeaveModalProps) {
 							render={({ field }) => (
 								<Input.TextArea
 									{...field}
+									data-testid="leave-rejection-reason-input"
 									rows={3}
 									maxLength={500}
 									placeholder="Например: в этот период нет замены"

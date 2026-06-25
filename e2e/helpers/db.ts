@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import pg from "pg";
+import dotenv from "dotenv";
 
 import { loadTestEnv } from "./load-test-env";
 
@@ -145,4 +149,122 @@ export async function countAuditEvents(
     `SELECT COUNT(*)::text AS count FROM "AuditEvent"`,
   );
   return Number(result.rows[0]?.count ?? 0);
+}
+
+async function ignoreMissingRelation(error: unknown): Promise<boolean> {
+  return (
+    error instanceof Error &&
+    (error.message.includes("does not exist") ||
+      error.message.includes("Connection terminated"))
+  );
+}
+
+export async function getLatestAuditEvent(
+  action: string,
+  entityId?: string,
+): Promise<{ id: string; action: string; entityId: string | null } | null> {
+  if (entityId) {
+    const result = await getPool().query<{
+      id: string;
+      action: string;
+      entityId: string | null;
+    }>(
+      `
+        SELECT id, action, "entityId"
+        FROM "AuditEvent"
+        WHERE action = $1 AND "entityId" = $2
+        ORDER BY "createdAt" DESC
+        LIMIT 1
+      `,
+      [action, entityId],
+    );
+    return result.rows[0] ?? null;
+  }
+
+  const result = await getPool().query<{
+    id: string;
+    action: string;
+    entityId: string | null;
+  }>(
+    `
+      SELECT id, action, "entityId"
+      FROM "AuditEvent"
+      WHERE action = $1
+      ORDER BY "createdAt" DESC
+      LIMIT 1
+    `,
+    [action],
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function deleteLeaveRequestsByDescriptionContaining(
+  text: string,
+): Promise<void> {
+  try {
+    await getPool().query(
+      `DELETE FROM "LeaveRequest" WHERE description LIKE $1`,
+      [`%${text}%`],
+    );
+  } catch (error) {
+    if (!(await ignoreMissingRelation(error))) {
+      throw error;
+    }
+  }
+}
+
+export async function deactivateAllSubstitutions(): Promise<void> {
+  try {
+    await getPool().query(`UPDATE "Substitution" SET "isActive" = false`);
+  } catch (error) {
+    if (!(await ignoreMissingRelation(error))) {
+      throw error;
+    }
+  }
+}
+
+async function deactivateSubstitutionsOnConnection(
+  connectionString: string,
+): Promise<void> {
+  const pool = new pg.Pool({ connectionString });
+  try {
+    await pool.query(`UPDATE "Substitution" SET "isActive" = false`);
+  } catch (error) {
+    if (!(await ignoreMissingRelation(error))) {
+      throw error;
+    }
+  } finally {
+    await pool.end();
+  }
+}
+
+/** Deactivate substitutions on test DB and local `.env` DB (dev server reuse). */
+export async function deactivateSubstitutionsForE2E(): Promise<void> {
+  await deactivateAllSubstitutions();
+
+  const envPath = path.resolve(process.cwd(), ".env");
+  if (!fs.existsSync(envPath)) {
+    return;
+  }
+
+  loadTestEnv();
+  const testDbUrl = process.env.DATABASE_URL;
+  const parsed = dotenv.parse(fs.readFileSync(envPath));
+  const appDbUrl = parsed.DATABASE_URL;
+
+  if (appDbUrl && appDbUrl !== testDbUrl) {
+    await deactivateSubstitutionsOnConnection(appDbUrl);
+  }
+}
+
+export async function isLeaveSchemaAvailable(): Promise<boolean> {
+  try {
+    await getPool().query(`SELECT 1 FROM "LeaveRequest" LIMIT 1`);
+    return true;
+  } catch (error) {
+    if (await ignoreMissingRelation(error)) {
+      return false;
+    }
+    throw error;
+  }
 }
