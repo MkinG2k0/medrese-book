@@ -19,7 +19,7 @@ Brownfield-развитие журнала медресе: сначала тех
 - [ ] **Phase 6: Notifications** — колокольчик и событийные уведомления
 - [ ] **Phase 7: Audit, Teacher Analytics & Chat** — журнал аудита, аналитика преподавателя, чат
 - [ ] **Phase 8: Leave Requests** — отпуска, отгулы, больничные: заявки, календарь, согласование, замещение
-- [ ] **Phase 9: Realtime & Web Push** — realtime-доставка уведомлений, Web Push API с VAPID
+- [x] **Phase 9: Realtime & Web Push** — realtime-доставка уведомлений, Web Push API с VAPID (completed 2026-06-25)
 
 ## Phase Details
 
@@ -134,7 +134,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 | 6. Notifications | 0/TBD | Not started | - |
 | 7. Audit, Teacher Analytics & Chat | 0/TBD | Not started | - |
 | 8. Leave Requests | 0/5 | Planned | - |
-| 9. Realtime & Web Push | 0/5 | Planned | - |
+| 9. Realtime & Web Push | 5/5 | Complete    | 2026-06-25 |
 
 ### Phase 8: Leave Requests — отпуска, отгулы и больничные
 **Goal**: Преподаватель подаёт заявку на отсутствие через календарь; менеджер согласовывает в календаре и гриде; при одобрении назначается замещающий; переключение учётки преподавателя — только через активное замещение
