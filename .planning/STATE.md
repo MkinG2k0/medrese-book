@@ -133,10 +133,11 @@ None yet.
 | 260625-2ov | добавь кнопку создать группу в /groups | 2026-06-24 | c3ed60c | [260625-2ov-groups](./quick/260625-2ov-groups/) |
 | 260625-2sa | улучшить UI ученика: уроки на отдельной странице, скрыть смену учётки | 2026-06-24 | 0e67df9 | [260625-2sa-ui-student](./quick/260625-2sa-ui-student/) |
 | 260625-33a | дублирование данных и ученики в «Сменить учётку» | 2026-06-24 | bfd031f | [260625-33a-deduplikatsiya-uchenikov](./quick/260625-33a-deduplikatsiya-uchenikov/) |
+| 260625-krf | простой мессенджер: менеджер↔учителя/ученики, учитель↔менеджеры и свои ученики, ученик↔свой учитель и менеджер | 2026-06-25 | 044094d | [260625-krf-messenger](./quick/260625-krf-messenger/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
+Last activity: 2026-06-25 - Completed quick task 260625-krf: простой мессенджер с правилами доступа по ролям
 Last session: 2026-06-25T07:58:54.147Z
 Stopped at: Completed 09-05-PLAN.md
 Resume file: None
