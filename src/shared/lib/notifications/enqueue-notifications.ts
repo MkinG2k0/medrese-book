@@ -96,7 +96,7 @@ export async function enqueueNotifications(
 			title: draft.title,
 			body: draft.body,
 			link: draft.link ?? null,
-			payload: draft.payload ?? undefined,
+			payload: draft.payload as Prisma.InputJsonValue | undefined,
 		})),
 	})
 }
