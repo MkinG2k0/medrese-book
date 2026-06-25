@@ -488,16 +488,13 @@ await webpush.sendNotification(
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Push opt-in UX:** Banner on first login vs silent register attempt?
-   - Recommendation: Soft prompt in Header after bell ships; respect `Notification.permission`.
+1. **Push opt-in UX:** Banner on first login vs silent register attempt? — **RESOLVED:** Soft prompt in Header after bell ships (`PushSubscribePrompt` in 09-04); respect `Notification.permission`.
 
-2. **SUPER_ADMIN notifications:** Same as MANAGER for new leave requests?
-   - Recommendation: Yes — include in manager fan-out [ASSUMED].
+2. **SUPER_ADMIN notifications:** Same as MANAGER for new leave requests? — **RESOLVED:** Yes — include in manager fan-out in `build-notification.ts` (09-01).
 
-3. **`next.config` standalone vs Dockerfile:** Dockerfile copies `.next/standalone` but `next.config.ts` lacks `output: 'standalone'` [VERIFIED: mismatch].
-   - Recommendation: Out of Phase 9 scope unless deploy broken; flag for infra task.
+3. **`next.config` standalone vs Dockerfile:** Dockerfile copies `.next/standalone` but `next.config.ts` lacks `output: 'standalone'` — **RESOLVED:** Out of Phase 9 scope; infra task if deploy broken.
 
 ---
 
