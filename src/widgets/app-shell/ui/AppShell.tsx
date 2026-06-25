@@ -316,7 +316,7 @@ export function AppShell({
             closable={false}
             onClose={() => setDrawerOpen(false)}
             open={drawerOpen}
-            width={280}
+            size={280}
             styles={{
               body: { padding: 0, background: "#12100e" },
               header: { display: "none" },
