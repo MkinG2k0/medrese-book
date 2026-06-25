@@ -4,12 +4,13 @@ import { BellOutlined } from "@ant-design/icons";
 import { Badge, Dropdown } from "antd";
 import { useState } from "react";
 
-import { useUnreadCount } from "@/entities/notification";
+import { useNotificationStream, useUnreadCount } from "@/entities/notification";
 
 import { NotificationList } from "./NotificationList";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  useNotificationStream();
   const { data: unreadData } = useUnreadCount();
   const unreadCount = unreadData?.count ?? 0;
 
