@@ -9,9 +9,11 @@ import type {
 import { useConversations } from "@/entities/conversation";
 import { ChatPanel } from "@/features/messaging/ui/ChatPanel";
 import { ConversationList } from "@/features/messaging/ui/ConversationList";
+import { useIsMobile } from "@/shared/lib/use-breakpoint";
 
 export function MessagesPage() {
   const { data, isLoading, refetch } = useConversations();
+  const isMobile = useIsMobile();
   const mine = data?.mine ?? [];
   const teacherChats = data?.teacherChats ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -39,19 +41,31 @@ export function MessagesPage() {
     setSelectedId(conversation.id);
   };
 
+  const showList = !isMobile || !selectedId;
+  const showChat = !isMobile || !!selectedId;
+
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-[#2a2622] bg-[#161412]">
-      <div className="flex h-full min-h-0 shrink-0 md:max-w-sm">
-        <ConversationList
-          mine={mine}
-          teacherChats={teacherChats}
-          selectedId={selectedId}
-          loading={isLoading}
-          onSelect={setSelectedId}
-          onStartChat={handleStartChat}
+      {showList && (
+        <div
+          className={`flex h-full min-h-0 shrink-0 ${isMobile ? "w-full" : "md:max-w-sm"}`}
+        >
+          <ConversationList
+            mine={mine}
+            teacherChats={teacherChats}
+            selectedId={selectedId}
+            loading={isLoading}
+            onSelect={setSelectedId}
+            onStartChat={handleStartChat}
+          />
+        </div>
+      )}
+      {showChat && (
+        <ChatPanel
+          conversation={selectedConversation}
+          onBack={isMobile && selectedId ? () => setSelectedId(null) : undefined}
         />
-      </div>
-      <ChatPanel conversation={selectedConversation} />
+      )}
     </div>
   );
 }

@@ -119,6 +119,7 @@ export function JournalStudentsTable({
         dataSource={students}
         rowKey="id"
         pagination={false}
+        scroll={{ x: "max-content" }}
         className={blocked ? "pointer-events-none opacity-50" : undefined}
         onRow={(record) => ({
           onClick: blocked ? undefined : () => handleRowClick(record),

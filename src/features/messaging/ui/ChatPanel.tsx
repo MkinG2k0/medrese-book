@@ -1,6 +1,6 @@
 'use client'
 
-import { SendOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, SendOutlined } from '@ant-design/icons'
 import { Button, Input, Spin } from 'antd'
 import { useSession } from 'next-auth/react'
 import { useEffect, useRef, useState } from 'react'
@@ -12,9 +12,10 @@ import Text from '@/shared/ui/Text'
 
 type ChatPanelProps = {
 	conversation: ConversationSummary | null
+	onBack?: () => void
 }
 
-export function ChatPanel({ conversation }: ChatPanelProps) {
+export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 	const { data: session } = useSession()
 	const currentUserId = session?.user?.id
 	const readOnly = conversation ? !conversation.isOwn : false
@@ -53,13 +54,24 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
-			<div className="shrink-0 border-b border-[#2a2622] px-6 py-4">
-				<Text strong className="block">
-					{headerTitle}
-				</Text>
-				<Text type="secondary" className="text-sm">
-					{headerSubtitle}
-				</Text>
+			<div className="flex shrink-0 items-start gap-2 border-b border-[#2a2622] px-4 py-3 md:px-6 md:py-4">
+				{onBack && (
+					<Button
+						type="text"
+						icon={<ArrowLeftOutlined />}
+						aria-label="Назад к списку"
+						onClick={onBack}
+						className="shrink-0"
+					/>
+				)}
+				<div className="min-w-0 flex-1">
+					<Text strong className="block truncate">
+						{headerTitle}
+					</Text>
+					<Text type="secondary" className="text-sm">
+						{headerSubtitle}
+					</Text>
+				</div>
 			</div>
 
 			<div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
