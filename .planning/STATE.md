@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 09-04-PLAN.md
-last_updated: "2026-06-25T07:35:17.004Z"
+status: verifying
+stopped_at: Completed 09-05-PLAN.md
+last_updated: "2026-06-25T07:58:54.150Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 10
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 15
-  completed_plans: 14
-  percent: 93
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 Phase: 09 (realtime-notifications-and-web-push-api-with-vapid-keys) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-25
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P02 | 15 | 3 tasks | 13 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P03 | 45 | 3 tasks | 7 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P04 | 25 | 3 tasks | 14 files |
+| Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P05 | 90 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,8 @@ Recent decisions affecting current work:
 - [Phase 09]: Web Push VAPID public key через NEXT_PUBLIC или GET /api/push/vapid-public
 - [Phase 09]: PushSubscribePrompt opt-in в footer dropdown колокольчика
 - [Phase 09]: deliverNotifications fire-and-forget sendPushToUser; 410 удаляет stale PushSubscription
+- [Phase 09]: NOTF-03 deferred to ANLY-07 — no performance domain events in v1
+- [Phase 09]: E2E notifications UI-first; DB helpers optional via isNotificationSchemaAvailable
 
 ### Pending Todos
 
@@ -133,6 +136,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-25T07:35:17.002Z
-Stopped at: Completed 09-04-PLAN.md
+Last session: 2026-06-25T07:58:54.147Z
+Stopped at: Completed 09-05-PLAN.md
 Resume file: None
