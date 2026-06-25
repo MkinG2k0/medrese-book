@@ -51,16 +51,19 @@ enum NotificationType {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  name              String
-  code              String             @unique
-  role              Role
-  phone             String?
-  teacher           Teacher?
-  student           Student?
-  notifications     Notification[]
-  pushSubscriptions PushSubscription[]
-  createdAt         DateTime           @default(now())
+  id                         String             @id @default(cuid())
+  name                       String
+  code                       String             @unique
+  role                       Role
+  phone                      String?
+  teacher                    Teacher?
+  student                    Student?
+  notifications              Notification[]
+  pushSubscriptions          PushSubscription[]
+  conversationsAsParticipant1 Conversation[]    @relation("ConversationParticipant1")
+  conversationsAsParticipant2 Conversation[]    @relation("ConversationParticipant2")
+  sentMessages               Message[]
+  createdAt                  DateTime           @default(now())
 }
 
 model Teacher {
@@ -254,4 +257,31 @@ model PushSubscription {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+model Conversation {
+  id             String    @id @default(cuid())
+  participant1Id String
+  participant2Id String
+  participant1   User      @relation("ConversationParticipant1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2   User      @relation("ConversationParticipant2", fields: [participant2Id], references: [id], onDelete: Cascade)
+  messages       Message[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }

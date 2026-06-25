@@ -1,0 +1,105 @@
+import { created, error, forbidden, success } from '@/shared/api'
+import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import { userInConversation } from '@/shared/lib/messaging/can-message-user'
+import { prisma } from '@/shared/lib/prisma'
+import { sendMessageSchema } from '@/shared/lib/validations/message'
+
+type RouteContext = { params: Promise<{ id: string }> }
+
+function toMessageDto(message: {
+	id: string
+	body: string
+	senderId: string
+	createdAt: Date
+}) {
+	return {
+		id: message.id,
+		body: message.body,
+		senderId: message.senderId,
+		createdAt: message.createdAt.toISOString(),
+	}
+}
+
+export async function GET(_request: Request, context: RouteContext) {
+	const authResult = await authorizeApiRequest({
+		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+	})
+	if ('error' in authResult) return authResult.error
+
+	const { session } = authResult
+	const { id } = await context.params
+
+	try {
+		const conversation = await prisma.conversation.findUnique({
+			where: { id },
+		})
+		if (
+			!conversation ||
+			!(await userInConversation(conversation, session.user.id))
+		) {
+			return forbidden()
+		}
+
+		const messages = await prisma.message.findMany({
+			where: { conversationId: id },
+			orderBy: { createdAt: 'asc' },
+			select: { id: true, body: true, senderId: true, createdAt: true },
+		})
+
+		return success(messages.map(toMessageDto))
+	} catch (err) {
+		return error('Не удалось загрузить сообщения', 500)
+	}
+}
+
+export async function POST(request: Request, context: RouteContext) {
+	const authResult = await authorizeApiRequest({
+		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+	})
+	if ('error' in authResult) return authResult.error
+
+	const { session } = authResult
+	const { id } = await context.params
+
+	let body: unknown
+	try {
+		body = await request.json()
+	} catch {
+		return error('Некорректный JSON')
+	}
+
+	const parsed = sendMessageSchema.safeParse(body)
+	if (!parsed.success) return error(parsed.error.message)
+
+	try {
+		const conversation = await prisma.conversation.findUnique({
+			where: { id },
+		})
+		if (
+			!conversation ||
+			!(await userInConversation(conversation, session.user.id))
+		) {
+			return forbidden()
+		}
+
+		const message = await prisma.$transaction(async (tx) => {
+			const createdMessage = await tx.message.create({
+				data: {
+					conversationId: id,
+					senderId: session.user.id,
+					body: parsed.data.body,
+				},
+				select: { id: true, body: true, senderId: true, createdAt: true },
+			})
+			await tx.conversation.update({
+				where: { id },
+				data: { updatedAt: new Date() },
+			})
+			return createdMessage
+		})
+
+		return created(toMessageDto(message))
+	} catch (err) {
+		return error('Не удалось отправить сообщение', 500)
+	}
+}

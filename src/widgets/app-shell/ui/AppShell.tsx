@@ -6,6 +6,7 @@ import {
   CalendarOutlined,
   HistoryOutlined,
   LogoutOutlined,
+  MessageOutlined,
   TeamOutlined,
   TrophyOutlined,
   UserOutlined,
@@ -58,6 +59,12 @@ const allMenuItems: MenuItem[] = [
     icon: <CalendarOutlined />,
     label: "Календарь",
     roles: ["TEACHER"],
+  },
+  {
+    key: "/messages",
+    icon: <MessageOutlined />,
+    label: "Сообщения",
+    roles: ["TEACHER", "MANAGER", "STUDENT"],
   },
   {
     key: "/groups",

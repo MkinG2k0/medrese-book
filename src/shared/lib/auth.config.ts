@@ -77,6 +77,7 @@ export const authConfig: NextAuthConfig = {
 				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],
 				'/analytics': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 				'/student': ['STUDENT'],
+				'/messages': ['TEACHER', 'MANAGER', 'STUDENT'],
 			}
 
 			const sortedRoutes = Object.entries(roleRoutes).sort(
