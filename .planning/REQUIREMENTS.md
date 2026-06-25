@@ -71,7 +71,7 @@
 - [x] **NOTF-02**: Уведомления о непрочитанных событиях (in-app)
 - [ ] **NOTF-03**: Уведомления об успеваемости (норматив, низкая оценка)
 - [x] **NOTF-04**: Системные уведомления (согласование отпуска, замещение)
-- [ ] **NOTF-05**: Realtime-доставка in-app уведомлений без перезагрузки (SSE)
+- [x] **NOTF-05**: Realtime-доставка in-app уведомлений без перезагрузки (SSE)
 - [ ] **NOTF-06**: Web Push API с VAPID-ключами и service worker
 
 ### Аудит (фаза 3)
@@ -174,7 +174,7 @@
 | NOTF-02 | Phase 6 | Complete |
 | NOTF-03 | Phase 6 | Pending |
 | NOTF-04 | Phase 6 / 9 | Complete |
-| NOTF-05 | Phase 9 | Pending |
+| NOTF-05 | Phase 9 | Complete |
 | NOTF-06 | Phase 9 | Pending |
 | AUDT-01 | Phase 7 | Pending |
 | AUDT-02 | Phase 7 | Pending |
