@@ -13,13 +13,55 @@
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/messages-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Сообщения на телефоне"
+    },
+    {
+      "src": "/screenshots/analytics-wide.png",
+      "sizes": "1024x437",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Аналитика учеников"
+    },
+    {
+      "src": "/screenshots/users-wide.png",
+      "sizes": "1024x439",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Управление пользователями"
+    },
+    {
+      "src": "/screenshots/messages.png",
+      "sizes": "1024x439",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Сообщения"
     }
   ]
 }
