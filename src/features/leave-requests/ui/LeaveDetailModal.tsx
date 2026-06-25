@@ -39,6 +39,7 @@ type LeaveDetailModalProps = {
 	onClose: () => void
 	onApprove?: (request: LeaveRequestListItem) => void
 	onReject?: (request: LeaveRequestListItem) => void
+	onEdit?: () => void
 }
 
 export function LeaveDetailModal({
@@ -47,6 +48,7 @@ export function LeaveDetailModal({
 	onClose,
 	onApprove,
 	onReject,
+	onEdit,
 }: LeaveDetailModalProps) {
 	const title = request ? 'Заявка на отсутствие' : ''
 	const showManagerActions =
@@ -54,6 +56,8 @@ export function LeaveDetailModal({
 		request?.status === 'CREATED' &&
 		onApprove != null &&
 		onReject != null
+	const showTeacherEdit =
+		variant === 'teacher' && request != null && onEdit != null
 
 	return (
 		<Modal
@@ -76,7 +80,13 @@ export function LeaveDetailModal({
 								Подтвердить
 							</Button>,
 						]
-					: null
+					: showTeacherEdit
+						? [
+								<Button key="edit" type="primary" onClick={onEdit}>
+									Изменить
+								</Button>,
+							]
+						: null
 			}
 		>
 			{request && (

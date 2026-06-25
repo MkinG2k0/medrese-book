@@ -15,6 +15,7 @@ import {
 	approveLeaveRequestSchema,
 	createLeaveRequestSchema,
 	rejectLeaveRequestSchema,
+	updateLeaveRequestSchema,
 } from '@/shared/lib/validations/leave-request'
 
 function normalizeLeaveDates(startDate: string, endDate: string) {
@@ -218,6 +219,74 @@ export async function rejectLeaveRequest(input: unknown) {
 		)
 
 		return rejected
+	})
+
+	revalidatePath('/calendar')
+	revalidatePath('/admin/leave-calendar')
+
+	return serializeLeaveRequest(updated)
+}
+
+export async function updateLeaveRequest(input: unknown) {
+	const session = await requireRole('TEACHER')
+	const teacherId = session.user.teacherId
+	if (!teacherId) {
+		throw new Error('Профиль преподавателя не найден')
+	}
+
+	const data = updateLeaveRequestSchema.parse(input)
+	const { startDate, endDate } = normalizeLeaveDates(data.startDate, data.endDate)
+
+	const leaveRequest = await prisma.leaveRequest.findUnique({
+		where: { id: data.leaveRequestId },
+		include: { teacher: { include: { user: true } } },
+	})
+
+	if (!leaveRequest) {
+		throw new Error('Заявка не найдена')
+	}
+
+	if (leaveRequest.teacherId !== teacherId) {
+		throw new Error('Недостаточно прав для изменения этой заявки')
+	}
+
+	if (leaveRequest.status === 'APPROVED') {
+		throw new Error('Одобренную заявку нельзя изменить')
+	}
+
+	const wasRejected = leaveRequest.status === 'REJECTED'
+
+	const updated = await prisma.$transaction(async (tx) => {
+		const saved = await tx.leaveRequest.update({
+			where: { id: leaveRequest.id },
+			data: {
+				type: data.type,
+				startDate,
+				endDate,
+				description: data.description,
+				status: 'CREATED',
+				rejectionReason: null,
+				substituteTeacherId: null,
+				substitutionId: null,
+			},
+			include: { teacher: { include: { user: true } } },
+		})
+
+		await dispatchDomainEvent(
+			{
+				actorId: session.user.id,
+				action: 'LEAVE_REQUEST_CREATED',
+				entityType: 'LeaveRequest',
+				entityId: saved.id,
+				payload: {
+					...buildLeaveEventPayload(saved, saved.teacher.userId),
+					resubmitted: wasRejected,
+				},
+			},
+			tx,
+		)
+
+		return saved
 	})
 
 	revalidatePath('/calendar')

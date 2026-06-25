@@ -6,15 +6,9 @@ import type { MenuProps } from 'antd'
 import { useTransition } from 'react'
 
 import type { SwitchableUser } from '@/features/auth/actions/switch-user-actions'
+import { getDisplayRoleLabel } from '@/features/auth/lib/role-labels'
 import { switchUser } from '@/features/auth/actions/switch-user-actions'
 import Text from '@/shared/ui/Text'
-
-const ROLE_LABELS: Record<string, string> = {
-	SUPER_ADMIN: 'Админ',
-	MANAGER: 'Менеджер',
-	TEACHER: 'Учитель',
-	STUDENT: 'Ученик',
-}
 
 function getInitials(name: string) {
 	return name
@@ -29,6 +23,7 @@ type UserSwitcherProps = {
 	users: SwitchableUser[]
 	currentUserId: string
 	currentUserName: string
+	substituteOwnerUserId: string
 	collapsed?: boolean
 }
 
@@ -36,6 +31,7 @@ export function UserSwitcher({
 	users,
 	currentUserId,
 	currentUserName,
+	substituteOwnerUserId,
 	collapsed = false,
 }: UserSwitcherProps) {
 	const [isPending, startTransition] = useTransition()
@@ -46,7 +42,13 @@ export function UserSwitcher({
 			<div className="flex min-w-48 items-center justify-between gap-3">
 				<div className="flex flex-col">
 					<Text>{user.name}</Text>
-					<Text type="secondary">{ROLE_LABELS[user.role] ?? user.role}</Text>
+					<Text type="secondary">
+						{getDisplayRoleLabel(user.role, {
+							isSubstitutionTarget:
+								user.role === 'TEACHER' &&
+								user.id !== substituteOwnerUserId,
+						})}
+					</Text>
 				</div>
 				{user.id === currentUserId && <CheckOutlined />}
 			</div>

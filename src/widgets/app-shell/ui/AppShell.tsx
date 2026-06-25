@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
+import { getDisplayRoleLabel } from "@/features/auth/lib/role-labels";
 import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
 import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
@@ -24,13 +25,6 @@ import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
 
 const { Header, Sider, Content } = Layout;
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  SUPER_ADMIN: "Админ",
-  MANAGER: "Менеджер",
-  TEACHER: "Учитель",
-  STUDENT: "Ученик",
-};
 
 type MenuItem = {
   key: string;
@@ -139,6 +133,7 @@ type AppShellProps = {
       id: string;
       name: string;
       role: UserRole;
+      switchOwnerId?: string | null;
     };
   };
   switchableUsers: SwitchableUser[];
@@ -171,6 +166,11 @@ export function AppShell({
         (item) => pathname === item.key || pathname.startsWith(`${item.key}/`),
       )
       .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? menuItems[0]?.key;
+
+  const isSubstituting =
+    session.user.role === "TEACHER" && !!session.user.switchOwnerId;
+  const substituteOwnerUserId =
+    session.user.switchOwnerId ?? session.user.id;
 
   return (
     <>
@@ -214,6 +214,7 @@ export function AppShell({
                 users={switchableUsers}
                 currentUserId={session.user.id}
                 currentUserName={session.user.name}
+                substituteOwnerUserId={substituteOwnerUserId}
                 collapsed={collapsed}
               />
             )}
@@ -240,7 +241,7 @@ export function AppShell({
           <div className="text-right">
             <Text className="block">{session.user.name}</Text>
             <Text type="secondary" className="block">
-              {ROLE_LABELS[session.user.role]}
+              {getDisplayRoleLabel(session.user.role, { isSubstituting })}
             </Text>
           </div>
         </Header>

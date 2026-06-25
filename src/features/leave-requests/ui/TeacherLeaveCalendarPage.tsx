@@ -6,8 +6,10 @@ import { useState } from 'react'
 import { useLeaveRequests } from '@/entities/leave-request/api/use-leave-requests'
 import type { LeaveRequestListItem } from '@/entities/leave-request/model/types'
 import { CreateLeaveModal } from '@/features/leave-requests/ui/CreateLeaveModal'
+import { EditLeaveModal } from '@/features/leave-requests/ui/EditLeaveModal'
 import { LeaveCalendar } from '@/features/leave-requests/ui/LeaveCalendar'
 import { LeaveDetailModal } from '@/features/leave-requests/ui/LeaveDetailModal'
+import { TeacherLeaveRequestsTable } from '@/features/leave-requests/ui/TeacherLeaveRequestsTable'
 import type { LeaveRequestType } from '@/shared/lib/prisma'
 import Title from '@/shared/ui/Title'
 
@@ -17,6 +19,8 @@ export function TeacherLeaveCalendarPage() {
 		null,
 	)
 	const [selectedRequest, setSelectedRequest] =
+		useState<LeaveRequestListItem | null>(null)
+	const [editingRequest, setEditingRequest] =
 		useState<LeaveRequestListItem | null>(null)
 
 	return (
@@ -50,6 +54,13 @@ export function TeacherLeaveCalendarPage() {
 				onDateClick={setSelectedRequest}
 			/>
 
+			<TeacherLeaveRequestsTable
+				requests={requests}
+				loading={isLoading}
+				onRowClick={setSelectedRequest}
+				onEdit={setEditingRequest}
+			/>
+
 			{createLeaveType != null && (
 				<CreateLeaveModal
 					open
@@ -58,9 +69,24 @@ export function TeacherLeaveCalendarPage() {
 				/>
 			)}
 
+			<EditLeaveModal
+				request={editingRequest}
+				onClose={() => setEditingRequest(null)}
+			/>
+
 			<LeaveDetailModal
 				request={selectedRequest}
 				onClose={() => setSelectedRequest(null)}
+				onEdit={
+					selectedRequest &&
+					(selectedRequest.status === 'CREATED' ||
+						selectedRequest.status === 'REJECTED')
+						? () => {
+								setEditingRequest(selectedRequest)
+								setSelectedRequest(null)
+							}
+						: undefined
+				}
 			/>
 		</div>
 	)
