@@ -255,7 +255,7 @@ export function AppShell({
           </div>
         </Header>
 
-        <Content className="mx-4 my-4 min-h-0 flex-1 overflow-auto rounded-lg p-6">
+        <Content className="mx-4 my-4 flex min-h-0 flex-1 flex-col overflow-auto rounded-lg p-6">
           {children}
         </Content>
       </Layout>

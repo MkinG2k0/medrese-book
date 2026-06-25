@@ -2,10 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import type { ConversationSummary } from '../model/types'
+import type { ConversationsPayload } from '../model/types'
 
 export function useConversations() {
-	return useQuery<ConversationSummary[]>({
+	return useQuery<ConversationsPayload>({
 		queryKey: ['conversations'],
 		queryFn: async () => {
 			const res = await fetch('/api/conversations')

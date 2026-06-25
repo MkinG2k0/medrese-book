@@ -1,6 +1,9 @@
-import { created, error, forbidden, success } from '@/shared/api'
+import { created, forbidden, serverError, success } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
-import { userInConversation } from '@/shared/lib/messaging/can-message-user'
+import {
+	canViewConversation,
+	userInConversation,
+} from '@/shared/lib/messaging/can-message-user'
 import { prisma } from '@/shared/lib/prisma'
 import { sendMessageSchema } from '@/shared/lib/validations/message'
 
@@ -30,13 +33,7 @@ export async function GET(_request: Request, context: RouteContext) {
 	const { id } = await context.params
 
 	try {
-		const conversation = await prisma.conversation.findUnique({
-			where: { id },
-		})
-		if (
-			!conversation ||
-			!(await userInConversation(conversation, session.user.id))
-		) {
+		if (!(await canViewConversation(session, id))) {
 			return forbidden()
 		}
 
@@ -48,7 +45,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
 		return success(messages.map(toMessageDto))
 	} catch (err) {
-		return error('Не удалось загрузить сообщения', 500)
+		return serverError(err)
 	}
 }
 
@@ -65,11 +62,11 @@ export async function POST(request: Request, context: RouteContext) {
 	try {
 		body = await request.json()
 	} catch {
-		return error('Некорректный JSON')
+		return serverError(new Error('Некорректный JSON'))
 	}
 
 	const parsed = sendMessageSchema.safeParse(body)
-	if (!parsed.success) return error(parsed.error.message)
+	if (!parsed.success) return serverError(new Error(parsed.error.message))
 
 	try {
 		const conversation = await prisma.conversation.findUnique({
@@ -100,6 +97,6 @@ export async function POST(request: Request, context: RouteContext) {
 
 		return created(toMessageDto(message))
 	} catch (err) {
-		return error('Не удалось отправить сообщение', 500)
+		return serverError(err)
 	}
 }

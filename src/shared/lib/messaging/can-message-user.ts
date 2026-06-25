@@ -145,3 +145,28 @@ export async function userInConversation(
 		conversation.participant2Id === userId
 	)
 }
+
+export async function canViewConversation(
+	session: Session,
+	conversationId: string,
+): Promise<boolean> {
+	const conversation = await prisma.conversation.findUnique({
+		where: { id: conversationId },
+		include: {
+			participant1: { select: { id: true, role: true } },
+			participant2: { select: { id: true, role: true } },
+		},
+	})
+	if (!conversation) return false
+
+	if (await userInConversation(conversation, session.user.id)) return true
+
+	if (session.user.role === 'MANAGER') {
+		return (
+			conversation.participant1.role === 'TEACHER' ||
+			conversation.participant2.role === 'TEACHER'
+		)
+	}
+
+	return false
+}

@@ -48,11 +48,12 @@ test.describe("Сообщения", () => {
     await expect(page.getByText(reply)).toBeVisible();
   });
 
-  test("менеджер видит раздел сообщений", async ({ page }) => {
+  test("менеджер видит диалоги учителей", async ({ page }) => {
     await loginAs(page, TEST_CODES.manager);
     await openMessages(page);
+    await expect(page.getByText("Диалоги учителей")).toBeVisible();
     await expect(
-      page.getByText("Нет диалогов").or(page.getByText("Новый диалог")),
+      page.getByText(`${TEST_USERS.teacher1Name} ↔ ${TEST_USERS.studentAli}`),
     ).toBeVisible();
   });
 

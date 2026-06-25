@@ -1,47 +1,18 @@
-import { created, error, forbidden, success } from '@/shared/api'
+import { created, forbidden, serverError, success } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import {
 	canMessageUser,
 	sortParticipantIds,
 } from '@/shared/lib/messaging/can-message-user'
+import {
+	conversationInclude,
+	toObservedConversationSummary,
+	toOwnConversationSummary,
+} from '@/shared/lib/messaging/conversation-dto'
 import { prisma } from '@/shared/lib/prisma'
 import { createConversationSchema } from '@/shared/lib/validations/message'
 
-function toConversationSummary(
-	conversation: {
-		id: string
-		participant1Id: string
-		participant2Id: string
-		updatedAt: Date
-		participant1: { id: string; name: string; role: string }
-		participant2: { id: string; name: string; role: string }
-		messages: { body: string; createdAt: Date; senderId: string }[]
-	},
-	currentUserId: string,
-) {
-	const otherUser =
-		conversation.participant1Id === currentUserId
-			? conversation.participant2
-			: conversation.participant1
-	const last = conversation.messages[0] ?? null
-
-	return {
-		id: conversation.id,
-		otherUser: {
-			id: otherUser.id,
-			name: otherUser.name,
-			role: otherUser.role,
-		},
-		lastMessage: last
-			? {
-					body: last.body,
-					createdAt: last.createdAt.toISOString(),
-					senderId: last.senderId,
-				}
-			: null,
-		updatedAt: conversation.updatedAt.toISOString(),
-	}
-}
+const conversationListInclude = conversationInclude
 
 export async function GET() {
 	const authResult = await authorizeApiRequest({
@@ -52,30 +23,54 @@ export async function GET() {
 	const { session } = authResult
 
 	try {
-		const conversations = await prisma.conversation.findMany({
+		const ownConversations = await prisma.conversation.findMany({
 			where: {
 				OR: [
 					{ participant1Id: session.user.id },
 					{ participant2Id: session.user.id },
 				],
 			},
-			include: {
-				participant1: { select: { id: true, name: true, role: true } },
-				participant2: { select: { id: true, name: true, role: true } },
-				messages: {
-					orderBy: { createdAt: 'desc' },
-					take: 1,
-					select: { body: true, createdAt: true, senderId: true },
-				},
-			},
+			include: conversationListInclude,
 			orderBy: { updatedAt: 'desc' },
 		})
 
-		return success(
-			conversations.map((c) => toConversationSummary(c, session.user.id)),
+		const mine = ownConversations.map((c) =>
+			toOwnConversationSummary(c, session.user.id),
 		)
+
+		if (session.user.role !== 'MANAGER') {
+			return success({ mine })
+		}
+
+		const teacherChats = await prisma.conversation.findMany({
+			where: {
+				AND: [
+					{
+						NOT: {
+							OR: [
+								{ participant1Id: session.user.id },
+								{ participant2Id: session.user.id },
+							],
+						},
+					},
+					{
+						OR: [
+							{ participant1: { role: 'TEACHER' } },
+							{ participant2: { role: 'TEACHER' } },
+						],
+					},
+				],
+			},
+			include: conversationListInclude,
+			orderBy: { updatedAt: 'desc' },
+		})
+
+		return success({
+			mine,
+			teacherChats: teacherChats.map(toObservedConversationSummary),
+		})
 	} catch (err) {
-		return error('Не удалось загрузить диалоги', 500)
+		return serverError(err)
 	}
 }
 
@@ -91,11 +86,11 @@ export async function POST(request: Request) {
 	try {
 		body = await request.json()
 	} catch {
-		return error('Некорректный JSON')
+		return serverError(new Error('Некорректный JSON'))
 	}
 
 	const parsed = createConversationSchema.safeParse(body)
-	if (!parsed.success) return error(parsed.error.message)
+	if (!parsed.success) return serverError(new Error(parsed.error.message))
 
 	const { recipientId } = parsed.data
 
@@ -113,36 +108,20 @@ export async function POST(request: Request) {
 			where: {
 				participant1Id_participant2Id: { participant1Id, participant2Id },
 			},
-			include: {
-				participant1: { select: { id: true, name: true, role: true } },
-				participant2: { select: { id: true, name: true, role: true } },
-				messages: {
-					orderBy: { createdAt: 'desc' },
-					take: 1,
-					select: { body: true, createdAt: true, senderId: true },
-				},
-			},
+			include: conversationListInclude,
 		})
 
 		if (existing) {
-			return success(toConversationSummary(existing, session.user.id))
+			return success(toOwnConversationSummary(existing, session.user.id))
 		}
 
 		const conversation = await prisma.conversation.create({
 			data: { participant1Id, participant2Id },
-			include: {
-				participant1: { select: { id: true, name: true, role: true } },
-				participant2: { select: { id: true, name: true, role: true } },
-				messages: {
-					orderBy: { createdAt: 'desc' },
-					take: 1,
-					select: { body: true, createdAt: true, senderId: true },
-				},
-			},
+			include: conversationListInclude,
 		})
 
-		return created(toConversationSummary(conversation, session.user.id))
+		return created(toOwnConversationSummary(conversation, session.user.id))
 	} catch (err) {
-		return error('Не удалось создать диалог', 500)
+		return serverError(err)
 	}
 }

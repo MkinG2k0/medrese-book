@@ -1,6 +1,7 @@
 export type {
 	ChatMessage,
 	ConversationSummary,
+	ConversationsPayload,
 	MessageContact,
 } from './model/types'
 export { useConversations } from './api/use-conversations'

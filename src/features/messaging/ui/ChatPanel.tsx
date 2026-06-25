@@ -17,6 +17,7 @@ type ChatPanelProps = {
 export function ChatPanel({ conversation }: ChatPanelProps) {
 	const { data: session } = useSession()
 	const currentUserId = session?.user?.id
+	const readOnly = conversation ? !conversation.isOwn : false
 	const { data: messages = [], isLoading } = useMessages(conversation?.id ?? null)
 	const sendMessage = useSendMessage(conversation?.id ?? null)
 	const [draft, setDraft] = useState('')
@@ -28,7 +29,7 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 
 	const handleSend = async () => {
 		const text = draft.trim()
-		if (!text || !conversation) return
+		if (!text || !conversation || readOnly) return
 		setDraft('')
 		try {
 			await sendMessage.mutateAsync(text)
@@ -39,20 +40,25 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 
 	if (!conversation) {
 		return (
-			<div className="flex h-full flex-1 items-center justify-center p-6">
+			<div className="flex min-h-0 flex-1 items-center justify-center p-6">
 				<Text type="secondary">Выберите диалог или начните новый чат</Text>
 			</div>
 		)
 	}
 
+	const headerTitle = conversation.title ?? conversation.otherUser.name
+	const headerSubtitle = conversation.isOwn
+		? contactSubtitle(conversation.otherUser)
+		: 'Просмотр диалога'
+
 	return (
-		<div className="flex h-full min-h-0 flex-1 flex-col">
-			<div className="border-b border-[#2a2622] px-6 py-4">
+		<div className="flex min-h-0 flex-1 flex-col">
+			<div className="shrink-0 border-b border-[#2a2622] px-6 py-4">
 				<Text strong className="block">
-					{conversation.otherUser.name}
+					{headerTitle}
 				</Text>
 				<Text type="secondary" className="text-sm">
-					{contactSubtitle(conversation.otherUser)}
+					{headerSubtitle}
 				</Text>
 			</div>
 
@@ -63,10 +69,12 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 					</div>
 				) : messages.length === 0 ? (
 					<div className="flex h-full items-center justify-center">
-						<Text type="secondary">Нет сообщений. Напишите первым.</Text>
+						<Text type="secondary">
+							{readOnly ? 'Сообщений пока нет' : 'Нет сообщений. Напишите первым.'}
+						</Text>
 					</div>
 				) : (
-					<div className="flex flex-col gap-3">
+					<div className="flex min-h-full flex-col justify-end gap-3">
 						{messages.map((msg) => {
 							const isOwn = msg.senderId === currentUserId
 							return (
@@ -99,30 +107,32 @@ export function ChatPanel({ conversation }: ChatPanelProps) {
 				)}
 			</div>
 
-			<div className="border-t border-[#2a2622] p-4">
-				<div className="flex gap-2">
-					<Input.TextArea
-						value={draft}
-						onChange={(e) => setDraft(e.target.value)}
-						placeholder="Введите сообщение…"
-						autoSize={{ minRows: 1, maxRows: 4 }}
-						onPressEnter={(e) => {
-							if (!e.shiftKey) {
-								e.preventDefault()
-								void handleSend()
-							}
-						}}
-						disabled={sendMessage.isPending}
-					/>
-					<Button
-						type="primary"
-						icon={<SendOutlined />}
-						onClick={() => void handleSend()}
-						loading={sendMessage.isPending}
-						disabled={!draft.trim()}
-					/>
+			{!readOnly && (
+				<div className="shrink-0 border-t border-[#2a2622] p-4">
+					<div className="flex gap-2">
+						<Input.TextArea
+							value={draft}
+							onChange={(e) => setDraft(e.target.value)}
+							placeholder="Введите сообщение…"
+							autoSize={{ minRows: 1, maxRows: 4 }}
+							onPressEnter={(e) => {
+								if (!e.shiftKey) {
+									e.preventDefault()
+									void handleSend()
+								}
+							}}
+							disabled={sendMessage.isPending}
+						/>
+						<Button
+							type="primary"
+							icon={<SendOutlined />}
+							onClick={() => void handleSend()}
+							loading={sendMessage.isPending}
+							disabled={!draft.trim()}
+						/>
+					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	)
 }
