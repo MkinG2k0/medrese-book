@@ -9,5 +9,5 @@ export async function dispatchDomainEvent(
 	tx?: Prisma.TransactionClient,
 ) {
 	await writeAuditEvent(event, tx)
-	await enqueueNotifications(event, tx)
+	return enqueueNotifications(event, tx)
 }

@@ -9,6 +9,7 @@ import {
 	type LeaveRequestListFilters,
 } from '@/features/leave-requests/lib/query-leave-requests'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
+import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRole, requireRoles } from '@/shared/lib/session'
 import {
@@ -67,7 +68,7 @@ export async function createLeaveRequest(input: unknown) {
 			include: { teacher: { include: { user: true } } },
 		})
 
-		await dispatchDomainEvent(
+		const notifications = await dispatchDomainEvent(
 			{
 				actorId: session.user.id,
 				action: 'LEAVE_REQUEST_CREATED',
@@ -78,13 +79,15 @@ export async function createLeaveRequest(input: unknown) {
 			tx,
 		)
 
-		return created
+		return { created, notifications }
 	})
+
+	void deliverNotifications(leaveRequest.notifications)
 
 	revalidatePath('/calendar')
 	revalidatePath('/admin/leave-calendar')
 
-	return serializeLeaveRequest(leaveRequest)
+	return serializeLeaveRequest(leaveRequest.created)
 }
 
 export async function approveLeaveRequest(input: unknown) {
@@ -147,7 +150,7 @@ export async function approveLeaveRequest(input: unknown) {
 			leaveRequest.teacher.userId,
 		)
 
-		await dispatchDomainEvent(
+		const approvedNotifications = await dispatchDomainEvent(
 			{
 				actorId: session.user.id,
 				action: 'LEAVE_REQUEST_APPROVED',
@@ -158,7 +161,7 @@ export async function approveLeaveRequest(input: unknown) {
 			tx,
 		)
 
-		await dispatchDomainEvent(
+		const substitutionNotifications = await dispatchDomainEvent(
 			{
 				actorId: session.user.id,
 				action: 'SUBSTITUTION_ACTIVATED',
@@ -169,13 +172,18 @@ export async function approveLeaveRequest(input: unknown) {
 			tx,
 		)
 
-		return approved
+		return {
+			approved,
+			notifications: [...approvedNotifications, ...substitutionNotifications],
+		}
 	})
+
+	void deliverNotifications(updated.notifications)
 
 	revalidatePath('/calendar')
 	revalidatePath('/admin/leave-calendar')
 
-	return serializeLeaveRequest(updated)
+	return serializeLeaveRequest(updated.approved)
 }
 
 export async function rejectLeaveRequest(input: unknown) {
@@ -204,7 +212,7 @@ export async function rejectLeaveRequest(input: unknown) {
 			},
 		})
 
-		await dispatchDomainEvent(
+		const notifications = await dispatchDomainEvent(
 			{
 				actorId: session.user.id,
 				action: 'LEAVE_REQUEST_REJECTED',
@@ -218,13 +226,15 @@ export async function rejectLeaveRequest(input: unknown) {
 			tx,
 		)
 
-		return rejected
+		return { rejected, notifications }
 	})
+
+	void deliverNotifications(updated.notifications)
 
 	revalidatePath('/calendar')
 	revalidatePath('/admin/leave-calendar')
 
-	return serializeLeaveRequest(updated)
+	return serializeLeaveRequest(updated.rejected)
 }
 
 export async function updateLeaveRequest(input: unknown) {
@@ -272,7 +282,7 @@ export async function updateLeaveRequest(input: unknown) {
 			include: { teacher: { include: { user: true } } },
 		})
 
-		await dispatchDomainEvent(
+		const notifications = await dispatchDomainEvent(
 			{
 				actorId: session.user.id,
 				action: 'LEAVE_REQUEST_CREATED',
@@ -286,13 +296,15 @@ export async function updateLeaveRequest(input: unknown) {
 			tx,
 		)
 
-		return saved
+		return { saved, notifications }
 	})
+
+	void deliverNotifications(updated.notifications)
 
 	revalidatePath('/calendar')
 	revalidatePath('/admin/leave-calendar')
 
-	return serializeLeaveRequest(updated)
+	return serializeLeaveRequest(updated.saved)
 }
 
 export async function getLeaveRequestTeachers() {
