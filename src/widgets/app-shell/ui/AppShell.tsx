@@ -20,6 +20,7 @@ import { getDisplayRoleLabel } from "@/features/auth/lib/role-labels";
 import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
 import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
+import { NotificationBell } from "@/features/notifications";
 import type { UserRole } from "@/entities/user";
 import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
@@ -238,6 +239,7 @@ export function AppShell({
 
       <Layout className="flex min-h-0 flex-1 flex-col">
         <Header className="flex shrink-0 items-center justify-end gap-4 px-6 !bg-[#161412] !leading-none">
+          <NotificationBell />
           <div className="text-right">
             <Text className="block">{session.user.name}</Text>
             <Text type="secondary" className="block">
