@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, List, Spin } from "antd";
+import { Button, Spin } from "antd";
 import { useRouter } from "next/navigation";
 
 import {
@@ -55,42 +55,52 @@ export function NotificationList({ onClose }: NotificationListProps) {
   }
 
   return (
-    <div className="flex max-h-[420px] flex-col">
-      <List
-        className="min-h-0 flex-1 overflow-y-auto"
-        dataSource={notifications}
-        split={false}
-        renderItem={(item) => {
-          const isUnread = item.readAt === null;
+    <div className="flex flex-col">
+      <div className="max-h-[min(360px,50vh)] overflow-y-auto overscroll-contain">
+        <ul className="m-0 list-none p-0 pb-2">
+          {notifications.map((item) => {
+            const isUnread = item.readAt === null;
 
-          return (
-            <List.Item
-              className={
-                isUnread
-                  ? "cursor-pointer px-4 py-3 transition-colors hover:bg-white/5 bg-white/3"
-                  : "cursor-pointer px-4 py-3 transition-colors hover:bg-white/5"
-              }
-              onClick={() => handleItemClick(item)}
-            >
-              <div className="w-full">
-                {isUnread ? (
-                  <Text strong className="block">
-                    {item.title}
-                  </Text>
-                ) : (
-                  <Text className="block">{item.title}</Text>
-                )}
-                <Text type="secondary" className="mt-1 block">
-                  {item.body}
-                </Text>
-                <Text type="secondary" className="mt-1 block">
-                  {formatDateShort(item.createdAt)}
-                </Text>
-              </div>
-            </List.Item>
-          );
-        }}
-      />
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={
+                    isUnread
+                      ? "flex w-full cursor-pointer gap-3 border-0 bg-white/3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+                      : "flex w-full cursor-pointer gap-3 border-0 bg-transparent px-4 py-3 text-left transition-colors hover:bg-white/5"
+                  }
+                  onClick={() => handleItemClick(item)}
+                >
+                  <span
+                    className={
+                      isUnread
+                        ? "mt-1.5 block h-2 w-2 shrink-0 rounded-full bg-red-500"
+                        : "mt-1.5 block h-2 w-2 shrink-0 rounded-full bg-transparent"
+                    }
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    {isUnread ? (
+                      <Text strong className="block">
+                        {item.title}
+                      </Text>
+                    ) : (
+                      <Text className="block">{item.title}</Text>
+                    )}
+                    <Text type="secondary" className="mt-1 block">
+                      {item.body}
+                    </Text>
+                    <Text type="secondary" className="mt-1 block">
+                      {formatDateShort(item.createdAt)}
+                    </Text>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
       {unreadCount > 0 && (
         <div className="shrink-0 border-t border-white/10 px-4 py-2">
           <Button

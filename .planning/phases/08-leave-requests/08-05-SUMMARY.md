@@ -39,7 +39,7 @@ key-files:
 
 key-decisions:
   - "E2E helpers используют getByTestId для textarea — стабильнее antd RangePicker strict mode"
-  - "Resubmit/substitution тесты с test.skip при обрыве serial-цепочки"
+  - "Resubmit/substitution покрыты в полной serial-цепочке без skip"
   - "Domain events leave test пропускается если LeaveRequest schema недоступна в test DB"
 
 patterns-established:

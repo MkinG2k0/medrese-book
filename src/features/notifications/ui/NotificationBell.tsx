@@ -22,7 +22,7 @@ export function NotificationBell() {
       trigger={["click"]}
       placement="bottomRight"
       popupRender={() => (
-        <div className="w-[360px] overflow-hidden rounded-lg border border-white/10 bg-[#1a1816] shadow-lg">
+        <div className="flex w-[360px] flex-col rounded-lg border border-white/10 bg-[#1a1816] shadow-lg">
           <NotificationList onClose={() => setOpen(false)} />
           <PushSubscribePrompt />
         </div>
@@ -33,7 +33,12 @@ export function NotificationBell() {
         className="flex items-center justify-center rounded-md p-2 transition-colors hover:bg-white/5"
         aria-label="Уведомления"
       >
-        <Badge count={unreadCount} showZero={false} size="small">
+        <Badge
+          count={open ? 0 : unreadCount}
+          showZero={false}
+          size="small"
+          overflowCount={99}
+        >
           <BellOutlined className="text-lg" />
         </Badge>
       </button>
