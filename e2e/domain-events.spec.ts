@@ -6,10 +6,17 @@ import { AUTH_STATE } from "./helpers/auth-state";
 import { TEST_USERS } from "./helpers/codes";
 import {
   countAuditEvents,
+  deleteLeaveRequestsByDescriptionContaining,
   getGroupIdByName,
+  getLatestAuditEvent,
   getStudentCurrentStepIdx,
   getStudentIdByCode,
+  isLeaveSchemaAvailable,
 } from "./helpers/db";
+import {
+  createLeaveViaUI,
+  uniqueLeaveDescription,
+} from "./helpers/leave-requests";
 
 test.describe("Domain events (FND-04)", () => {
   test.use({ storageState: AUTH_STATE.manager });
@@ -40,5 +47,35 @@ test.describe("Domain events (FND-04)", () => {
       studentId,
     );
     expect(afterCount).toBeGreaterThan(beforeCount);
+  });
+});
+
+test.describe("Domain events leave requests", () => {
+  test.use({ storageState: AUTH_STATE.teacher1 });
+
+  test("createLeaveRequest emits LEAVE_REQUEST_CREATED audit event", async ({
+    page,
+  }) => {
+    test.skip(
+      !(await isLeaveSchemaAvailable()),
+      "LeaveRequest schema missing in test DATABASE_URL",
+    );
+
+    const description = uniqueLeaveDescription("Domain events leave");
+    const beforeCount = await countAuditEvents("LEAVE_REQUEST_CREATED");
+
+    await createLeaveViaUI(page, {
+      type: "vacation",
+      description,
+    });
+
+    const afterCount = await countAuditEvents("LEAVE_REQUEST_CREATED");
+    expect(afterCount).toBeGreaterThan(beforeCount);
+
+    const latest = await getLatestAuditEvent("LEAVE_REQUEST_CREATED");
+    expect(latest).not.toBeNull();
+    expect(latest?.action).toBe("LEAVE_REQUEST_CREATED");
+
+    await deleteLeaveRequestsByDescriptionContaining(description);
   });
 });

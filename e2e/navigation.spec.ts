@@ -12,8 +12,10 @@ test.describe("Навигация по ролям", () => {
       await expect(page.getByRole("menuitem", { name: "Журнал" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "История шагов" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Моя группа" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Календарь" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Группы" })).toHaveCount(0);
       await expect(page.getByRole("menuitem", { name: "Аналитика" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Календарь отпусков" })).toHaveCount(0);
       await expect(page.getByRole("menuitem", { name: "Пользователи" })).toHaveCount(0);
     });
   });
@@ -42,6 +44,8 @@ test.describe("Навигация по ролям", () => {
       await expect(page.getByRole("menuitem", { name: "Группы" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Программа" })).toBeVisible();
       await expect(page.getByRole("menuitem", { name: "Награды" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Календарь отпусков" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Календарь" })).toHaveCount(0);
       await expect(page.getByRole("menuitem", { name: "Журнал" })).toHaveCount(0);
     });
   });
