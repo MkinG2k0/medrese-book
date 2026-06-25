@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-06-25T07:30:06.366Z"
+stopped_at: Completed 09-04-PLAN.md
+last_updated: "2026-06-25T07:35:17.004Z"
 last_activity: 2026-06-25
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_plans: 14
+  percent: 93
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 09 (realtime-notifications-and-web-push-api-with-vapid-keys) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-06-25
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P01 | 25 | 3 tasks | 9 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P02 | 15 | 3 tasks | 13 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P03 | 45 | 3 tasks | 7 files |
+| Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P04 | 25 | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 09]: useUnreadCount refetchInterval 60s до SSE в 09-03
 - [Phase 09]: SSE userId только из session; EventSource reconnect max 3
 - [Phase 09]: middleware исключает sw.js перед Web Push фазой
+- [Phase 09]: Web Push VAPID public key через NEXT_PUBLIC или GET /api/push/vapid-public
+- [Phase 09]: PushSubscribePrompt opt-in в footer dropdown колокольчика
+- [Phase 09]: deliverNotifications fire-and-forget sendPushToUser; 410 удаляет stale PushSubscription
 
 ### Pending Todos
 
@@ -129,6 +133,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-06-24 - Completed quick task 260625-33a: дублирование данных и ученики в «Сменить учётку»
-Last session: 2026-06-25T07:30:06.363Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-06-25T07:35:17.002Z
+Stopped at: Completed 09-04-PLAN.md
 Resume file: None
