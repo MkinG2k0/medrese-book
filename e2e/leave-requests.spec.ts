@@ -155,8 +155,6 @@ test.describe("Заявки на отсутствие", () => {
     test("редактирует и повторно отправляет отклонённую заявку", async ({
       page,
     }) => {
-      test.skip(!rejectDescription, "зависит от serial-цепочки отклонения");
-
       resubmitDescription = uniqueLeaveDescription(`${E2E_PREFIX} resubmit`);
       await editRejectedLeaveViaUI(
         page,
@@ -164,7 +162,7 @@ test.describe("Заявки на отсутствие", () => {
         resubmitDescription,
       );
 
-      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.goto("/calendar");
       await expect(
         page.getByRole("row").filter({ hasText: resubmitDescription }),
       ).toBeVisible();
@@ -186,12 +184,11 @@ test.describe("Заявки на отсутствие", () => {
     test("переключается на teacher1 и открывает журнал замещаемого", async ({
       page,
     }) => {
-      test.skip(
-        !vacationDescription,
-        "зависит от serial-цепочки approve с замещением",
-      );
-
       await page.goto("/journal");
+      await page.waitForResponse(
+        (response) =>
+          response.url().includes("/api/auth/session") && response.ok(),
+      );
       await switchToSubstitutedTeacher(page, TEST_USERS.teacher1Name);
       await expect(
         page.getByRole("banner").getByText(SUBSTITUTION_ROLE_LABEL),

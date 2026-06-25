@@ -47,9 +47,9 @@ export async function createLeaveViaUI(
   ]);
 
   await page.getByRole("button", { name: CREATE_BUTTON_LABELS[type] }).click();
-  await waitForModal(page, CREATE_DIALOG_TITLES[type]);
-  await page.getByTestId("leave-description-input").fill(description);
+
   const createModal = await waitForModal(page, CREATE_DIALOG_TITLES[type]);
+  await createModal.getByTestId("leave-description-input").fill(description);
   await createModal.getByRole("button", { name: "Отправить заявку" }).click();
 
   await expect(page.getByText("Заявка отправлена на согласование")).toBeVisible();
@@ -146,9 +146,8 @@ export async function editRejectedLeaveViaUI(
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: "Изменить" }).click();
 
-  await waitForModal(page, "Редактировать заявку");
-  await page.getByTestId("leave-description-input").fill(newDescription);
   const editModal = await waitForModal(page, "Редактировать заявку");
+  await editModal.getByTestId("leave-description-input").fill(newDescription);
   await editModal.getByRole("button", { name: "Сохранить и отправить" }).click();
 
   await expect(
@@ -157,10 +156,17 @@ export async function editRejectedLeaveViaUI(
 }
 
 export async function switchToSubstitutedTeacher(page: Page, teacherName: string) {
-  await page
+  const switcher = page
     .getByRole("button")
-    .filter({ has: page.locator(".ant-avatar") })
-    .click();
-  await page.getByRole("menuitem").filter({ hasText: teacherName }).click();
+    .filter({ has: page.locator(".ant-avatar") });
+  await expect(switcher).toBeVisible();
+  await switcher.click();
+
+  const menuItem = page
+    .locator(".ant-dropdown-menu-item")
+    .filter({ hasText: teacherName });
+  await expect(menuItem).toBeVisible();
+  await menuItem.click();
+
   await expect(page.getByRole("banner").getByText(teacherName)).toBeVisible();
 }
