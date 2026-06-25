@@ -5,32 +5,14 @@ import { useCallback, useEffect, useState } from "react";
 
 import Text from "@/shared/ui/Text";
 
-import { urlBase64ToUint8Array } from "../lib/url-base64-to-uint8array";
+import { usePushSubscribe } from "../model/use-push-subscribe";
 
 const DISMISSED_KEY = "push-prompt-dismissed";
 const DENIED_KEY = "push-prompt-denied";
 
-async function resolveVapidPublicKey(): Promise<string | null> {
-  const fromEnv = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (fromEnv) return fromEnv;
-
-  try {
-    const res = await fetch("/api/push/vapid-public");
-    const json = (await res.json()) as {
-      data: { publicKey: string | null } | null;
-      error: string | null;
-    };
-    if (json.error) return null;
-    return json.data?.publicKey ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export function PushSubscribePrompt() {
   const [visible, setVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { subscribe, loading, error } = usePushSubscribe();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -57,50 +39,17 @@ export function PushSubscribePrompt() {
   }, []);
 
   const handleSubscribe = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const publicKey = await resolveVapidPublicKey();
-      if (!publicKey) {
-        setError("Push-уведомления не настроены на сервере");
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-      if (permission === "denied") {
-        localStorage.setItem(DENIED_KEY, "1");
-        setVisible(false);
-        return;
-      }
-      if (permission !== "granted") return;
-
-      const registration = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
-      });
-
-      const res = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription.toJSON()),
-      });
-      const json = (await res.json()) as { error: string | null };
-      if (json.error) {
-        setError(json.error);
-        return;
-      }
-
+    const ok = await subscribe();
+    if (ok) {
       setVisible(false);
-    } catch {
-      setError("Не удалось включить уведомления");
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, []);
+
+    if (typeof Notification !== "undefined" && Notification.permission === "denied") {
+      localStorage.setItem(DENIED_KEY, "1");
+      setVisible(false);
+    }
+  }, [subscribe]);
 
   if (!visible) return null;
 
@@ -115,7 +64,7 @@ export function PushSubscribePrompt() {
         </Text>
       ) : null}
       <div className="flex gap-2">
-        <Button type="primary" size="small" loading={loading} onClick={handleSubscribe}>
+        <Button type="primary" size="small" loading={loading} onClick={() => void handleSubscribe()}>
           Включить уведомления
         </Button>
         <Button size="small" onClick={handleDismiss} disabled={loading}>

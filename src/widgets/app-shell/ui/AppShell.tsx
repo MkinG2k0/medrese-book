@@ -24,6 +24,7 @@ import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { SubstitutionHeaderInfo } from "@/features/auth/ui/SubstitutionHeaderInfo";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import { NotificationBell } from "@/features/notifications";
+import { PwaInstallBanner } from "@/features/pwa";
 import type { UserRole } from "@/entities/user";
 import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
@@ -265,6 +266,8 @@ export function AppShell({
             </div>
           </div>
         </Header>
+
+        <PwaInstallBanner />
 
         <Content className="mx-4 my-4 flex min-h-0 flex-1 flex-col overflow-auto rounded-lg p-6">
           {children}

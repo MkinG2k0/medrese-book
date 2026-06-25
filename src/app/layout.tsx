@@ -2,6 +2,7 @@ import { Amiri, Cormorant_Garamond, Mulish } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 
 import { Providers } from "@/shared/providers";
+import { SITE_NAME } from "@/shared/lib/site";
 
 import "./globals.css";
 
@@ -26,11 +27,17 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Дневник медресе",
+  title: SITE_NAME,
   description: "Электронный дневник посещаемости и успеваемости учеников медресе",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: SITE_NAME,
+  },
   icons: {
     icon: "/icon.png",
-    apple: "/icon.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
