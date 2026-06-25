@@ -58,11 +58,15 @@ export default defineConfig({
     },
   ],
   globalSetup: "./e2e/global-setup.ts",
-  webServer: {
-    command: `pnpm dev --port ${testPort}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 10_000,
-    env: webServerEnv,
-  },
+  ...(process.env.PLAYWRIGHT_NO_WEBSERVER
+    ? {}
+    : {
+        webServer: {
+          command: `pnpm dev --port ${testPort}`,
+          url: `${baseURL}/login`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          env: webServerEnv,
+        },
+      }),
 });
