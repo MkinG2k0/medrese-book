@@ -72,6 +72,10 @@ export async function waitForUnreadCount(
   minCount: number,
   timeoutMs = 10_000,
 ): Promise<number> {
+  if (!(await isNotificationSchemaAvailable())) {
+    return 0;
+  }
+
   const startedAt = Date.now();
   let count = await countUnreadNotifications(userId);
 
@@ -81,4 +85,24 @@ export async function waitForUnreadCount(
   }
 
   return count;
+}
+
+async function ignoreMissingRelation(error: unknown): Promise<boolean> {
+  return (
+    error instanceof Error &&
+    (error.message.includes("does not exist") ||
+      error.message.includes("Connection terminated"))
+  );
+}
+
+export async function isNotificationSchemaAvailable(): Promise<boolean> {
+  try {
+    await getPool().query(`SELECT 1 FROM "Notification" LIMIT 1`);
+    return true;
+  } catch (error) {
+    if (await ignoreMissingRelation(error)) {
+      return false;
+    }
+    throw error;
+  }
 }

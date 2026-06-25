@@ -62,7 +62,8 @@ function getManagerRequestRow(page: Page, teacherName: string, description: stri
   return page
     .getByRole("row")
     .filter({ hasText: teacherName })
-    .filter({ hasText: description });
+    .filter({ hasText: description })
+    .first();
 }
 
 export async function approveLeaveViaUI(
