@@ -47,5 +47,7 @@ export async function signOutWithLessonCleanup(options: SignOutOptions = {}) {
 		await endActiveTeachingSessionIfNeeded(role)
 	}
 	await recordLogoutIfNeeded(userId, role)
-	await nextAuthSignOut({ callbackUrl })
+	// redirect: false — не полагаться на AUTH_URL/NEXTAUTH_URL (могут быть localhost на проде)
+	await nextAuthSignOut({ redirect: false })
+	window.location.assign(callbackUrl)
 }
