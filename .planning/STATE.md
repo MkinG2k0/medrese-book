@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 01
 current_phase_name: student-analytics-history
 status: verifying
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-07-01T16:41:00.928Z"
+stopped_at: Completed 01-05-PLAN.md
+last_updated: "2026-07-01T19:55:00.000Z"
 last_activity: 2026-07-01
-last_activity_desc: Completed 01-02 data layer API plan
+last_activity_desc: Completed 01-05 automated tests plan
 progress:
   total_phases: 10
   completed_phases: 4
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 01 (student-analytics-history) — EXECUTING
+Phase: 01 (student-analytics-history) — VERIFYING
 Plan: 5 of 5
 Status: Phase complete — ready for verification
-Last activity: 2026-07-01 — Completed 01-02 data layer API plan
+Last activity: 2026-07-01 — Completed 01-05 automated tests plan
 
 Progress: [████░░░░░░] 40%
 
@@ -113,7 +113,8 @@ Recent decisions affecting current work:
 - [Phase 01]: getAtRiskStudents N+1 per student acceptable for v1 data layer
 - [Phase ?]: D-04: actualTimeSource default teaching_session after timer verification
 - [Phase 01]: At-risk teacher column hidden when specific teacher filter selected
-- [Phase 01]: Portal getStudentPeriodMetrics returns periodMetrics only without riskFlags (D-07)
+- [Phase 01]: Timer E2E on teacher2 to isolate from journal.spec.ts
+- [Phase 01]: At-risk E2E falls back to TopStudents when at-risk empty
 
 ### Pending Todos
 
