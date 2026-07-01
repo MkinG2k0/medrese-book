@@ -22,6 +22,8 @@ const PAGE_DOCX_NAMES: Record<1 | 2 | 3, string> = {
 
 export const LEVEL1_TITLE = "1й уровень — Буквы и слова (48ч.)";
 export const LEVEL2_TITLE = "2й уровень — Буквы и слова (48ч.)";
+export const LEVEL3_TITLE = "3й уровень — Слова и чтение (24ч.)";
+export const LEVEL4_TITLE = "4й уровень — Закрепление (12ч.)";
 
 type RawStep = {
   order: number;

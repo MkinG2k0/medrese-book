@@ -27,6 +27,20 @@ export function loadAllLevel1Steps(): StepDef[] {
   return ([1, 2, 3] as const).flatMap((page) => loadLevel1PageStepsFromJson(page));
 }
 
+/** Четыре главы seed с разным числом шагов: 13, 12, 8, 6. */
+export function loadSeedLevelSteps(): StepDef[][] {
+  const page1 = loadLevel1PageSteps(1);
+  const page2 = loadLevel1PageSteps(2);
+  const page3 = loadLevel1PageSteps(3);
+
+  return [
+    page1,
+    page2,
+    page3,
+    page2.slice(0, 6).map((step, index) => ({ ...step, order: index + 1 })),
+  ];
+}
+
 export function getPageOrderRange(page: 1 | 2 | 3): { from: number; to: number } {
   const steps = loadLevel1PageSteps(page);
   const orders = steps.map((step) => step.order);

@@ -5,14 +5,18 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   LEVEL1_TITLE,
   LEVEL2_TITLE,
+  LEVEL3_TITLE,
+  LEVEL4_TITLE,
 } from "./lib/parse-level1-docx";
 import {
   buildContent,
-  loadAllLevel1Steps,
+  loadSeedLevelSteps,
   type StepDef,
 } from "./lib/level1-import-utils";
 import {
   buildLessonDates,
+  buildLevelStepOffsets,
+  createSeedContext,
   getCurrentStepIdx,
   getPassedStepIds,
   seedStudentHistory,
@@ -54,8 +58,10 @@ async function createLevelWithSteps(
 }
 
 async function main() {
-  const level1Steps = loadAllLevel1Steps();
-  const lessonDates = buildLessonDates();
+  const levelStepDefs = loadSeedLevelSteps();
+  const levelTitles = [LEVEL1_TITLE, LEVEL2_TITLE, LEVEL3_TITLE, LEVEL4_TITLE];
+  const seedCtx = createSeedContext();
+  const lessonDates = buildLessonDates(seedCtx);
 
   await prisma.message.deleteMany();
   await prisma.conversation.deleteMany();
@@ -98,21 +104,24 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, level1Steps);
-  const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, level1Steps);
+  const levels = await Promise.all(
+    levelStepDefs.map((steps, index) =>
+      createLevelWithSteps(index + 1, levelTitles[index]!, steps),
+    ),
+  );
 
-  const [level1StepIds, level2StepIds] = await Promise.all([
-    prisma.step.findMany({
-      where: { levelId: level1.id },
-      orderBy: { order: "asc" },
-      select: { id: true },
-    }),
-    prisma.step.findMany({
-      where: { levelId: level2.id },
-      orderBy: { order: "asc" },
-      select: { id: true },
-    }),
-  ]);
+  const levelStepIds = await Promise.all(
+    levels.map((level) =>
+      prisma.step.findMany({
+        where: { levelId: level.id },
+        orderBy: { order: "asc" },
+        select: { id: true },
+      }),
+    ),
+  );
+
+  const levelStepCounts = levelStepDefs.map((steps) => steps.length);
+  const levelStepOffsets = buildLevelStepOffsets(levelStepCounts);
 
   const group1 = await prisma.group.create({
     data: {
@@ -129,9 +138,6 @@ async function main() {
   });
 
   const groups = [group1, group2];
-  const teachers = [teacher1, teacher2];
-  const levels = [level1, level2];
-  const level2StepOffset = level1Steps.length;
 
   await seedTeachingSessions(prisma, group1.id, teacher1.id, lessonDates);
   await seedTeachingSessions(prisma, group2.id, teacher2.id, lessonDates);
@@ -150,28 +156,25 @@ async function main() {
         userId: user.id,
         groupId: groups[profile.groupIndex]!.id,
         levelId: levels[profile.level - 1]!.id,
-        currentStepIdx: getCurrentStepIdx(profile, level2StepOffset),
+        currentStepIdx: getCurrentStepIdx(profile, levelStepOffsets),
         status: profile.status ?? "ACTIVE",
       },
     });
 
-    const passedIds = getPassedStepIds(
-      profile,
-      level1StepIds,
-      level2StepIds,
-      level2StepOffset,
-    ).map((step) => step.id);
+    const passedIds = getPassedStepIds(profile, levelStepIds).map((step) => step.id);
 
-    await seedStudentHistory(prisma, student.id, profile, passedIds, lessonDates);
+    await seedStudentHistory(prisma, student.id, profile, passedIds, lessonDates, seedCtx);
   }
 
   const studentCodes = STUDENT_PROFILES.map((p) => p.code);
+  const periodLabel = `${seedCtx.periodStart.toISOString().slice(0, 10)} — ${seedCtx.periodEnd.toISOString().slice(0, 10)}`;
 
   console.log("Seed completed:");
   console.log(
-    `  Глава 1 и 2: по ${level1Steps.length} шагов (${level1Steps.reduce((sum, step) => sum + step.hours, 0)}ч.) из prisma/data`,
+    `  Главы 1–4: ${levelStepCounts.map((count, index) => `${index + 1}=${count}`).join(", ")} шагов`,
   );
   console.log(`  Учеников: ${STUDENT_PROFILES.length}`);
+  console.log(`  Период данных: ${periodLabel}`);
   console.log(`  Занятий групп (вт/чт): ${lessonDates.length} дат на группу`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);
