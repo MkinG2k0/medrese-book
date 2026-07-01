@@ -5,6 +5,10 @@ import { startOfMonth } from 'date-fns'
 import { prisma } from '@/shared/lib/prisma'
 import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { requireRole } from '@/shared/lib/session'
+import {
+	buildTeachingSessionDurationByDate,
+	teachingSessionDurationFromMap,
+} from '@/shared/lib/teaching-session-duration-map'
 import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
 import type { StudentPeriodMetrics } from '@/shared/lib/student-metrics/types'
 import {
@@ -109,7 +113,8 @@ export async function getStudentSessionHistory() {
 
 	const student = await prisma.student.findUnique({
 		where: { id: session.user.studentId! },
-		include: {
+		select: {
+			groupId: true,
 			sessions: {
 				include: { completions: { include: { step: true } } },
 				orderBy: { date: 'desc' },
@@ -120,5 +125,26 @@ export async function getStudentSessionHistory() {
 
 	if (!student) return null
 
-	return { sessions: student.sessions }
+	const sessionDates = student.sessions.map((item) => item.date)
+	const durationByDate =
+		sessionDates.length > 0
+			? await buildTeachingSessionDurationByDate(student.groupId, {
+					gte: new Date(
+						Math.min(...sessionDates.map((date) => date.getTime())),
+					),
+					lte: new Date(
+						Math.max(...sessionDates.map((date) => date.getTime())),
+					),
+				})
+			: new Map<string, number | null>()
+
+	return {
+		sessions: student.sessions.map((item) => ({
+			...item,
+			durationMinutes: teachingSessionDurationFromMap(
+				durationByDate,
+				item.date,
+			),
+		})),
+	}
 }

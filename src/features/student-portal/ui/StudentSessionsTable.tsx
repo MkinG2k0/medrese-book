@@ -2,12 +2,14 @@
 
 import { Table, Tag } from "antd";
 
+import { formatMinutesAsHours } from "@/shared/lib/format-minutes-as-hours";
 import { formatDate } from "@/shared/lib/utils";
 
 type SessionRow = {
   id: string;
   date: Date | string;
   attendance: string;
+  durationMinutes?: number | null;
   completions: { grade: number; step: { title: string } }[];
 };
 
@@ -27,18 +29,22 @@ type GradeRow = {
   key: string;
   date: Date | string;
   attendance: string;
+  durationMinutes: number | null;
   topic: string | null;
   grade: number | null;
 };
 
 function buildGradeRows(sessions: SessionRow[]): GradeRow[] {
   return sessions.flatMap((session): GradeRow[] => {
+    const durationMinutes = session.durationMinutes ?? null;
+
     if (session.completions.length === 0) {
       return [
         {
           key: session.id,
           date: session.date,
           attendance: session.attendance,
+          durationMinutes,
           topic: null,
           grade: null,
         },
@@ -49,6 +55,7 @@ function buildGradeRows(sessions: SessionRow[]): GradeRow[] {
       key: `${session.id}-${index}`,
       date: session.date,
       attendance: session.attendance,
+      durationMinutes,
       topic: completion.step.title,
       grade: completion.grade,
     }));
@@ -78,6 +85,13 @@ export function StudentSessionsTable({ sessions }: { sessions: SessionRow[] }) {
             const info = ATTENDANCE_LABELS[a] ?? { label: a, color: "default" };
             return <Tag color={info.color}>{info.label}</Tag>;
           },
+        },
+        {
+          title: "Длительность",
+          dataIndex: "durationMinutes",
+          key: "duration",
+          render: (minutes: number | null) =>
+            minutes != null ? formatMinutesAsHours(minutes) : "—",
         },
         {
           title: "Тема",

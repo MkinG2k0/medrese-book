@@ -7,6 +7,7 @@ import {
   useStepCompletions,
   type StepCompletionRow,
 } from "@/entities/step-completion/api/use-step-completions";
+import { formatMinutesAsHours } from "@/shared/lib/format-minutes-as-hours";
 import { formatDate } from "@/shared/lib/utils";
 import Text from "@/shared/ui/Text";
 
@@ -103,6 +104,14 @@ export function StudentStudyHistoryModal({
               const { label, color } =
                 ATTENDANCE_LABEL[record.session.attendance];
               return <Tag color={color}>{label}</Tag>;
+            },
+          },
+          {
+            title: "Длительность занятия",
+            key: "sessionDuration",
+            render: (_, record) => {
+              const minutes = record.session.sessionDurationMinutes;
+              return minutes != null ? formatMinutesAsHours(minutes) : "—";
             },
           },
         ]}
