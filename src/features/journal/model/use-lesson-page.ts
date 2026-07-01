@@ -1,6 +1,6 @@
 "use client";
 
-import { message } from "antd";
+import { App } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -8,6 +8,7 @@ import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
+import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
 import {
   getNextLevelJournalSteps,
   type JournalStep,
@@ -22,6 +23,7 @@ import {
   mapSessionStepsOutsideLevel,
 } from "@/features/journal/lib/lesson-session-steps";
 import { buildInitialStepStates } from "@/features/journal/lib/lesson-step-states";
+import { shouldShowOnlyCompletedLessonSteps } from "@/features/journal/lib/lesson-view-mode";
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
 import { useJournalStore, selectSessionStepStates } from "@/features/journal/model/journal-store";
 import {
@@ -38,15 +40,37 @@ import {
 
 type Attendance = "PRESENT" | "LATE" | "ABSENT";
 
+function filterStepsToSessionCompletions<T extends { id: string }>(
+  steps: T[],
+  sessionCompletions: { stepId: string }[] | undefined,
+): T[] {
+  if (!sessionCompletions?.length) return [];
+  const completedIds = new Set(sessionCompletions.map((c) => c.stepId));
+  return steps.filter((step) => completedIds.has(step.id));
+}
+
 function resolveInitialUiState(
   effectiveLessonSteps: JournalStep[],
   isProgramComplete: boolean,
   existingSession: ReturnType<typeof useStudentSession>["data"],
+  showOnlyCompleted: boolean,
 ) {
   if (existingSession) {
     const gradedStepIds = new Set(
       existingSession.completions.map((c) => c.stepId),
     );
+
+    if (showOnlyCompleted) {
+      const completedSteps = filterStepsToSessionCompletions(
+        effectiveLessonSteps,
+        existingSession.completions,
+      );
+      return {
+        visibleCount: completedSteps.length,
+        expandedIds: new Set(completedSteps.map((step) => step.id)),
+      };
+    }
+
     const maxGradedIndex = effectiveLessonSteps.reduce(
       (max, step, index) =>
         gradedStepIds.has(step.id) ? Math.max(max, index) : max,
@@ -85,6 +109,7 @@ function resolveInitialUiState(
 
 export function useLessonPage(props: LessonPageProps) {
   const {
+    groupId,
     studentId,
     steps,
     allSteps,
@@ -108,9 +133,16 @@ export function useLessonPage(props: LessonPageProps) {
     [prefetchedSessionSteps, fetchedNextLevelSteps],
   );
 
+  const { message } = App.useApp();
   const router = useRouter();
   const { dateFilter, initSessionCompletions, setSessionStepState } =
     useJournalStore();
+
+  const { data: teachingSession } = useTeachingSession(groupId, dateFilter);
+  const showOnlyCompleted = shouldShowOnlyCompletedLessonSteps(
+    dateFilter,
+    teachingSession,
+  );
 
   const { data: existingSession, isLoading: isSessionLoading } =
     useStudentSession(studentId, dateFilter, {
@@ -163,13 +195,22 @@ export function useLessonPage(props: LessonPageProps) {
   const lessonSteps = useMemo(() => {
     if (isProgramComplete) return allSteps;
 
-    return buildLessonSteps(
+    const built = buildLessonSteps(
       allSteps,
       steps,
       existingSession?.completions ?? [],
       sessionStepsOutsideLevel,
       loadedNextLevelSteps,
     );
+
+    if (showOnlyCompleted) {
+      return filterStepsToSessionCompletions(
+        built,
+        existingSession?.completions,
+      );
+    }
+
+    return built;
   }, [
     allSteps,
     steps,
@@ -177,6 +218,7 @@ export function useLessonPage(props: LessonPageProps) {
     isProgramComplete,
     loadedNextLevelSteps,
     sessionStepsOutsideLevel,
+    showOnlyCompleted,
   ]);
 
   const [attendance, setAttendance] = useState<Attendance>("PRESENT");
@@ -190,8 +232,9 @@ export function useLessonPage(props: LessonPageProps) {
     lessonSteps[0] ? new Set([lessonSteps[0].id]) : new Set(),
   );
   const [loadedSessionKey, setLoadedSessionKey] = useState<string | null>(null);
+  const uiInitKey = `${sessionDataKey}:${showOnlyCompleted}`;
 
-  const isSessionReady = !isSessionLoading && loadedSessionKey === sessionDataKey;
+  const isSessionReady = !isSessionLoading && loadedSessionKey === uiInitKey;
 
   const resolvedStepStates = useMemo(() => {
     const baseline = buildInitialStepStates(
@@ -209,17 +252,28 @@ export function useLessonPage(props: LessonPageProps) {
   ]);
 
   useEffect(() => {
-    if (isSessionLoading || loadedSessionKey === sessionDataKey) return;
+    if (isSessionLoading || loadedSessionKey === uiInitKey) return;
 
     const effectiveLessonSteps = isProgramComplete
       ? allSteps
-      : buildLessonSteps(
-          allSteps,
-          steps,
-          existingSession?.completions ?? [],
-          sessionStepsOutsideLevel,
-          nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
-        );
+      : showOnlyCompleted
+        ? filterStepsToSessionCompletions(
+            buildLessonSteps(
+              allSteps,
+              steps,
+              existingSession?.completions ?? [],
+              sessionStepsOutsideLevel,
+              nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+            ),
+            existingSession?.completions,
+          )
+        : buildLessonSteps(
+            allSteps,
+            steps,
+            existingSession?.completions ?? [],
+            sessionStepsOutsideLevel,
+            nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+          );
 
     if (existingSession) {
       setAttendance(existingSession.attendance);
@@ -250,13 +304,15 @@ export function useLessonPage(props: LessonPageProps) {
         effectiveLessonSteps,
         isProgramComplete,
         existingSession,
+        showOnlyCompleted,
       );
     setVisibleCount(nextVisibleCount);
     setExpandedIds(nextExpandedIds);
-    setLoadedSessionKey(sessionDataKey);
+    setLoadedSessionKey(uiInitKey);
   }, [
     isSessionLoading,
     loadedSessionKey,
+    uiInitKey,
     sessionDataKey,
     existingSession,
     isProgramComplete,
@@ -266,6 +322,7 @@ export function useLessonPage(props: LessonPageProps) {
     nextLevelSteps,
     sessionNextLevelLoadedCount,
     stepCompletions,
+    showOnlyCompleted,
     initSessionCompletions,
   ]);
 
@@ -284,6 +341,7 @@ export function useLessonPage(props: LessonPageProps) {
       isStepPassed(resolvedStepStates[step.id]?.grade),
     );
   const canLoadNextLevel =
+    !showOnlyCompleted &&
     !isProgramComplete &&
     !hasMore &&
     allVisibleStepsPassed &&

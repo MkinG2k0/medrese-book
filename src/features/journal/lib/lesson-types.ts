@@ -9,6 +9,7 @@ export type StepCompletionRecord = {
 };
 
 export type LessonPageProps = {
+  groupId: string;
   studentId: string;
   studentName: string;
   currentStepIdx: number;

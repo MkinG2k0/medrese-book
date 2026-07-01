@@ -5,7 +5,7 @@ import {
 	ClockCircleOutlined,
 	CloseOutlined,
 } from '@ant-design/icons'
-import { Flex, InputNumber, Modal, Radio, Space } from 'antd'
+import { App, Flex, InputNumber, Radio, Space } from 'antd'
 
 import { useJournalStore } from '@/features/journal/model/journal-store'
 
@@ -34,6 +34,7 @@ export function AttendanceButtons({
 	gradedStepCount,
 	onClearCompletions,
 }: AttendanceButtonsProps) {
+	const { modal } = App.useApp()
 	const setPendingAbsentConfirm = useJournalStore(
 		(store) => store.setPendingAbsentConfirm,
 	)
@@ -45,7 +46,7 @@ export function AttendanceButtons({
 			gradedStepCount > 0
 		) {
 			setPendingAbsentConfirm(true)
-			Modal.confirm({
+			modal.confirm({
 				title: 'Подтвердите прогул',
 				content: `Вы выставили оценки за ${gradedStepCount} шагов. При прогуле они будут удалены. Продолжить?`,
 				okText: 'Да, прогул',

@@ -271,6 +271,7 @@ export async function getStudentLesson(studentId: string) {
 		: null
 
 	return {
+		groupId: student.groupId,
 		student: {
 			id: student.id,
 			name: student.user.name,

@@ -15,6 +15,7 @@ export default async function StudentLessonPage({ params }: Props) {
 
 	return (
 		<LessonPage
+			groupId={lesson.groupId}
 			studentId={lesson.student.id}
 			studentName={lesson.student.name}
 			currentStepIdx={lesson.student.currentStepIdx}
