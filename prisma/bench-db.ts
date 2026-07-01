@@ -18,7 +18,7 @@ const ITERATIONS = Number(process.env.BENCH_ITERATIONS ?? 10);
 const WARMUP = Number(process.env.BENCH_WARMUP ?? 3);
 const CONNECT_TIMEOUT_MS = Number(process.env.BENCH_CONNECT_TIMEOUT_MS ?? 30_000);
 
-const connectionString = normalizeConnectionString(process.env.DATABASE_URL);
+const connectionString = normalizeConnectionString(process.env.DATABASE_URL) ?? '';
 if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
