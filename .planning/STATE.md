@@ -7,7 +7,7 @@ current_phase_name: student-analytics-history
 status: verifying
 stopped_at: Completed 01-05-PLAN.md
 last_updated: "2026-07-01T19:55:00.000Z"
-last_activity: 2026-07-01 - Completed quick task 260701-x5w: Fix substitution label display logic
+last_activity: 2026-07-02 - Completed quick task 260702-1cl: рядом с номером шага пиши общий его номер
 progress:
   total_phases: 10
   completed_phases: 4
@@ -158,10 +158,11 @@ None yet.
 | 260701-x5w | Исправить отображение метки «Замещение» — только при активном замещении | 2026-07-01 | c4d83ea | [260701-x5w-fix-substitution-label-display-logic](./quick/260701-x5w-fix-substitution-label-display-logic/) |
 | 260702-015 | сделай в сидере 4ре главы , с разным колличеством шагов , раскидтай так же по ученикам уровни | 2026-07-01 | 0b4d679 | [260702-015-4](./quick/260702-015-4/) |
 | 260702-07p | продовый сидер: только супер-админ с кодом из env | 2026-07-02 | 0eedacd | [260702-07p-prod-seeder-super-admin-from-env](./quick/260702-07p-prod-seeder-super-admin-from-env/) |
+| 260702-1cl | рядом с номером шага пиши общий его номер | 2026-07-02 | de42cad | [260702-1cl-step-global-number](./quick/260702-1cl-step-global-number/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-02 - Completed quick task 260702-07p: продовый сидер супер-админа из env
+Last activity: 2026-07-02 - Completed quick task 260702-1cl: рядом с номером шага пиши общий его номер
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
