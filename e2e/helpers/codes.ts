@@ -16,6 +16,8 @@ export const TEST_USERS = {
   studentAli: "Али",
   studentUsman: "Усман",
   studentBilal: "Билал",
+  studentKhalid: "Халид",
+  studentZayd: "Зайд",
   group1: "Группа Аль-Фатиха",
   group2: "Группа Ан-Нас",
 } as const;
