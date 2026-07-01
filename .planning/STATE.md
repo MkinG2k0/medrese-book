@@ -155,10 +155,11 @@ None yet.
 | 260701-pj3 | Скрыть будущие шаги в завершённом уроке / старых данных | 2026-07-01 | — | [260701-pj3-hide-future-steps-on-completed-lesson](./quick/260701-pj3-hide-future-steps-on-completed-lesson/) |
 | 260701-ppw | Кнопка переключения роли после входа менеджера за учителя | 2026-07-01 | 36ced6b | [260701-ppw-fix-manager-teacher-switch](./quick/260701-ppw-fix-manager-teacher-switch/) |
 | 260701-attendance-by-day | Посещённые занятия по дням в таблице топа учеников | 2026-07-01 | — | [260701-attendance-by-day](./quick/260701-attendance-by-day/) |
+| 260701-rl0 | обнови seed: разношерстные данные, больше учеников, прогресс по месяцам | 2026-07-01 | cfae670 | [260701-rl0-seed](./quick/260701-rl0-seed/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-01 - Completed 01-02-PLAN.md (data layer API)
+Last activity: 2026-07-01 - Completed quick task 260701-rl0: реалистичный seed
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
