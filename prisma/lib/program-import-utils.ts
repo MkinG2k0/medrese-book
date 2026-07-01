@@ -5,10 +5,8 @@ import { parseLevel1DocxPage } from "./parse-level1-docx";
 import {
   parseLevel2Docx,
   parseLevel3DocxPage,
-  parseLevel3RulesDocx,
   parseLevel4DocxPage,
   parseLevel5DocxPage,
-  type RuleDef,
 } from "./parse-program-docx";
 import type { ParsedStep } from "./parse-level1-docx";
 
@@ -49,10 +47,6 @@ export function loadAllLevel3Steps(): StepDef[] {
   return ([1, 2, 3, 4, 5, 6] as const).flatMap((page) =>
     loadLevel3PageSteps(page),
   );
-}
-
-export function loadLevel3Rules(): RuleDef[] {
-  return loadJson<RuleDef[]>("level3-rules.json");
 }
 
 export function loadLevel4PageSteps(page: 1 | 2 | 3 | 4 | 5 | 6): StepDef[] {
@@ -146,8 +140,8 @@ export function syncLevel1JsonFromDocx() {
   }
 }
 
-/** Сохраняет JSON-снимки всей программы (уровни 1–5) из DOCX. */
-export function syncProgramJsonFromDocx() {
+/** Сохраняет JSON-снимки уровней 1–5 из DOCX. */
+export function syncLevelsJsonFromDocx() {
   syncLevel1JsonFromDocx();
 
   writeJson("level2.json", parseLevel2Docx());
@@ -155,7 +149,6 @@ export function syncProgramJsonFromDocx() {
   for (const page of [1, 2, 3, 4, 5, 6] as const) {
     writeJson(`level3-page${page}.json`, parseLevel3DocxPage(page));
   }
-  writeJson("level3-rules.json", parseLevel3RulesDocx());
 
   for (const page of [1, 2, 3, 4, 5, 6] as const) {
     writeJson(`level4-page${page}.json`, parseLevel4DocxPage(page));
@@ -166,28 +159,29 @@ export function syncProgramJsonFromDocx() {
   }
 }
 
-export type ProgramSyncReport = {
+export type LevelsSyncReport = {
   level1: number[];
   level2: number;
   level3: number[];
-  level3Rules: number;
   level4: number[];
   level5: number[];
 };
 
-export function syncProgramJsonFromDocxWithReport(): ProgramSyncReport {
-  syncProgramJsonFromDocx();
-
+function buildLevelsSyncReport(): LevelsSyncReport {
   return {
     level1: ([1, 2, 3] as const).map((page) => loadLevel1PageSteps(page).length),
     level2: loadLevel2Steps().length,
     level3: ([1, 2, 3, 4, 5, 6] as const).map((page) =>
       loadLevel3PageSteps(page).length,
     ),
-    level3Rules: loadLevel3Rules().length,
     level4: ([1, 2, 3, 4, 5, 6] as const).map((page) =>
       loadLevel4PageSteps(page).length,
     ),
     level5: ([1, 2] as const).map((page) => loadLevel5PageSteps(page).length),
   };
+}
+
+export function syncLevelsJsonFromDocxWithReport(): LevelsSyncReport {
+  syncLevelsJsonFromDocx();
+  return buildLevelsSyncReport();
 }
