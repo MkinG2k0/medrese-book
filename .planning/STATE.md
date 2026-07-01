@@ -157,7 +157,7 @@ None yet.
 | 260701-rl0 | обнови seed: разношерстные данные, больше учеников, прогресс по месяцам | 2026-07-01 | cfae670 | [260701-rl0-seed](./quick/260701-rl0-seed/) |
 | 260701-x5w | Исправить отображение метки «Замещение» — только при активном замещении | 2026-07-01 | c4d83ea | [260701-x5w-fix-substitution-label-display-logic](./quick/260701-x5w-fix-substitution-label-display-logic/) |
 | 260702-015 | сделай в сидере 4ре главы , с разным колличеством шагов , раскидтай так же по ученикам уровни | 2026-07-01 | 0b4d679 | [260702-015-4](./quick/260702-015-4/) |
-| 260702-07p | продовый сидер: только супер-админ с кодом из env | 2026-07-02 | — | [260702-07p-prod-seeder-super-admin-from-env](./quick/260702-07p-prod-seeder-super-admin-from-env/) |
+| 260702-07p | продовый сидер: только супер-админ с кодом из env | 2026-07-02 | 0eedacd | [260702-07p-prod-seeder-super-admin-from-env](./quick/260702-07p-prod-seeder-super-admin-from-env/) |
 
 ## Session Continuity
 

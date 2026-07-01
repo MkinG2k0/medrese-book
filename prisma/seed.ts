@@ -7,10 +7,11 @@ import {
   LEVEL2_TITLE,
   LEVEL3_TITLE,
   LEVEL4_TITLE,
+  LEVEL5_TITLE,
 } from "./lib/parse-level1-docx";
 import {
   buildContent,
-  loadSeedLevelSteps,
+  loadAllProgramLevelSteps,
   type StepDef,
 } from "./lib/level1-import-utils";
 import {
@@ -58,8 +59,14 @@ async function createLevelWithSteps(
 }
 
 async function main() {
-  const levelStepDefs = loadSeedLevelSteps();
-  const levelTitles = [LEVEL1_TITLE, LEVEL2_TITLE, LEVEL3_TITLE, LEVEL4_TITLE];
+  const levelStepDefs = loadAllProgramLevelSteps();
+  const levelTitles = [
+    LEVEL1_TITLE,
+    LEVEL2_TITLE,
+    LEVEL3_TITLE,
+    LEVEL4_TITLE,
+    LEVEL5_TITLE,
+  ];
   const seedCtx = createSeedContext();
   const lessonDates = buildLessonDates(seedCtx);
 
@@ -171,7 +178,7 @@ async function main() {
 
   console.log("Seed completed:");
   console.log(
-    `  Главы 1–4: ${levelStepCounts.map((count, index) => `${index + 1}=${count}`).join(", ")} шагов`,
+    `  Уровни 1–5: ${levelStepCounts.map((count, index) => `${index + 1}=${count}`).join(", ")} шагов`,
   );
   console.log(`  Учеников: ${STUDENT_PROFILES.length}`);
   console.log(`  Период данных: ${periodLabel}`);

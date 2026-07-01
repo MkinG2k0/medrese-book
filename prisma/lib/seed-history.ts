@@ -6,7 +6,7 @@ export type StudentSeedProfile = {
   name: string;
   code: string;
   groupIndex: 0 | 1;
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5;
   /** Пройденные шаги на текущем уровне. */
   stepsOnLevel: number;
   /** Месяц начала обучения: 0 = первый месяц периода, …, 5 = текущий месяц. */
@@ -42,32 +42,33 @@ export function createSeedContext(now = new Date()): SeedContext {
 }
 
 export const STUDENT_PROFILES: StudentSeedProfile[] = [
-  // Уровень 1 — начинающие (13 шагов)
+  // Уровень 1 — начинающие (33 шага)
   { name: "Муса", code: "300013", groupIndex: 0, level: 1, stepsOnLevel: 0, startMonthOffset: 5, attendance: "good", gradeMin: 3, gradeMax: 4 },
   { name: "Фарис", code: "300010", groupIndex: 0, level: 1, stepsOnLevel: 1, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4 },
   { name: "Билал", code: "300003", groupIndex: 0, level: 1, stepsOnLevel: 3, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4 },
   { name: "Умар", code: "300008", groupIndex: 0, level: 1, stepsOnLevel: 6, startMonthOffset: 2, attendance: "at-risk-month", gradeMin: 3, gradeMax: 3 },
   { name: "Айюб", code: "300022", groupIndex: 1, level: 1, stepsOnLevel: 2, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4 },
   { name: "Зайд", code: "300005", groupIndex: 1, level: 1, stepsOnLevel: 5, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  // Уровень 2 (12 шагов)
-  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 10, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  { name: "Ясин", code: "300007", groupIndex: 0, level: 2, stepsOnLevel: 12, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 5 },
-  { name: "Салих", code: "300014", groupIndex: 0, level: 2, stepsOnLevel: 5, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, status: "PAUSE" },
-  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 8, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3 },
-  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 11, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Юсуф", code: "300016", groupIndex: 1, level: 2, stepsOnLevel: 7, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  // Уровень 3 (8 шагов)
-  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 8, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Амир", code: "300006", groupIndex: 0, level: 3, stepsOnLevel: 8, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Иса", code: "300012", groupIndex: 0, level: 3, stepsOnLevel: 6, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 4, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4 },
-  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 3, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3 },
-  // Уровень 4 — продвинутые (6 шагов)
-  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 6, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Сулейман", code: "300018", groupIndex: 1, level: 4, stepsOnLevel: 5, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Лукман", code: "300019", groupIndex: 1, level: 4, stepsOnLevel: 4, startMonthOffset: 1, attendance: "at-risk-month", gradeMin: 3, gradeMax: 4 },
-  { name: "Харун", code: "300020", groupIndex: 1, level: 4, stepsOnLevel: 3, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  { name: "Идрис", code: "300021", groupIndex: 1, level: 4, stepsOnLevel: 2, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4 },
+  // Уровень 2 (168 шагов)
+  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 50, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4 },
+  { name: "Ясин", code: "300007", groupIndex: 0, level: 2, stepsOnLevel: 140, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 5 },
+  { name: "Салих", code: "300014", groupIndex: 0, level: 2, stepsOnLevel: 30, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, status: "PAUSE" },
+  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3 },
+  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Юсуф", code: "300016", groupIndex: 1, level: 2, stepsOnLevel: 60, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4 },
+  // Уровень 3 (159 шагов)
+  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Амир", code: "300006", groupIndex: 0, level: 3, stepsOnLevel: 140, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Иса", code: "300012", groupIndex: 0, level: 3, stepsOnLevel: 80, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 50, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4 },
+  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 30, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3 },
+  // Уровень 4 (158 шагов)
+  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Сулейман", code: "300018", groupIndex: 1, level: 4, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
+  { name: "Лукман", code: "300019", groupIndex: 1, level: 4, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-month", gradeMin: 3, gradeMax: 4 },
+  // Уровень 5 — джузъ (37 шагов)
+  { name: "Харун", code: "300020", groupIndex: 1, level: 5, stepsOnLevel: 20, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4 },
+  { name: "Идрис", code: "300021", groupIndex: 1, level: 5, stepsOnLevel: 10, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4 },
 ];
 
 /** Вторник и четверг каждой недели в периоде seed (не позже сегодня). */

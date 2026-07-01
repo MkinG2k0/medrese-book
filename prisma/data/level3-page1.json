@@ -1,0 +1,236 @@
+[
+  {
+    "order": 1,
+    "globalLesson": 202,
+    "lesson": "سورة الفاتحة Стр. 2 علمات الوقف",
+    "letters": "",
+    "task": "سورة الفاتحة Стр. 2 علمات الوقف",
+    "hours": 1,
+    "title": "سورة الفاتحة Стр. 2 علمات الوقف"
+  },
+  {
+    "order": 2,
+    "globalLesson": 203,
+    "lesson": "Стр. 3 (6-11)",
+    "letters": "",
+    "task": "Стр. 3 (6-11)",
+    "hours": 1,
+    "title": "Стр. 3 (6-11)"
+  },
+  {
+    "order": 3,
+    "globalLesson": 204,
+    "lesson": "Стр. 3 (11-16)",
+    "letters": "",
+    "task": "Стр. 3 (11-16)",
+    "hours": 1,
+    "title": "Стр. 3 (11-16)"
+  },
+  {
+    "order": 4,
+    "globalLesson": 205,
+    "lesson": "Стр. 4 (17-20)",
+    "letters": "",
+    "task": "Стр. 4 (17-20)",
+    "hours": 1,
+    "title": "Стр. 4 (17-20)"
+  },
+  {
+    "order": 5,
+    "globalLesson": 206,
+    "lesson": "Стр. 4 (21-24)",
+    "letters": "",
+    "task": "Стр. 4 (21-24)",
+    "hours": 1,
+    "title": "Стр. 4 (21-24)"
+  },
+  {
+    "order": 6,
+    "globalLesson": 207,
+    "lesson": "Стр. 5 (25-26)",
+    "letters": "",
+    "task": "Стр. 5 (25-26)",
+    "hours": 1,
+    "title": "Стр. 5 (25-26)"
+  },
+  {
+    "order": 7,
+    "globalLesson": 208,
+    "lesson": "Стр. 5,6 (27-30)",
+    "letters": "",
+    "task": "Стр. 5,6 (27-30)",
+    "hours": 1,
+    "title": "Стр. 5,6 (27-30)"
+  },
+  {
+    "order": 8,
+    "globalLesson": 209,
+    "lesson": "Стр. 6 (31-35)",
+    "letters": "",
+    "task": "Стр. 6 (31-35)",
+    "hours": 1,
+    "title": "Стр. 6 (31-35)"
+  },
+  {
+    "order": 9,
+    "globalLesson": 210,
+    "lesson": "Стр. 6,7 (36-41)",
+    "letters": "",
+    "task": "Стр. 6,7 (36-41)",
+    "hours": 1,
+    "title": "Стр. 6,7 (36-41)"
+  },
+  {
+    "order": 10,
+    "globalLesson": 211,
+    "lesson": "Стр. 7 (42-48)",
+    "letters": "",
+    "task": "Стр. 7 (42-48)",
+    "hours": 1,
+    "title": "Стр. 7 (42-48)"
+  },
+  {
+    "order": 11,
+    "globalLesson": 212,
+    "lesson": "Стр. 8 (49-54)",
+    "letters": "",
+    "task": "Стр. 8 (49-54)",
+    "hours": 1,
+    "title": "Стр. 8 (49-54)"
+  },
+  {
+    "order": 12,
+    "globalLesson": 213,
+    "lesson": "Стр. 8,9 (55-59)",
+    "letters": "",
+    "task": "Стр. 8,9 (55-59)",
+    "hours": 1,
+    "title": "Стр. 8,9 (55-59)"
+  },
+  {
+    "order": 13,
+    "globalLesson": 214,
+    "lesson": "Стр. 9 (60-61)",
+    "letters": "",
+    "task": "Стр. 9 (60-61)",
+    "hours": 1,
+    "title": "Стр. 9 (60-61)"
+  },
+  {
+    "order": 14,
+    "globalLesson": 215,
+    "lesson": "Стр. 10 (62-66)",
+    "letters": "",
+    "task": "Стр. 10 (62-66)",
+    "hours": 1,
+    "title": "Стр. 10 (62-66)"
+  },
+  {
+    "order": 15,
+    "globalLesson": 216,
+    "lesson": "Стр. 10,11 (67-72)",
+    "letters": "",
+    "task": "Стр. 10,11 (67-72)",
+    "hours": 1,
+    "title": "Стр. 10,11 (67-72)"
+  },
+  {
+    "order": 16,
+    "globalLesson": 217,
+    "lesson": "Стр. 11,12 (73-78)",
+    "letters": "",
+    "task": "Стр. 11,12 (73-78)",
+    "hours": 1,
+    "title": "Стр. 11,12 (73-78)"
+  },
+  {
+    "order": 17,
+    "globalLesson": 218,
+    "lesson": "Стр. 12 (79-83)",
+    "letters": "",
+    "task": "Стр. 12 (79-83)",
+    "hours": 1,
+    "title": "Стр. 12 (79-83)"
+  },
+  {
+    "order": 18,
+    "globalLesson": 219,
+    "lesson": "Стр. 13 (84-86)",
+    "letters": "",
+    "task": "Стр. 13 (84-86)",
+    "hours": 1,
+    "title": "Стр. 13 (84-86)"
+  },
+  {
+    "order": 19,
+    "globalLesson": 220,
+    "lesson": "Стр. 13,14 (87-90)",
+    "letters": "",
+    "task": "Стр. 13,14 (87-90)",
+    "hours": 1,
+    "title": "Стр. 13,14 (87-90)"
+  },
+  {
+    "order": 20,
+    "globalLesson": 221,
+    "lesson": "Стр. 14,15 (91-95)",
+    "letters": "",
+    "task": "Стр. 14,15 (91-95)",
+    "hours": 1,
+    "title": "Стр. 14,15 (91-95)"
+  },
+  {
+    "order": 21,
+    "globalLesson": 222,
+    "lesson": "Стр. 15 (96-101)",
+    "letters": "",
+    "task": "Стр. 15 (96-101)",
+    "hours": 1,
+    "title": "Стр. 15 (96-101)"
+  },
+  {
+    "order": 22,
+    "globalLesson": 223,
+    "lesson": "Стр. 16 (102-104)",
+    "letters": "",
+    "task": "Стр. 16 (102-104)",
+    "hours": 1,
+    "title": "Стр. 16 (102-104)"
+  },
+  {
+    "order": 23,
+    "globalLesson": 224,
+    "lesson": "Стр. 16,17 (105-109)",
+    "letters": "",
+    "task": "Стр. 16,17 (105-109)",
+    "hours": 1,
+    "title": "Стр. 16,17 (105-109)"
+  },
+  {
+    "order": 24,
+    "globalLesson": 225,
+    "lesson": "Стр. 17,18 (110-115)",
+    "letters": "",
+    "task": "Стр. 17,18 (110-115)",
+    "hours": 1,
+    "title": "Стр. 17,18 (110-115)"
+  },
+  {
+    "order": 25,
+    "globalLesson": 226,
+    "lesson": "Стр. 18,19 (116-122)",
+    "letters": "",
+    "task": "Стр. 18,19 (116-122)",
+    "hours": 1,
+    "title": "Стр. 18,19 (116-122)"
+  },
+  {
+    "order": 26,
+    "globalLesson": 227,
+    "lesson": "Стр. 19,20 (123-128)",
+    "letters": "",
+    "task": "Стр. 19,20 (123-128)",
+    "hours": 1,
+    "title": "Стр. 19,20 (123-128)"
+  }
+]

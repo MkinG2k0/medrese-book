@@ -26,9 +26,10 @@ function resolveSuperAdminCode(): string {
   return code;
 }
 
+const SUPER_ADMIN_NAME = "Супер-админ";
+
 async function main() {
   const code = resolveSuperAdminCode();
-  const name = process.env.SUPER_ADMIN_NAME?.trim() || "Супер-админ";
 
   const existingSuperAdmin = await prisma.user.findFirst({
     where: { role: "SUPER_ADMIN" },
@@ -59,7 +60,7 @@ async function main() {
   }
 
   const superAdmin = await prisma.user.create({
-    data: { name, code, role: "SUPER_ADMIN" },
+    data: { name: SUPER_ADMIN_NAME, code, role: "SUPER_ADMIN" },
   });
 
   console.log("Production seed completed:");
