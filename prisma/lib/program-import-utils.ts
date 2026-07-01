@@ -1,27 +1,19 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { parseLevel1DocxPage } from "./parse-level1-docx";
-import {
-  parseLevel2Docx,
-  parseLevel3DocxPage,
-  parseLevel4DocxPage,
-  parseLevel5DocxPage,
-} from "./parse-program-docx";
-import type { ParsedStep } from "./parse-level1-docx";
-
-export type StepDef = ParsedStep;
+export type StepDef = {
+  order: number;
+  title: string;
+  lesson: string;
+  letters: string;
+  task: string;
+  hours: number;
+  globalLesson?: number;
+  wird?: string;
+  rules?: string;
+};
 
 const DATA_DIR = join(process.cwd(), "prisma/data");
-
-function writeJson(fileName: string, data: unknown) {
-  mkdirSync(DATA_DIR, { recursive: true });
-  writeFileSync(
-    join(DATA_DIR, fileName),
-    `${JSON.stringify(data, null, 2)}\n`,
-    "utf8",
-  );
-}
 
 function loadJson<T>(fileName: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, fileName), "utf8")) as T;
@@ -131,57 +123,4 @@ export function buildContent(step: StepDef) {
   }
 
   return { blocks };
-}
-
-/** Сохраняет JSON-снимок 1-го уровня из DOCX. */
-export function syncLevel1JsonFromDocx() {
-  for (const page of [1, 2, 3] as const) {
-    writeJson(`level1-page${page}.json`, parseLevel1DocxPage(page));
-  }
-}
-
-/** Сохраняет JSON-снимки уровней 1–5 из DOCX. */
-export function syncLevelsJsonFromDocx() {
-  syncLevel1JsonFromDocx();
-
-  writeJson("level2.json", parseLevel2Docx());
-
-  for (const page of [1, 2, 3, 4, 5, 6] as const) {
-    writeJson(`level3-page${page}.json`, parseLevel3DocxPage(page));
-  }
-
-  for (const page of [1, 2, 3, 4, 5, 6] as const) {
-    writeJson(`level4-page${page}.json`, parseLevel4DocxPage(page));
-  }
-
-  for (const page of [1, 2] as const) {
-    writeJson(`level5-page${page}.json`, parseLevel5DocxPage(page));
-  }
-}
-
-export type LevelsSyncReport = {
-  level1: number[];
-  level2: number;
-  level3: number[];
-  level4: number[];
-  level5: number[];
-};
-
-function buildLevelsSyncReport(): LevelsSyncReport {
-  return {
-    level1: ([1, 2, 3] as const).map((page) => loadLevel1PageSteps(page).length),
-    level2: loadLevel2Steps().length,
-    level3: ([1, 2, 3, 4, 5, 6] as const).map((page) =>
-      loadLevel3PageSteps(page).length,
-    ),
-    level4: ([1, 2, 3, 4, 5, 6] as const).map((page) =>
-      loadLevel4PageSteps(page).length,
-    ),
-    level5: ([1, 2] as const).map((page) => loadLevel5PageSteps(page).length),
-  };
-}
-
-export function syncLevelsJsonFromDocxWithReport(): LevelsSyncReport {
-  syncLevelsJsonFromDocx();
-  return buildLevelsSyncReport();
 }

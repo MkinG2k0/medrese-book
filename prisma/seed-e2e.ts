@@ -5,7 +5,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import {
   LEVEL1_TITLE,
   LEVEL2_TITLE,
-} from "./lib/parse-level1-docx";
+} from "./lib/program-config";
 import { buildContent, type StepDef } from "./lib/level1-import-utils";
 
 const E2E_STEPS_PER_LEVEL = 5;

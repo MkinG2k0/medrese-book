@@ -2,18 +2,7 @@ import "dotenv/config";
 
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  LEVEL1_TITLE,
-  LEVEL2_TITLE,
-  LEVEL3_TITLE,
-  LEVEL4_TITLE,
-  LEVEL5_TITLE,
-} from "./lib/parse-level1-docx";
-import {
-  buildContent,
-  loadAllProgramLevelSteps,
-  type StepDef,
-} from "./lib/level1-import-utils";
+import { seedProgram } from "./lib/seed-program";
 import {
   buildLessonDates,
   buildLevelStepOffsets,
@@ -34,39 +23,7 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
 
-async function createLevelWithSteps(
-  number: number,
-  title: string,
-  steps: StepDef[],
-) {
-  const level = await prisma.level.create({
-    data: { number, title },
-  });
-
-  for (const step of steps) {
-    await prisma.step.create({
-      data: {
-        levelId: level.id,
-        order: step.order,
-        title: step.title,
-        content: buildContent(step),
-        hours: step.hours,
-      },
-    });
-  }
-
-  return level;
-}
-
 async function main() {
-  const levelStepDefs = loadAllProgramLevelSteps();
-  const levelTitles = [
-    LEVEL1_TITLE,
-    LEVEL2_TITLE,
-    LEVEL3_TITLE,
-    LEVEL4_TITLE,
-    LEVEL5_TITLE,
-  ];
   const seedCtx = createSeedContext();
   const lessonDates = buildLessonDates(seedCtx);
 
@@ -111,11 +68,10 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const levels = await Promise.all(
-    levelStepDefs.map((steps, index) =>
-      createLevelWithSteps(index + 1, levelTitles[index]!, steps),
-    ),
-  );
+  const programResult = await seedProgram(prisma);
+  const levels = await prisma.level.findMany({
+    orderBy: { number: "asc" },
+  });
 
   const levelStepIds = await Promise.all(
     levels.map((level) =>
@@ -127,7 +83,7 @@ async function main() {
     ),
   );
 
-  const levelStepCounts = levelStepDefs.map((steps) => steps.length);
+  const levelStepCounts = programResult.levelStepCounts;
   const levelStepOffsets = buildLevelStepOffsets(levelStepCounts);
 
   const group1 = await prisma.group.create({
