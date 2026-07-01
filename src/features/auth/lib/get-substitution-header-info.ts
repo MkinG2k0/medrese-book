@@ -4,6 +4,7 @@ import { prisma } from '@/shared/lib/prisma'
 import {
 	getActiveSubstitutionsForAbsentTeacher,
 	getActiveSubstitutionsForSubstitute,
+	getSubstitutableTeacherUserIds,
 } from '@/shared/lib/substitution-access'
 
 export type SubstitutionHeaderLine = {
@@ -76,4 +77,54 @@ export async function getSubstitutionHeaderInfo(
 	}
 
 	return lines
+}
+
+export async function isTeacherActivelySubstituting(
+	session: SessionForSubstitutionHeader,
+): Promise<boolean> {
+	if (
+		session.user.role !== 'TEACHER' ||
+		!session.user.switchOwnerId ||
+		!session.user.teacherId
+	) {
+		return false
+	}
+
+	const owner = await prisma.user.findUnique({
+		where: { id: session.user.switchOwnerId },
+		select: { role: true, teacher: { select: { id: true } } },
+	})
+
+	if (owner?.role !== 'TEACHER' || !owner.teacher?.id) {
+		return false
+	}
+
+	const active = await getActiveSubstitutionsForSubstitute(owner.teacher.id)
+	return active.some(
+		(substitution) => substitution.absentTeacherId === session.user.teacherId,
+	)
+}
+
+export async function getSubstitutionTargetUserIds(
+	session: SessionForSubstitutionHeader,
+): Promise<string[]> {
+	if (session.user.role !== 'TEACHER') {
+		return []
+	}
+
+	let substituteTeacherId = session.user.teacherId
+
+	if (session.user.switchOwnerId) {
+		const owner = await prisma.user.findUnique({
+			where: { id: session.user.switchOwnerId },
+			select: { teacher: { select: { id: true } } },
+		})
+		substituteTeacherId = owner?.teacher?.id ?? null
+	}
+
+	if (!substituteTeacherId) {
+		return []
+	}
+
+	return getSubstitutableTeacherUserIds(substituteTeacherId)
 }

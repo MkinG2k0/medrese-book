@@ -23,7 +23,7 @@ type UserSwitcherProps = {
 	users: SwitchableUser[]
 	currentUserId: string
 	currentUserName: string
-	substituteOwnerUserId: string
+	substitutionTargetUserIds: string[]
 	collapsed?: boolean
 }
 
@@ -31,7 +31,7 @@ export function UserSwitcher({
 	users,
 	currentUserId,
 	currentUserName,
-	substituteOwnerUserId,
+	substitutionTargetUserIds,
 	collapsed = false,
 }: UserSwitcherProps) {
 	const [isPending, startTransition] = useTransition()
@@ -44,9 +44,9 @@ export function UserSwitcher({
 					<Text>{user.name}</Text>
 					<Text type="secondary">
 						{getDisplayRoleLabel(user.role, {
-							isSubstitutionTarget:
-								user.role === 'TEACHER' &&
-								user.id !== substituteOwnerUserId,
+							isSubstitutionTarget: substitutionTargetUserIds.includes(
+								user.id,
+							),
 						})}
 					</Text>
 				</div>

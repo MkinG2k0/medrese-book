@@ -151,6 +151,8 @@ type AppShellProps = {
   };
   switchableUsers: SwitchableUser[];
   substitutionHeaderLines: SubstitutionHeaderLine[];
+  showSubstitutionRoleLabel: boolean;
+  substitutionTargetUserIds: string[];
 };
 
 type NavPanelProps = {
@@ -161,7 +163,7 @@ type NavPanelProps = {
   onClose?: () => void;
   switchableUsers: SwitchableUser[];
   session: AppShellProps["session"];
-  substituteOwnerUserId: string;
+  substitutionTargetUserIds: string[];
   onSignOut: () => void;
 };
 
@@ -173,7 +175,7 @@ function NavPanel({
   onClose,
   switchableUsers,
   session,
-  substituteOwnerUserId,
+  substitutionTargetUserIds,
   onSignOut,
 }: NavPanelProps) {
   return (
@@ -206,7 +208,7 @@ function NavPanel({
               users={switchableUsers}
               currentUserId={session.user.id}
               currentUserName={session.user.name}
-              substituteOwnerUserId={substituteOwnerUserId}
+              substitutionTargetUserIds={substitutionTargetUserIds}
               collapsed={collapsed}
             />
           )}
@@ -229,6 +231,8 @@ export function AppShell({
   session,
   switchableUsers,
   substitutionHeaderLines,
+  showSubstitutionRoleLabel,
+  substitutionTargetUserIds,
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -255,11 +259,6 @@ export function AppShell({
       )
       .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? menuItems[0]?.key;
 
-  const isSubstituting =
-    session.user.role === "TEACHER" && !!session.user.switchOwnerId;
-  const substituteOwnerUserId =
-    session.user.switchOwnerId ?? session.user.id;
-
   const handleNavigate = (key: string) => {
     router.push(key);
     setDrawerOpen(false);
@@ -284,7 +283,7 @@ export function AppShell({
       onClose={isMobile ? closeDrawer : undefined}
       switchableUsers={switchableUsers}
       session={session}
-      substituteOwnerUserId={substituteOwnerUserId}
+      substitutionTargetUserIds={substitutionTargetUserIds}
       onSignOut={handleSignOut}
     />
   );
@@ -343,7 +342,9 @@ export function AppShell({
               <div className="max-w-[45vw] text-right sm:max-w-none">
                 <Text className="block truncate">{session.user.name}</Text>
                 <Text type="secondary" className="hidden truncate sm:block">
-                  {getDisplayRoleLabel(session.user.role, { isSubstituting })}
+                  {getDisplayRoleLabel(session.user.role, {
+                    isSubstituting: showSubstitutionRoleLabel,
+                  })}
                 </Text>
                 <div className="sm:hidden">
                   <SubstitutionHeaderInfo
