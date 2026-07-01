@@ -3,6 +3,7 @@ import {
 	isSameCalendarDay,
 	toSessionDate,
 } from '@/shared/lib/calendar-date'
+import { collectTeachingSessionCalendarDays } from '@/features/journal/lib/teaching-session-calendar-days'
 import { prisma } from '@/shared/lib/prisma'
 
 function isTeachingSessionOnCalendarDay(
@@ -72,4 +73,29 @@ export async function endActiveTeachingSessions(
 
 export function teachingSessionDate(calendarDay: string): Date {
 	return toSessionDate(calendarDay)
+}
+
+
+export async function findTeachingSessionDatesInRange(
+	teacherId: string,
+	groupId: string,
+	from: string,
+	to: string,
+): Promise<string[]> {
+	const fromRange = getCalendarDayQueryRange(from)
+	const toRange = getCalendarDayQueryRange(to)
+
+	const sessions = await prisma.teachingSession.findMany({
+		where: {
+			teacherId,
+			groupId,
+			OR: [
+				{ date: { gte: fromRange.start, lte: toRange.end } },
+				{ startedAt: { gte: fromRange.start, lte: toRange.end } },
+			],
+		},
+		select: { date: true, startedAt: true },
+	})
+
+	return collectTeachingSessionCalendarDays(sessions, from, to)
 }

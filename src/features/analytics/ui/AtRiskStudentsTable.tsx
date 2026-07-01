@@ -4,6 +4,10 @@ import { Table } from "antd";
 import { useMemo, useState } from "react";
 
 import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
+import {
+  RiskSignalsColumnTitle,
+  RiskSignalsHelpTrigger,
+} from "@/features/journal/ui/RiskSignalsHelpModal";
 import { StudentStudyHistoryModal } from "@/features/analytics/ui/StudentStudyHistoryModal";
 import { formatMinutesAsHours } from "@/shared/lib/format-minutes-as-hours";
 import type { AtRiskStudentRow } from "@/shared/lib/student-metrics/types";
@@ -48,7 +52,7 @@ export function AtRiskStudentsTable({
         key: "level",
       },
       {
-        title: "Сигналы",
+        title: <RiskSignalsColumnTitle />,
         key: "signals",
         render: (_: unknown, record: AtRiskStudentRow) => (
           <JournalRiskBadge
@@ -81,7 +85,12 @@ export function AtRiskStudentsTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <Title level={4}>Требуют внимания</Title>
+      <div className="flex items-center gap-1">
+        <Title level={4} className="!mb-0">
+          Требуют внимания
+        </Title>
+        <RiskSignalsHelpTrigger ariaLabel="Подробнее о блоке «Требуют внимания»" />
+      </div>
       <Text type="secondary">За {monthLabel}</Text>
 
       <Table

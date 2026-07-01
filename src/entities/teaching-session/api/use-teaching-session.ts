@@ -42,6 +42,9 @@ export function useStartTeachingSession(groupId: string, date: string) {
 			void queryClient.invalidateQueries({
 				queryKey: ['teaching-session', groupId, date],
 			})
+			void queryClient.invalidateQueries({
+				queryKey: ['teaching-session-dates', groupId],
+			})
 		},
 	})
 }
@@ -63,6 +66,9 @@ export function useEndTeachingSession(groupId: string, date: string) {
 		onSuccess: () => {
 			void queryClient.invalidateQueries({
 				queryKey: ['teaching-session', groupId, date],
+			})
+			void queryClient.invalidateQueries({
+				queryKey: ['teaching-session-dates', groupId],
 			})
 		},
 	})

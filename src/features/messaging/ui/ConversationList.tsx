@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, List, Select, Spin } from "antd";
+import { Button, Select, Spin } from "antd";
 import { useMemo, useState } from "react";
 
 import type {
@@ -34,24 +34,33 @@ function ConversationItems({
   getTitle: (item: ConversationSummary) => string;
   getRoleLine?: (item: ConversationSummary) => string | null;
 }) {
+  if (items.length === 0) {
+    return (
+      <div className="px-4 py-4 text-center">
+        <Text type="secondary">Нет диалогов</Text>
+      </div>
+    );
+  }
+
   return (
-    <List
-      className="overflow-y-auto"
-      dataSource={items}
-      locale={{ emptyText: "Нет диалогов" }}
-      renderItem={(item) => {
+    <ul className="m-0 list-none divide-y divide-[#2a2622] overflow-y-auto p-0">
+      {items.map((item) => {
         const roleLine = getRoleLine?.(item) ?? null;
+        const isSelected = selectedId === item.id;
 
         return (
-          <List.Item
-            className={`cursor-pointer px-4! !border-[#2a2622] hover:bg-[#1e1b18] ${
-              selectedId === item.id ? "bg-[#1e1b18]" : ""
-            }`}
-            onClick={() => onSelect(item.id)}
-          >
-            <List.Item.Meta
-              title={getTitle(item)}
-              description={
+          <li key={item.id}>
+            <button
+              type="button"
+              className={`flex w-full cursor-pointer border-0 px-4 py-3 text-left transition-colors hover:bg-[#1e1b18] ${
+                isSelected ? "bg-[#1e1b18]" : "bg-transparent"
+              }`}
+              onClick={() => onSelect(item.id)}
+            >
+              <div className="min-w-0 flex-1">
+                <Text strong className="block">
+                  {getTitle(item)}
+                </Text>
                 <div className="flex flex-col gap-0.5">
                   {roleLine && (
                     <Text type="secondary" className="text-xs">
@@ -64,12 +73,12 @@ function ConversationItems({
                     </Text>
                   )}
                 </div>
-              }
-            />
-          </List.Item>
+              </div>
+            </button>
+          </li>
         );
-      }}
-    />
+      })}
+    </ul>
   );
 }
 

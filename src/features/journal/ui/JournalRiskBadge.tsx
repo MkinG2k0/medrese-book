@@ -38,12 +38,12 @@ export function JournalRiskBadge({
         aria-label={combinedAriaLabel}
       >
         <Tooltip title="Превышен норматив времени">
-          <Tag color="warning" bordered={false} aria-label={`${studentName}: превышен норматив`}>
+          <Tag color="warning" variant="filled" aria-label={`${studentName}: превышен норматив`}>
             Норматив
           </Tag>
         </Tooltip>
         <Tooltip title="Много пропусков">
-          <Tag color="error" bordered={false} aria-label={`${studentName}: много пропусков`}>
+          <Tag color="error" variant="filled" aria-label={`${studentName}: много пропусков`}>
             Пропуски
           </Tag>
         </Tooltip>
@@ -56,7 +56,7 @@ export function JournalRiskBadge({
       <Tooltip title="Превышен норматив времени">
         <Tag
           color="warning"
-          bordered={false}
+          variant="filled"
           aria-label={`${studentName}: превышен норматив`}
         >
           Норматив
@@ -69,7 +69,7 @@ export function JournalRiskBadge({
     <Tooltip title="Много пропусков">
       <Tag
         color="error"
-        bordered={false}
+        variant="filled"
         aria-label={`${studentName}: много пропусков`}
       >
         Пропуски

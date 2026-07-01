@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { resumeStudentFromPause } from "@/features/journal/actions/journal-actions";
 import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
+import { RiskSignalsColumnTitle } from "@/features/journal/ui/RiskSignalsHelpModal";
 import type { RiskFlag } from "@/shared/lib/student-metrics/types";
 import type { StudentStatus } from "@/shared/lib/student-status";
 import Text from "@/shared/ui/Text";
@@ -147,7 +148,7 @@ export function JournalStudentsTable({
           ...(showRiskBadge
             ? [
                 {
-                  title: "Сигналы",
+                  title: <RiskSignalsColumnTitle />,
                   key: "riskFlags",
                   width: 140,
                   render: (_: unknown, record: JournalStudentRow) =>
