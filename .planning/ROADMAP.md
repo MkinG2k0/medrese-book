@@ -60,7 +60,7 @@ Plans:
   4. При превышении норматива 48 часов на 1-м уровне показывается предупреждение
   5. История ученика — хронологическая лента занятий, оценок, шагов и времени по каждому занятию
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 **UI hint**: yes
 
 Plans:
@@ -78,7 +78,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 01-04-PLAN.md — AtRiskStudentsTable, StudentMetricsCards, история с длительностью
+- [x] 01-04-PLAN.md — AtRiskStudentsTable, StudentMetricsCards, история с длительностью
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
@@ -174,7 +174,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Foundation | 0/5 | Not started | - |
-| 1. Student Analytics & History | 3/5 | In Progress|  |
+| 1. Student Analytics & History | 4/5 | In Progress|  |
 | 2. Student Management | 0/TBD | Not started | - |
 | 3. Additional Assignments | 0/TBD | Not started | - |
 | 4. Substitution & Leave | 0/TBD | Not started | - |
