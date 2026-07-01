@@ -1,0 +1,50 @@
+import { prisma } from '@/shared/lib/prisma'
+import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
+import type { AtRiskStudentRow } from '@/shared/lib/student-metrics/types'
+
+function formatMonthLabel(month: Date): string {
+	return new Intl.DateTimeFormat('ru-RU', {
+		month: 'long',
+		year: 'numeric',
+	}).format(month)
+}
+
+export async function getAtRiskStudents(
+	month: Date,
+	teacherId?: string | null,
+): Promise<AtRiskStudentRow[]> {
+	const students = await prisma.student.findMany({
+		where: teacherId ? { group: { teacherId } } : undefined,
+		include: {
+			user: { select: { name: true } },
+		},
+	})
+
+	const monthLabel = formatMonthLabel(month)
+
+	const rows: AtRiskStudentRow[] = []
+
+	for (const student of students) {
+		const metrics = await loadStudentMetricsForMonth(
+			student.id,
+			month,
+			monthLabel,
+		)
+		if (!metrics || metrics.riskFlags.length === 0) continue
+
+		rows.push({
+			student: { id: student.id, name: student.user.name },
+			teacherName: metrics.teacherName,
+			levelTitle: metrics.levelTitle,
+			riskFlags: metrics.riskFlags,
+			absencesInMonth: metrics.absencesInMonth,
+			actualMinutes: metrics.timeNorm.actualMinutes,
+			budgetMinutes: metrics.timeNorm.budgetMinutes,
+		})
+	}
+
+
+	return rows.sort((a, b) =>
+		a.student.name.localeCompare(b.student.name, 'ru'),
+	)
+}

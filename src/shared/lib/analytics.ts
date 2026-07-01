@@ -1,6 +1,7 @@
 import { startOfMonth } from 'date-fns'
 
 export {
+	getAtRiskStudents,
 	getLevelStats,
 	getTopStudents,
 	type LevelStats,

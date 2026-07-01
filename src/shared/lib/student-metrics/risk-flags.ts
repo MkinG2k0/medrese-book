@@ -5,7 +5,7 @@ export type BuildStudentRiskFlagsContext = {
 	studentId: string
 	timeNorm?: TimeNormResult | null
 	attendanceRisk: boolean
-	config?: Pick<AtRiskConfig, 'enabledSignals'>
+	config?: { enabledSignals: readonly RiskFlag[] }
 }
 
 export function buildStudentRiskFlags(

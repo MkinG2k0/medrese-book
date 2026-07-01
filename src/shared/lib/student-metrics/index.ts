@@ -19,6 +19,11 @@ export {
 	evaluateTimeNormForLevel,
 	type EvaluateTimeNormInput,
 } from './time-norm'
+export {
+	loadStudentMetricsContext,
+	loadStudentMetricsForMonth,
+	type StudentMetricsBundle,
+} from './load-student-metrics'
 export type {
 	AtRiskStudentRow,
 	RiskFlag,
