@@ -7,8 +7,7 @@ current_phase_name: student-analytics-history
 status: verifying
 stopped_at: Completed 01-05-PLAN.md
 last_updated: "2026-07-01T19:55:00.000Z"
-last_activity: 2026-07-01
-last_activity_desc: Completed 01-05 automated tests plan
+last_activity: 2026-07-01 - Completed quick task 260701-x5w: Fix substitution label display logic
 progress:
   total_phases: 10
   completed_phases: 4
@@ -156,6 +155,7 @@ None yet.
 | 260701-ppw | Кнопка переключения роли после входа менеджера за учителя | 2026-07-01 | 36ced6b | [260701-ppw-fix-manager-teacher-switch](./quick/260701-ppw-fix-manager-teacher-switch/) |
 | 260701-attendance-by-day | Посещённые занятия по дням в таблице топа учеников | 2026-07-01 | — | [260701-attendance-by-day](./quick/260701-attendance-by-day/) |
 | 260701-rl0 | обнови seed: разношерстные данные, больше учеников, прогресс по месяцам | 2026-07-01 | cfae670 | [260701-rl0-seed](./quick/260701-rl0-seed/) |
+| 260701-x5w | Исправить отображение метки «Замещение» — только при активном замещении | 2026-07-01 | c4d83ea | [260701-x5w-fix-substitution-label-display-logic](./quick/260701-x5w-fix-substitution-label-display-logic/) |
 
 ## Session Continuity
 
