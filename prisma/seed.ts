@@ -91,7 +91,7 @@ function getPassedStepIds(
 }
 
 async function main() {
-  const docxSteps = loadAllLevel1Steps();
+  const level1Steps = loadAllLevel1Steps();
 
   await prisma.stepCompletion.deleteMany();
   await prisma.session.deleteMany();
@@ -125,10 +125,10 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, docxSteps);
-  const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, docxSteps);
+  const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, level1Steps);
+  const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, level1Steps);
 
-  const [level1Steps, level2Steps] = await Promise.all([
+  const [level1StepIds, level2StepIds] = await Promise.all([
     prisma.step.findMany({
       where: { levelId: level1.id },
       orderBy: { order: "asc" },
@@ -157,7 +157,7 @@ async function main() {
 
   const studentNames = ["Али", "Усман", "Билал", "Халид", "Зайд"];
   const studentCodes = ["300001", "300002", "300003", "300004", "300005"];
-  const level2StepOffset = docxSteps.length;
+  const level2StepOffset = level1Steps.length;
 
   for (let i = 0; i < studentNames.length; i++) {
     const onLevel1 = i < 3;
@@ -182,8 +182,8 @@ async function main() {
       student.id,
       getPassedStepIds(
         currentStepIdx,
-        level1Steps,
-        level2Steps,
+        level1StepIds,
+        level2StepIds,
         level2StepOffset,
         onLevel1,
       ),
@@ -192,7 +192,7 @@ async function main() {
 
   console.log("Seed completed:");
   console.log(
-    `  Глава 1 и 2: по ${docxSteps.length} шагов (${docxSteps.reduce((sum, step) => sum + step.hours, 0)}ч.) из DOCX`,
+    `  Глава 1 и 2: по ${level1Steps.length} шагов (${level1Steps.reduce((sum, step) => sum + step.hours, 0)}ч.) из prisma/data`,
   );
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Table } from "antd";
+import { Table } from "antd";
 import { useState } from "react";
 import {
   Bar,
@@ -49,22 +49,19 @@ export function TopStudents({
         dataSource={data}
         rowKey={(r) => r.student.id}
         pagination={{ pageSize: 10, showSizeChanger: false }}
+        onRow={(record) => ({
+          onClick: () =>
+            setSelectedStudent({
+              id: record.student.id,
+              name: record.student.name,
+            }),
+          className: "cursor-pointer",
+        })}
         columns={[
           {
             title: "Ученик",
             dataIndex: ["student", "name"],
             key: "name",
-            render: (name: string, record: TopEntry) => (
-              <Button
-                type="link"
-                className="!p-0"
-                onClick={() =>
-                  setSelectedStudent({ id: record.student.id, name })
-                }
-              >
-                {name}
-              </Button>
-            ),
           },
           { title: "Шагов", dataIndex: "stepsCompleted", key: "steps" },
           { title: "Ср. оценка", dataIndex: "avgGrade", key: "avg" },

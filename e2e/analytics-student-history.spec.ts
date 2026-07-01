@@ -10,11 +10,17 @@ test.describe("Аналитика — история учёбы ученика",
     await page.goto("/analytics");
     await expect(page.getByRole("heading", { name: "Аналитика" })).toBeVisible();
 
-    const studentButton = page
-      .getByRole("button", { name: TEST_USERS.studentAli, exact: true })
+    const studentRow = page
+      .getByRole("row")
+      .filter({
+        has: page.getByRole("cell", {
+          name: TEST_USERS.studentAli,
+          exact: true,
+        }),
+      })
       .first();
-    await expect(studentButton).toBeVisible();
-    await studentButton.click();
+    await expect(studentRow).toBeVisible();
+    await studentRow.click();
 
     const dialog = page.getByRole("dialog", {
       name: new RegExp(`История учёбы — ${TEST_USERS.studentAli}`),

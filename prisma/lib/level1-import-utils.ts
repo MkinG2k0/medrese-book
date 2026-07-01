@@ -1,10 +1,7 @@
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-  parseAllLevel1DocxPages,
-  parseLevel1DocxPage,
-} from "./parse-level1-docx";
+import { parseLevel1DocxPage } from "./parse-level1-docx";
 
 export type StepDef = {
   order: number;
@@ -15,12 +12,19 @@ export type StepDef = {
   hours: number;
 };
 
+const DATA_DIR = join(process.cwd(), "prisma/data");
+
+function loadLevel1PageStepsFromJson(page: 1 | 2 | 3): StepDef[] {
+  const filePath = join(DATA_DIR, `level1-page${page}.json`);
+  return JSON.parse(readFileSync(filePath, "utf8")) as StepDef[];
+}
+
 export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
-  return parseLevel1DocxPage(page);
+  return loadLevel1PageStepsFromJson(page);
 }
 
 export function loadAllLevel1Steps(): StepDef[] {
-  return parseAllLevel1DocxPages();
+  return ([1, 2, 3] as const).flatMap((page) => loadLevel1PageStepsFromJson(page));
 }
 
 export function getPageOrderRange(page: 1 | 2 | 3): { from: number; to: number } {
