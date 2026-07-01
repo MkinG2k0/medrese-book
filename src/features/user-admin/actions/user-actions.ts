@@ -21,6 +21,7 @@ export async function getUsers() {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
 	return prisma.user.findMany({
+		where: { role: { not: 'SUPER_ADMIN' } },
 		include: {
 			teacher: { include: { groups: true } },
 			student: { include: { group: true, level: true } },

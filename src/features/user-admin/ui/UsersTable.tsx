@@ -25,7 +25,6 @@ const ROLE_OPTIONS = [
   { value: "STUDENT", label: "Ученик" },
   { value: "TEACHER", label: "Учитель" },
   { value: "MANAGER", label: "Менеджер" },
-  { value: "SUPER_ADMIN", label: "Админ" },
 ];
 
 const ROLE_LABELS = Object.fromEntries(
