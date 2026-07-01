@@ -2,6 +2,7 @@
 
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
 import { useLessonPage } from "@/features/journal/model/use-lesson-page";
+import { NormWarningAlert } from "@/features/journal/ui/NormWarningAlert";
 import { LessonPageHeader } from "@/features/journal/ui/lesson/LessonPageHeader";
 import { LessonSaveBar } from "@/features/journal/ui/lesson/LessonSaveBar";
 import { LessonStepsSection } from "@/features/journal/ui/lesson/LessonStepsSection";
@@ -25,7 +26,10 @@ export function LessonPage(props: LessonPageProps) {
         totalHours={lesson.totalHours}
         allSteps={lesson.allSteps}
         cumulativeHoursByAllSteps={lesson.cumulativeHoursByAllSteps}
+        periodMetrics={props.periodMetrics}
       />
+
+      <NormWarningAlert visible={props.riskFlags.includes("TIME_NORM")} />
 
       <LessonStepsSection
         isProgramComplete={lesson.isProgramComplete}

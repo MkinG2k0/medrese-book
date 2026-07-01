@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { startOfMonth } from 'date-fns'
 
 import {
 	getLessonCalendarDay,
@@ -12,6 +13,8 @@ import {
 import { serializeDaySession } from '@/features/journal/lib/get-student-session'
 import type { ClientDaySession } from '@/features/journal/lib/get-student-session'
 import { prisma } from '@/shared/lib/prisma'
+import { formatAnalyticsMonth } from '@/shared/lib/analytics'
+import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
 import { getTotalProgramSteps } from '@/shared/lib/student-progress'
 import { isActiveForLesson } from '@/shared/lib/student-status'
 import { requireRole } from '@/shared/lib/session'
@@ -270,6 +273,14 @@ export async function getStudentLesson(studentId: string) {
 		? serializeDaySession(daySession)
 		: null
 
+	const month = startOfMonth(new Date())
+	const monthLabel = formatAnalyticsMonth(month)
+	const metricsBundle = await loadStudentMetricsForMonth(
+		studentId,
+		month,
+		monthLabel,
+	)
+
 	return {
 		groupId: student.groupId,
 		student: {
@@ -295,6 +306,8 @@ export async function getStudentLesson(studentId: string) {
 			: null,
 		initialSession,
 		sessionDate: today,
+		riskFlags: metricsBundle?.riskFlags ?? [],
+		periodMetrics: metricsBundle?.periodMetrics ?? null,
 	}
 }
 

@@ -3,7 +3,9 @@ import { Avatar, Button } from "antd";
 import Link from "next/link";
 
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
+import { StudentMetricsCards } from "@/features/analytics/ui/StudentMetricsCards";
 import { getInitials } from "@/features/journal/lib/get-initials";
+import type { StudentPeriodMetrics } from "@/shared/lib/student-metrics/types";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
@@ -20,6 +22,7 @@ type LessonPageHeaderProps = {
   totalHours: number;
   allSteps: JournalStep[];
   cumulativeHoursByAllSteps: Record<string, number>;
+  periodMetrics: StudentPeriodMetrics | null;
 };
 
 export function LessonPageHeader({
@@ -35,6 +38,7 @@ export function LessonPageHeader({
   totalHours,
   allSteps,
   cumulativeHoursByAllSteps,
+  periodMetrics,
 }: LessonPageHeaderProps) {
   const lastStepId = allSteps[allSteps.length - 1]?.id ?? "";
   const completedTotalHours =
@@ -75,6 +79,10 @@ export function LessonPageHeader({
           <Button type="link">История шагов</Button>
         </Link>
       </div>
+
+      {periodMetrics ? (
+        <StudentMetricsCards metrics={periodMetrics} variant="compact" />
+      ) : null}
     </>
   );
 }

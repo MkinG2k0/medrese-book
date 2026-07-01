@@ -32,6 +32,8 @@ export default async function StudentLessonPage({ params }: Props) {
 			nextStudent={lesson.nextStudent}
 			initialSession={lesson.initialSession}
 			sessionDate={lesson.sessionDate}
+			riskFlags={lesson.riskFlags}
+			periodMetrics={lesson.periodMetrics}
 		/>
 	)
 }
