@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { resumeStudentFromPause } from "@/features/journal/actions/journal-actions";
+import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
+import type { RiskFlag } from "@/shared/lib/student-metrics/types";
 import type { StudentStatus } from "@/shared/lib/student-status";
 import Text from "@/shared/ui/Text";
 
@@ -18,6 +20,7 @@ type JournalStudentRow = {
   todayAttendance?: "PRESENT" | "LATE" | "ABSENT" | null;
   todayStepsCompleted?: number;
   todayGrades?: number[];
+  riskFlags?: RiskFlag[];
 };
 
 const ATTENDANCE_LABELS: Record<
@@ -47,33 +50,50 @@ function StudentNameCell({
   status,
   studentId,
   blocked,
+  riskFlags,
+  showRiskBadge,
 }: {
   name: string;
   status: StudentStatus;
   studentId: string;
   blocked: boolean;
+  riskFlags?: RiskFlag[];
+  showRiskBadge?: boolean;
 }) {
-  if (blocked) {
-    return <span>{name}</span>;
-  }
+  const nameContent = (() => {
+    if (blocked) {
+      return <span>{name}</span>;
+    }
 
-  if (status === "PAUSE") {
-    return <Text type="warning">{name}</Text>;
-  }
+    if (status === "PAUSE") {
+      return <Text type="warning">{name}</Text>;
+    }
+
+    return (
+      <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
+        {name}
+      </Link>
+    );
+  })();
 
   return (
-    <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
-      {name}
-    </Link>
+    <div className="flex items-center gap-2">
+      {nameContent}
+      {showRiskBadge && riskFlags && riskFlags.length > 0 ? (
+        <JournalRiskBadge riskFlags={riskFlags} studentName={name} />
+      ) : null}
+    </div>
   );
 }
 
 export function JournalStudentsTable({
   students,
   blocked = false,
+  showRiskBadge = false,
 }: {
   students: JournalStudentRow[];
   blocked?: boolean;
+  showRiskBadge?: boolean;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -136,6 +156,8 @@ export function JournalStudentsTable({
                 status={record.status}
                 studentId={record.id}
                 blocked={blocked}
+                riskFlags={record.riskFlags}
+                showRiskBadge={showRiskBadge}
               />
             ),
           },
