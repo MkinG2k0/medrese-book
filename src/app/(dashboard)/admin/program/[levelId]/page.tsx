@@ -3,7 +3,10 @@ import Link from "next/link";
 
 import { getLevelSteps } from "@/features/program-admin/actions/program-actions";
 import { LevelStepsTable } from "@/features/program-admin/ui/LevelStepsTable";
-import { getStepOffsetForLevel } from "@/shared/lib/student-progress";
+import {
+  getStepOffsetForLevel,
+  toGlobalStepNumber,
+} from "@/shared/lib/student-progress";
 import { requireRoles } from "@/shared/lib/session";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -34,8 +37,10 @@ export default async function LevelStepsPage({ params }: Props) {
       </div>
       <LevelStepsTable
         levelId={levelId}
-        stepOffset={stepOffset}
-        steps={level.steps}
+        steps={level.steps.map((step) => ({
+          ...step,
+          globalNumber: toGlobalStepNumber(stepOffset, step.order),
+        }))}
       />
     </div>
   );

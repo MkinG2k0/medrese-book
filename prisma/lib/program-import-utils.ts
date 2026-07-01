@@ -85,6 +85,15 @@ export function hasArabic(text: string) {
   return /[\u0600-\u06FF]/.test(text);
 }
 
+/** Объём в страницах из таблицы программы («1 стр.»), не буквы шага. */
+function isPageVolume(text: string) {
+  return /^\d+\s*стр\.?$/i.test(text.trim());
+}
+
+function trimField(text: string | undefined) {
+  return text?.trim() ?? "";
+}
+
 export function buildContent(step: StepDef) {
   const blocks: Array<
     | { type: "text"; value: string }
@@ -92,33 +101,41 @@ export function buildContent(step: StepDef) {
     | { type: "list"; items: string[] }
   > = [];
 
-  if (step.lesson) {
-    blocks.push({ type: "text", value: `Урок: ${step.lesson}` });
+  const lesson = trimField(step.lesson);
+  const task = trimField(step.task);
+  const letters = trimField(step.letters);
+  const wird = trimField(step.wird);
+
+  if (lesson) {
+    blocks.push({ type: "text", value: `Урок: ${lesson}` });
   }
 
-  if (step.letters) {
-    if (hasArabic(step.letters)) {
+  const showLetters =
+    letters.length > 0 && !isPageVolume(letters) && letters !== wird;
+
+  if (showLetters) {
+    if (hasArabic(letters)) {
       blocks.push({ type: "text", value: "Буквы шага:" });
-      blocks.push({ type: "arabic", value: step.letters, size: "lg" });
+      blocks.push({ type: "arabic", value: letters, size: "lg" });
     } else {
-      blocks.push({ type: "text", value: `Буквы шага: ${step.letters}` });
+      blocks.push({ type: "text", value: `Буквы шага: ${letters}` });
     }
   }
 
-  if (step.wird) {
-    blocks.push({ type: "text", value: `Вирд: ${step.wird}` });
+  if (wird) {
+    blocks.push({ type: "text", value: `Вирд: ${wird}` });
   }
 
   if (step.rules) {
     blocks.push({ type: "text", value: `Правила: ${step.rules}` });
   }
 
-  if (step.task) {
+  if (task && task !== lesson) {
     blocks.push({ type: "text", value: "Основное задание:" });
-    if (hasArabic(step.task)) {
-      blocks.push({ type: "arabic", value: step.task, size: "xl" });
+    if (hasArabic(task)) {
+      blocks.push({ type: "arabic", value: task, size: "xl" });
     } else {
-      blocks.push({ type: "text", value: step.task });
+      blocks.push({ type: "text", value: task });
     }
   }
 

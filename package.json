@@ -15,6 +15,7 @@
     "db:seed": "prisma db seed",
     "db:seed:prod": "tsx prisma/seed-prod.ts",
     "db:seed:program": "tsx prisma/seed-program.ts",
+    "db:seed:program:force": "tsx prisma/seed-program.ts --force",
     "db:seed:e2e": "tsx prisma/seed-e2e.ts",
     "db:bench": "tsx prisma/bench-db.ts",
     "test:unit": "vitest run",

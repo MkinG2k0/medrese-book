@@ -1,5 +1,9 @@
 import "dotenv/config";
 
+import { assertDestructiveSeedAllowed } from "./lib/seed-guard";
+
+assertDestructiveSeedAllowed("demo-seed");
+
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { seedProgram } from "./lib/seed-program";

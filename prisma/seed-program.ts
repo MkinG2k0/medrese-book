@@ -18,7 +18,11 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const result = await seedProgram(prisma, { skipIfExists: true });
+  const force = process.argv.includes("--force");
+  const result = await seedProgram(prisma, {
+    skipIfExists: !force,
+    force,
+  });
   console.log(formatProgramSeedSummary(result));
 }
 

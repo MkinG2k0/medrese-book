@@ -4,22 +4,20 @@ import { Button, Table } from 'antd'
 import Link from 'next/link'
 
 import Text from '@/shared/ui/Text'
-import { toGlobalStepNumber } from '@/shared/lib/student-progress'
 
 type StepRow = {
 	id: string
 	order: number
+	globalNumber: number
 	title: string
 	hours: number
 }
 
 export function LevelStepsTable({
 	levelId,
-	stepOffset,
 	steps,
 }: {
 	levelId: string
-	stepOffset: number
 	steps: StepRow[]
 }) {
 	return (
@@ -31,12 +29,10 @@ export function LevelStepsTable({
 					title: '№',
 					dataIndex: 'order',
 					key: 'order',
-					render: (order: number) => (
+					render: (order: number, record) => (
 						<>
 							{order}{' '}
-							<Text type="secondary">
-								({toGlobalStepNumber(stepOffset, order)})
-							</Text>
+							<Text type="secondary">({record.globalNumber})</Text>
 						</>
 					),
 				},
