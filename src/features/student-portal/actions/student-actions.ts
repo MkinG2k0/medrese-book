@@ -1,7 +1,12 @@
 'use server'
 
+import { startOfMonth } from 'date-fns'
+
 import { prisma } from '@/shared/lib/prisma'
+import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { requireRole } from '@/shared/lib/session'
+import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
+import type { StudentPeriodMetrics } from '@/shared/lib/student-metrics/types'
 import {
 	getLocalStepIdx,
 	getStepOffsetForLevel,
@@ -31,6 +36,20 @@ export async function getStudentProfile() {
 		totalSteps,
 		levelTitle: `${student.level.number}й уровень — ${student.level.title}`,
 	}
+}
+
+export async function getStudentPeriodMetrics(): Promise<StudentPeriodMetrics | null> {
+	const session = await requireRole('STUDENT')
+	const studentId = session.user.studentId
+	if (!studentId) return null
+
+	const month = startOfMonth(new Date())
+	const monthLabel = formatAnalyticsMonth(month)
+	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel)
+
+	if (!metrics) return null
+
+	return metrics.periodMetrics
 }
 
 export async function getStudentAwards() {

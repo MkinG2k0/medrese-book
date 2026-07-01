@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 
-import { getStudentProfile } from "@/features/student-portal/actions/student-actions";
+import {
+  getStudentPeriodMetrics,
+  getStudentProfile,
+} from "@/features/student-portal/actions/student-actions";
+import { StudentMetricsCards } from "@/features/analytics/ui/StudentMetricsCards";
 import { ProgressBar } from "@/shared/ui/ProgressBar";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -8,7 +12,10 @@ import { requireRole } from "@/shared/lib/session";
 
 export default async function StudentMePage() {
   await requireRole("STUDENT");
-  const profile = await getStudentProfile();
+  const [profile, periodMetrics] = await Promise.all([
+    getStudentProfile(),
+    getStudentPeriodMetrics(),
+  ]);
 
   if (!profile) notFound();
 
@@ -26,6 +33,10 @@ export default async function StudentMePage() {
           total={profile.totalSteps}
         />
       </div>
+
+      {periodMetrics ? (
+        <StudentMetricsCards metrics={periodMetrics} variant="portal" />
+      ) : null}
     </div>
   );
 }
