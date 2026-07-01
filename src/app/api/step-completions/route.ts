@@ -13,6 +13,10 @@ import { authorizeApiRequest } from "@/shared/lib/authorize-api-request";
 import { dispatchDomainEvent } from "@/shared/lib/domain-events";
 import { prisma } from "@/shared/lib/prisma";
 import { recalculateStudentStepIdx } from "@/shared/lib/student-progress";
+import {
+  buildTeachingSessionDurationByDate,
+  teachingSessionDurationFromMap,
+} from "@/shared/lib/teaching-session-duration-map";
 import { deleteStepCompletionsSchema } from "@/shared/lib/validations/step-completion";
 
 export async function GET(request: Request) {
@@ -33,6 +37,7 @@ export async function GET(request: Request) {
 
   const student = await prisma.student.findUnique({
     where: { id: studentId },
+    select: { id: true, groupId: true },
   });
   if (!student) return notFound("Ученик");
 
@@ -58,6 +63,19 @@ export async function GET(request: Request) {
       )
     : rawCompletions;
 
+  const sessionDates = completions.map((completion) => completion.session.date);
+  const durationByDate =
+    sessionDates.length > 0
+      ? await buildTeachingSessionDurationByDate(student.groupId, {
+          gte: new Date(
+            Math.min(...sessionDates.map((date) => date.getTime())),
+          ),
+          lte: new Date(
+            Math.max(...sessionDates.map((date) => date.getTime())),
+          ),
+        })
+      : new Map<string, number | null>();
+
   return success(
     completions.map((completion) => ({
       id: completion.id,
@@ -70,7 +88,13 @@ export async function GET(request: Request) {
         title: completion.step.title,
         hours: completion.step.hours,
       },
-      session: completion.session,
+      session: {
+        ...completion.session,
+        sessionDurationMinutes: teachingSessionDurationFromMap(
+          durationByDate,
+          completion.session.date,
+        ),
+      },
     })),
   );
 }

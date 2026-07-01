@@ -17,6 +17,7 @@ export type StepCompletionRow = {
     id: string;
     date: string;
     attendance: "PRESENT" | "LATE" | "ABSENT";
+    sessionDurationMinutes: number | null;
   };
 };
 
