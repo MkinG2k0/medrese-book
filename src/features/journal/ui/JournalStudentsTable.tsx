@@ -50,39 +50,24 @@ function StudentNameCell({
   status,
   studentId,
   blocked,
-  riskFlags,
-  showRiskBadge,
 }: {
   name: string;
   status: StudentStatus;
   studentId: string;
   blocked: boolean;
-  riskFlags?: RiskFlag[];
-  showRiskBadge?: boolean;
 }) {
-  const nameContent = (() => {
-    if (blocked) {
-      return <span>{name}</span>;
-    }
+  if (blocked) {
+    return <span>{name}</span>;
+  }
 
-    if (status === "PAUSE") {
-      return <Text type="warning">{name}</Text>;
-    }
-
-    return (
-      <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
-        {name}
-      </Link>
-    );
-  })();
+  if (status === "PAUSE") {
+    return <Text type="warning">{name}</Text>;
+  }
 
   return (
-    <div className="flex items-center gap-2">
-      {nameContent}
-      {showRiskBadge && riskFlags && riskFlags.length > 0 ? (
-        <JournalRiskBadge riskFlags={riskFlags} studentName={name} />
-      ) : null}
-    </div>
+    <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
+      {name}
+    </Link>
   );
 }
 
@@ -156,11 +141,27 @@ export function JournalStudentsTable({
                 status={record.status}
                 studentId={record.id}
                 blocked={blocked}
-                riskFlags={record.riskFlags}
-                showRiskBadge={showRiskBadge}
               />
             ),
           },
+          ...(showRiskBadge
+            ? [
+                {
+                  title: "Сигналы",
+                  key: "riskFlags",
+                  width: 140,
+                  render: (_: unknown, record: JournalStudentRow) =>
+                    record.riskFlags && record.riskFlags.length > 0 ? (
+                      <JournalRiskBadge
+                        riskFlags={record.riskFlags}
+                        studentName={record.name}
+                      />
+                    ) : (
+                      "—"
+                    ),
+                },
+              ]
+            : []),
           {
             title: "Посещаемость",
             key: "attendance",

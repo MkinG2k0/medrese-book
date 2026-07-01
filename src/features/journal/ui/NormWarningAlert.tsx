@@ -12,7 +12,7 @@ export function NormWarningAlert({ visible }: NormWarningAlertProps) {
       type="warning"
       showIcon
       className="mb-4"
-      message="Превышен норматив времени на текущем уровне"
+      title="Превышен норматив времени на текущем уровне"
       description="Фактическое время обучения больше суммы часов пройденных шагов программы. Обсудите с учеником план нагрузки."
     />
   );

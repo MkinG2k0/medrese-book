@@ -60,13 +60,14 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 					<AnalyticsMonthPicker month={month} selectedTeacher={selectedTeacher} />
 				</div>
 			</div>
+			
+			<TopStudents data={topStudents} monthLabel={monthLabel} />
+			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
 			<AtRiskStudentsTable
 				data={atRiskStudents}
 				monthLabel={monthLabel}
 				showTeacherColumn={selectedTeacher === ALL_TEACHERS}
 			/>
-			<TopStudents data={topStudents} monthLabel={monthLabel} />
-			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
 		</div>
 	)
 }

@@ -81,7 +81,7 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
       {logoutReason === "idle" && (
         <Alert
           type="info"
-          message="Сессия завершена из-за неактивности"
+          title="Сессия завершена из-за неактивности"
           showIcon
         />
       )}
@@ -113,7 +113,7 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
         )}
       />
 
-      {error && <Alert type="error" message={error} showIcon />}
+      {error && <Alert type="error" title={error} showIcon />}
 
       <Button
         type="primary"
