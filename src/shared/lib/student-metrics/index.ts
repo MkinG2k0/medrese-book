@@ -1,4 +1,11 @@
 export { AT_RISK_CONFIG, type AtRiskConfig } from './at-risk-config'
+export {
+	computeLevelProgress,
+	computePeriodMetrics,
+	type ComputeLevelProgressInput,
+	type ComputePeriodMetricsInput,
+	type LevelProgress,
+} from './period-metrics'
 export type {
 	AtRiskStudentRow,
 	RiskFlag,
