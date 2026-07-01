@@ -13,6 +13,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
+    "db:seed:prod": "tsx prisma/seed-prod.ts",
     "db:seed:e2e": "tsx prisma/seed-e2e.ts",
     "db:renumber-steps": "tsx prisma/renumber-level-steps.ts",
     "db:sync-level1-json": "tsx prisma/sync-level1-json.ts",
