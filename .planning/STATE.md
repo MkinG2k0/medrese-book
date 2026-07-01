@@ -2,18 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 9
+current_phase: 01
+current_phase_name: student-analytics-history
 status: executing
-stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-07-01T16:17:55.258Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-07-01T16:32:00.000Z"
 last_activity: 2026-07-01
-last_activity_desc: Phase 01 planning complete
+last_activity_desc: Completed 01-01 student-metrics plan
 progress:
   total_phases: 10
   completed_phases: 3
-  total_plans: 15
-  completed_plans: 15
-  percent: 30
+  total_plans: 20
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
@@ -23,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 09 — realtime-notifications-and-web-push-api-with-vapid-keys
+**Current focus:** Phase 01 — student-analytics-history
 
 ## Current Position
 
-Phase: 9
-Plan: Not started
+Phase: 01 (student-analytics-history) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-07-01 — Phase 01 planning complete
+Last activity: 2026-07-01 — Completed 01-01 student-metrics plan
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -67,6 +68,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P03 | 45 | 3 tasks | 7 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P04 | 25 | 3 tasks | 14 files |
 | Phase 09-realtime-notifications-and-web-push-api-with-vapid-keys P05 | 90 | 3 tasks | 7 files |
+| Phase 01-student-analytics-history P01 | 12 | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -102,6 +104,8 @@ Recent decisions affecting current work:
 - [Phase 09]: deliverNotifications fire-and-forget sendPushToUser; 410 удаляет stale PushSubscription
 - [Phase 09]: NOTF-03 deferred to ANLY-07 — no performance domain events in v1
 - [Phase 09]: E2E notifications UI-first; DB helpers optional via isNotificationSchemaAvailable
+- [Phase 01]: localStepIdx inline in period-metrics to avoid Prisma in vitest
+- [Phase 01]: AtRiskStudentRow stores minutes as numbers; UI formats labels
 
 ### Pending Todos
 
@@ -109,7 +113,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- **Phase 1:** уточнить норматив 48ч — по часам программы (`Step.hours`) или по фактическому времени таймера
+- **Phase 1:** норматив 48ч закрыт в CONTEXT (D-01…D-04): сумма Step.hours пройденных шагов уровня
 - **Phase 4:** правила auto-substitute при одобрении отпуска — менеджер выбирает vs автоматический matching
 - **Phase 8:** больничный — отдельный тип или подтип отгула; границы с Phase 4
 - **Phase 0:** middleware для `/api/*` vs per-route `authorizeApiRequest` — решить при планировании
@@ -145,7 +149,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-07-01 - Completed quick task 260701-attendance-by-day: посещения по дням в аналитике
-Last session: 2026-07-01T16:04:29.335Z
-Stopped at: Phase 1 UI-SPEC approved
-Resume file: .planning/phases/01-student-analytics-history/01-UI-SPEC.md
+Last activity: 2026-07-01 - Completed 01-01-PLAN.md (student-metrics module)
+Last session: 2026-07-01T16:32:00.000Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-student-analytics-history/01-02-PLAN.md
