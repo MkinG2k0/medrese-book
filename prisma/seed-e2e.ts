@@ -103,10 +103,18 @@ function getPassedStepIds(
 async function main() {
   const e2eSteps = buildE2eSteps();
 
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.pushSubscription.deleteMany();
   await prisma.auditEvent.deleteMany();
   await prisma.stepCompletion.deleteMany();
   await prisma.session.deleteMany();
   await prisma.award.deleteMany();
+  await prisma.teachingSession.deleteMany();
+  await prisma.leaveRequest.updateMany({ data: { substitutionId: null } });
+  await prisma.substitution.deleteMany();
+  await prisma.leaveRequest.deleteMany();
   await prisma.step.deleteMany();
   await prisma.student.deleteMany();
   await prisma.group.deleteMany();
