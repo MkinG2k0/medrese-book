@@ -12,7 +12,7 @@ Brownfield-развитие журнала медресе: сначала тех
 - Phases 1–9: последовательная поставка по утверждённому бэклогу
 
 - [ ] **Phase 0: Foundation** — фильтры аналитики, API auth, student-progress, domain-events
-- [ ] **Phase 1: Student Analytics & History** — таймер урока, метрики, история, норматив 48ч
+- [x] **Phase 1: Student Analytics & History** — таймер урока, метрики, история, норматив 48ч (completed 2026-07-01)
 - [ ] **Phase 2: Student Management** — карточка ученика, статусы, смена преподавателя и уровня
 - [ ] **Phase 3: Additional Assignments** — справочник и назначение дополнительных заданий
 - [ ] **Phase 4: Substitution & Leave** — замещение преподавателей, отпуска и отгулы
@@ -60,7 +60,7 @@ Plans:
   4. При превышении норматива 48 часов на 1-м уровне показывается предупреждение
   5. История ученика — хронологическая лента занятий, оценок, шагов и времени по каждому занятию
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans complete
 **UI hint**: yes
 
 Plans:
@@ -82,7 +82,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 01-05-PLAN.md — E2E student-analytics + auth test at-risk API
+- [x] 01-05-PLAN.md — E2E student-analytics + auth test at-risk API
 
 ### Phase 2: Student Management
 
@@ -174,7 +174,7 @@ Phases execute in numeric order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Foundation | 0/5 | Not started | - |
-| 1. Student Analytics & History | 4/5 | In Progress|  |
+| 1. Student Analytics & History | 5/5 | Complete   | 2026-07-01 |
 | 2. Student Management | 0/TBD | Not started | - |
 | 3. Additional Assignments | 0/TBD | Not started | - |
 | 4. Substitution & Leave | 0/TBD | Not started | - |
