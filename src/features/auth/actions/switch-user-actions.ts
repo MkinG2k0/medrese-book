@@ -8,13 +8,21 @@ import { prisma } from '@/shared/lib/prisma'
 import { getSubstitutableTeacherUserIds } from '@/shared/lib/substitution-access'
 import { getCachedAuth } from '@/shared/lib/session'
 
-import { resolveSwitchAccess } from '../lib/resolve-switch-access'
+import { isPrivilegedSwitchOwner, resolveSwitchAccess } from '../lib/resolve-switch-access'
 import { recordUserLogin } from '../lib/auth-audit'
 
 export type SwitchableUser = {
 	id: string
 	name: string
 	role: string
+}
+
+async function getPrivilegedSwitchableUsers(): Promise<SwitchableUser[]> {
+	return prisma.user.findMany({
+		where: { role: { not: 'STUDENT' } },
+		select: { id: true, name: true, role: true },
+		orderBy: [{ role: 'asc' }, { name: 'asc' }],
+	})
 }
 
 async function getTeacherSwitchUserIds(session: {
@@ -56,14 +64,17 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 	const role = session.user.role as UserRole
 
 	if (role === 'SUPER_ADMIN' || role === 'MANAGER') {
-		return prisma.user.findMany({
-			where: { role: { not: 'STUDENT' } },
-			select: { id: true, name: true, role: true },
-			orderBy: [{ role: 'asc' }, { name: 'asc' }],
-		})
+		return getPrivilegedSwitchableUsers()
 	}
 
 	if (role === 'TEACHER') {
+		if (
+			session.user.switchOwnerId &&
+			(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
+		) {
+			return getPrivilegedSwitchableUsers()
+		}
+
 		const allowedUserIds = await getTeacherSwitchUserIds(session)
 		return prisma.user.findMany({
 			where: { id: { in: allowedUserIds } },

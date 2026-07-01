@@ -17,6 +17,17 @@ async function teacherHasActiveSubstitution(teacherId: string): Promise<boolean>
 	return active.length > 0
 }
 
+export async function isPrivilegedSwitchOwner(
+	switchOwnerId: string,
+): Promise<boolean> {
+	const owner = await prisma.user.findUnique({
+		where: { id: switchOwnerId },
+		select: { role: true },
+	})
+
+	return owner?.role === 'SUPER_ADMIN' || owner?.role === 'MANAGER'
+}
+
 async function isValidTeacherSwitchSession(session: Session): Promise<boolean> {
 	const switchOwnerId = session.user.switchOwnerId
 	if (!switchOwnerId || !session.user.teacherId) {
@@ -51,6 +62,13 @@ export async function resolveSwitchAccess(
 		}
 
 		if (session.user.switchOwnerId) {
+			if (await isPrivilegedSwitchOwner(session.user.switchOwnerId)) {
+				return {
+					allowed: true,
+					switchOwnerId: session.user.switchOwnerId,
+				}
+			}
+
 			const valid = await isValidTeacherSwitchSession(session)
 			if (valid) {
 				return {
