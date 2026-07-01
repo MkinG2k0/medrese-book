@@ -139,10 +139,11 @@ None yet.
 | 260625-m6v | адаптируй приложение под мобилки | 2026-06-25 | baeab63 | [260625-m6v-mobile](./quick/260625-m6v-mobile/) |
 | 260701-pj3 | Скрыть будущие шаги в завершённом уроке / старых данных | 2026-07-01 | — | [260701-pj3-hide-future-steps-on-completed-lesson](./quick/260701-pj3-hide-future-steps-on-completed-lesson/) |
 | 260701-ppw | Кнопка переключения роли после входа менеджера за учителя | 2026-07-01 | 36ced6b | [260701-ppw-fix-manager-teacher-switch](./quick/260701-ppw-fix-manager-teacher-switch/) |
+| 260701-attendance-by-day | Посещённые занятия по дням в таблице топа учеников | 2026-07-01 | — | [260701-attendance-by-day](./quick/260701-attendance-by-day/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-01 - Completed quick task 260701-ppw: кнопка переключения роли после входа менеджера за учителя
+Last activity: 2026-07-01 - Completed quick task 260701-attendance-by-day: посещения по дням в аналитике
 Last session: 2026-06-25T07:58:54.147Z
 Stopped at: Completed 09-05-PLAN.md
 Resume file: None

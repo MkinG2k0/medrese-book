@@ -65,6 +65,11 @@ export function TopStudents({
           },
           { title: "Шагов", dataIndex: "stepsCompleted", key: "steps" },
           { title: "Ср. оценка", dataIndex: "avgGrade", key: "avg" },
+          {
+            title: "Посещено",
+            dataIndex: "attendedSessions",
+            key: "attended",
+          },
           { title: "Прогулы", dataIndex: "absences", key: "absences" },
           {
             title: "Опоздания",

@@ -12,6 +12,12 @@ type SessionWithLateness = {
 	lateMinutes: number | null
 }
 
+function countAttendedSessions(sessions: { attendance: string }[]): number {
+	return sessions.filter(
+		(s) => s.attendance === 'PRESENT' || s.attendance === 'LATE',
+	).length
+}
+
 function sumLateMinutes(sessions: SessionWithLateness[]): number {
 	return sessions
 		.filter((s) => s.attendance === 'LATE')
@@ -24,6 +30,7 @@ export type TopEntry = {
 	avgGrade: number
 	absences: number
 	lateMinutes: number
+	attendedSessions: number
 }
 
 export async function getTopStudents(
@@ -60,6 +67,7 @@ export async function getTopStudents(
 				avgGrade: Math.round(avgGrade * 10) / 10,
 				absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
 				lateMinutes: sumLateMinutes(student.sessions),
+				attendedSessions: countAttendedSessions(student.sessions),
 			}
 		})
 		.sort((a, b) => b.stepsCompleted - a.stepsCompleted)

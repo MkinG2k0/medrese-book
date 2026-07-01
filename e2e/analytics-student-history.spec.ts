@@ -38,4 +38,13 @@ test.describe("Аналитика — история учёбы ученика",
     ).toBeVisible();
     await expect(dialog.locator(".ant-pagination")).toBeVisible();
   });
+
+  test("таблица топа учеников показывает количество посещений за период", async ({
+    page,
+  }) => {
+    await page.goto("/analytics");
+    await expect(
+      page.getByRole("columnheader", { name: "Посещено" }),
+    ).toBeVisible();
+  });
 });
