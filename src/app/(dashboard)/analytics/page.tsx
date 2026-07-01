@@ -1,7 +1,11 @@
 import { getAnalyticsTeachers } from '@/features/analytics/actions/analytics-actions'
-import { resolveAnalyticsTeacherFilter } from '@/features/analytics/lib/analytics-query'
+import {
+	ALL_TEACHERS,
+	resolveAnalyticsTeacherFilter,
+} from '@/features/analytics/lib/analytics-query'
 import { AnalyticsMonthPicker } from '@/features/analytics/ui/AnalyticsMonthPicker'
 import { AnalyticsTeacherPicker } from '@/features/analytics/ui/AnalyticsTeacherPicker'
+import { AtRiskStudentsTable } from '@/features/analytics/ui/AtRiskStudentsTable'
 import { LevelStatsChart } from '@/features/analytics/ui/LevelStats'
 import { TopStudents } from '@/features/analytics/ui/TopStudents'
 import {
@@ -10,6 +14,7 @@ import {
 	getTopStudents,
 	parseAnalyticsMonth,
 } from '@/shared/lib/analytics'
+import { getAtRiskStudents } from '@/shared/lib/analytics-queries/at-risk-students'
 import { requireRoles } from '@/shared/lib/session'
 import Title from '@/shared/ui/Title'
 
@@ -34,7 +39,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		validTeacherIds,
 	)
 
-	const [topStudents, levelStats] = await Promise.all([
+	const [atRiskStudents, topStudents, levelStats] = await Promise.all([
+		getAtRiskStudents(month, filterTeacherId),
 		getTopStudents(month, filterTeacherId),
 		getLevelStats(month, filterTeacherId),
 	])
@@ -54,6 +60,11 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 					<AnalyticsMonthPicker month={month} selectedTeacher={selectedTeacher} />
 				</div>
 			</div>
+			<AtRiskStudentsTable
+				data={atRiskStudents}
+				monthLabel={monthLabel}
+				showTeacherColumn={selectedTeacher === ALL_TEACHERS}
+			/>
 			<TopStudents data={topStudents} monthLabel={monthLabel} />
 			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
 		</div>
