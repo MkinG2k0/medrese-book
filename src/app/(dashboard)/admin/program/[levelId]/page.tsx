@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { getLevelSteps } from "@/features/program-admin/actions/program-actions";
 import { LevelStepsTable } from "@/features/program-admin/ui/LevelStepsTable";
+import { getStepOffsetForLevel } from "@/shared/lib/student-progress";
 import { requireRoles } from "@/shared/lib/session";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -15,6 +16,8 @@ export default async function LevelStepsPage({ params }: Props) {
   const level = await getLevelSteps(levelId);
 
   if (!level) return <Text>Уровень не найден</Text>;
+
+  const stepOffset = await getStepOffsetForLevel(level.number);
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,7 +32,11 @@ export default async function LevelStepsPage({ params }: Props) {
           </Link>
         </div>
       </div>
-      <LevelStepsTable levelId={levelId} steps={level.steps} />
+      <LevelStepsTable
+        levelId={levelId}
+        stepOffset={stepOffset}
+        steps={level.steps}
+      />
     </div>
   );
 }
