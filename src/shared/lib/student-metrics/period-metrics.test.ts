@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { AT_RISK_CONFIG } from './at-risk-config'
 import { computeLevelProgress, computePeriodMetrics } from './period-metrics'
+import { evaluateTimeNormForLevel } from './time-norm'
 
 describe('computePeriodMetrics', () => {
 	const dateRange = {
@@ -71,7 +71,7 @@ describe('computePeriodMetrics', () => {
 			completedStepHoursOnLevel: [2, 2],
 			dateRange,
 			monthLabel: 'январь 2026',
-			actualTimeSource: AT_RISK_CONFIG.actualTimeSource,
+			actualTimeSource: 'proxy',
 		})
 
 		expect(result.totalMinutes).toBe(480)
@@ -105,6 +105,65 @@ describe('computePeriodMetrics', () => {
 		})
 
 		expect(result.totalMinutes).toBe(75)
+	})
+
+	it('defaults to teaching_session totalMinutes from durationMinutes', () => {
+		const result = computePeriodMetrics({
+			sessions: [
+				{ date: new Date('2026-01-01T10:00:00.000Z'), isAdjustment: false },
+				{ date: new Date('2026-01-02T10:00:00.000Z'), isAdjustment: false },
+			],
+			completions: [],
+			completedStepHoursOnLevel: [2, 2, 2, 2],
+			teachingSessionsByDate: [
+				{
+					date: new Date('2026-01-01T10:00:00.000Z'),
+					durationMinutes: 45,
+				},
+				{
+					date: new Date('2026-01-02T10:00:00.000Z'),
+					durationMinutes: 30,
+				},
+			],
+			dateRange,
+			monthLabel: 'январь 2026',
+		})
+
+		expect(result.totalMinutes).toBe(75)
+		expect(result.totalMinutes).not.toBe(480)
+	})
+
+	it('evaluateTimeNormForLevel uses teaching_session totalMinutes not proxy', () => {
+		const metrics = computePeriodMetrics({
+			sessions: [
+				{ date: new Date('2026-01-01T10:00:00.000Z'), isAdjustment: false },
+				{ date: new Date('2026-01-02T10:00:00.000Z'), isAdjustment: false },
+			],
+			completions: [],
+			completedStepHoursOnLevel: [2, 2, 2, 2],
+			teachingSessionsByDate: [
+				{
+					date: new Date('2026-01-01T10:00:00.000Z'),
+					durationMinutes: 45,
+				},
+				{
+					date: new Date('2026-01-02T10:00:00.000Z'),
+					durationMinutes: 30,
+				},
+			],
+			dateRange,
+			monthLabel: 'январь 2026',
+		})
+
+		const timeNorm = evaluateTimeNormForLevel({
+			levelId: 'level-1',
+			actualMinutes: metrics.totalMinutes,
+			completedStepsOnLevel: [{ hours: 1 }],
+		})
+
+		expect(metrics.totalMinutes).toBe(75)
+		expect(timeNorm.actualMinutes).toBe(75)
+		expect(timeNorm.isViolated).toBe(true)
 	})
 })
 

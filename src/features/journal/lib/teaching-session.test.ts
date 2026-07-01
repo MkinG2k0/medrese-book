@@ -27,6 +27,23 @@ describe('getTeachingSessionDurationMs', () => {
 })
 
 describe('serializeTeachingSession', () => {
+	it('marks active session with isActive and null durationMinutes', () => {
+		const dto = serializeTeachingSession({
+			id: 's-active',
+			teacherId: 't1',
+			groupId: 'g1',
+			date: new Date('2026-06-25T12:00:00Z'),
+			startedAt: new Date('2026-06-25T10:00:00Z'),
+			endedAt: null,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		})
+
+		expect(dto.isActive).toBe(true)
+		expect(dto.durationMinutes).toBeNull()
+		expect(dto.endedAt).toBeNull()
+	})
+
 	it('does not round short lessons down to zero minutes', () => {
 		const dto = serializeTeachingSession({
 			id: 's1',
@@ -41,6 +58,7 @@ describe('serializeTeachingSession', () => {
 
 		expect(dto.durationMs).toBe(270_000)
 		expect(dto.durationMinutes).toBe(5)
+		expect(dto.isActive).toBe(false)
 	})
 })
 

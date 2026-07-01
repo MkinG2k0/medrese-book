@@ -90,8 +90,8 @@ export function LessonTimerBar({
     try {
       await startMutation.mutateAsync();
       message.success("Урок начат");
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : "Не удалось начать урок");
+    } catch {
+      message.error("Не удалось начать урок. Попробуйте ещё раз.");
     }
   };
 
@@ -100,10 +100,8 @@ export function LessonTimerBar({
     try {
       await endMutation.mutateAsync(session.id);
       message.success("Урок завершён");
-    } catch (err) {
-      message.error(
-        err instanceof Error ? err.message : "Не удалось завершить урок",
-      );
+    } catch {
+      message.error("Не удалось завершить урок. Попробуйте ещё раз.");
     }
   };
 
