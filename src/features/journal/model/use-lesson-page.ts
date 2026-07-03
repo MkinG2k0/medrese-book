@@ -444,11 +444,6 @@ export function useLessonPage(props: LessonPageProps) {
               note: resolvedStepStates[step.id]!.note || null,
             }));
 
-    if (attendance !== "ABSENT" && completions.length === 0) {
-      message.warning("Поставьте оценку хотя бы одному шагу");
-      return false;
-    }
-
     try {
       await createSession.mutateAsync({
         studentId,

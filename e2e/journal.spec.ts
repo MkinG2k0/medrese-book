@@ -105,6 +105,42 @@ test.describe("Журнал учителя", () => {
       await expect(bilalRow.getByText("Опоздал")).toBeVisible();
     });
 
+    test("сохраняет урок без оценок — только посещаемость", async ({ page }) => {
+      await page.getByRole("link", { name: TEST_USERS.studentKhalid }).click();
+      await expect(page.getByRole("radio", { name: "Пришёл" })).toBeChecked();
+      await page.getByRole("button", { name: "Сохранить урок" }).click();
+
+      await expect(page).toHaveURL(/\/journal$/);
+      await expect(page.getByText("Урок сохранён")).toBeVisible();
+
+      const khalidRow = page.getByRole("row", {
+        name: new RegExp(TEST_USERS.studentKhalid),
+      });
+      await expect(khalidRow.getByText("Пришёл")).toBeVisible();
+      await expect(khalidRow.getByText("—").first()).toBeVisible();
+    });
+
+    test("отжимает выбранную оценку повторным кликом", async ({ page }) => {
+      await page.getByRole("link", { name: TEST_USERS.studentZayd }).click();
+      await clickRadioButton(page, "Средне");
+      await expect(page.getByText("пройден").first()).toBeVisible();
+      await clickRadioButton(page, "Средне");
+      await expect(page.getByText("пройден")).toHaveCount(0);
+    });
+
+    test("считает «Средне» пройденным шагом", async ({ page }) => {
+      await page.getByRole("link", { name: TEST_USERS.studentZayd }).click();
+      await clickRadioButton(page, "Средне");
+      await page.getByRole("button", { name: "Сохранить урок" }).click();
+
+      await expect(page).toHaveURL(/\/journal$/);
+      const zaydRow = page.getByRole("row", {
+        name: new RegExp(TEST_USERS.studentZayd),
+      });
+      await expect(zaydRow.getByText("1")).toBeVisible();
+      await expect(zaydRow.getByRole("cell", { name: "1", exact: true })).toBeVisible();
+    });
+
     test("переходит к следующему ученику через «Сохранить и перейти»", async ({
       page,
     }) => {

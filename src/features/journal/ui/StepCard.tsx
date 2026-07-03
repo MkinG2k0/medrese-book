@@ -90,6 +90,12 @@ export function StepCard({
     onStateChange({ ...state, grade });
   };
 
+  const handleGradeClick = (grade: number) => {
+    if (state.grade === grade) {
+      onStateChange({ ...state, grade: null });
+    }
+  };
+
   const handleNoteChange = (note: string) => {
     onStateChange({ ...state, note });
   };
@@ -170,7 +176,11 @@ export function StepCard({
                     buttonStyle="solid"
                   >
                     {GRADE_OPTIONS.map((opt) => (
-                      <Radio.Button key={opt.value} value={opt.value}>
+                      <Radio.Button
+                        key={opt.value}
+                        value={opt.value}
+                        onClick={() => handleGradeClick(opt.value)}
+                      >
                         {opt.label}
                       </Radio.Button>
                     ))}
