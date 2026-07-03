@@ -3,10 +3,8 @@
 import { Descriptions, Modal } from 'antd'
 
 import type { AuditEventListItem } from '@/entities/audit-event/model/types'
-import {
-	getAuditActionLabel,
-	getAuditEntityTypeLabel,
-} from '@/features/audit-log/lib/audit-labels'
+import { getAuditActionLabel } from '@/features/audit-log/lib/audit-labels'
+import { formatAuditEntitySummary } from '@/features/audit-log/lib/format-audit-entity'
 
 type AuditEventDetailModalProps = {
 	event: AuditEventListItem | null
@@ -40,14 +38,10 @@ export function AuditEventDetailModal({
 					<Descriptions.Item label="Событие">
 						{getAuditActionLabel(event.action)}
 					</Descriptions.Item>
-					<Descriptions.Item label="Тип сущности">
-						{getAuditEntityTypeLabel(event.entityType)}
+					<Descriptions.Item label="Сущность">
+						{formatAuditEntitySummary(event)}
 					</Descriptions.Item>
-					{event.entityType === 'User' ? (
-						<Descriptions.Item label="Пользователь">
-							{event.actorName}
-						</Descriptions.Item>
-					) : (
+					{event.entityType !== 'User' && (
 						<Descriptions.Item label="ID сущности">
 							{event.entityId}
 						</Descriptions.Item>

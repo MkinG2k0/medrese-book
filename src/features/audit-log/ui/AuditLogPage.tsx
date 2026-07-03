@@ -14,8 +14,8 @@ import {
 import { getAuditFilterOptions } from '@/features/audit-log/actions/audit-actions'
 import {
 	getAuditActionLabel,
-	getAuditEntityTypeLabel,
 } from '@/features/audit-log/lib/audit-labels'
+import { formatAuditEntitySummary } from '@/features/audit-log/lib/format-audit-entity'
 import { AuditEventDetailModal } from '@/features/audit-log/ui/AuditEventDetailModal'
 import Title from '@/shared/ui/Title'
 
@@ -36,17 +36,7 @@ function renderEventCell(record: AuditEventListItem) {
 }
 
 function renderEntityCell(record: AuditEventListItem) {
-	if (record.entityType === 'User') {
-		return `${getAuditEntityTypeLabel(record.entityType)} — ${record.actorName}`
-	}
-	return (
-		<span>
-			{getAuditEntityTypeLabel(record.entityType)}
-			<span className="ml-2 font-mono text-xs opacity-70">
-				{record.entityId.slice(0, 8)}…
-			</span>
-		</span>
-	)
+	return formatAuditEntitySummary(record)
 }
 
 export function AuditLogPage() {

@@ -87,6 +87,44 @@ export async function POST(request: Request) {
 
     await recalculateStudentStepIdx(studentId, tx);
 
+    const stepIds = [...new Set(completions.map((c) => c.stepId))];
+    const [steps, student] = await Promise.all([
+      tx.step.findMany({
+        where: { id: { in: stepIds } },
+        select: { id: true, title: true, order: true },
+      }),
+      tx.student.findUnique({
+        where: { id: studentId },
+        select: { user: { select: { name: true } } },
+      }),
+    ]);
+    const stepById = new Map(steps.map((step) => [step.id, step]));
+    const studentName = student?.user.name;
+
+    for (const completion of session.completions) {
+      const step = stepById.get(completion.stepId);
+      await dispatchDomainEvent(
+        {
+          actorId: authResult.session.user.id,
+          action: "COMPLETION_CHANGED",
+          entityType: "StepCompletion",
+          entityId: completion.id,
+          payload: {
+            operation: existingSession ? "upsert" : "create",
+            studentId,
+            studentName,
+            stepId: completion.stepId,
+            stepTitle: step?.title,
+            stepOrder: step?.order,
+            grade: completion.grade,
+            note: completion.note,
+            sessionId: session.id,
+          },
+        },
+        tx,
+      );
+    }
+
     await dispatchDomainEvent(
       {
         actorId: authResult.session.user.id,

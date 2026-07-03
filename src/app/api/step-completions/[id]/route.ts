@@ -23,6 +23,10 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   const existing = await prisma.stepCompletion.findUnique({
     where: { id },
+    include: {
+      step: { select: { title: true, order: true } },
+      student: { include: { user: { select: { name: true } } } },
+    },
   });
   if (!existing) return notFound("Запись");
 
@@ -55,8 +59,13 @@ export async function PATCH(request: Request, context: RouteContext) {
           payload: {
             operation: "update",
             studentId: completion.studentId,
+            studentName: existing.student.user.name,
+            stepId: completion.stepId,
+            stepTitle: completion.step.title,
+            stepOrder: completion.step.order,
             previousGrade: existing.grade,
             grade: completion.grade,
+            note: completion.note,
           },
         },
         tx,

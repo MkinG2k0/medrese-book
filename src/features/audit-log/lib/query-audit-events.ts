@@ -101,3 +101,12 @@ export async function queryAuditActorOptions(): Promise<
 
 	return users.map((user) => ({ value: user.id, label: user.name }))
 }
+
+export async function queryDistinctEntityTypes(): Promise<string[]> {
+	const rows = await prisma.auditEvent.findMany({
+		select: { entityType: true },
+		distinct: ['entityType'],
+		orderBy: { entityType: 'asc' },
+	})
+	return rows.map((row) => row.entityType)
+}

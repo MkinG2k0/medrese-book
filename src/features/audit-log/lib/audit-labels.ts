@@ -27,6 +27,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 	Substitution: 'Замещение',
 	Conversation: 'Диалог',
 	TeachingSession: 'Урок',
+	Message: 'Сообщение',
 }
 
 export const KNOWN_AUDIT_ACTIONS = Object.keys(
