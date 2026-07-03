@@ -34,117 +34,131 @@ import Text from "@/shared/ui/Text";
 
 const { Header, Sider, Content } = Layout;
 
-type MenuItem = {
+type MenuItemDef = {
   key: string;
   icon: React.ReactNode;
   label: string;
-  roles: UserRole[];
 };
 
-const allMenuItems: MenuItem[] = [
-  {
+const menuItemDefs: Record<string, MenuItemDef> = {
+  "/journal": {
     key: "/journal",
     icon: <BookOutlined />,
     label: "Журнал",
-    roles: ["TEACHER"],
   },
-  {
-    key: "/journal/history",
-    icon: <HistoryOutlined />,
-    label: "История шагов",
-    roles: ["TEACHER"],
-  },
-  {
+  "/my-group": {
     key: "/my-group",
     icon: <TeamOutlined />,
     label: "Моя группа",
-    roles: ["TEACHER"],
   },
-  {
+  "/calendar": {
     key: "/calendar",
     icon: <CalendarOutlined />,
     label: "Календарь",
-    roles: ["TEACHER"],
   },
-  {
-    key: "/messages",
-    icon: <MessageOutlined />,
-    label: "Сообщения",
-    roles: ["TEACHER", "MANAGER", "STUDENT"],
+  "/journal/history": {
+    key: "/journal/history",
+    icon: <HistoryOutlined />,
+    label: "История шагов",
   },
-  {
-    key: "/groups",
-    icon: <TeamOutlined />,
-    label: "Группы",
-    roles: ["MANAGER", "SUPER_ADMIN"],
-  },
-  {
+  "/analytics/my-hours": {
     key: "/analytics/my-hours",
     icon: <FieldTimeOutlined />,
     label: "Мои часы",
-    roles: ["TEACHER"],
   },
-  {
+  "/analytics": {
     key: "/analytics",
     icon: <BarChartOutlined />,
     label: "Аналитика",
-    roles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
   },
-  {
-    key: "/analytics/teachers",
+  "/messages": {
+    key: "/messages",
+    icon: <MessageOutlined />,
+    label: "Сообщения",
+  },
+  "/groups": {
+    key: "/groups",
     icon: <TeamOutlined />,
-    label: "Аналитика учителей",
-    roles: ["MANAGER", "SUPER_ADMIN"],
+    label: "Группы",
   },
-  {
-    key: "/admin/leave-calendar",
-    icon: <CalendarOutlined />,
-    label: "Календарь отпусков",
-    roles: ["MANAGER", "SUPER_ADMIN"],
-  },
-  {
-    key: "/student/me",
-    icon: <UserOutlined />,
-    label: "Мой прогресс",
-    roles: ["STUDENT"],
-  },
-  {
-    key: "/student/lessons",
-    icon: <BookOutlined />,
-    label: "Уроки",
-    roles: ["STUDENT"],
-  },
-  {
-    key: "/student/history",
-    icon: <HistoryOutlined />,
-    label: "История занятий",
-    roles: ["STUDENT"],
-  },
-  {
-    key: "/student/awards",
-    icon: <TrophyOutlined />,
-    label: "Награды",
-    roles: ["STUDENT"],
-  },
-  {
+  "/admin/users": {
     key: "/admin/users",
     icon: <UserOutlined />,
     label: "Пользователи",
-    roles: ["MANAGER", "SUPER_ADMIN"],
   },
-  {
+  "/admin/program": {
     key: "/admin/program",
     icon: <BookOutlined />,
     label: "Программа",
-    roles: ["MANAGER", "SUPER_ADMIN"],
   },
-  {
+  "/analytics/teachers": {
+    key: "/analytics/teachers",
+    icon: <TeamOutlined />,
+    label: "Аналитика учителей",
+  },
+  "/admin/leave-calendar": {
+    key: "/admin/leave-calendar",
+    icon: <CalendarOutlined />,
+    label: "Календарь отпусков",
+  },
+  "/admin/awards": {
     key: "/admin/awards",
     icon: <TrophyOutlined />,
     label: "Награды",
-    roles: ["MANAGER", "SUPER_ADMIN"],
   },
-];
+  "/student/me": {
+    key: "/student/me",
+    icon: <UserOutlined />,
+    label: "Мой прогресс",
+  },
+  "/student/lessons": {
+    key: "/student/lessons",
+    icon: <BookOutlined />,
+    label: "Уроки",
+  },
+  "/student/history": {
+    key: "/student/history",
+    icon: <HistoryOutlined />,
+    label: "История занятий",
+  },
+  "/student/awards": {
+    key: "/student/awards",
+    icon: <TrophyOutlined />,
+    label: "Награды",
+  },
+};
+
+const managerMenuOrder = [
+  "/groups",
+  "/admin/users",
+  "/admin/program",
+  "/analytics",
+  "/analytics/teachers",
+  "/admin/leave-calendar",
+  "/admin/awards",
+  "/messages",
+] as const;
+
+const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
+  TEACHER: [
+    "/journal",
+    "/my-group",
+    "/calendar",
+    "/journal/history",
+    "/analytics/my-hours",
+    "/analytics",
+    "/messages",
+  ],
+  MANAGER: managerMenuOrder,
+  SUPER_ADMIN: managerMenuOrder,
+  STUDENT: [
+    "/student/me",
+    "/student/lessons",
+    "/student/history",
+    "/student/awards",
+    "/messages",
+  ],
+};
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -250,8 +264,9 @@ export function AppShell({
   const menuItems = useMemo(() => {
     const role = session.user.role;
     if (!role) return [];
-    return allMenuItems
-      .filter((item) => item.roles.includes(role))
+    return MENU_ORDER_BY_ROLE[role]
+      .map((key) => menuItemDefs[key])
+      .filter((item): item is MenuItemDef => item != null)
       .map((item) => ({
         key: item.key,
         icon: item.icon,
