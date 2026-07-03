@@ -286,3 +286,72 @@ export async function resetUserCode(userId: string) {
 	revalidatePath('/admin/users')
 	return { code }
 }
+
+export async function deleteUser(userId: string) {
+	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+
+	const user = await prisma.user.findUnique({
+		where: { id: userId },
+		include: {
+			teacher: { include: { groups: true } },
+			student: true,
+		},
+	})
+
+	if (!user) {
+		throw new Error('Пользователь не найден')
+	}
+
+	if (user.role === 'SUPER_ADMIN') {
+		throw new Error('Нельзя удалить супер-админа')
+	}
+
+	if (user.id === session.user.id) {
+		throw new Error('Нельзя удалить собственную учётную запись')
+	}
+
+	if (user.role === 'TEACHER' && user.teacher) {
+		if (user.teacher.groups.length > 0) {
+			throw new Error(
+				'Нельзя удалить учителя с группами. Сначала переназначьте группы другому учителю.',
+			)
+		}
+
+		const teacherId = user.teacher.id
+
+		await prisma.$transaction(async (tx) => {
+			await tx.leaveRequest.updateMany({
+				where: { substituteTeacherId: teacherId },
+				data: { substituteTeacherId: null },
+			})
+			await tx.leaveRequest.deleteMany({ where: { teacherId } })
+			await tx.substitution.deleteMany({
+				where: {
+					OR: [
+						{ absentTeacherId: teacherId },
+						{ substituteTeacherId: teacherId },
+					],
+				},
+			})
+			await tx.teachingSession.deleteMany({ where: { teacherId } })
+			await tx.user.delete({ where: { id: userId } })
+		})
+	} else {
+		const studentId = user.student?.id
+		const groupId = user.student?.groupId
+
+		await prisma.user.delete({ where: { id: userId } })
+
+		if (studentId) {
+			revalidatePath('/groups')
+			revalidatePath('/my-group')
+			if (groupId) {
+				revalidatePath(`/groups/${groupId}`)
+			}
+			revalidatePath('/journal')
+			revalidatePath(`/journal/${studentId}`)
+		}
+	}
+
+	revalidatePath('/admin/users')
+}

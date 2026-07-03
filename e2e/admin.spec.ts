@@ -92,6 +92,29 @@ test.describe("Админ-панель менеджера", () => {
     await expect(page.getByRole("cell", { name: studentName, exact: true })).toBeVisible();
   });
 
+  test("удаляет ученика из карточки пользователя", async ({ page }) => {
+    const studentName = `Удалить E2E ${Date.now()}`;
+
+    await page.getByRole("button", { name: "Создать пользователя" }).click();
+    const createDialog = page.getByRole("dialog", { name: "Создать пользователя" });
+    await createDialog.getByPlaceholder("Ибрагимов Камал Ахмедович").fill(studentName);
+    await createDialog.locator('.ant-select[name="groupId"]').click();
+    await page.getByTitle(TEST_USERS.group1).click();
+    await createDialog.getByRole("button", { name: "Создать" }).click();
+    await page.getByRole("dialog", { name: "Код доступа" }).getByRole("button", { name: "Понятно" }).click();
+
+    await page.getByRole("row", { name: new RegExp(studentName) }).click();
+    const detailDialog = page.getByRole("dialog");
+    await detailDialog.getByRole("button", { name: "Удалить" }).click();
+
+    const confirmDialog = page.getByRole("dialog", { name: "Удалить пользователя?" });
+    await expect(confirmDialog).toBeVisible();
+    await confirmDialog.getByRole("button", { name: "Удалить" }).click();
+
+    await expect(detailDialog).toBeHidden();
+    await expect(page.getByRole("cell", { name: studentName, exact: true })).toHaveCount(0);
+  });
+
   test("открывает страницу программы", async ({ page }) => {
     await page.getByRole("menuitem", { name: "Программа" }).click();
     await expect(page).toHaveURL(/\/admin\/program/);

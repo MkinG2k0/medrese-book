@@ -1,13 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Descriptions, Form, Input, Modal, Select, Tag } from "antd";
+import { App, Button, Descriptions, Form, Input, Modal, Select, Tag } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { updateStudentStatus } from "@/features/student-admin/actions/student-admin-actions";
-import { updateUser } from "@/features/user-admin/actions/user-actions";
+import { deleteUser, updateUser } from "@/features/user-admin/actions/user-actions";
 import { formatDate } from "@/shared/lib/utils";
 import {
   STUDENT_STATUS_LABELS,
@@ -283,6 +283,7 @@ export function UserDetailModal({
   isResetting,
 }: UserDetailModalProps) {
   const router = useRouter();
+  const { modal, message } = App.useApp();
   const [isPending, startTransition] = useTransition();
   const isStudent = user?.role === "STUDENT" && !!user.student;
   const statusOnlyMode = readOnly && canEditStatus && isStudent;
@@ -365,24 +366,64 @@ export function UserDetailModal({
     staffForm.handleSubmit(handleStaffSubmit)();
   };
 
+  const handleDelete = () => {
+    if (!user || user.role === "SUPER_ADMIN") return;
+
+    modal.confirm({
+      title: "Удалить пользователя?",
+      content: `«${user.name}» и все связанные данные будут удалены без возможности восстановления.`,
+      okText: "Удалить",
+      okType: "danger",
+      cancelText: "Отмена",
+      onOk: () =>
+        new Promise<void>((resolve, reject) => {
+          startTransition(async () => {
+            try {
+              await deleteUser(user.id);
+              message.success("Пользователь удалён");
+              router.refresh();
+              onClose();
+              resolve();
+            } catch (err) {
+              message.error(
+                err instanceof Error ? err.message : "Ошибка удаления",
+              );
+              reject(err);
+            }
+          });
+        }),
+    });
+  };
+
+  const canDelete = !readOnly && user && user.role !== "SUPER_ADMIN";
+
   return (
     <Modal
       title={user?.name}
       open={!!user}
       onCancel={onClose}
       footer={
-        <div className="flex justify-end gap-2">
-          {!readOnly && canResetCode && onResetCode && user && (
-            <Button onClick={() => onResetCode(user.id)} loading={isResetting}>
-              Сбросить код
+        <div className="flex items-center justify-between gap-2">
+          {canDelete ? (
+            <Button danger loading={isPending} onClick={handleDelete}>
+              Удалить
             </Button>
+          ) : (
+            <span />
           )}
-          <Button onClick={onClose}>Закрыть</Button>
-          {showSaveButton && (
-            <Button type="primary" loading={isPending} onClick={handleSave}>
-              Сохранить
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {!readOnly && canResetCode && onResetCode && user && (
+              <Button onClick={() => onResetCode(user.id)} loading={isResetting}>
+                Сбросить код
+              </Button>
+            )}
+            <Button onClick={onClose}>Закрыть</Button>
+            {showSaveButton && (
+              <Button type="primary" loading={isPending} onClick={handleSave}>
+                Сохранить
+              </Button>
+            )}
+          </div>
         </div>
       }
     >
