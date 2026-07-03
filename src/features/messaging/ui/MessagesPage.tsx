@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import type {
   ConversationSummary,
@@ -12,11 +13,21 @@ import { ConversationList } from "@/features/messaging/ui/ConversationList";
 import { useIsMobile } from "@/shared/lib/use-breakpoint";
 
 export function MessagesPage() {
+  const searchParams = useSearchParams();
+  const conversationFromUrl = searchParams.get("conversation");
   const { data, isLoading, refetch } = useConversations();
   const isMobile = useIsMobile();
   const mine = data?.mine ?? [];
   const teacherChats = data?.teacherChats ?? [];
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    conversationFromUrl,
+  );
+
+  useEffect(() => {
+    if (conversationFromUrl) {
+      setSelectedId(conversationFromUrl);
+    }
+  }, [conversationFromUrl]);
 
   const allConversations = useMemo(
     () => [...mine, ...teacherChats],

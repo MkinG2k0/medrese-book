@@ -144,4 +144,50 @@ describe('buildNotificationsForEvent', () => {
 
 		expect(notifications).toEqual([])
 	})
+
+	it('creates MESSAGE_RECEIVED for recipient with sender preview', async () => {
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('MESSAGE_RECEIVED', {
+				conversationId: 'conv-1',
+				messageId: 'msg-1',
+				senderId: 'sender-1',
+				recipientId: 'recipient-1',
+				body: 'Привет, как дела?',
+			}),
+			{
+				managerUserIds: [],
+				recipientUserId: 'recipient-1',
+				senderName: 'Учитель Ахмад',
+				conversationId: 'conv-1',
+			},
+		)
+
+		expect(notifications).toHaveLength(1)
+		expect(notifications[0]).toMatchObject({
+			userId: 'recipient-1',
+			type: 'MESSAGE_RECEIVED',
+			title: 'Новое сообщение',
+			body: 'Учитель Ахмад: Привет, как дела?',
+			link: '/messages?conversation=conv-1',
+		})
+	})
+
+	it('truncates long MESSAGE_RECEIVED preview', async () => {
+		const longBody = 'а'.repeat(150)
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('MESSAGE_RECEIVED', {
+				conversationId: 'conv-1',
+				recipientId: 'recipient-1',
+				body: longBody,
+			}),
+			{
+				managerUserIds: [],
+				recipientUserId: 'recipient-1',
+				senderName: 'Иван',
+				conversationId: 'conv-1',
+			},
+		)
+
+		expect(notifications[0]?.body).toBe(`Иван: ${'а'.repeat(119)}…`)
+	})
 })

@@ -1,9 +1,11 @@
 import { created, forbidden, serverError, success } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import {
 	canViewConversation,
 	userInConversation,
 } from '@/shared/lib/messaging/can-message-user'
+import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
 import { sendMessageSchema } from '@/shared/lib/validations/message'
 
@@ -79,7 +81,12 @@ export async function POST(request: Request, context: RouteContext) {
 			return forbidden()
 		}
 
-		const message = await prisma.$transaction(async (tx) => {
+		const recipientId =
+			conversation.participant1Id === session.user.id
+				? conversation.participant2Id
+				: conversation.participant1Id
+
+		const result = await prisma.$transaction(async (tx) => {
 			const createdMessage = await tx.message.create({
 				data: {
 					conversationId: id,
@@ -92,10 +99,30 @@ export async function POST(request: Request, context: RouteContext) {
 				where: { id },
 				data: { updatedAt: new Date() },
 			})
-			return createdMessage
+
+			const notifications = await dispatchDomainEvent(
+				{
+					actorId: session.user.id,
+					action: 'MESSAGE_RECEIVED',
+					entityType: 'Message',
+					entityId: createdMessage.id,
+					payload: {
+						conversationId: id,
+						messageId: createdMessage.id,
+						senderId: session.user.id,
+						recipientId,
+						body: parsed.data.body,
+					},
+				},
+				tx,
+			)
+
+			return { createdMessage, notifications }
 		})
 
-		return created(toMessageDto(message))
+		void deliverNotifications(result.notifications)
+
+		return created(toMessageDto(result.createdMessage))
 	} catch (err) {
 		return serverError(err)
 	}

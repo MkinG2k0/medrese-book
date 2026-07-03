@@ -25,6 +25,17 @@ export type NotificationBuildContext = {
 	teacherName?: string
 	substituteUserId?: string
 	absentTeacherName?: string
+	recipientUserId?: string
+	senderName?: string
+	conversationId?: string
+}
+
+const MESSAGE_PREVIEW_MAX = 120
+
+function truncateMessagePreview(body: string): string {
+	const trimmed = body.trim()
+	if (trimmed.length <= MESSAGE_PREVIEW_MAX) return trimmed
+	return `${trimmed.slice(0, MESSAGE_PREVIEW_MAX - 1)}…`
 }
 
 type LeavePayload = {
@@ -139,6 +150,36 @@ export async function buildNotificationsForEvent(
 					title: 'Назначено замещение',
 					body: `Вы замещаете ${absentName} ${datePart}`.trim(),
 					link: '/journal',
+					payload: event.payload,
+				},
+			]
+		}
+
+		case 'MESSAGE_RECEIVED': {
+			const recipientUserId =
+				context.recipientUserId ??
+				(typeof payload.recipientId === 'string' ? payload.recipientId : undefined)
+			if (!recipientUserId) return []
+
+			const senderName = context.senderName ?? 'Собеседник'
+			const bodyText =
+				typeof payload.body === 'string' ? payload.body : ''
+			const conversationId =
+				context.conversationId ??
+				(typeof payload.conversationId === 'string'
+					? payload.conversationId
+					: undefined)
+			const link = conversationId
+				? `/messages?conversation=${conversationId}`
+				: '/messages'
+
+			return [
+				{
+					userId: recipientUserId,
+					type: 'MESSAGE_RECEIVED',
+					title: 'Новое сообщение',
+					body: `${senderName}: ${truncateMessagePreview(bodyText)}`,
+					link,
 					payload: event.payload,
 				},
 			]

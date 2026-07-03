@@ -13,6 +13,7 @@ export type DomainEventAction =
 	| 'LEAVE_REQUEST_APPROVED'
 	| 'LEAVE_REQUEST_REJECTED'
 	| 'SUBSTITUTION_ACTIVATED'
+	| 'MESSAGE_RECEIVED'
 
 export type LeaveDomainEventPayload = {
 	teacherId: string

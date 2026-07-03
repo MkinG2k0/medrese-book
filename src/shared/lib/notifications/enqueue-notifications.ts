@@ -56,6 +56,25 @@ async function resolveBuildContext(
 		context.teacherUserId = payload.teacherUserId
 	}
 
+	if (event.action === 'MESSAGE_RECEIVED') {
+		const messagePayload = event.payload as {
+			senderId?: string
+			recipientId?: string
+			conversationId?: string
+		}
+
+		if (messagePayload.senderId) {
+			const sender = await client.user.findUnique({
+				where: { id: messagePayload.senderId },
+				select: { name: true },
+			})
+			context.senderName = sender?.name
+		}
+
+		context.recipientUserId = messagePayload.recipientId
+		context.conversationId = messagePayload.conversationId
+	}
+
 	if (event.action === 'SUBSTITUTION_ACTIVATED' && payload.substituteTeacherId) {
 		const [substitute, absent] = await Promise.all([
 			client.teacher.findUnique({
