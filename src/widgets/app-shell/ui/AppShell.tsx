@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AuditOutlined,
   BarChartOutlined,
   BookOutlined,
   CalendarOutlined,
@@ -106,6 +107,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <TrophyOutlined />,
     label: "Награды",
   },
+  "/admin/audit-log": {
+    key: "/admin/audit-log",
+    icon: <AuditOutlined />,
+    label: "Журнал действий",
+  },
   "/student/me": {
     key: "/student/me",
     icon: <UserOutlined />,
@@ -136,6 +142,7 @@ const managerMenuOrder = [
   "/analytics/teachers",
   "/admin/leave-calendar",
   "/admin/awards",
+  "/admin/audit-log",
   "/messages",
 ] as const;
 
