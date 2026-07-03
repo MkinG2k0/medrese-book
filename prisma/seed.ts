@@ -10,6 +10,7 @@ import { seedProgram } from "./lib/seed-program";
 import {
   buildLessonDates,
   buildLevelStepOffsets,
+  buildStudentContactData,
   createSeedContext,
   getCurrentStepIdx,
   getPassedStepIds,
@@ -109,7 +110,7 @@ async function main() {
   await seedTeachingSessions(prisma, group1.id, teacher1.id, lessonDates);
   await seedTeachingSessions(prisma, group2.id, teacher2.id, lessonDates);
 
-  for (const profile of STUDENT_PROFILES) {
+  for (const [index, profile] of STUDENT_PROFILES.entries()) {
     const user = await prisma.user.create({
       data: {
         name: profile.name,
@@ -118,9 +119,15 @@ async function main() {
       },
     });
 
+    const contacts = buildStudentContactData(profile, index);
+
     const student = await prisma.student.create({
       data: {
         userId: user.id,
+        fullName: contacts.fullName,
+        phone: contacts.phone,
+        guardianName: contacts.guardianName,
+        guardianPhone: contacts.guardianPhone,
         groupId: groups[profile.groupIndex]!.id,
         levelId: levels[profile.level - 1]!.id,
         currentStepIdx: getCurrentStepIdx(profile, levelStepOffsets),

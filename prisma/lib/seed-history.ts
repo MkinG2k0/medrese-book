@@ -17,6 +17,52 @@ export type StudentSeedProfile = {
   status?: StudentStatus;
 };
 
+const GUARDIAN_LAST_NAMES = [
+  "Ибрагимов",
+  "Ахмедов",
+  "Мухаммадов",
+  "Умаров",
+  "Хасанов",
+  "Алиев",
+  "Саидов",
+] as const;
+
+const GUARDIAN_FIRST_NAMES = [
+  "Рашид",
+  "Ахмед",
+  "Мухаммад",
+  "Умар",
+  "Хасан",
+  "Салим",
+  "Камил",
+] as const;
+
+export type StudentContactSeed = {
+  fullName: string;
+  phone: string;
+  guardianName: string;
+  guardianPhone: string;
+};
+
+export function buildStudentContactData(
+  profile: Pick<StudentSeedProfile, "name" | "code">,
+  index: number,
+): StudentContactSeed {
+  const lastName = GUARDIAN_LAST_NAMES[index % GUARDIAN_LAST_NAMES.length]!;
+  const firstName =
+    GUARDIAN_FIRST_NAMES[
+      Math.floor(index / GUARDIAN_LAST_NAMES.length) % GUARDIAN_FIRST_NAMES.length
+    ]!;
+  const suffix = profile.code.slice(1);
+
+  return {
+    fullName: profile.name,
+    phone: `8967${suffix}${String(index).padStart(2, "0")}`,
+    guardianName: `${lastName} ${firstName}`,
+    guardianPhone: `8968${suffix}${String(index).padStart(2, "0")}`,
+  };
+}
+
 export const SEED_MONTHS = 6;
 
 export type SeedContext = {

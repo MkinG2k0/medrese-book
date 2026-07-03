@@ -10,6 +10,7 @@ import {
   LEVEL1_TITLE,
   LEVEL2_TITLE,
 } from "./lib/program-config";
+import { buildStudentContactData } from "./lib/seed-history";
 import { buildContent, type StepDef } from "./lib/level1-import-utils";
 
 const E2E_STEPS_PER_LEVEL = 5;
@@ -192,9 +193,17 @@ async function main() {
         role: "STUDENT",
       },
     });
+    const contacts = buildStudentContactData(
+      { name: studentNames[i]!, code: studentCodes[i]! },
+      i,
+    );
     const student = await prisma.student.create({
       data: {
         userId: user.id,
+        fullName: contacts.fullName,
+        phone: contacts.phone,
+        guardianName: contacts.guardianName,
+        guardianPhone: contacts.guardianPhone,
         groupId: onLevel1 ? group1.id : group2.id,
         levelId: onLevel1 ? level1.id : level2.id,
         currentStepIdx,
