@@ -49,6 +49,12 @@ type LeavePayload = {
 	leaveRequestId?: string
 }
 
+type MessagePayload = {
+	recipientId?: string
+	body?: string
+	conversationId?: string
+}
+
 export function formatLeaveDateRange(startDate: string, endDate: string): string {
 	const start = format(new Date(startDate), 'dd.MM.yyyy')
 	const end = format(new Date(endDate), 'dd.MM.yyyy')
@@ -156,18 +162,21 @@ export async function buildNotificationsForEvent(
 		}
 
 		case 'MESSAGE_RECEIVED': {
+			const messagePayload = event.payload as MessagePayload
 			const recipientUserId =
 				context.recipientUserId ??
-				(typeof payload.recipientId === 'string' ? payload.recipientId : undefined)
+				(typeof messagePayload.recipientId === 'string'
+					? messagePayload.recipientId
+					: undefined)
 			if (!recipientUserId) return []
 
 			const senderName = context.senderName ?? 'Собеседник'
 			const bodyText =
-				typeof payload.body === 'string' ? payload.body : ''
+				typeof messagePayload.body === 'string' ? messagePayload.body : ''
 			const conversationId =
 				context.conversationId ??
-				(typeof payload.conversationId === 'string'
-					? payload.conversationId
+				(typeof messagePayload.conversationId === 'string'
+					? messagePayload.conversationId
 					: undefined)
 			const link = conversationId
 				? `/messages?conversation=${conversationId}`
