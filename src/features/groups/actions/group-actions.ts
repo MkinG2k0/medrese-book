@@ -11,6 +11,10 @@ const createGroupSchema = z.object({
 	teacherId: z.string(),
 })
 
+const updateGroupSchema = z.object({
+	name: z.string().min(1, 'Название обязательно'),
+})
+
 export async function getGroups() {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 
@@ -70,6 +74,21 @@ export async function createGroup(input: unknown) {
 	const group = await prisma.group.create({ data })
 	revalidatePath('/groups')
 	revalidatePath('/my-group')
+	return group
+}
+
+export async function updateGroup(groupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = updateGroupSchema.parse(input)
+
+	const group = await prisma.group.update({
+		where: { id: groupId },
+		data: { name: data.name },
+	})
+	revalidatePath('/groups')
+	revalidatePath(`/groups/${groupId}`)
+	revalidatePath('/my-group')
+	revalidatePath('/journal')
 	return group
 }
 

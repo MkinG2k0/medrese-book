@@ -87,6 +87,27 @@ test.describe("Группы", () => {
       await expect(page.getByRole("main").getByText(TEST_USERS.studentUsman)).toBeVisible();
       await expect(page.getByRole("main").getByText(TEST_USERS.studentBilal)).toBeVisible();
     });
+
+    test("переименовывает группу", async ({ page }) => {
+      const newName = `Группа E2E ${Date.now()}`;
+
+      await page.goto("/groups");
+      const group1Row = page.getByRole("row", { name: new RegExp(TEST_USERS.group1) });
+      await group1Row.getByRole("button", { name: "Переименовать" }).click();
+
+      const dialog = page.getByRole("dialog", { name: "Переименовать группу" });
+      await dialog.getByRole("textbox").fill(newName);
+      await dialog.getByRole("button", { name: "Сохранить" }).click();
+
+      await expect(page.getByRole("link", { name: newName })).toBeVisible();
+      await expect(page.getByRole("link", { name: TEST_USERS.group1 })).toHaveCount(0);
+
+      const renamedRow = page.getByRole("row", { name: new RegExp(newName) });
+      await renamedRow.getByRole("button", { name: "Переименовать" }).click();
+      await dialog.getByRole("textbox").fill(TEST_USERS.group1);
+      await dialog.getByRole("button", { name: "Сохранить" }).click();
+      await expect(page.getByRole("link", { name: TEST_USERS.group1 })).toBeVisible();
+    });
   });
 });
 
