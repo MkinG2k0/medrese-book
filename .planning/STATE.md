@@ -166,10 +166,11 @@ None yet.
 | 260704-2w3 | уведомления при получении сообщения | 2026-07-04 | d802689 | [260704-2w3-message-notifications](./quick/260704-2w3-message-notifications/) |
 | 260704-31y | гибкие оценки в журнале: сохранение без оценки, снятие кликом, Средне = проход | 2026-07-04 | b2f95a6 | [260704-31y-journal-grade-optional](./quick/260704-31y-journal-grade-optional/) |
 | 260704-34e | сделать шире (боковая панель сообщений) | 2026-07-04 | f22540c | [260704-34e-wider-messages-sidebar](./quick/260704-34e-wider-messages-sidebar/) |
+| 260704-358 | улучшить отображение отпусков | 2026-07-04 | 0b17d06 | [260704-358-vacation-display](./quick/260704-358-vacation-display/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-04 - Completed quick task 260704-34e: сделать шире (боковая панель сообщений)
+Last activity: 2026-07-04 - Completed quick task 260704-358: улучшить отображение отпусков
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
