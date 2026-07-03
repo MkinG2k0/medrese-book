@@ -14,7 +14,10 @@ test.describe("Аналитика учителей — менеджер", () => 
     await expect(page.getByRole("columnheader", { name: "Пришел" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Ушел" })).toBeVisible();
     await expect(
-      page.getByRole("columnheader", { name: "Длительность" }),
+      page.getByRole("columnheader", { name: "Длительность урока" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Длительность на раб. месте" }),
     ).toBeVisible();
   });
 });
@@ -25,5 +28,24 @@ test.describe("Аналитика учителей — учитель", () => {
   test("не имеет доступа к аналитике учителей", async ({ page }) => {
     await page.goto("/analytics/teachers");
     await expect(page).not.toHaveURL(/\/analytics\/teachers$/);
+  });
+
+  test("видит страницу своих часов", async ({ page }) => {
+    await page.goto("/analytics/my-hours");
+    await expect(page).toHaveURL(/\/analytics\/my-hours$/);
+    await expect(
+      page.getByRole("heading", { name: "Мои часы" }),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Пришел" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Ушел" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Длительность урока" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Длительность на раб. месте" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Учитель" }),
+    ).not.toBeVisible();
   });
 });

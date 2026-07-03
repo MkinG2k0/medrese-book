@@ -4,6 +4,7 @@ import {
   BarChartOutlined,
   BookOutlined,
   CalendarOutlined,
+  FieldTimeOutlined,
   HistoryOutlined,
   LogoutOutlined,
   MenuOutlined,
@@ -76,6 +77,12 @@ const allMenuItems: MenuItem[] = [
     icon: <TeamOutlined />,
     label: "Группы",
     roles: ["MANAGER", "SUPER_ADMIN"],
+  },
+  {
+    key: "/analytics/my-hours",
+    icon: <FieldTimeOutlined />,
+    label: "Мои часы",
+    roles: ["TEACHER"],
   },
   {
     key: "/analytics",

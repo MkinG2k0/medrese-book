@@ -21,7 +21,8 @@ export type TeacherLessonAnalyticsRow = {
 	logoutAt: string | null
 	lessonStartedAt: string | null
 	lessonEndedAt: string | null
-	durationLabel: string
+	lessonDurationLabel: string
+	workplaceDurationLabel: string
 	isAverage: boolean
 }
 
@@ -43,7 +44,7 @@ type AuditTimeRecord = {
 	createdAt: Date
 }
 
-function formatDurationLabel(
+function formatLessonDurationLabel(
 	sessions: TeachingSessionRecord[],
 	isAverage: boolean,
 ): string {
@@ -56,6 +57,31 @@ function formatDurationLabel(
 	if (isAverage) {
 		const avg =
 			durations.reduce((sum, value) => sum + value, 0) / durations.length
+		return formatElapsedMs(avg)
+	}
+
+	return formatElapsedMs(durations[0]!)
+}
+
+function formatWorkplaceDurationLabel(
+	logins: AuditTimeRecord[],
+	logouts: AuditTimeRecord[],
+	days: string[],
+	isAverage: boolean,
+): string {
+	const durations = days.flatMap((day) => {
+		const login = logins.find((record) => auditTimeMatchesDay(record, day))
+		const logout = findLastAuditTimeForDay(logouts, day)
+		if (!login || !logout) return []
+
+		const ms = logout.createdAt.getTime() - login.createdAt.getTime()
+		return ms > 0 ? [ms] : []
+	})
+
+	if (durations.length === 0) return 'время не учтено'
+
+	if (isAverage) {
+		const avg = durations.reduce((sum, value) => sum + value, 0) / durations.length
 		return formatElapsedMs(avg)
 	}
 
@@ -149,7 +175,13 @@ function buildRowForTeacher(
 			logoutAt: formatTimeValue(logoutTimes, true),
 			lessonStartedAt: formatTimeValue(startedTimes, true),
 			lessonEndedAt: formatTimeValue(endedTimes, true),
-			durationLabel: formatDurationLabel(completedSessions, true),
+			lessonDurationLabel: formatLessonDurationLabel(completedSessions, true),
+			workplaceDurationLabel: formatWorkplaceDurationLabel(
+				teacherLogins,
+				teacherLogouts,
+				days,
+				true,
+			),
 			isAverage: true,
 		}
 	}
@@ -172,9 +204,15 @@ function buildRowForTeacher(
 		lessonEndedAt: daySession?.endedAt
 			? formatLocalTime(daySession.endedAt)
 			: null,
-		durationLabel: daySession
-			? formatDurationLabel([daySession], false)
+		lessonDurationLabel: daySession
+			? formatLessonDurationLabel([daySession], false)
 			: 'время не учтено',
+		workplaceDurationLabel: formatWorkplaceDurationLabel(
+			teacherLogins,
+			teacherLogouts,
+			days,
+			false,
+		),
 		isAverage: false,
 	}
 }

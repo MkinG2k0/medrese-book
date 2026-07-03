@@ -15,7 +15,7 @@ const { RangePicker } = DatePicker
 type TeacherLessonsDateFilterProps = {
 	from: string
 	to: string
-	selectedTeacher: string
+	selectedTeacher?: string
 }
 
 function disableFutureDate(current: Dayjs | null): boolean {
@@ -34,7 +34,8 @@ export function TeacherLessonsDateFilter({
 	const searchParams = useSearchParams()
 
 	const pushRange = (nextFrom: string, nextTo: string) => {
-		const teacher = searchParams.get('teacher') ?? selectedTeacher
+		const teacher =
+			selectedTeacher ?? searchParams.get('teacher') ?? undefined
 		router.push(
 			`${pathname}${buildTeacherLessonsSearchParams({
 				from: nextFrom,

@@ -7,20 +7,18 @@ import {
 	type TeacherLessonAnalyticsRow,
 } from '@/features/analytics/lib/teacher-lessons-analytics'
 import { prisma } from '@/shared/lib/prisma'
-import { requireRoles } from '@/shared/lib/session'
+import { requireRole, requireRoles } from '@/shared/lib/session'
 
-export async function getTeacherLessonAnalytics(
+async function fetchTeacherLessonAnalytics(
+	teacherId: string | null | undefined,
 	fromParam?: string,
 	toParam?: string,
-	teacherId?: string | null,
 ): Promise<{
 	rows: TeacherLessonAnalyticsRow[]
 	from: string
 	to: string
 	isRange: boolean
 }> {
-	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
-
 	const { from, to } = parseTeacherLessonsDateRange(fromParam, toParam)
 	const { start, end } = getTeacherLessonsQueryBounds(from, to)
 	const isRange = from !== to
@@ -33,6 +31,10 @@ export async function getTeacherLessonAnalytics(
 
 	const teacherIds = teachers.map((teacher) => teacher.id)
 	const userIds = teachers.map((teacher) => teacher.userId)
+
+	if (teacherIds.length === 0) {
+		return { rows: [], from, to, isRange }
+	}
 
 	const [sessions, logins, logouts] = await Promise.all([
 		prisma.teachingSession.findMany({
@@ -96,4 +98,35 @@ export async function getTeacherLessonAnalytics(
 	)
 
 	return { rows, from, to, isRange }
+}
+
+export async function getTeacherLessonAnalytics(
+	fromParam?: string,
+	toParam?: string,
+	teacherId?: string | null,
+): Promise<{
+	rows: TeacherLessonAnalyticsRow[]
+	from: string
+	to: string
+	isRange: boolean
+}> {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	return fetchTeacherLessonAnalytics(teacherId, fromParam, toParam)
+}
+
+export async function getMyTeacherHoursAnalytics(
+	fromParam?: string,
+	toParam?: string,
+): Promise<{
+	rows: TeacherLessonAnalyticsRow[]
+	from: string
+	to: string
+	isRange: boolean
+}> {
+	const session = await requireRole('TEACHER')
+	return fetchTeacherLessonAnalytics(
+		session.user.teacherId,
+		fromParam,
+		toParam,
+	)
 }

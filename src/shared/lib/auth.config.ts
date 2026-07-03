@@ -75,6 +75,7 @@ export const authConfig: NextAuthConfig = {
 				'/my-group': ['TEACHER'],
 				'/groups': ['MANAGER', 'SUPER_ADMIN'],
 				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],
+				'/analytics/my-hours': ['TEACHER'],
 				'/analytics': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 				'/student': ['STUDENT'],
 				'/messages': ['TEACHER', 'MANAGER', 'STUDENT'],

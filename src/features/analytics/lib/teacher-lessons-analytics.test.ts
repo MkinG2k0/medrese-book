@@ -40,8 +40,9 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		expect(rows[0]?.logoutAt).not.toBeNull()
 		expect(rows[0]?.lessonStartedAt).not.toBeNull()
 		expect(rows[0]?.lessonEndedAt).not.toBeNull()
-		expect(rows[0]?.durationLabel).not.toBe('время не учтено')
-		expect(rows[1]?.durationLabel).toBe('время не учтено')
+		expect(rows[0]?.lessonDurationLabel).not.toBe('время не учтено')
+		expect(rows[0]?.workplaceDurationLabel).not.toBe('время не учтено')
+		expect(rows[1]?.lessonDurationLabel).toBe('время не учтено')
 	})
 
 	it('marks range rows as averages', () => {
@@ -88,6 +89,7 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		expect(rows[0]?.isAverage).toBe(true)
 		expect(rows[0]?.loginAt).not.toBeNull()
 		expect(rows[0]?.logoutAt).not.toBeNull()
-		expect(rows[0]?.durationLabel).not.toBe('время не учтено')
+		expect(rows[0]?.lessonDurationLabel).not.toBe('время не учтено')
+		expect(rows[0]?.workplaceDurationLabel).not.toBe('время не учтено')
 	})
 })

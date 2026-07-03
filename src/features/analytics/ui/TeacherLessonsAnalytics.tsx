@@ -51,13 +51,18 @@ export function TeacherLessonsPicker({
 type TeacherLessonsTableProps = {
 	rows: TeacherLessonAnalyticsRow[]
 	isRange: boolean
+	showTeacherColumn?: boolean
 }
 
 function formatCell(value: string | null) {
 	return value ?? '—'
 }
 
-export function TeacherLessonsTable({ rows, isRange }: TeacherLessonsTableProps) {
+export function TeacherLessonsTable({
+	rows,
+	isRange,
+	showTeacherColumn = true,
+}: TeacherLessonsTableProps) {
 	const timeSuffix = isRange ? ' (среднее)' : ''
 
 	return (
@@ -66,11 +71,15 @@ export function TeacherLessonsTable({ rows, isRange }: TeacherLessonsTableProps)
 			pagination={false}
 			dataSource={rows}
 			columns={[
-				{
-					title: 'Учитель',
-					dataIndex: 'teacherName',
-					key: 'teacherName',
-				},
+				...(showTeacherColumn
+					? [
+							{
+								title: 'Учитель',
+								dataIndex: 'teacherName' as const,
+								key: 'teacherName',
+							},
+						]
+					: []),
 				{
 					title: `Пришел${timeSuffix}`,
 					dataIndex: 'loginAt',
@@ -82,6 +91,11 @@ export function TeacherLessonsTable({ rows, isRange }: TeacherLessonsTableProps)
 					dataIndex: 'logoutAt',
 					key: 'logoutAt',
 					render: (value: string | null) => formatCell(value),
+				},
+				{
+					title: `Длительность на раб. месте${isRange ? ' (средняя)' : ''}`,
+					dataIndex: 'workplaceDurationLabel',
+					key: 'workplaceDurationLabel',
 				},
 				{
 					title: `Начало урока${timeSuffix}`,
@@ -96,10 +110,11 @@ export function TeacherLessonsTable({ rows, isRange }: TeacherLessonsTableProps)
 					render: (value: string | null) => formatCell(value),
 				},
 				{
-					title: `Длительность${isRange ? ' (средняя)' : ''}`,
-					dataIndex: 'durationLabel',
-					key: 'durationLabel',
+					title: `Длительность урока${isRange ? ' (средняя)' : ''}`,
+					dataIndex: 'lessonDurationLabel',
+					key: 'lessonDurationLabel',
 				},
+				
 			]}
 		/>
 	)
