@@ -13,6 +13,7 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			teachers,
 			[
 				{
+					id: 's1',
 					teacherId: 't1',
 					startedAt: new Date('2026-06-25T07:30:00.000Z'),
 					endedAt: new Date('2026-06-25T08:15:00.000Z'),
@@ -21,12 +22,14 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			],
 			[
 				{
+					id: 'l1',
 					userId: 'u1',
 					createdAt: new Date('2026-06-25T07:00:00.000Z'),
 				},
 			],
 			[
 				{
+					id: 'o1',
 					userId: 'u1',
 					createdAt: new Date('2026-06-25T08:30:00.000Z'),
 				},
@@ -42,6 +45,9 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		expect(rows[0]?.lessonEndedAt).not.toBeNull()
 		expect(rows[0]?.lessonDurationLabel).not.toBe('время не учтено')
 		expect(rows[0]?.workplaceDurationLabel).not.toBe('время не учтено')
+		expect(rows[0]?.loginEventId).toBe('l1')
+		expect(rows[0]?.logoutEventId).toBe('o1')
+		expect(rows[0]?.teachingSessionId).toBe('s1')
 		expect(rows[1]?.lessonDurationLabel).toBe('время не учтено')
 	})
 
@@ -50,12 +56,14 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			teachers,
 			[
 				{
+					id: 's1',
 					teacherId: 't1',
 					startedAt: new Date('2026-06-24T07:30:00.000Z'),
 					endedAt: new Date('2026-06-24T08:00:00.000Z'),
 					date: new Date('2026-06-24T12:00:00.000Z'),
 				},
 				{
+					id: 's2',
 					teacherId: 't1',
 					startedAt: new Date('2026-06-25T08:30:00.000Z'),
 					endedAt: new Date('2026-06-25T09:30:00.000Z'),
@@ -64,20 +72,24 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			],
 			[
 				{
+					id: 'l1',
 					userId: 'u1',
 					createdAt: new Date('2026-06-24T07:00:00.000Z'),
 				},
 				{
+					id: 'l2',
 					userId: 'u1',
 					createdAt: new Date('2026-06-25T08:00:00.000Z'),
 				},
 			],
 			[
 				{
+					id: 'o1',
 					userId: 'u1',
 					createdAt: new Date('2026-06-24T08:30:00.000Z'),
 				},
 				{
+					id: 'o2',
 					userId: 'u1',
 					createdAt: new Date('2026-06-25T10:00:00.000Z'),
 				},

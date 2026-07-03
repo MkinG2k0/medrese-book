@@ -24,6 +24,9 @@ export type TeacherLessonAnalyticsRow = {
 	lessonDurationLabel: string
 	workplaceDurationLabel: string
 	isAverage: boolean
+	loginEventId: string | null
+	logoutEventId: string | null
+	teachingSessionId: string | null
 }
 
 type TeacherRecord = {
@@ -33,6 +36,7 @@ type TeacherRecord = {
 }
 
 type TeachingSessionRecord = {
+	id: string
 	teacherId: string
 	startedAt: Date
 	endedAt: Date | null
@@ -40,6 +44,7 @@ type TeachingSessionRecord = {
 }
 
 type AuditTimeRecord = {
+	id: string
 	userId: string
 	createdAt: Date
 }
@@ -183,6 +188,9 @@ function buildRowForTeacher(
 				true,
 			),
 			isAverage: true,
+			loginEventId: null,
+			logoutEventId: null,
+			teachingSessionId: null,
 		}
 	}
 
@@ -214,6 +222,9 @@ function buildRowForTeacher(
 			false,
 		),
 		isAverage: false,
+		loginEventId: dayLogin?.id ?? null,
+		logoutEventId: dayLogout?.id ?? null,
+		teachingSessionId: daySession?.id ?? null,
 	}
 }
 

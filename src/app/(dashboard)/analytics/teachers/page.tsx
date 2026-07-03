@@ -67,7 +67,12 @@ export default async function TeacherLessonsAnalyticsPage({
 				</div>
 			</div>
 
-			<TeacherLessonsTable rows={rows} isRange={isRange} />
+			<TeacherLessonsTable
+				rows={rows}
+				isRange={isRange}
+				editable={!isRange}
+				date={from}
+			/>
 		</div>
 	)
 }

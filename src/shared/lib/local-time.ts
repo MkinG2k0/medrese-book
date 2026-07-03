@@ -44,3 +44,17 @@ export function averageLocalTime(dates: Date[]): string | null {
 		dates.length
 	return formatMinutesFromMidnight(avgMinutes)
 }
+
+/** Календарный день YYYY-MM-DD + локальное время HH:mm → Date (Europe/Moscow, UTC+3). */
+export function calendarDateAndTimeToDate(calendarDay: string, time: string): Date {
+	const match = /^(\d{2}):(\d{2})$/.exec(time)
+	if (!match) throw new Error('Некорректное время')
+
+	const hours = Number(match[1])
+	const minutes = Number(match[2])
+	if (hours > 23 || minutes > 59) throw new Error('Некорректное время')
+
+	return new Date(
+		`${calendarDay}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+03:00`,
+	)
+}

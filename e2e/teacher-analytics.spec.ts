@@ -19,6 +19,7 @@ test.describe("Аналитика учителей — менеджер", () => 
     await expect(
       page.getByRole("columnheader", { name: "Длительность на раб. месте" }),
     ).toBeVisible();
+    await expect(page.locator(".ant-picker").first()).toBeVisible();
   });
 });
 
@@ -47,5 +48,6 @@ test.describe("Аналитика учителей — учитель", () => {
     await expect(
       page.getByRole("columnheader", { name: "Учитель" }),
     ).not.toBeVisible();
+    await expect(page.locator(".ant-picker")).toHaveCount(0);
   });
 });
