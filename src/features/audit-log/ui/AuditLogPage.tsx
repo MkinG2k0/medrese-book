@@ -31,9 +31,26 @@ type FilterState = {
 	to?: string
 }
 
+function renderEventCell(record: AuditEventListItem) {
+	return <Tag>{getAuditActionLabel(record.action)}</Tag>
+}
+
+function renderEntityCell(record: AuditEventListItem) {
+	if (record.entityType === 'User') {
+		return `${getAuditEntityTypeLabel(record.entityType)} — ${record.actorName}`
+	}
+	return (
+		<span>
+			{getAuditEntityTypeLabel(record.entityType)}
+			<span className="ml-2 font-mono text-xs opacity-70">
+				{record.entityId.slice(0, 8)}…
+			</span>
+		</span>
+	)
+}
+
 export function AuditLogPage() {
 	const [filters, setFilters] = useState<FilterState>({})
-	const [draft, setDraft] = useState<FilterState>({})
 	const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(
 		null,
 	)
@@ -62,6 +79,17 @@ export function AuditLogPage() {
 		pageSize,
 	})
 
+	const updateFilters = (patch: Partial<FilterState>) => {
+		setPage(1)
+		setFilters((prev) => {
+			const next = { ...prev, ...patch }
+			for (const key of Object.keys(patch) as (keyof FilterState)[]) {
+				if (patch[key] === undefined) delete next[key]
+			}
+			return next
+		})
+	}
+
 	const columns: ColumnsType<AuditEventListItem> = useMemo(
 		() => [
 			{
@@ -88,43 +116,18 @@ export function AuditLogPage() {
 				title: 'Событие',
 				dataIndex: 'action',
 				key: 'action',
-				render: (action: string) => (
-					<Tag>{getAuditActionLabel(action)}</Tag>
-				),
+				render: (_, record) => renderEventCell(record),
 			},
 			{
 				title: 'Сущность',
 				key: 'entity',
-				render: (_, record) => (
-					<span>
-						{getAuditEntityTypeLabel(record.entityType)}
-						<span className="ml-2 font-mono text-xs opacity-70">
-							{record.entityId.slice(0, 8)}…
-						</span>
-					</span>
-				),
-			},
-			{
-				title: '',
-				key: 'details',
-				width: 120,
-				render: (_, record) => (
-					<Button type="link" size="small" onClick={() => setSelectedEvent(record)}>
-						Подробнее
-					</Button>
-				),
+				render: (_, record) => renderEntityCell(record),
 			},
 		],
 		[],
 	)
 
-	const applyFilters = () => {
-		setPage(1)
-		setFilters({ ...draft })
-	}
-
 	const resetFilters = () => {
-		setDraft({})
 		setDateRange(null)
 		setPage(1)
 		setFilters({})
@@ -134,11 +137,10 @@ export function AuditLogPage() {
 		values: [Dayjs | null, Dayjs | null] | null,
 	) => {
 		setDateRange(values)
-		setDraft((prev) => ({
-			...prev,
+		updateFilters({
 			from: values?.[0]?.format('YYYY-MM-DD'),
 			to: values?.[1]?.format('YYYY-MM-DD'),
-		}))
+		})
 	}
 
 	const handleTableChange = (pagination: TablePaginationConfig) => {
@@ -169,10 +171,8 @@ export function AuditLogPage() {
 					aria-label="Тип события"
 					optionFilterProp="label"
 					options={filterOptions.actions}
-					value={draft.action}
-					onChange={(value) =>
-						setDraft((prev) => ({ ...prev, action: value ?? undefined }))
-					}
+					value={filters.action}
+					onChange={(value) => updateFilters({ action: value ?? undefined })}
 					className="min-w-[220px]"
 				/>
 				<Select
@@ -182,9 +182,9 @@ export function AuditLogPage() {
 					aria-label="Тип сущности"
 					optionFilterProp="label"
 					options={filterOptions.entityTypes}
-					value={draft.entityType}
+					value={filters.entityType}
 					onChange={(value) =>
-						setDraft((prev) => ({ ...prev, entityType: value ?? undefined }))
+						updateFilters({ entityType: value ?? undefined })
 					}
 					className="min-w-[180px]"
 				/>
@@ -195,10 +195,8 @@ export function AuditLogPage() {
 					aria-label="Автор"
 					optionFilterProp="label"
 					options={filterOptions.actors}
-					value={draft.actorId}
-					onChange={(value) =>
-						setDraft((prev) => ({ ...prev, actorId: value ?? undefined }))
-					}
+					value={filters.actorId}
+					onChange={(value) => updateFilters({ actorId: value ?? undefined })}
 					className="min-w-[200px]"
 				/>
 				<RangePicker
@@ -207,9 +205,6 @@ export function AuditLogPage() {
 					format="DD.MM.YYYY"
 					placeholder={['С', 'По']}
 				/>
-				<Button type="primary" onClick={applyFilters}>
-					Применить
-				</Button>
 				<Button onClick={resetFilters}>Сбросить</Button>
 			</div>
 
@@ -226,6 +221,10 @@ export function AuditLogPage() {
 					showTotal: (total) => `Всего: ${total}`,
 				}}
 				onChange={handleTableChange}
+				onRow={(record) => ({
+					onClick: () => setSelectedEvent(record),
+					className: 'cursor-pointer',
+				})}
 				scroll={{ x: 900 }}
 			/>
 

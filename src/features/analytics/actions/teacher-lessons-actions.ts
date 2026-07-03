@@ -176,6 +176,28 @@ async function findDayTeachingSession(teacherId: string, day: string) {
 	)
 }
 
+async function findDayLoginAudit(userId: string, day: string) {
+	const { start, end } = getTeacherLessonsQueryBounds(day, day)
+	const events = await prisma.auditEvent.findMany({
+		where: {
+			action: 'USER_LOGIN',
+			actorId: userId,
+			createdAt: { gte: start, lte: end },
+		},
+		orderBy: { createdAt: 'asc' },
+	})
+
+	return events.find((event) => isSameCalendarDay(event.createdAt, day))
+}
+
+async function getTeacherGroupId(teacherId: string) {
+	const group = await prisma.group.findFirst({
+		where: { teacherId },
+		select: { id: true },
+	})
+	return group?.id ?? null
+}
+
 export async function updateTeacherLessonTime(
 	input: unknown,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -261,26 +283,20 @@ export async function updateTeacherLessonTime(
 						data: { startedAt: timestamp },
 					})
 				} else {
-					const group = await prisma.group.findFirst({
-						where: { teacherId },
-						select: { id: true },
-					})
-					if (!group) {
+					const groupId = await getTeacherGroupId(teacherId)
+					if (!groupId) {
 						return { ok: false, error: 'У учителя нет группы' }
 					}
 					await prisma.teachingSession.create({
 						data: {
 							teacherId,
-							groupId: group.id,
+							groupId,
 							date: teachingSessionDate(date),
 							startedAt: timestamp,
 						},
 					})
 				}
-			} else {
-				if (!session) {
-					return { ok: false, error: 'Сначала укажите начало урока' }
-				}
+			} else if (session) {
 				if (timestamp <= session.startedAt) {
 					return {
 						ok: false,
@@ -290,6 +306,31 @@ export async function updateTeacherLessonTime(
 				await prisma.teachingSession.update({
 					where: { id: session.id },
 					data: { endedAt: timestamp },
+				})
+			} else {
+				const groupId = await getTeacherGroupId(teacherId)
+				if (!groupId) {
+					return { ok: false, error: 'У учителя нет группы' }
+				}
+
+				const dayLogin = await findDayLoginAudit(teacher.userId, date)
+				const startedAt = dayLogin?.createdAt ?? timestamp
+
+				if (dayLogin && timestamp <= startedAt) {
+					return {
+						ok: false,
+						error: 'Конец урока должен быть позже начала',
+					}
+				}
+
+				await prisma.teachingSession.create({
+					data: {
+						teacherId,
+						groupId,
+						date: teachingSessionDate(date),
+						startedAt,
+						endedAt: timestamp,
+					},
 				})
 			}
 		}

@@ -29,7 +29,6 @@ test.describe("Журнал действий", () => {
 
       await page.getByRole("combobox", { name: "Тип события" }).click();
       await page.getByText("Вход в систему", { exact: true }).click();
-      await page.getByRole("button", { name: "Применить" }).click();
 
       await expect(page.getByText("Вход в систему").first()).toBeVisible();
     });
@@ -40,9 +39,9 @@ test.describe("Журнал действий", () => {
         page.getByRole("heading", { name: "Журнал действий" }),
       ).toBeVisible();
 
-      const detailsButton = page.getByRole("button", { name: "Подробнее" }).first();
-      await expect(detailsButton).toBeVisible();
-      await detailsButton.click();
+      const firstRow = page.locator(".ant-table-row").first();
+      await expect(firstRow).toBeVisible();
+      await firstRow.click();
 
       const dialog = page.getByRole("dialog", { name: "Детали события" });
       await expect(dialog).toBeVisible();

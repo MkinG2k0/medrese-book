@@ -43,9 +43,15 @@ export function AuditEventDetailModal({
 					<Descriptions.Item label="Тип сущности">
 						{getAuditEntityTypeLabel(event.entityType)}
 					</Descriptions.Item>
-					<Descriptions.Item label="ID сущности">
-						{event.entityId}
-					</Descriptions.Item>
+					{event.entityType === 'User' ? (
+						<Descriptions.Item label="Пользователь">
+							{event.actorName}
+						</Descriptions.Item>
+					) : (
+						<Descriptions.Item label="ID сущности">
+							{event.entityId}
+						</Descriptions.Item>
+					)}
 					<Descriptions.Item label="Данные">
 						<pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs">
 							{formatPayloadValue(event.payload)}

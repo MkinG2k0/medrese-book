@@ -84,8 +84,9 @@ export function EditableTeacherTimeCell({
 			size="small"
 			format="HH:mm"
 			variant="borderless"
-			allowClear
+			allowClear={Boolean(value)}
 			placeholder="—"
+			className="min-w-[4.5rem] cursor-pointer"
 			value={value ? dayjs(value, 'HH:mm') : null}
 			disabled={pending}
 			onChange={(time) => {
