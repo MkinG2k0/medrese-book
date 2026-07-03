@@ -159,10 +159,11 @@ None yet.
 | 260702-015 | сделай в сидере 4ре главы , с разным колличеством шагов , раскидтай так же по ученикам уровни | 2026-07-01 | 0b4d679 | [260702-015-4](./quick/260702-015-4/) |
 | 260702-07p | продовый сидер: только супер-админ с кодом из env | 2026-07-02 | 0eedacd | [260702-07p-prod-seeder-super-admin-from-env](./quick/260702-07p-prod-seeder-super-admin-from-env/) |
 | 260702-1cl | рядом с номером шага пиши общий его номер | 2026-07-02 | de42cad | [260702-1cl-step-global-number](./quick/260702-1cl-step-global-number/) |
+| 260704-1w3 | Вход замени на Пришел и добавь колонку Ушел - время выхода из системы | 2026-07-04 | c543ce8 | [260704-1w3-teacher-arrival-departure-columns](./quick/260704-1w3-teacher-arrival-departure-columns/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-02 - Completed quick task 260702-1cl: рядом с номером шага пиши общий его номер
+Last activity: 2026-07-04 - Completed quick task 260704-1w3: Вход замени на Пришел и добавь колонку Ушел - время выхода из системы
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
