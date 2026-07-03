@@ -162,10 +162,11 @@ None yet.
 | 260704-1w3 | Вход замени на Пришел и добавь колонку Ушел - время выхода из системы | 2026-07-04 | c543ce8 | [260704-1w3-teacher-arrival-departure-columns](./quick/260704-1w3-teacher-arrival-departure-columns/) |
 | 260704-21d | пройдись по всем ролям и по уму распредели порядок страниц, для супер админа показывай все страницы как у менеджера | 2026-07-04 | 62c8afc | [260704-21d-reorder-nav-menu-by-role](./quick/260704-21d-reorder-nav-menu-by-role/) |
 | 260704-237 | добавь переименование групп | 2026-07-04 | ab6987e | [260704-237-rename-groups](./quick/260704-237-rename-groups/) |
+| 260704-23a | кроме телефона опекуна сделать и имя | 2026-07-04 | 14fd227 | [260704-23a-guardian-name-field](./quick/260704-23a-guardian-name-field/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-04 - Completed quick task 260704-21d: пройдись по всем ролям и по уму распредели порядок страниц, для супер админа показывай все страницы как у менеджера
+Last activity: 2026-07-04 - Completed quick task 260704-23a: кроме телефона опекуна сделать и имя
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
