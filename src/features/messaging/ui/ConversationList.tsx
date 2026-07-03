@@ -121,7 +121,7 @@ export function ConversationList({
   const hasAny = mine.length > 0 || teacherChats.length > 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-r border-[#2a2622]">
+    <div className="flex h-full min-h-0 w-full flex-col border-r border-[#2a2622]">
       <div className="border-b border-[#2a2622] p-4">
         <Text strong className="mb-3 block">
           Сообщения
