@@ -100,6 +100,7 @@ export async function createUsers(input: unknown) {
 							create: {
 								fullName: entry.fullName ?? entry.name,
 								phone: entry.phone,
+								guardianName: entry.guardianName,
 								guardianPhone: entry.guardianPhone,
 								groupId: data.groupId!,
 								levelId: level.id,
@@ -207,6 +208,7 @@ export async function updateUser(userId: string, input: unknown) {
 				data: {
 					fullName: data.name,
 					phone: data.phone,
+					guardianName: data.guardianName,
 					guardianPhone: data.guardianPhone,
 					groupId: data.groupId,
 					levelId: data.levelId,

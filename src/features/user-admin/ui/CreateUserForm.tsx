@@ -46,6 +46,7 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 			role: 'STUDENT',
 			phone: '',
 			studentPhone: '',
+			guardianName: '',
 			guardianPhone: '',
 			levelId: defaultLevelId,
 			localStepIndex: 0,
@@ -165,6 +166,20 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 									{...field}
 									disabled={isMultipleStudents}
 									placeholder="89676123456"
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="guardianName"
+						control={control}
+						render={({ field }) => (
+							<Form.Item label="Имя опекуна">
+								<Input
+									{...field}
+									disabled={isMultipleStudents}
+									placeholder="Ибрагимов Камал Ахмедович"
 								/>
 							</Form.Item>
 						)}

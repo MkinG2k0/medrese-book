@@ -93,6 +93,7 @@ model Student {
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   fullName       String?
   phone          String?
+  guardianName   String?
   guardianPhone  String?
   groupId        String
   group          Group            @relation(fields: [groupId], references: [id])

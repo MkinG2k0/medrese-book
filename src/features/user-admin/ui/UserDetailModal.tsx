@@ -49,6 +49,7 @@ export type UserDetail = {
     id: string;
     fullName?: string;
     phone?: string;
+    guardianName?: string;
     guardianPhone?: string;
     currentStepIdx: number;
     levelId: string;
@@ -84,6 +85,7 @@ function getStudentDefaultValues(user: UserDetail): UpdateStudentUserFormInput {
   return {
     name: user.name,
     phone: user.student?.phone ?? "",
+    guardianName: user.student?.guardianName ?? "",
     guardianPhone: user.student?.guardianPhone ?? "",
     groupId: user.student?.groupId ?? "",
     levelId: user.student?.levelId ?? "",
@@ -150,6 +152,20 @@ function StudentEditFields({
         render={({ field }) => (
           <Form.Item label="Телефон">
             <Input {...field} placeholder="89676123456" disabled={readOnly} />
+          </Form.Item>
+        )}
+      />
+
+      <Controller
+        name="guardianName"
+        control={control}
+        render={({ field }) => (
+          <Form.Item label="Имя опекуна">
+            <Input
+              {...field}
+              placeholder="Ибрагимов Камал Ахмедович"
+              disabled={readOnly}
+            />
           </Form.Item>
         )}
       />
@@ -298,6 +314,7 @@ export function UserDetailModal({
       await updateUser(user.id, {
         name: values.name.trim(),
         phone: values.phone?.trim() || undefined,
+        guardianName: values.guardianName?.trim() || undefined,
         guardianPhone: values.guardianPhone?.trim() || undefined,
         groupId: values.groupId,
         levelId: values.levelId,

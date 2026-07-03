@@ -45,6 +45,7 @@ const userRoleSchema = z.enum(['SUPER_ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'])
 const createUserEntrySchema = z.object({
 	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
 	phone: optionalPhoneSchema,
+	guardianName: optionalTextSchema,
 	guardianPhone: optionalPhoneSchema,
 	fullName: optionalTextSchema,
 })
@@ -71,6 +72,7 @@ export const createUserFormSchema = z
 		role: userRoleSchema,
 		phone: z.string().optional(),
 		studentPhone: z.string().optional(),
+		guardianName: z.string().optional(),
 		guardianPhone: z.string().optional(),
 		groupId: z.string().optional(),
 		levelId: z.string().optional(),
@@ -100,6 +102,7 @@ export const createUserFormSchema = z
 export const updateStudentUserSchema = z.object({
 	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
 	phone: optionalPhoneSchema,
+	guardianName: optionalTextSchema,
 	guardianPhone: optionalPhoneSchema,
 	groupId: z.string().min(1, 'Выберите группу'),
 	levelId: z.string().min(1, 'Выберите уровень'),
@@ -115,6 +118,7 @@ export const updateStaffUserSchema = z.object({
 export const updateStudentUserFormSchema = z.object({
 	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
 	phone: z.string().optional(),
+	guardianName: z.string().optional(),
 	guardianPhone: z.string().optional(),
 	groupId: z.string().min(1, 'Выберите группу'),
 	levelId: z.string().min(1, 'Выберите уровень'),
@@ -150,6 +154,10 @@ export function buildCreateUsersPayload(
 				? isSingleStudent
 					? values.studentPhone?.trim() || undefined
 					: entry.phone
+				: undefined,
+		guardianName:
+			values.role === 'STUDENT' && isSingleStudent
+				? values.guardianName?.trim() || undefined
 				: undefined,
 		guardianPhone:
 			values.role === 'STUDENT' && isSingleStudent

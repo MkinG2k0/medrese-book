@@ -20,6 +20,7 @@ type UserWithRelations = {
 		id: string
 		fullName: string | null
 		phone: string | null
+		guardianName: string | null
 		guardianPhone: string | null
 		currentStepIdx: number
 		levelId: string
@@ -73,6 +74,7 @@ export function mapUsersToDetails(
 						id: user.student.id,
 						fullName: user.student.fullName ?? undefined,
 						phone: user.student.phone ?? undefined,
+						guardianName: user.student.guardianName ?? undefined,
 						guardianPhone: user.student.guardianPhone ?? undefined,
 						currentStepIdx: user.student.currentStepIdx,
 						levelId: user.student.levelId,
