@@ -65,7 +65,7 @@ test.describe("Domain events leave requests", () => {
     const beforeCount = await countAuditEvents("LEAVE_REQUEST_CREATED");
 
     await createLeaveViaUI(page, {
-      type: "vacation",
+      type: "dayoff",
       description,
     });
 

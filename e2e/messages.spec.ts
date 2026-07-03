@@ -11,10 +11,6 @@ async function openMessages(page: Page) {
 async function startChatWith(page: Page, label: string) {
   await page.locator(".ant-select").first().click();
   await page.getByTitle(label, { exact: false }).click();
-  await page
-    .getByRole("button")
-    .filter({ has: page.locator(".anticon-plus") })
-    .click();
 }
 
 test.describe("Сообщения", () => {

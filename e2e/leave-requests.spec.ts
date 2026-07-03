@@ -22,7 +22,7 @@ const SUBSTITUTION_ROLE_LABEL = "Учитель — Замещение";
 test.describe("Заявки на отсутствие", () => {
   test.describe.configure({ mode: "serial", timeout: 60_000 });
 
-  let vacationDescription: string;
+  let approvedDescription: string;
   let rejectDescription: string;
   let resubmitDescription: string;
 
@@ -64,16 +64,16 @@ test.describe("Заявки на отсутствие", () => {
   test.describe("создание заявок учителем", () => {
     test.use({ storageState: AUTH_STATE.teacher1 });
 
-    test("создаёт отпуск — badge «Создана» на календаре", async ({ page }) => {
-      vacationDescription = uniqueLeaveDescription(`${E2E_PREFIX} vacation`);
+    test("создаёт отгул — badge «Создана» на календаре", async ({ page }) => {
+      approvedDescription = uniqueLeaveDescription(`${E2E_PREFIX} dayoff`);
       await createLeaveViaUI(page, {
-        type: "vacation",
-        description: vacationDescription,
+        type: "dayoff",
+        description: approvedDescription,
       });
 
-      await expect(page.getByText("Отпуск · Создана")).toBeVisible();
+      await expect(page.getByText("Отгул · Создана")).toBeVisible();
       await expect(
-        page.getByRole("row").filter({ hasText: vacationDescription }),
+        page.getByRole("row").filter({ hasText: approvedDescription }),
       ).toBeVisible();
     });
 
@@ -109,15 +109,15 @@ test.describe("Заявки на отсутствие", () => {
         page,
         TEST_USERS.teacher1Name,
         TEST_USERS.teacher2Name,
-        vacationDescription,
+        approvedDescription,
       );
 
       await page.locator(".ant-select").filter({ hasText: "Все" }).first().click();
       await page.getByTitle("Подтверждена", { exact: true }).click();
       await expect(
-        page.getByRole("row").filter({ hasText: vacationDescription }),
+        page.getByRole("row").filter({ hasText: approvedDescription }),
       ).toBeVisible();
-      await expect(page.getByText("Отпуск · Подтверждена")).toHaveCount(0);
+      await expect(page.getByText("Отгул · Подтверждена")).toHaveCount(0);
     });
 
     test("отклоняет заявку с причиной — не на календаре менеджера", async ({

@@ -59,7 +59,7 @@ export function MessagesPage() {
     <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-[#2a2622] bg-[#161412]">
       {showList && (
         <div
-          className={`flex h-full min-h-0 shrink-0 ${isMobile ? "w-full" : "md:w-[28rem]"}`}
+          className={`flex h-full min-h-0 shrink-0 ${isMobile ? "w-full" : "md:w-[20rem]"}`}
         >
           <ConversationList
             mine={mine}

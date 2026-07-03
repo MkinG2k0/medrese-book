@@ -128,7 +128,7 @@ test.describe("Уведомления", () => {
       const description = uniqueNotificationDescription("new-request");
 
       await createLeaveViaUI(teacherPage, {
-        type: "vacation",
+        type: "dayoff",
         description,
       });
 
@@ -198,7 +198,7 @@ test.describe("Уведомления", () => {
       const description = uniqueNotificationDescription("approved");
 
       await createLeaveViaUI(teacherPage, {
-        type: "vacation",
+        type: "dayoff",
         description,
       });
 
@@ -287,7 +287,7 @@ test.describe("Уведомления", () => {
       const description = uniqueNotificationDescription("substitute");
 
       await createLeaveViaUI(teacher1Page, {
-        type: "vacation",
+        type: "dayoff",
         description,
       });
 

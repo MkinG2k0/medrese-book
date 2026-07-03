@@ -1,15 +1,13 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-type LeaveUiType = "vacation" | "dayoff" | "sick";
+type LeaveUiType = "dayoff" | "sick";
 
 const CREATE_BUTTON_LABELS: Record<LeaveUiType, string> = {
-  vacation: "Создать отпуск",
   dayoff: "Создать отгул",
   sick: "Создать больничный",
 };
 
 const CREATE_DIALOG_TITLES: Record<LeaveUiType, string> = {
-  vacation: "Новый отпуск",
   dayoff: "Новый отгул",
   sick: "Новый больничный",
 };

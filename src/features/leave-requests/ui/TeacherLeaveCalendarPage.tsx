@@ -30,12 +30,6 @@ export function TeacherLeaveCalendarPage() {
 					Календарь
 				</Title>
 				<div className="flex flex-wrap gap-2">
-					<Button
-						type="primary"
-						onClick={() => setCreateLeaveType('VACATION')}
-					>
-						Создать отпуск
-					</Button>
 					<Button type="primary" onClick={() => setCreateLeaveType('DAY_OFF')}>
 						Создать отгул
 					</Button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { MessageOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Select, Spin } from "antd";
+import { MessageOutlined } from "@ant-design/icons";
+import { Select, Spin } from "antd";
 import { useMemo, useState } from "react";
 
 import type {
@@ -92,7 +92,6 @@ export function ConversationList({
 }: ConversationListProps) {
   const { data: contacts = [], isLoading: contactsLoading } =
     useMessageContacts();
-  const [newContactId, setNewContactId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
   const existingContactIds = useMemo(
@@ -105,14 +104,13 @@ export function ConversationList({
     [contacts, existingContactIds],
   );
 
-  const handleStart = async () => {
-    if (!newContactId) return;
-    const contact = contacts.find((c) => c.id === newContactId);
+  const handleContactSelect = async (contactId: string | null) => {
+    if (!contactId) return;
+    const contact = contacts.find((c) => c.id === contactId);
     if (!contact) return;
     setStarting(true);
     try {
       await onStartChat(contact);
-      setNewContactId(null);
     } finally {
       setStarting(false);
     }
@@ -126,29 +124,20 @@ export function ConversationList({
         <Text strong className="mb-3 block">
           Сообщения
         </Text>
-        <div className="flex gap-2">
-          <Select
-            className="min-w-0 flex-1"
-            placeholder="Новый диалог"
-            loading={contactsLoading}
-            value={newContactId}
-            onChange={setNewContactId}
-            options={availableContacts.map((c) => ({
-              value: c.id,
-              label: `${c.name} (${contactSubtitle(c)})`,
-            }))}
-            showSearch
-            optionFilterProp="label"
-            allowClear
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            disabled={!newContactId}
-            loading={starting}
-            onClick={() => void handleStart()}
-          />
-        </div>
+        <Select
+          className="w-full"
+          placeholder="Новый диалог"
+          loading={contactsLoading || starting}
+          value={null}
+          onChange={(contactId) => void handleContactSelect(contactId)}
+          options={availableContacts.map((c) => ({
+            value: c.id,
+            label: `${c.name} (${contactSubtitle(c)})`,
+          }))}
+          showSearch
+          optionFilterProp="label"
+          allowClear
+        />
       </div>
 
       {loading ? (
