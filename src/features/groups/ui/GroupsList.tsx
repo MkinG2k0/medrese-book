@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CreateGroupForm } from "@/features/groups/ui/CreateGroupForm";
-import { RenameGroupForm } from "@/features/groups/ui/RenameGroupForm";
+import { EditGroupForm } from "@/features/groups/ui/EditGroupForm";
 import Title from "@/shared/ui/Title";
 
 type GroupRow = {
   id: string;
   name: string;
+  teacherId: string;
   teacherName: string;
   studentCount: number;
 };
@@ -23,7 +24,7 @@ type GroupsListProps = {
 
 export function GroupsList({ groups, teachers }: GroupsListProps) {
   const [showCreate, setShowCreate] = useState(false);
-  const [renameGroup, setRenameGroup] = useState<GroupRow | null>(null);
+  const [editGroup, setEditGroup] = useState<GroupRow | null>(null);
   const router = useRouter();
 
   return (
@@ -59,8 +60,8 @@ export function GroupsList({ groups, teachers }: GroupsListProps) {
             title: "Действия",
             key: "actions",
             render: (_: unknown, record: GroupRow) => (
-              <Button size="small" onClick={() => setRenameGroup(record)}>
-                Переименовать
+              <Button size="small" onClick={() => setEditGroup(record)}>
+                Редактировать
               </Button>
             ),
           },
@@ -84,19 +85,21 @@ export function GroupsList({ groups, teachers }: GroupsListProps) {
       </Modal>
 
       <Modal
-        title="Переименовать группу"
-        open={renameGroup !== null}
-        onCancel={() => setRenameGroup(null)}
+        title="Редактировать группу"
+        open={editGroup !== null}
+        onCancel={() => setEditGroup(null)}
         footer={null}
         destroyOnHidden
       >
-        {renameGroup && (
-          <RenameGroupForm
-            key={renameGroup.id}
-            groupId={renameGroup.id}
-            initialName={renameGroup.name}
+        {editGroup && (
+          <EditGroupForm
+            key={editGroup.id}
+            groupId={editGroup.id}
+            initialName={editGroup.name}
+            initialTeacherId={editGroup.teacherId}
+            teachers={teachers}
             onSuccess={() => {
-              setRenameGroup(null);
+              setEditGroup(null);
               router.refresh();
             }}
           />

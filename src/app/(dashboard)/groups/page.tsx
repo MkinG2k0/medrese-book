@@ -9,6 +9,7 @@ export default async function GroupsPage() {
 	const rows = groups.map((g) => ({
 		id: g.id,
 		name: g.name,
+		teacherId: g.teacherId,
 		teacherName: g.teacher.user.name,
 		studentCount: g._count.students,
 	}))

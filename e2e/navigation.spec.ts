@@ -88,23 +88,27 @@ test.describe("Группы", () => {
       await expect(page.getByRole("main").getByText(TEST_USERS.studentBilal)).toBeVisible();
     });
 
-    test("переименовывает группу", async ({ page }) => {
+    test("редактирует группу", async ({ page }) => {
       const newName = `Группа E2E ${Date.now()}`;
 
       await page.goto("/groups");
       const group1Row = page.getByRole("row", { name: new RegExp(TEST_USERS.group1) });
-      await group1Row.getByRole("button", { name: "Переименовать" }).click();
+      await group1Row.getByRole("button", { name: "Редактировать" }).click();
 
-      const dialog = page.getByRole("dialog", { name: "Переименовать группу" });
+      const dialog = page.getByRole("dialog", { name: "Редактировать группу" });
       await dialog.getByRole("textbox").fill(newName);
+      await dialog.locator(".ant-select").click();
+      await page.getByTitle(TEST_USERS.teacher2Name, { exact: true }).click();
       await dialog.getByRole("button", { name: "Сохранить" }).click();
 
-      await expect(page.getByRole("link", { name: newName })).toBeVisible();
-      await expect(page.getByRole("link", { name: TEST_USERS.group1 })).toHaveCount(0);
+      const updatedRow = page.getByRole("row", { name: new RegExp(newName) });
+      await expect(updatedRow.getByRole("link", { name: newName })).toBeVisible();
+      await expect(updatedRow.getByRole("cell", { name: TEST_USERS.teacher2Name, exact: true })).toBeVisible();
 
-      const renamedRow = page.getByRole("row", { name: new RegExp(newName) });
-      await renamedRow.getByRole("button", { name: "Переименовать" }).click();
+      await updatedRow.getByRole("button", { name: "Редактировать" }).click();
       await dialog.getByRole("textbox").fill(TEST_USERS.group1);
+      await dialog.locator(".ant-select").click();
+      await page.getByTitle(TEST_USERS.teacher1Name, { exact: true }).click();
       await dialog.getByRole("button", { name: "Сохранить" }).click();
       await expect(page.getByRole("link", { name: TEST_USERS.group1 })).toBeVisible();
     });

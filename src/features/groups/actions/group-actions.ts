@@ -13,6 +13,7 @@ const createGroupSchema = z.object({
 
 const updateGroupSchema = z.object({
 	name: z.string().min(1, 'Название обязательно'),
+	teacherId: z.string().min(1, 'Выберите учителя'),
 })
 
 export async function getGroups() {
@@ -81,9 +82,17 @@ export async function updateGroup(groupId: string, input: unknown) {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 	const data = updateGroupSchema.parse(input)
 
+	const existing = await prisma.group.findUnique({
+		where: { id: groupId },
+		select: { teacherId: true },
+	})
+	if (!existing) {
+		throw new Error('Группа не найдена')
+	}
+
 	const group = await prisma.group.update({
 		where: { id: groupId },
-		data: { name: data.name },
+		data: { name: data.name, teacherId: data.teacherId },
 	})
 	revalidatePath('/groups')
 	revalidatePath(`/groups/${groupId}`)
