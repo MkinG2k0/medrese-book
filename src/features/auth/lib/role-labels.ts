@@ -5,6 +5,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 	MANAGER: 'Менеджер',
 	TEACHER: 'Учитель',
 	STUDENT: 'Ученик',
+	ACCOUNTANT: 'Бухгалтер',
 }
 
 export const TEACHER_SUBSTITUTION_ROLE_LABEL = 'Учитель — Замещение'

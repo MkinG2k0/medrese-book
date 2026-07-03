@@ -27,6 +27,7 @@ const ROLE_LABELS: Record<string, string> = {
   MANAGER: "Менеджер",
   TEACHER: "Учитель",
   STUDENT: "Ученик",
+  ACCOUNTANT: "Бухгалтер",
 };
 
 type LevelOption = {

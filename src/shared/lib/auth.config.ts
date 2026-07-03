@@ -44,6 +44,9 @@ export const authConfig: NextAuthConfig = {
 			const session = auth
 
 			if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
+				if (pathname.startsWith('/api/internal/cron')) {
+					return true
+				}
 				if (!session?.user) {
 					return NextResponse.json(
 						{data: null, error: 'Требуется авторизация'},
@@ -77,6 +80,8 @@ export const authConfig: NextAuthConfig = {
 				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],
 				'/analytics/my-hours': ['TEACHER'],
 				'/analytics': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
+				'/accounting': ['ACCOUNTANT'],
+				'/accounting/my-salary': ['TEACHER'],
 				'/student': ['STUDENT'],
 				'/messages': ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT'],
 			}

@@ -134,6 +134,7 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 								{ value: 'TEACHER', label: 'Учитель' },
 								{ value: 'STUDENT', label: 'Ученик' },
 								{ value: 'MANAGER', label: 'Менеджер' },
+								{ value: 'ACCOUNTANT', label: 'Бухгалтер' },
 							]}
 						/>
 					</Form.Item>

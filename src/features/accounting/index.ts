@@ -1,0 +1,6 @@
+export { AccountingDashboardPage } from './ui/AccountingDashboardPage'
+export { StudentPaymentsPage } from './ui/StudentPaymentsPage'
+export { SalariesPage } from './ui/SalariesPage'
+export { ExpensesPage } from './ui/ExpensesPage'
+export { OperationsLedgerPage } from './ui/OperationsLedgerPage'
+export { MySalaryPage } from './ui/MySalaryPage'

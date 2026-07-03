@@ -12,6 +12,26 @@ enum Role {
   MANAGER
   TEACHER
   STUDENT
+  ACCOUNTANT
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum ExpenseCategory {
+  SUPPLIES
+  UTILITIES
+  RENT
+  OTHER
+}
+
+enum SalaryAccrualStatus {
+  DRAFT
+  CONFIRMED
+  PAID
 }
 
 enum Attendance {
@@ -64,6 +84,12 @@ model User {
   conversationsAsParticipant1 Conversation[]    @relation("ConversationParticipant1")
   conversationsAsParticipant2 Conversation[]    @relation("ConversationParticipant2")
   sentMessages               Message[]
+  tuitionPaymentsCreated     TuitionPayment[]   @relation("TuitionPaymentCreatedBy")
+  expensesCreated            Expense[]          @relation("ExpenseCreatedBy")
+  donationsCreated           Donation[]         @relation("DonationCreatedBy")
+  salaryPayoutsCreated       SalaryPayout[]     @relation("SalaryPayoutCreatedBy")
+  monthClosesCreated         MonthClose[]       @relation("MonthCloseCreatedBy")
+  sessionDurationAdjustments TeachingSessionDurationAdjustment[] @relation("SessionDurationAdjustedBy")
   createdAt                  DateTime           @default(now())
 }
 
@@ -77,6 +103,8 @@ model Teacher {
   leaveRequestsAsSubstitute  LeaveRequest[]    @relation("LeaveRequestSubstitute")
   substitutionsAsAbsent      Substitution[]    @relation("SubstitutionAbsent")
   substitutionsAsSubstitute  Substitution[]    @relation("SubstitutionSubstitute")
+  teacherRates               TeacherRate[]
+  salaryAccruals             SalaryAccrual[]
 }
 
 model Group {
@@ -102,9 +130,13 @@ model Student {
   level          Level            @relation(fields: [levelId], references: [id])
   currentStepIdx Int              @default(0)
   status         StudentStatus    @default(ACTIVE)
+  tuitionRate    Int              @default(200000)
+  discountReason String?
   sessions       Session[]
   completions    StepCompletion[]
   awards         Award[]
+  tuitionCharges TuitionCharge[]
+  tuitionPayments TuitionPayment[]
 }
 
 model Level {
@@ -176,9 +208,140 @@ model TeachingSession {
   endedAt   DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  durationAdjustment TeachingSessionDurationAdjustment?
 
   @@index([teacherId, date])
   @@index([groupId, date])
+}
+
+model TuitionCharge {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  month     String
+  amount    Int
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, month])
+  @@index([month])
+}
+
+model TuitionPayment {
+  id           String        @id @default(cuid())
+  studentId    String
+  student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date         DateTime
+  amount       Int
+  method       PaymentMethod
+  comment      String?
+  createdById  String
+  createdBy    User          @relation("TuitionPaymentCreatedBy", fields: [createdById], references: [id])
+  reversalOfId String?
+  reversalOf   TuitionPayment?  @relation("TuitionPaymentReversal", fields: [reversalOfId], references: [id])
+  reversals    TuitionPayment[] @relation("TuitionPaymentReversal")
+  createdAt    DateTime      @default(now())
+
+  @@index([studentId, date])
+  @@index([date])
+}
+
+model TeacherRate {
+  id          String   @id @default(cuid())
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  hourlyRate  Int
+  validFrom   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([teacherId, validFrom])
+}
+
+model TeachingSessionDurationAdjustment {
+  id                String          @id @default(cuid())
+  teachingSessionId String          @unique
+  teachingSession   TeachingSession @relation(fields: [teachingSessionId], references: [id], onDelete: Cascade)
+  originalMinutes   Int
+  adjustedMinutes   Int
+  reason            String
+  adjustedById      String
+  adjustedBy        User            @relation("SessionDurationAdjustedBy", fields: [adjustedById], references: [id])
+  createdAt         DateTime        @default(now())
+}
+
+model SalaryAccrual {
+  id           String              @id @default(cuid())
+  teacherId    String
+  teacher      Teacher             @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  month        String
+  totalMinutes Int
+  amount       Int
+  status       SalaryAccrualStatus @default(DRAFT)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  payouts      SalaryPayout[]
+
+  @@unique([teacherId, month])
+  @@index([month, status])
+}
+
+model SalaryPayout {
+  id           String        @id @default(cuid())
+  accrualId    String
+  accrual      SalaryAccrual @relation(fields: [accrualId], references: [id], onDelete: Cascade)
+  date         DateTime
+  amount       Int
+  method       PaymentMethod
+  comment      String?
+  createdById  String
+  createdBy    User          @relation("SalaryPayoutCreatedBy", fields: [createdById], references: [id])
+  reversalOfId String?
+  reversalOf   SalaryPayout?  @relation("SalaryPayoutReversal", fields: [reversalOfId], references: [id])
+  reversals    SalaryPayout[] @relation("SalaryPayoutReversal")
+  createdAt    DateTime      @default(now())
+
+  @@index([accrualId])
+  @@index([date])
+}
+
+model Expense {
+  id           String          @id @default(cuid())
+  date         DateTime
+  amount       Int
+  category     ExpenseCategory
+  method       PaymentMethod
+  comment      String?
+  createdById  String
+  createdBy    User            @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+  reversalOfId String?
+  reversalOf   Expense?        @relation("ExpenseReversal", fields: [reversalOfId], references: [id])
+  reversals    Expense[]       @relation("ExpenseReversal")
+  createdAt    DateTime        @default(now())
+
+  @@index([date])
+}
+
+model Donation {
+  id           String        @id @default(cuid())
+  date         DateTime
+  amount       Int
+  method       PaymentMethod
+  comment      String?
+  createdById  String
+  createdBy    User          @relation("DonationCreatedBy", fields: [createdById], references: [id])
+  reversalOfId String?
+  reversalOf   Donation?     @relation("DonationReversal", fields: [reversalOfId], references: [id])
+  reversals    Donation[]    @relation("DonationReversal")
+  createdAt    DateTime      @default(now())
+
+  @@index([date])
+}
+
+model MonthClose {
+  id          String   @id @default(cuid())
+  month       String   @unique
+  closedAt    DateTime @default(now())
+  closedById  String
+  closedBy    User     @relation("MonthCloseCreatedBy", fields: [closedById], references: [id])
 }
 
 model AuditEvent {

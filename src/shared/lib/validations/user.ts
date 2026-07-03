@@ -40,7 +40,13 @@ const optionalTextSchema = z
 	.optional()
 	.transform((value) => (value && value.length > 0 ? value : undefined))
 
-const userRoleSchema = z.enum(['SUPER_ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'])
+const userRoleSchema = z.enum([
+	'SUPER_ADMIN',
+	'MANAGER',
+	'TEACHER',
+	'STUDENT',
+	'ACCOUNTANT',
+])
 
 const createUserEntrySchema = z.object({
 	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),

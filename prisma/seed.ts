@@ -37,6 +37,15 @@ async function main() {
   await prisma.notification.deleteMany();
   await prisma.pushSubscription.deleteMany();
   await prisma.auditEvent.deleteMany();
+  await prisma.salaryPayout.deleteMany();
+  await prisma.salaryAccrual.deleteMany();
+  await prisma.teachingSessionDurationAdjustment.deleteMany();
+  await prisma.teacherRate.deleteMany();
+  await prisma.tuitionPayment.deleteMany();
+  await prisma.tuitionCharge.deleteMany();
+  await prisma.expense.deleteMany();
+  await prisma.donation.deleteMany();
+  await prisma.monthClose.deleteMany();
   await prisma.stepCompletion.deleteMany();
   await prisma.session.deleteMany();
   await prisma.award.deleteMany();
@@ -57,6 +66,10 @@ async function main() {
 
   const manager = await prisma.user.create({
     data: { name: "Менеджер", code: "100002", role: "MANAGER" },
+  });
+
+  const accountant = await prisma.user.create({
+    data: { name: "Бухгалтер", code: "400001", role: "ACCOUNTANT" },
   });
 
   const teacher1User = await prisma.user.create({
@@ -152,6 +165,7 @@ async function main() {
   console.log(`  Занятий групп (вт/чт): ${lessonDates.length} дат на группу`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);
+  console.log(`  ACCOUNTANT: ${accountant.code}`);
   console.log(`  TEACHER 1: ${teacher1User.code}`);
   console.log(`  TEACHER 2: ${teacher2User.code}`);
   console.log(`  STUDENTS: ${studentCodes.join(", ")}`);

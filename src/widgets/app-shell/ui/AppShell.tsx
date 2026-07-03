@@ -5,6 +5,7 @@ import {
   BarChartOutlined,
   BookOutlined,
   CalendarOutlined,
+  DollarOutlined,
   FieldTimeOutlined,
   HistoryOutlined,
   LogoutOutlined,
@@ -112,6 +113,36 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <AuditOutlined />,
     label: "Журнал действий",
   },
+  "/accounting": {
+    key: "/accounting",
+    icon: <DollarOutlined />,
+    label: "Бухгалтерия",
+  },
+  "/accounting/payments": {
+    key: "/accounting/payments",
+    icon: <DollarOutlined />,
+    label: "Платежи",
+  },
+  "/accounting/salaries": {
+    key: "/accounting/salaries",
+    icon: <TeamOutlined />,
+    label: "Зарплаты",
+  },
+  "/accounting/expenses": {
+    key: "/accounting/expenses",
+    icon: <DollarOutlined />,
+    label: "Расходы",
+  },
+  "/accounting/ledger": {
+    key: "/accounting/ledger",
+    icon: <HistoryOutlined />,
+    label: "Операции",
+  },
+  "/accounting/my-salary": {
+    key: "/accounting/my-salary",
+    icon: <DollarOutlined />,
+    label: "Моя зарплата",
+  },
   "/student/me": {
     key: "/student/me",
     icon: <UserOutlined />,
@@ -146,6 +177,14 @@ const managerMenuOrder = [
   "/messages",
 ] as const;
 
+const accountantMenuOrder = [
+  "/accounting",
+  "/accounting/payments",
+  "/accounting/salaries",
+  "/accounting/expenses",
+  "/accounting/ledger",
+] as const;
+
 const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
   TEACHER: [
     "/journal",
@@ -154,10 +193,12 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/journal/history",
     "/analytics/my-hours",
     "/analytics",
+    "/accounting/my-salary",
     "/messages",
   ],
   MANAGER: managerMenuOrder,
   SUPER_ADMIN: managerMenuOrder,
+  ACCOUNTANT: accountantMenuOrder,
   STUDENT: [
     "/student/me",
     "/student/lessons",
@@ -367,7 +408,7 @@ export function AppShell({
             )}
             <SubstitutionHeaderInfo lines={substitutionHeaderLines} />
             <div className="ml-auto flex shrink-0 items-center gap-2 md:gap-4">
-              <NotificationBell />
+              {session.user.role !== "ACCOUNTANT" && <NotificationBell />}
               <div className="max-w-[45vw] text-right sm:max-w-none">
                 <Text className="block truncate">{session.user.name}</Text>
                 <Text type="secondary" className="hidden truncate sm:block">

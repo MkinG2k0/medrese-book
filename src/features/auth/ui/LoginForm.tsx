@@ -9,6 +9,8 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { loginWithCode } from "@/features/auth/actions/login-actions";
+import type { UserRole } from "@/entities/user";
+import { getDefaultRedirect } from "@/shared/lib/get-default-redirect";
 import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -60,7 +62,7 @@ export function LoginForm({ logoutReason }: LoginFormProps) {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(getDefaultRedirect(session.user.role as UserRole));
   };
 
   return (
