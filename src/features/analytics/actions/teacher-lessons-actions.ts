@@ -34,7 +34,7 @@ export async function getTeacherLessonAnalytics(
 	const teacherIds = teachers.map((teacher) => teacher.id)
 	const userIds = teachers.map((teacher) => teacher.userId)
 
-	const [sessions, logins] = await Promise.all([
+	const [sessions, logins, logouts] = await Promise.all([
 		prisma.teachingSession.findMany({
 			where: {
 				teacherId: { in: teacherIds },
@@ -62,6 +62,18 @@ export async function getTeacherLessonAnalytics(
 			},
 			orderBy: { createdAt: 'asc' },
 		}),
+		prisma.auditEvent.findMany({
+			where: {
+				action: 'USER_LOGOUT',
+				actorId: { in: userIds },
+				createdAt: { gte: start, lte: end },
+			},
+			select: {
+				actorId: true,
+				createdAt: true,
+			},
+			orderBy: { createdAt: 'asc' },
+		}),
 	])
 
 	const rows = buildTeacherLessonAnalyticsRows(
@@ -74,6 +86,10 @@ export async function getTeacherLessonAnalytics(
 		logins.map((login) => ({
 			userId: login.actorId,
 			createdAt: login.createdAt,
+		})),
+		logouts.map((logout) => ({
+			userId: logout.actorId,
+			createdAt: logout.createdAt,
 		})),
 		from,
 		to,

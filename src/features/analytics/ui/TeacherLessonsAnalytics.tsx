@@ -72,9 +72,15 @@ export function TeacherLessonsTable({ rows, isRange }: TeacherLessonsTableProps)
 					key: 'teacherName',
 				},
 				{
-					title: `Вход${timeSuffix}`,
+					title: `Пришел${timeSuffix}`,
 					dataIndex: 'loginAt',
 					key: 'loginAt',
+					render: (value: string | null) => formatCell(value),
+				},
+				{
+					title: `Ушел${timeSuffix}`,
+					dataIndex: 'logoutAt',
+					key: 'logoutAt',
 					render: (value: string | null) => formatCell(value),
 				},
 				{

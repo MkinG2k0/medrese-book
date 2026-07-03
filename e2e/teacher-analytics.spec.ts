@@ -11,7 +11,8 @@ test.describe("Аналитика учителей — менеджер", () => 
       page.getByRole("heading", { name: "Аналитика учителей" }),
     ).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Учитель" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Вход" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Пришел" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Ушел" })).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Длительность" }),
     ).toBeVisible();

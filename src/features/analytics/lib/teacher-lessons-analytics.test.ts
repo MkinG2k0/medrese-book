@@ -25,12 +25,19 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 					createdAt: new Date('2026-06-25T07:00:00.000Z'),
 				},
 			],
+			[
+				{
+					userId: 'u1',
+					createdAt: new Date('2026-06-25T08:30:00.000Z'),
+				},
+			],
 			'2026-06-25',
 			'2026-06-25',
 		)
 
 		expect(rows[0]?.teacherName).toBe('Ахмад')
 		expect(rows[0]?.loginAt).not.toBeNull()
+		expect(rows[0]?.logoutAt).not.toBeNull()
 		expect(rows[0]?.lessonStartedAt).not.toBeNull()
 		expect(rows[0]?.lessonEndedAt).not.toBeNull()
 		expect(rows[0]?.durationLabel).not.toBe('время не учтено')
@@ -64,12 +71,23 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 					createdAt: new Date('2026-06-25T08:00:00.000Z'),
 				},
 			],
+			[
+				{
+					userId: 'u1',
+					createdAt: new Date('2026-06-24T08:30:00.000Z'),
+				},
+				{
+					userId: 'u1',
+					createdAt: new Date('2026-06-25T10:00:00.000Z'),
+				},
+			],
 			'2026-06-24',
 			'2026-06-25',
 		)
 
 		expect(rows[0]?.isAverage).toBe(true)
 		expect(rows[0]?.loginAt).not.toBeNull()
+		expect(rows[0]?.logoutAt).not.toBeNull()
 		expect(rows[0]?.durationLabel).not.toBe('время не учтено')
 	})
 })

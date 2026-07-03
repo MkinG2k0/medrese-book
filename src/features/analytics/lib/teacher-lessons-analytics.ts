@@ -18,6 +18,7 @@ export type TeacherLessonAnalyticsRow = {
 	teacherId: string
 	teacherName: string
 	loginAt: string | null
+	logoutAt: string | null
 	lessonStartedAt: string | null
 	lessonEndedAt: string | null
 	durationLabel: string
@@ -37,7 +38,7 @@ type TeachingSessionRecord = {
 	date: Date
 }
 
-type LoginRecord = {
+type AuditTimeRecord = {
 	userId: string
 	createdAt: Date
 }
@@ -79,26 +80,49 @@ function sessionMatchesDay(
 	)
 }
 
-function loginMatchesDay(login: LoginRecord, day: string): boolean {
-	return isSameCalendarDay(login.createdAt, day)
+function auditTimeMatchesDay(record: AuditTimeRecord, day: string): boolean {
+	return isSameCalendarDay(record.createdAt, day)
+}
+
+function findLastAuditTimeForDay(
+	records: AuditTimeRecord[],
+	day: string,
+): AuditTimeRecord | undefined {
+	let last: AuditTimeRecord | undefined
+	for (const record of records) {
+		if (auditTimeMatchesDay(record, day)) {
+			last = record
+		}
+	}
+	return last
 }
 
 function buildRowForTeacher(
 	teacher: TeacherRecord,
 	days: string[],
 	sessions: TeachingSessionRecord[],
-	logins: LoginRecord[],
+	logins: AuditTimeRecord[],
+	logouts: AuditTimeRecord[],
 	isAverage: boolean,
 ): TeacherLessonAnalyticsRow {
 	const teacherSessions = sessions.filter(
 		(session) => session.teacherId === teacher.id,
 	)
 	const teacherLogins = logins.filter((login) => login.userId === teacher.userId)
+	const teacherLogouts = logouts.filter(
+		(logout) => logout.userId === teacher.userId,
+	)
 
 	if (isAverage) {
 		const loginTimes = days.flatMap((day) => {
-			const dayLogin = teacherLogins.find((login) => loginMatchesDay(login, day))
+			const dayLogin = teacherLogins.find((login) =>
+				auditTimeMatchesDay(login, day),
+			)
 			return dayLogin ? [dayLogin.createdAt] : []
+		})
+		const logoutTimes = days.flatMap((day) => {
+			const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
+			return dayLogout ? [dayLogout.createdAt] : []
 		})
 		const startedTimes = days.flatMap((day) => {
 			const daySession = teacherSessions.find((session) =>
@@ -122,6 +146,7 @@ function buildRowForTeacher(
 			teacherId: teacher.id,
 			teacherName: teacher.name,
 			loginAt: formatTimeValue(loginTimes, true),
+			logoutAt: formatTimeValue(logoutTimes, true),
 			lessonStartedAt: formatTimeValue(startedTimes, true),
 			lessonEndedAt: formatTimeValue(endedTimes, true),
 			durationLabel: formatDurationLabel(completedSessions, true),
@@ -130,7 +155,8 @@ function buildRowForTeacher(
 	}
 
 	const day = days[0]!
-	const dayLogin = teacherLogins.find((login) => loginMatchesDay(login, day))
+	const dayLogin = teacherLogins.find((login) => auditTimeMatchesDay(login, day))
+	const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
 	const daySession = teacherSessions.find((session) =>
 		sessionMatchesDay(session, day),
 	)
@@ -139,6 +165,7 @@ function buildRowForTeacher(
 		teacherId: teacher.id,
 		teacherName: teacher.name,
 		loginAt: dayLogin ? formatLocalTime(dayLogin.createdAt) : null,
+		logoutAt: dayLogout ? formatLocalTime(dayLogout.createdAt) : null,
 		lessonStartedAt: daySession
 			? formatLocalTime(daySession.startedAt)
 			: null,
@@ -155,7 +182,8 @@ function buildRowForTeacher(
 export function buildTeacherLessonAnalyticsRows(
 	teachers: TeacherRecord[],
 	sessions: TeachingSessionRecord[],
-	logins: LoginRecord[],
+	logins: AuditTimeRecord[],
+	logouts: AuditTimeRecord[],
 	from: string,
 	to: string,
 ): TeacherLessonAnalyticsRow[] {
@@ -163,7 +191,14 @@ export function buildTeacherLessonAnalyticsRows(
 	const isAverage = isCalendarRange(from, to)
 
 	return teachers.map((teacher) =>
-		buildRowForTeacher(teacher, days, sessions, logins, isAverage),
+		buildRowForTeacher(
+			teacher,
+			days,
+			sessions,
+			logins,
+			logouts,
+			isAverage,
+		),
 	)
 }
 
