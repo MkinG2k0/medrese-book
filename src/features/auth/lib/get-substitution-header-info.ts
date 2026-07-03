@@ -7,12 +7,33 @@ import {
 	getSubstitutableTeacherUserIds,
 } from '@/shared/lib/substitution-access'
 
+export type SubstitutionHeaderKind = 'substituting' | 'covered'
+
 export type SubstitutionHeaderLine = {
-	text: string
+	id: string
+	kind: SubstitutionHeaderKind
+	teacherName: string
+	endDate: string
 }
 
 function formatEndDate(endDate: Date): string {
 	return dayjs(endDate).format('DD.MM.YYYY')
+}
+
+function dedupeByTeacherAndKind(
+	lines: SubstitutionHeaderLine[],
+): SubstitutionHeaderLine[] {
+	const byKey = new Map<string, SubstitutionHeaderLine>()
+
+	for (const line of lines) {
+		const key = `${line.kind}:${line.teacherName}`
+		const existing = byKey.get(key)
+		if (!existing || dayjs(line.endDate, 'DD.MM.YYYY').isAfter(dayjs(existing.endDate, 'DD.MM.YYYY'))) {
+			byKey.set(key, line)
+		}
+	}
+
+	return [...byKey.values()]
 }
 
 type SessionForSubstitutionHeader = {
@@ -50,12 +71,15 @@ export async function getSubstitutionHeaderInfo(
 			for (const substitution of active) {
 				if (substitution.absentTeacherId !== absentTeacher.id) continue
 				lines.push({
-					text: `Замещаете ${substitution.absentTeacher.user.name} до ${formatEndDate(substitution.endDate)}`,
+					id: substitution.id,
+					kind: 'substituting',
+					teacherName: substitution.absentTeacher.user.name,
+					endDate: formatEndDate(substitution.endDate),
 				})
 			}
 		}
 
-		return lines
+		return dedupeByTeacherAndKind(lines)
 	}
 
 	const covered = await getActiveSubstitutionsForAbsentTeacher(
@@ -63,7 +87,10 @@ export async function getSubstitutionHeaderInfo(
 	)
 	for (const substitution of covered) {
 		lines.push({
-			text: `Вас замещает ${substitution.substituteTeacher.user.name} до ${formatEndDate(substitution.endDate)}`,
+			id: substitution.id,
+			kind: 'covered',
+			teacherName: substitution.substituteTeacher.user.name,
+			endDate: formatEndDate(substitution.endDate),
 		})
 	}
 
@@ -72,11 +99,14 @@ export async function getSubstitutionHeaderInfo(
 	)
 	for (const substitution of substituting) {
 		lines.push({
-			text: `Замещаете ${substitution.absentTeacher.user.name} до ${formatEndDate(substitution.endDate)}`,
+			id: substitution.id,
+			kind: 'substituting',
+			teacherName: substitution.absentTeacher.user.name,
+			endDate: formatEndDate(substitution.endDate),
 		})
 	}
 
-	return lines
+	return dedupeByTeacherAndKind(lines)
 }
 
 export async function isTeacherActivelySubstituting(
