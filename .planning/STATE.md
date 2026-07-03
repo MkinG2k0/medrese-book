@@ -165,10 +165,11 @@ None yet.
 | 260704-23a | кроме телефона опекуна сделать и имя | 2026-07-04 | 14fd227 | [260704-23a-guardian-name-field](./quick/260704-23a-guardian-name-field/) |
 | 260704-2w3 | уведомления при получении сообщения | 2026-07-04 | d802689 | [260704-2w3-message-notifications](./quick/260704-2w3-message-notifications/) |
 | 260704-31y | гибкие оценки в журнале: сохранение без оценки, снятие кликом, Средне = проход | 2026-07-04 | b2f95a6 | [260704-31y-journal-grade-optional](./quick/260704-31y-journal-grade-optional/) |
+| 260704-34e | сделать шире (боковая панель сообщений) | 2026-07-04 | f22540c | [260704-34e-wider-messages-sidebar](./quick/260704-34e-wider-messages-sidebar/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-04 - Completed quick task 260704-31y: гибкие оценки в журнале
+Last activity: 2026-07-04 - Completed quick task 260704-34e: сделать шире (боковая панель сообщений)
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
