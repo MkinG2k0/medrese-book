@@ -3,7 +3,7 @@
 import { Input } from 'antd'
 import { useMemo } from 'react'
 
-import { formatMoney, parseMoneyInput } from '@/shared/lib/money'
+import { parseMoneyInput } from '@/shared/lib/money'
 
 type MoneyInputProps = {
 	valueKopecks: number | null
@@ -30,7 +30,7 @@ export function MoneyInput({
 				const parsed = parseMoneyInput(event.target.value)
 				onChangeKopecks(parsed)
 			}}
-			suffix={valueKopecks != null ? formatMoney(valueKopecks) : undefined}
+			suffix="₽"
 		/>
 	)
 }
