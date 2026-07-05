@@ -168,10 +168,11 @@ None yet.
 | 260704-34e | сделать шире (боковая панель сообщений) | 2026-07-04 | f22540c | [260704-34e-wider-messages-sidebar](./quick/260704-34e-wider-messages-sidebar/) |
 | 260704-358 | улучшить отображение отпусков | 2026-07-04 | 0b17d06 | [260704-358-vacation-display](./quick/260704-358-vacation-display/) |
 | 260704-3en | для менеджера и супер админу нужна история всех действий в системе по типу события и тд | 2026-07-03 | 17d55a1 | [260704-3en-audit-log-ui](./quick/260704-3en-audit-log-ui/) |
+| 260705-q01 | Доп. уроки и доп. задания: справочник, назначение на уроке, оценивание | 2026-07-05 | c5cd728 | [260705-q01-extra-assignments](./quick/260705-q01-extra-assignments/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-03 - Completed quick task 260704-3en: журнал действий для менеджера и супер-админа
+Last activity: 2026-07-05 - Completed quick task 260705-q01: доп. уроки и доп. задания
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
