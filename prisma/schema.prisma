@@ -90,6 +90,8 @@ model User {
   salaryPayoutsCreated       SalaryPayout[]     @relation("SalaryPayoutCreatedBy")
   monthClosesCreated         MonthClose[]       @relation("MonthCloseCreatedBy")
   sessionDurationAdjustments TeachingSessionDurationAdjustment[] @relation("SessionDurationAdjustedBy")
+  extraAssignmentsAuthored   ExtraAssignment[]
+  extraAssignmentsAssigned   StudentExtraAssignment[]            @relation("ExtraAssignmentAssignedBy")
   createdAt                  DateTime           @default(now())
 }
 
@@ -137,6 +139,7 @@ model Student {
   awards         Award[]
   tuitionCharges TuitionCharge[]
   tuitionPayments TuitionPayment[]
+  extraAssignments StudentExtraAssignment[]
 }
 
 model Level {
@@ -157,6 +160,8 @@ model Step {
   description String           @default("")
   hours       Int
   completions StepCompletion[]
+  extraAssignments       ExtraAssignment[]
+  displayExtraAssignments StudentExtraAssignment[] @relation("DisplayStepExtraAssignments")
 
   @@unique([levelId, order])
 }
@@ -171,7 +176,53 @@ model Session {
   note          String?
   isAdjustment  Boolean          @default(false)
   completions   StepCompletion[]
+  extraAssignments StudentExtraAssignment[]
   createdAt     DateTime         @default(now())
+}
+
+model ExtraAssignment {
+  id        String   @id @default(cuid())
+  title     String
+  content   Json
+  stepId    String?
+  step      Step?    @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  instances StudentExtraAssignment[]
+
+  @@index([authorId])
+  @@index([stepId])
+}
+
+model StudentExtraAssignment {
+  id            String   @id @default(cuid())
+  templateId    String
+  template      ExtraAssignment @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sessionId     String
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  displayStepId String
+  displayStep   Step     @relation("DisplayStepExtraAssignments", fields: [displayStepId], references: [id])
+  assignedById  String
+  assignedBy    User     @relation("ExtraAssignmentAssignedBy", fields: [assignedById], references: [id])
+  createdAt     DateTime @default(now())
+  completion    ExtraAssignmentCompletion?
+
+  @@index([sessionId, displayStepId])
+  @@index([studentId])
+}
+
+model ExtraAssignmentCompletion {
+  id                       String                 @id @default(cuid())
+  studentExtraAssignmentId String                 @unique
+  studentExtraAssignment   StudentExtraAssignment @relation(fields: [studentExtraAssignmentId], references: [id], onDelete: Cascade)
+  grade                    Int
+  note                     String?
+  createdAt                DateTime               @default(now())
 }
 
 model StepCompletion {
