@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 
 import { useTeachingSessionDates } from "@/entities/teaching-session/api/use-teaching-session-dates";
-import { isFutureCalendarDay } from "@/shared/lib/calendar-date";
+import { isJournalFutureDayBlocked } from "@/shared/lib/calendar-date";
 
 type JournalDatePickerProps = {
   groupId: string;
@@ -55,7 +55,7 @@ export function JournalDatePicker({
       pickerValue={panelDate}
       disabledDate={(current) =>
         current != null &&
-        isFutureCalendarDay(current.format("YYYY-MM-DD"))
+        isJournalFutureDayBlocked(current.format("YYYY-MM-DD"))
       }
       onPanelChange={(date) => {
         if (date) setPanelDate(date as Dayjs);

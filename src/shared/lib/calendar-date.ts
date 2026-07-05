@@ -23,6 +23,18 @@ export function isFutureCalendarDay(
   return calendarDay > today;
 }
 
+/** @temporary Вернуть false перед продом — разрешает выбор будущих дней в журнале. */
+export const TEMP_ALLOW_FUTURE_JOURNAL_DATES = true;
+
+/** Блокирует ли день для навигации в журнале (с учётом временного флага). */
+export function isJournalFutureDayBlocked(
+  calendarDay: string,
+  today: string = getLocalDateString(),
+): boolean {
+  if (TEMP_ALLOW_FUTURE_JOURNAL_DATES) return false;
+  return isFutureCalendarDay(calendarDay, today);
+}
+
 /** Совпадает ли момент времени с календарным днём YYYY-MM-DD. */
 export function isSameCalendarDay(
   date: Date,

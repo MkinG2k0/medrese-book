@@ -19,7 +19,10 @@ import {
   type AttendanceFilterValue,
 } from "@/features/journal/ui/AttendanceFilter";
 import { JournalStudentsTable } from "@/features/journal/ui/JournalStudentsTable";
-import { getLocalDateString, isFutureCalendarDay } from "@/shared/lib/calendar-date";
+import {
+  getLocalDateString,
+  isJournalFutureDayBlocked,
+} from "@/shared/lib/calendar-date";
 import type { RiskFlag } from "@/shared/lib/student-metrics/types";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -79,11 +82,11 @@ export function StudentList({ groupId }: StudentListProps) {
 
   const shiftDate = (days: number) => {
     const nextDate = dayjs(dateFilter).add(days, "day").format("YYYY-MM-DD");
-    if (days > 0 && isFutureCalendarDay(nextDate)) return;
+    if (days > 0 && isJournalFutureDayBlocked(nextDate)) return;
     setDateFilter(nextDate);
   };
 
-  const canGoForward = !isFutureCalendarDay(
+  const canGoForward = !isJournalFutureDayBlocked(
     dayjs(dateFilter).add(1, "day").format("YYYY-MM-DD"),
   );
 
