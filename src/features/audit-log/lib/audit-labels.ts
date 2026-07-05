@@ -16,6 +16,7 @@ const ACTION_LABELS: Record<string, string> = {
 	LEAVE_REQUEST_REJECTED: 'Заявка на отпуск отклонена',
 	SUBSTITUTION_ACTIVATED: 'Активировано замещение',
 	MESSAGE_RECEIVED: 'Получено сообщение',
+	POST_PUBLISHED: 'Опубликована новость',
 }
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 	Conversation: 'Диалог',
 	TeachingSession: 'Урок',
 	Message: 'Сообщение',
+	Post: 'Новость',
 }
 
 export const KNOWN_AUDIT_ACTIONS = Object.keys(

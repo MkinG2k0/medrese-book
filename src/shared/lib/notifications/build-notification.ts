@@ -21,6 +21,10 @@ export type NotificationDraft = {
 
 export type NotificationBuildContext = {
 	managerUserIds: string[]
+	allUserIds?: string[]
+	authorName?: string
+	postTitle?: string
+	authorUserId?: string
 	teacherUserId?: string
 	teacherName?: string
 	substituteUserId?: string
@@ -192,6 +196,23 @@ export async function buildNotificationsForEvent(
 					payload: event.payload,
 				},
 			]
+		}
+
+		case 'POST_PUBLISHED': {
+			const postTitle = context.postTitle ?? 'Новая публикация'
+			const authorName = context.authorName ?? 'Менеджер'
+			const authorUserId = context.authorUserId
+
+			return (context.allUserIds ?? [])
+				.filter((userId) => userId !== authorUserId)
+				.map((userId) => ({
+					userId,
+					type: 'POST_PUBLISHED',
+					title: 'Новая новость',
+					body: `${authorName}: ${postTitle}`,
+					link: '/news',
+					payload: event.payload,
+				}))
 		}
 
 		default:

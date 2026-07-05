@@ -69,6 +69,12 @@ enum NotificationType {
   LEAVE_REQUEST_REJECTED
   SUBSTITUTION_ACTIVATED
   MESSAGE_RECEIVED
+  POST_PUBLISHED
+}
+
+enum PostMediaType {
+  IMAGE
+  VIDEO
 }
 
 model User {
@@ -92,6 +98,8 @@ model User {
   sessionDurationAdjustments TeachingSessionDurationAdjustment[] @relation("SessionDurationAdjustedBy")
   extraAssignmentsAuthored   ExtraAssignment[]
   extraAssignmentsAssigned   StudentExtraAssignment[]            @relation("ExtraAssignmentAssignedBy")
+  postsAuthored              Post[]
+  postLikes                  PostLike[]
   createdAt                  DateTime           @default(now())
 }
 
@@ -501,4 +509,42 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId, createdAt])
+}
+
+model Post {
+  id          String      @id @default(cuid())
+  title       String
+  body        Json
+  authorId    String
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  publishedAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  media       PostMedia[]
+  likes       PostLike[]
+
+  @@index([publishedAt])
+}
+
+model PostMedia {
+  id        String        @id @default(cuid())
+  postId    String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  type      PostMediaType
+  url       String
+  sortOrder Int           @default(0)
+
+  @@index([postId, sortOrder])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
 }

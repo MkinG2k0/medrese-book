@@ -93,6 +93,28 @@ async function resolveBuildContext(
 		context.absentTeacherName = absent?.user.name
 	}
 
+	if (event.action === 'POST_PUBLISHED') {
+		const postPayload = event.payload as {
+			title?: string
+			authorId?: string
+		}
+
+		const [users, author] = await Promise.all([
+			client.user.findMany({ select: { id: true } }),
+			postPayload.authorId
+				? client.user.findUnique({
+						where: { id: postPayload.authorId },
+						select: { id: true, name: true },
+					})
+				: null,
+		])
+
+		context.allUserIds = users.map((user) => user.id)
+		context.authorUserId = author?.id ?? postPayload.authorId
+		context.authorName = author?.name
+		context.postTitle = postPayload.title
+	}
+
 	return context
 }
 
