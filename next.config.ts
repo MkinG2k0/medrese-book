@@ -1,11 +1,18 @@
 import type { NextConfig } from 'next'
 
-function getS3RemotePattern(): NonNullable<NextConfig['images']>['remotePatterns'][number] | null {
-	const publicUrl = process.env.S3_PUBLIC_URL?.trim()
-	if (!publicUrl) return null
+type RemotePattern = {
+	protocol: 'http' | 'https'
+	hostname: string
+	pathname: string
+}
 
+function patternKey(pattern: RemotePattern): string {
+	return `${pattern.protocol}://${pattern.hostname}${pattern.pathname ?? ''}`
+}
+
+function urlToRemotePattern(rawUrl: string): RemotePattern | null {
 	try {
-		const url = new URL(publicUrl)
+		const url = new URL(rawUrl)
 		if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
 
 		return {
@@ -18,7 +25,32 @@ function getS3RemotePattern(): NonNullable<NextConfig['images']>['remotePatterns
 	}
 }
 
-const s3RemotePattern = getS3RemotePattern()
+/** Hostnames for next/image — must match buildS3PublicUrl() in s3-config.ts */
+function getS3RemotePatterns(): RemotePattern[] {
+	const seen = new Set<string>()
+	const patterns: RemotePattern[] = []
+
+	const add = (rawUrl: string | undefined) => {
+		if (!rawUrl) return
+		const pattern = urlToRemotePattern(rawUrl)
+		if (!pattern) return
+		const key = patternKey(pattern)
+		if (seen.has(key)) return
+		seen.add(key)
+		patterns.push(pattern)
+	}
+
+	add(process.env.S3_PUBLIC_URL?.trim())
+	add(process.env.S3_ENDPOINT?.trim())
+
+	const bucket = process.env.S3_BUCKET?.trim()
+	const region = process.env.AWS_REGION?.trim()
+	if (bucket && region && !process.env.S3_ENDPOINT?.trim() && !process.env.S3_PUBLIC_URL?.trim()) {
+		add(`https://${bucket}.s3.${region}.amazonaws.com`)
+	}
+
+	return patterns
+}
 
 const nextConfig: NextConfig = {
 	turbopack: {},
@@ -29,7 +61,7 @@ const nextConfig: NextConfig = {
 				hostname: 'upload.wikimedia.org',
 				pathname: '/**',
 			},
-			...(s3RemotePattern ? [s3RemotePattern] : []),
+			...getS3RemotePatterns(),
 		],
 	},
 }

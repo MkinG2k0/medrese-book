@@ -1,46 +1,21 @@
-import { getMyTeacherHoursAnalytics } from '@/features/analytics/actions/teacher-lessons-actions'
-import { TeacherLessonsTable } from '@/features/analytics/ui/TeacherLessonsAnalytics'
-import { TeacherLessonsDateFilter } from '@/features/analytics/ui/TeacherLessonsDateFilter'
-import { requireRole } from '@/shared/lib/session'
-import Text from '@/shared/ui/Text'
-import Title from '@/shared/ui/Title'
+import { redirect } from 'next/navigation'
 
-type MyTeacherHoursPageProps = {
+import { requireRole } from '@/shared/lib/session'
+
+type MyTeacherHoursRedirectPageProps = {
 	searchParams: Promise<{ from?: string; to?: string }>
 }
 
-export default async function MyTeacherHoursPage({
+export default async function MyTeacherHoursRedirectPage({
 	searchParams,
-}: MyTeacherHoursPageProps) {
+}: MyTeacherHoursRedirectPageProps) {
 	await requireRole('TEACHER')
-	const { from: fromParam, to: toParam } = await searchParams
+	const { from, to } = await searchParams
 
-	const { rows, from, to, isRange } = await getMyTeacherHoursAnalytics(
-		fromParam,
-		toParam,
-	)
+	const params = new URLSearchParams()
+	if (from) params.set('from', from)
+	if (to) params.set('to', to)
 
-	const periodLabel = isRange
-		? `с ${from} по ${to} (средние значения)`
-		: from
-
-	return (
-		<div className="flex flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<div>
-					<Title level={3} className="!mb-1">
-						Мои часы
-					</Title>
-					<Text type="secondary">Период: {periodLabel}</Text>
-				</div>
-				<TeacherLessonsDateFilter from={from} to={to} />
-			</div>
-
-			<TeacherLessonsTable
-				rows={rows}
-				isRange={isRange}
-				showTeacherColumn={false}
-			/>
-		</div>
-	)
+	const query = params.toString()
+	redirect(`/accounting/my-salary${query ? `?${query}` : ''}`)
 }

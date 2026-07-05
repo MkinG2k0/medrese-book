@@ -4,7 +4,6 @@ import { DatePicker } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-import { buildTeacherLessonsSearchParams } from '@/features/analytics/lib/teacher-lessons-query'
 import {
 	getLocalDateString,
 	isFutureCalendarDay,
@@ -36,13 +35,16 @@ export function TeacherLessonsDateFilter({
 	const pushRange = (nextFrom: string, nextTo: string) => {
 		const teacher =
 			selectedTeacher ?? searchParams.get('teacher') ?? undefined
-		router.push(
-			`${pathname}${buildTeacherLessonsSearchParams({
-				from: nextFrom,
-				to: nextTo,
-				teacher,
-			})}`,
-		)
+		const params = new URLSearchParams(searchParams.toString())
+		params.set('from', nextFrom)
+		params.set('to', nextTo)
+		if (teacher) {
+			params.set('teacher', teacher)
+		} else {
+			params.delete('teacher')
+		}
+		const qs = params.toString()
+		router.push(qs ? `${pathname}?${qs}` : pathname)
 	}
 
 	return (

@@ -64,7 +64,20 @@ describe('s3-config', () => {
 		expect(url).toBe('https://cdn.example.com/uploads/file.png')
 	})
 
-	it('buildS3PublicUrl строит стандартный AWS URL', () => {
+	it('buildS3PublicUrl строит URL Yandex Object Storage через endpoint', () => {
+		const url = buildS3PublicUrl('uploads/file.png', {
+			accessKeyId: 'key',
+			secretAccessKey: 'secret',
+			region: 'ru-central1',
+			bucket: 'medrese-uploads',
+			endpoint: 'https://storage.yandexcloud.net',
+			keyPrefix: 'uploads',
+		})
+
+		expect(url).toBe('https://storage.yandexcloud.net/medrese-uploads/uploads/file.png')
+	})
+
+	it('buildS3PublicUrl строит стандартный AWS URL без endpoint', () => {
 		const url = buildS3PublicUrl('uploads/file.png', {
 			accessKeyId: 'key',
 			secretAccessKey: 'secret',

@@ -31,9 +31,12 @@ test.describe("Аналитика учителей — учитель", () => {
     await expect(page).not.toHaveURL(/\/analytics\/teachers$/);
   });
 
-  test("видит страницу своих часов", async ({ page }) => {
-    await page.goto("/analytics/my-hours");
-    await expect(page).toHaveURL(/\/analytics\/my-hours$/);
+  test("видит объединённую страницу зарплаты и часов", async ({ page }) => {
+    await page.goto("/accounting/my-salary");
+    await expect(page).toHaveURL(/\/accounting\/my-salary/);
+    await expect(
+      page.getByRole("heading", { name: "Моя зарплата" }),
+    ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Мои часы" }),
     ).toBeVisible();
@@ -48,6 +51,15 @@ test.describe("Аналитика учителей — учитель", () => {
     await expect(
       page.getByRole("columnheader", { name: "Учитель" }),
     ).not.toBeVisible();
-    await expect(page.locator(".ant-picker")).toHaveCount(0);
+  });
+
+  test("старый URL /analytics/my-hours перенаправляет на /accounting/my-salary", async ({
+    page,
+  }) => {
+    await page.goto("/analytics/my-hours");
+    await expect(page).toHaveURL(/\/accounting\/my-salary/);
+    await expect(
+      page.getByRole("heading", { name: "Моя зарплата" }),
+    ).toBeVisible();
   });
 });
