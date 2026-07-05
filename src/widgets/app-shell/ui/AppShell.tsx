@@ -6,6 +6,7 @@ import {
   BookOutlined,
   CalendarOutlined,
   DollarOutlined,
+  FileTextOutlined,
   FieldTimeOutlined,
   HistoryOutlined,
   LogoutOutlined,
@@ -47,6 +48,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     key: "/journal",
     icon: <BookOutlined />,
     label: "Журнал",
+  },
+  "/extra-assignments": {
+    key: "/extra-assignments",
+    icon: <FileTextOutlined />,
+    label: "Доп. задания",
   },
   "/my-group": {
     key: "/my-group",
@@ -169,6 +175,7 @@ const managerMenuOrder = [
   "/groups",
   "/admin/users",
   "/admin/program",
+  "/extra-assignments",
   "/analytics",
   "/analytics/teachers",
   "/admin/leave-calendar",
@@ -188,6 +195,7 @@ const accountantMenuOrder = [
 const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
   TEACHER: [
     "/journal",
+    "/extra-assignments",
     "/my-group",
     "/calendar",
     "/journal/history",

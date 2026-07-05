@@ -75,6 +75,7 @@ export const authConfig: NextAuthConfig = {
 				'/admin/leave-calendar': ['SUPER_ADMIN', 'MANAGER'],
 				'/calendar': ['TEACHER'],
 				'/journal': ['TEACHER'],
+				'/extra-assignments': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 				'/my-group': ['TEACHER'],
 				'/groups': ['MANAGER', 'SUPER_ADMIN'],
 				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],

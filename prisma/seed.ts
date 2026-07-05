@@ -47,6 +47,9 @@ async function main() {
   await prisma.donation.deleteMany();
   await prisma.monthClose.deleteMany();
   await prisma.stepCompletion.deleteMany();
+  await prisma.extraAssignmentCompletion.deleteMany();
+  await prisma.studentExtraAssignment.deleteMany();
+  await prisma.extraAssignment.deleteMany();
   await prisma.session.deleteMany();
   await prisma.award.deleteMany();
   await prisma.teachingSession.deleteMany();
@@ -151,6 +154,48 @@ async function main() {
     const passedIds = getPassedStepIds(profile, levelStepIds).map((step) => step.id);
 
     await seedStudentHistory(prisma, student.id, profile, passedIds, lessonDates, seedCtx);
+  }
+
+  const firstLevelSteps = await prisma.step.findMany({
+    where: { levelId: levels[0]!.id },
+    orderBy: { order: "asc" },
+    take: 2,
+  });
+  const firstStep = firstLevelSteps[0];
+  const secondStep = firstLevelSteps[1];
+
+  if (firstStep) {
+    await prisma.extraAssignment.createMany({
+      data: [
+        {
+          title: "E2E Extra: Повторение суры Аль-Фатиха",
+          content: {
+            blocks: [{ type: "text", value: "Прочитать суру Аль-Фатиха 3 раза" }],
+          },
+          stepId: firstStep.id,
+          authorId: manager.id,
+          isSystem: true,
+        },
+        {
+          title: "E2E Extra: Письменное задание",
+          content: {
+            blocks: [{ type: "text", value: "Выписать аят из памяти" }],
+          },
+          stepId: secondStep?.id ?? firstStep.id,
+          authorId: superAdmin.id,
+          isSystem: true,
+        },
+        {
+          title: "E2E Extra: Учительское задание",
+          content: {
+            blocks: [{ type: "text", value: "Дополнительная практика чтения" }],
+          },
+          stepId: firstStep.id,
+          authorId: teacher1User.id,
+          isSystem: false,
+        },
+      ],
+    });
   }
 
   const studentCodes = STUDENT_PROFILES.map((p) => p.code);
