@@ -1,7 +1,5 @@
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
-
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import { uploadFile } from '@/shared/lib/storage/upload-file'
 import { created } from '@/shared/api'
 
 export async function POST(request: Request) {
@@ -17,12 +15,12 @@ export async function POST(request: Request) {
 		return Response.json({ error: 'Файл не найден' }, { status: 400 })
 	}
 
-	const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-	await mkdir(uploadsDir, { recursive: true })
-
-	const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
 	const buffer = Buffer.from(await file.arrayBuffer())
-	await writeFile(path.join(uploadsDir, filename), buffer)
+	const result = await uploadFile({
+		filename: file.name,
+		buffer,
+		contentType: file.type || undefined,
+	})
 
-	return created({ url: `/uploads/${filename}` })
+	return created({ url: result.url })
 }
