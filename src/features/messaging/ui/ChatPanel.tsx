@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import type { ConversationSummary } from '@/entities/conversation'
 import { useMessages, useSendMessage } from '@/entities/conversation'
-import { contactSubtitle } from '@/features/messaging/lib/contact-labels'
+import { ContactRoleBadge } from '@/features/messaging/ui/ContactRoleBadge'
 import Text from '@/shared/ui/Text'
 
 type ChatPanelProps = {
@@ -48,9 +48,6 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 	}
 
 	const headerTitle = conversation.title ?? conversation.otherUser.name
-	const headerSubtitle = conversation.isOwn
-		? contactSubtitle(conversation.otherUser)
-		: 'Просмотр диалога'
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
@@ -65,12 +62,19 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 					/>
 				)}
 				<div className="min-w-0 flex-1">
-					<Text strong className="block truncate">
-						{headerTitle}
-					</Text>
-					<Text type="secondary" className="text-sm">
-						{headerSubtitle}
-					</Text>
+					<div className="flex flex-wrap items-center gap-2">
+						<Text strong className="truncate">
+							{headerTitle}
+						</Text>
+						{conversation.isOwn && (
+							<ContactRoleBadge role={conversation.otherUser.role} />
+						)}
+					</div>
+					{!conversation.isOwn && (
+						<Text type="secondary" className="text-sm">
+							Просмотр диалога
+						</Text>
+					)}
 				</div>
 			</div>
 

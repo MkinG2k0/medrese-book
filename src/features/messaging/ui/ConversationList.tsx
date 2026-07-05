@@ -9,7 +9,8 @@ import type {
   MessageContact,
 } from "@/entities/conversation";
 import { useMessageContacts } from "@/entities/conversation";
-import { contactSubtitle } from "@/features/messaging/lib/contact-labels";
+import { getContactRoleLabel } from "@/features/messaging/lib/contact-labels";
+import { ContactRoleBadge } from "@/features/messaging/ui/ContactRoleBadge";
 import Text from "@/shared/ui/Text";
 
 type ConversationListProps = {
@@ -26,13 +27,13 @@ function ConversationItems({
   selectedId,
   onSelect,
   getTitle,
-  getRoleLine,
+  getRole,
 }: {
   items: ConversationSummary[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   getTitle: (item: ConversationSummary) => string;
-  getRoleLine?: (item: ConversationSummary) => string | null;
+  getRole?: (item: ConversationSummary) => string | null;
 }) {
   if (items.length === 0) {
     return (
@@ -45,7 +46,7 @@ function ConversationItems({
   return (
     <ul className="m-0 list-none divide-y divide-[#2a2622] overflow-y-auto p-0">
       {items.map((item) => {
-        const roleLine = getRoleLine?.(item) ?? null;
+        const role = getRole?.(item) ?? null;
         const isSelected = selectedId === item.id;
 
         return (
@@ -58,15 +59,11 @@ function ConversationItems({
               onClick={() => onSelect(item.id)}
             >
               <div className="min-w-0 flex-1">
-                <Text strong className="block">
-                  {getTitle(item)}
-                </Text>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Text strong>{getTitle(item)}</Text>
+                  {role && <ContactRoleBadge role={role} />}
+                </div>
                 <div className="flex flex-col gap-0.5">
-                  {roleLine && (
-                    <Text type="secondary" className="text-xs">
-                      {roleLine}
-                    </Text>
-                  )}
                   {item.lastMessage && (
                     <Text type="secondary" className="truncate text-xs">
                       {item.lastMessage.body}
@@ -132,8 +129,15 @@ export function ConversationList({
           onChange={(contactId) => void handleContactSelect(contactId)}
           options={availableContacts.map((c) => ({
             value: c.id,
-            label: `${c.name} (${contactSubtitle(c)})`,
+            label: `${c.name} ${getContactRoleLabel(c.role)}`,
+            contact: c,
           }))}
+          optionRender={(option) => (
+            <div className="flex items-center justify-between gap-2">
+              <span>{option.data.contact.name}</span>
+              <ContactRoleBadge role={option.data.contact.role} />
+            </div>
+          )}
           showSearch
           optionFilterProp="label"
           allowClear
@@ -166,7 +170,7 @@ export function ConversationList({
                 selectedId={selectedId}
                 onSelect={onSelect}
                 getTitle={(item) => item.otherUser.name}
-                getRoleLine={(item) => contactSubtitle(item.otherUser)}
+                getRole={(item) => item.otherUser.role}
               />
             </div>
           )}

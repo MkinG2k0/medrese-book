@@ -20,7 +20,7 @@ test.describe("Сообщения", () => {
     const message = `E2E teacher msg ${Date.now()}`;
     await loginAs(page, TEST_CODES.teacher1);
     await openMessages(page);
-    await startChatWith(page, `${TEST_USERS.studentAli} (Ученик)`);
+    await startChatWith(page, `${TEST_USERS.studentAli} Ученик`);
     await expect(page.getByText(TEST_USERS.studentAli).first()).toBeVisible();
     await page.getByPlaceholder("Введите сообщение…").fill(message);
     await page
@@ -35,7 +35,7 @@ test.describe("Сообщения", () => {
     await loginAs(page, TEST_CODES.studentAli);
     await openMessages(page);
     await page.getByText(TEST_USERS.teacher1Name).first().click();
-    await startChatWith(page, "Менеджер (Менеджер)");
+    await startChatWith(page, "Менеджер Менеджер");
     await page.getByPlaceholder("Введите сообщение…").fill(reply);
     await page
       .getByRole("button")

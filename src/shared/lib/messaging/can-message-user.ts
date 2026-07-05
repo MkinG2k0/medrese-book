@@ -34,6 +34,7 @@ export async function canMessageUser(
 
 	if (role === 'TEACHER') {
 		if (target.role === 'MANAGER') return true
+		if (target.role === 'TEACHER') return true
 		if (target.role === 'STUDENT' && target.student) {
 			return canAccessGroupAsTeacher(
 				teacherId,
@@ -76,9 +77,17 @@ export async function getMessageableContacts(session: Session) {
 			? await getGroupTeacherIdsForTeacher(teacherId)
 			: []
 
-		const [managers, students] = await Promise.all([
+		const [managers, teachers, students] = await Promise.all([
 			prisma.user.findMany({
 				where: { role: 'MANAGER' },
+				select: { id: true, name: true, role: true },
+				orderBy: { name: 'asc' },
+			}),
+			prisma.user.findMany({
+				where: {
+					role: 'TEACHER',
+					id: { not: session.user.id },
+				},
 				select: { id: true, name: true, role: true },
 				orderBy: { name: 'asc' },
 			}),
@@ -95,7 +104,7 @@ export async function getMessageableContacts(session: Session) {
 					})
 				: Promise.resolve([]),
 		])
-		return [...managers, ...students]
+		return [...managers, ...teachers, ...students]
 	}
 
 	if (role === 'STUDENT' && studentId) {

@@ -73,6 +73,21 @@ describe('canMessageUser', () => {
 		expect(result).toBe(true)
 	})
 
+	it('учитель может писать другому учителю', async () => {
+		vi.mocked(prisma.user.findUnique).mockResolvedValue({
+			id: 't2',
+			role: 'TEACHER',
+			teacher: { id: 'teacher-2' },
+			student: null,
+		} as never)
+
+		const result = await canMessageUser(
+			session({ id: 't1', role: 'TEACHER', teacherId: 'teacher-1' }),
+			't2',
+		)
+		expect(result).toBe(true)
+	})
+
 	it('ученик может писать своему учителю', async () => {
 		vi.mocked(prisma.user.findUnique).mockResolvedValue({
 			id: 't1',
