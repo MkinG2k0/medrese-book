@@ -7,7 +7,7 @@ current_phase_name: student-analytics-history
 status: verifying
 stopped_at: Completed 01-05-PLAN.md
 last_updated: "2026-07-01T19:55:00.000Z"
-last_activity: 2026-07-04 - Completed quick task 260704-237: добавь переименование групп
+last_activity: 2026-07-05 - Completed quick task 260705-t22: добавь учителей тоже, роль отображай в badge
 progress:
   total_phases: 10
   completed_phases: 4
@@ -169,6 +169,7 @@ None yet.
 | 260704-358 | улучшить отображение отпусков | 2026-07-04 | 0b17d06 | [260704-358-vacation-display](./quick/260704-358-vacation-display/) |
 | 260704-3en | для менеджера и супер админу нужна история всех действий в системе по типу события и тд | 2026-07-03 | 17d55a1 | [260704-3en-audit-log-ui](./quick/260704-3en-audit-log-ui/) |
 | 260705-q01 | Доп. уроки и доп. задания: справочник, назначение на уроке, оценивание | 2026-07-05 | c5cd728 | [260705-q01-extra-assignments](./quick/260705-q01-extra-assignments/) |
+| 260705-t22 | добавь учителей тоже, роль отображай в badge | 2026-07-05 | 4a6365f | [260705-t22-badge](./quick/260705-t22-badge/) |
 
 ## Session Continuity
 
