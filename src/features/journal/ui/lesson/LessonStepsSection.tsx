@@ -1,6 +1,9 @@
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 
 import { Button } from "antd";
+
+import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
+import { AssignExtraAssignmentModal } from "@/features/extra-assignments/ui/AssignExtraAssignmentModal";
 
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
 import { AttendanceButtons } from "@/features/journal/ui/AttendanceButtons";
@@ -36,6 +39,18 @@ type LessonStepsSectionProps = {
   onStepStateChange: (stepId: string, state: StepGradeState) => void;
   onLoadMoreSteps: () => void;
   onLoadNextLevelSteps: () => void | Promise<void>;
+  studentId: string;
+  sessionId: string | null;
+  sessionDate: string;
+  extraInstances: SessionExtraAssignmentInstance[];
+  assignModalStepId: string | null;
+  assignModalStepLabel: string | null;
+  onOpenAssignModal: (stepId: string, stepLabel: string) => void;
+  onCloseAssignModal: () => void;
+  onEnsureSession: () => Promise<string | null>;
+  onExtraAssigned: () => void;
+  onExtraGrade: (instanceId: string, grade: number, note?: string | null) => void;
+  onExtraClearGrade: (instanceId: string) => void;
 };
 
 export function LessonStepsSection({
@@ -58,7 +73,29 @@ export function LessonStepsSection({
   onStepStateChange,
   onLoadMoreSteps,
   onLoadNextLevelSteps,
+  studentId,
+  sessionId,
+  sessionDate,
+  extraInstances,
+  assignModalStepId,
+  assignModalStepLabel,
+  onOpenAssignModal,
+  onCloseAssignModal,
+  onEnsureSession,
+  onExtraAssigned,
+  onExtraGrade,
+  onExtraClearGrade,
 }: LessonStepsSectionProps) {
+  const instancesByStep = useMemo(() => {
+    const map = new Map<string, SessionExtraAssignmentInstance[]>();
+    for (const instance of extraInstances) {
+      const list = map.get(instance.displayStepId) ?? [];
+      list.push(instance);
+      map.set(instance.displayStepId, list);
+    }
+    return map;
+  }, [extraInstances]);
+
   return (
     <>
       {hasNoSteps && (
@@ -114,6 +151,15 @@ export function LessonStepsSection({
                     }
                     onToggleExpand={() => onToggleExpand(step.id)}
                     onStateChange={(state) => onStepStateChange(step.id, state)}
+                    extraInstances={instancesByStep.get(step.id) ?? []}
+                    onGiveExtraAssignment={() =>
+                      onOpenAssignModal(
+                        step.id,
+                        `Шаг ${step.order}: ${step.title}`,
+                      )
+                    }
+                    onExtraGrade={onExtraGrade}
+                    onExtraClearGrade={onExtraClearGrade}
                   />
                 </Fragment>
               );
@@ -140,6 +186,18 @@ export function LessonStepsSection({
           )}
         </div>
       )}
+
+      <AssignExtraAssignmentModal
+        open={assignModalStepId !== null}
+        studentId={studentId}
+        sessionId={sessionId}
+        displayStepId={assignModalStepId ?? ""}
+        displayStepLabel={assignModalStepLabel ?? undefined}
+        date={sessionDate}
+        onClose={onCloseAssignModal}
+        onAssigned={onExtraAssigned}
+        onEnsureSession={onEnsureSession}
+      />
     </>
   );
 }

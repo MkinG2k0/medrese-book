@@ -8,6 +8,11 @@ import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
+import {
+  useClearExtraAssignmentGrade,
+  useGradeExtraAssignment,
+  useSessionExtraAssignments,
+} from "@/entities/extra-assignment";
 import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
 import {
   getNextLevelJournalSteps,
@@ -150,6 +155,18 @@ export function useLessonPage(props: LessonPageProps) {
       seededDate: sessionDate,
     });
   const createSession = useCreateSession();
+
+  const { data: extraInstances = [], refetch: refetchExtraInstances } =
+    useSessionExtraAssignments(studentId, dateFilter);
+  const gradeExtraAssignment = useGradeExtraAssignment(studentId, dateFilter);
+  const clearExtraGrade = useClearExtraAssignmentGrade(studentId, dateFilter);
+
+  const [assignModalStepId, setAssignModalStepId] = useState<string | null>(
+    null,
+  );
+  const [assignModalStepLabel, setAssignModalStepLabel] = useState<
+    string | null
+  >(null);
 
   const isProgramComplete = useMemo(
     () => checkProgramComplete(allSteps, stepCompletions),
@@ -432,6 +449,66 @@ export function useLessonPage(props: LessonPageProps) {
     }
   };
 
+  const ensureSession = async (): Promise<string | null> => {
+    if (existingSession?.id) return existingSession.id;
+
+    try {
+      const session = await createSession.mutateAsync({
+        studentId,
+        date: toSessionDate(dateFilter).toISOString(),
+        attendance,
+        lateMinutes: attendance === "LATE" ? lateMinutes : null,
+        note: null,
+        completions: [],
+      });
+      return session.id;
+    } catch (err) {
+      message.error(
+        err instanceof Error ? err.message : "Не удалось создать занятие",
+      );
+      return null;
+    }
+  };
+
+  const handleOpenAssignModal = (stepId: string, stepLabel: string) => {
+    setAssignModalStepId(stepId);
+    setAssignModalStepLabel(stepLabel);
+  };
+
+  const handleCloseAssignModal = () => {
+    setAssignModalStepId(null);
+    setAssignModalStepLabel(null);
+  };
+
+  const handleExtraAssigned = () => {
+    void refetchExtraInstances();
+    handleCloseAssignModal();
+  };
+
+  const handleExtraGrade = async (
+    instanceId: string,
+    grade: number,
+    note?: string | null,
+  ) => {
+    try {
+      await gradeExtraAssignment.mutateAsync({
+        id: instanceId,
+        grade: grade as 1 | 3 | 5,
+        note,
+      });
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Ошибка оценки");
+    }
+  };
+
+  const handleExtraClearGrade = async (instanceId: string) => {
+    try {
+      await clearExtraGrade.mutateAsync(instanceId);
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Ошибка снятия оценки");
+    }
+  };
+
   const saveSession = async () => {
     const completions =
       attendance === "ABSENT"
@@ -514,6 +591,17 @@ export function useLessonPage(props: LessonPageProps) {
     handleSave,
     handleSaveAndNext,
     isLoadingNextLevel,
+    sessionId: existingSession?.id ?? null,
+    sessionDate: dateFilter,
+    extraInstances,
+    assignModalStepId,
+    assignModalStepLabel,
+    handleOpenAssignModal,
+    handleCloseAssignModal,
+    ensureSession,
+    handleExtraAssigned,
+    handleExtraGrade,
+    handleExtraClearGrade,
   };
 }
 

@@ -51,6 +51,18 @@ export function LessonPage(props: LessonPageProps) {
         onStepStateChange={lesson.updateStepState}
         onLoadMoreSteps={lesson.loadMoreSteps}
         onLoadNextLevelSteps={lesson.loadNextLevelSteps}
+        studentId={lesson.studentId}
+        sessionId={lesson.sessionId}
+        sessionDate={lesson.sessionDate}
+        extraInstances={lesson.extraInstances}
+        assignModalStepId={lesson.assignModalStepId}
+        assignModalStepLabel={lesson.assignModalStepLabel}
+        onOpenAssignModal={lesson.handleOpenAssignModal}
+        onCloseAssignModal={lesson.handleCloseAssignModal}
+        onEnsureSession={lesson.ensureSession}
+        onExtraAssigned={lesson.handleExtraAssigned}
+        onExtraGrade={lesson.handleExtraGrade}
+        onExtraClearGrade={lesson.handleExtraClearGrade}
       />
 
       <LessonSaveBar

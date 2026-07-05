@@ -1,8 +1,11 @@
 "use client";
 
-import { DownOutlined, RightOutlined } from "@ant-design/icons";
-import { Card, Flex, Form, Input, Radio, Spin, Tag } from "antd";
+import { DownOutlined, PlusOutlined, RightOutlined } from "@ant-design/icons";
+import { Button, Card, Flex, Form, Input, Radio, Spin, Tag } from "antd";
 import { useEffect, useState } from "react";
+
+import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
+import { SessionExtraAssignmentCard } from "@/features/extra-assignments/ui/SessionExtraAssignmentCard";
 
 import { getJournalStepContent } from "@/features/journal/actions/journal-actions";
 import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
@@ -48,6 +51,10 @@ type StepCardProps = {
   readOnly?: boolean;
   onToggleExpand: () => void;
   onStateChange: (state: StepGradeState) => void;
+  extraInstances?: SessionExtraAssignmentInstance[];
+  onGiveExtraAssignment?: () => void;
+  onExtraGrade?: (instanceId: string, grade: number, note?: string | null) => void;
+  onExtraClearGrade?: (instanceId: string) => void;
 };
 
 export function StepCard({
@@ -59,6 +66,10 @@ export function StepCard({
   readOnly,
   onToggleExpand,
   onStateChange,
+  extraInstances = [],
+  onGiveExtraAssignment,
+  onExtraGrade,
+  onExtraClearGrade,
 }: StepCardProps) {
   const [content, setContent] = useState<StepContent>(step.content);
   const [isContentLoading, setIsContentLoading] = useState(false);
@@ -193,6 +204,32 @@ export function StepCard({
                   />
                 </>
               )}
+              {!readOnly && onGiveExtraAssignment ? (
+                <Button
+                  icon={<PlusOutlined />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGiveExtraAssignment();
+                  }}
+                >
+                  Дать доп. задание
+                </Button>
+              ) : null}
+              {extraInstances.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {extraInstances.map((instance) => (
+                    <SessionExtraAssignmentCard
+                      key={instance.id}
+                      instance={instance}
+                      readOnly={readOnly}
+                      onGrade={(grade, note) =>
+                        onExtraGrade?.(instance.id, grade, note)
+                      }
+                      onClearGrade={() => onExtraClearGrade?.(instance.id)}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </Flex>
           </Flex>
         )}
