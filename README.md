@@ -200,6 +200,13 @@ docker compose up app
 | `/student/history` | STUDENT | История занятий |
 | `/student/awards` | STUDENT | Награды |
 
+## Документация модулей
+
+| Документ | Описание |
+|----------|----------|
+| [docs/journal.md](docs/journal.md) | Журнал: календарь, урок ученика, оценки, доп. задания, режимы отображения |
+| [docs/accounting.md](docs/accounting.md) | Бухгалтерия: платежи, зарплаты, расходы |
+
 ## Структура проекта
 
 ```
