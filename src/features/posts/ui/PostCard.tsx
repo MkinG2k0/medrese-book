@@ -1,6 +1,6 @@
 'use client'
 
-import { DeleteOutlined, LikeFilled, LikeOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, LikeFilled, LikeOutlined } from '@ant-design/icons'
 import { App, Button, Card } from 'antd'
 
 import type { PostDto } from '@/entities/post'
@@ -13,10 +13,11 @@ import Title from '@/shared/ui/Title'
 
 type PostCardProps = {
 	post: PostDto
-	canDelete?: boolean
+	canManage?: boolean
+	onEdit?: (post: PostDto) => void
 }
 
-export function PostCard({ post, canDelete = false }: PostCardProps) {
+export function PostCard({ post, canManage = false, onEdit }: PostCardProps) {
 	const { modal, message } = App.useApp()
 	const likeMutation = useTogglePostLike()
 	const deleteMutation = useDeletePost()
@@ -50,20 +51,34 @@ export function PostCard({ post, canDelete = false }: PostCardProps) {
 							{post.author.name} · {formatDate(post.publishedAt)}
 						</Text>
 					</div>
-					{canDelete && (
-						<Button
-							type="text"
-							danger
-							icon={<DeleteOutlined />}
-							aria-label="Удалить"
-							onClick={handleDelete}
-							loading={deleteMutation.isPending}
-						/>
+					{canManage && (
+						<div className="flex shrink-0 gap-1">
+							<Button
+								type="text"
+								icon={<EditOutlined />}
+								aria-label="Редактировать"
+								onClick={() => onEdit?.(post)}
+							/>
+							<Button
+								type="text"
+								danger
+								icon={<DeleteOutlined />}
+								aria-label="Удалить"
+								onClick={handleDelete}
+								loading={deleteMutation.isPending}
+							/>
+						</div>
 					)}
 				</div>
 
-				<PostBodyView content={post.body as Record<string, unknown>} />
-				<PostMediaGallery media={post.media} />
+				<PostBodyView
+					key={`${post.id}-${post.updatedAt}`}
+					content={post.body as Record<string, unknown>}
+				/>
+				<PostMediaGallery
+					key={`${post.id}-media-${post.updatedAt}`}
+					media={post.media}
+				/>
 
 				<div>
 					<Button

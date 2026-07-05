@@ -165,3 +165,8 @@
 .step-content-preview .flex.flex-col > * + * {
 	margin-top: 0.75em;
 }
+
+.step-editor-readonly .tiptap {
+	padding: 16px 20px;
+	min-height: unset;
+}

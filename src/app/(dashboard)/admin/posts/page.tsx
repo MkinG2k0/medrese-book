@@ -1,7 +1,5 @@
-import { PostsAdminPage } from '@/features/posts'
-import { requireRoles } from '@/shared/lib/session'
+import { redirect } from 'next/navigation'
 
-export default async function AdminPostsPage() {
-	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
-	return <PostsAdminPage />
+export default function AdminPostsRedirectPage() {
+	redirect('/news')
 }

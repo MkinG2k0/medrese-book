@@ -84,11 +84,6 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <ReadOutlined />,
     label: "Новости",
   },
-  "/admin/posts": {
-    key: "/admin/posts",
-    icon: <FileTextOutlined />,
-    label: "Новости (админ)",
-  },
   "/groups": {
     key: "/groups",
     icon: <TeamOutlined />,
@@ -181,7 +176,6 @@ const managerMenuOrder = [
   "/admin/users",
   "/admin/program",
   "/extra-assignments",
-  "/admin/posts",
   "/analytics",
   "/analytics/teachers",
   "/admin/leave-calendar",

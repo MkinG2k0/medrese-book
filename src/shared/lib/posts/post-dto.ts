@@ -18,6 +18,7 @@ export type PostDto = {
 	body: Prisma.JsonValue
 	author: PostAuthorDto
 	publishedAt: string
+	updatedAt: string
 	likeCount: number
 	likedByMe: boolean
 	media: PostMediaDto[]
@@ -29,6 +30,7 @@ export function toPostDto(
 		title: string
 		body: Prisma.JsonValue
 		publishedAt: Date
+		updatedAt: Date
 		author: { id: string; name: string }
 		media: Array<{
 			id: string
@@ -47,6 +49,7 @@ export function toPostDto(
 		body: post.body,
 		author: post.author,
 		publishedAt: post.publishedAt.toISOString(),
+		updatedAt: post.updatedAt.toISOString(),
 		likeCount: post._count.likes,
 		likedByMe: likedPostIds.has(post.id),
 		media: post.media.map((item) => ({
@@ -63,7 +66,16 @@ export const postListSelect = {
 	title: true,
 	body: true,
 	publishedAt: true,
+	updatedAt: true,
 	author: { select: { id: true, name: true } },
-	media: { orderBy: { sortOrder: 'asc' as const } },
+	media: {
+		orderBy: { sortOrder: 'asc' as const },
+		select: {
+			id: true,
+			type: true,
+			url: true,
+			sortOrder: true,
+		},
+	},
 	_count: { select: { likes: true } },
 } satisfies Prisma.PostSelect

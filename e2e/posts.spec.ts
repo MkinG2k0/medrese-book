@@ -5,23 +5,18 @@ import { AUTH_STATE } from "./helpers/auth-state";
 test.describe("Новости — менеджер", () => {
   test.use({ storageState: AUTH_STATE.manager });
 
-  test("видит страницу управления и ленту новостей", async ({ page }) => {
-    await page.goto("/admin/posts");
-    await expect(
-      page.getByRole("heading", { name: "Управление новостями" }),
-    ).toBeVisible();
+  test("видит ленту и кнопку создания", async ({ page }) => {
+    await page.goto("/news");
+    await expect(page.getByRole("heading", { name: "Новости" })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Создать" }),
     ).toBeVisible();
-
-    await page.goto("/news");
-    await expect(page.getByRole("heading", { name: "Новости" })).toBeVisible();
   });
 
   test("может опубликовать новость", async ({ page }) => {
     const title = `E2E новость ${Date.now()}`;
 
-    await page.goto("/admin/posts");
+    await page.goto("/news");
     await page.getByRole("button", { name: "Создать" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Новая публикация" });
@@ -33,28 +28,26 @@ test.describe("Новости — менеджер", () => {
 
     await expect(page.getByText("Новость опубликована")).toBeVisible();
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
-
-    await page.goto("/news");
-    await expect(page.getByRole("heading", { name: title })).toBeVisible();
   });
 });
 
 test.describe("Новости — учитель", () => {
   test.use({ storageState: AUTH_STATE.teacher1 });
 
-  test("видит ленту и может лайкнуть", async ({ page }) => {
+  test("видит ленту без кнопки создания", async ({ page }) => {
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Новости" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Создать" }),
+    ).not.toBeVisible();
 
-    const likeButton = page.getByRole("button").filter({ hasText: /^\d+$/ }).first();
+    const likeButton = page
+      .getByRole("button")
+      .filter({ hasText: /^\d+$/ })
+      .first();
     if (await likeButton.isVisible()) {
       await likeButton.click();
     }
-  });
-
-  test("не имеет доступа к админке новостей", async ({ page }) => {
-    await page.goto("/admin/posts");
-    await expect(page).not.toHaveURL(/\/admin\/posts$/);
   });
 });
 
@@ -64,5 +57,8 @@ test.describe("Новости — ученик", () => {
   test("видит ленту новостей", async ({ page }) => {
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Новости" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Создать" }),
+    ).not.toBeVisible();
   });
 });
