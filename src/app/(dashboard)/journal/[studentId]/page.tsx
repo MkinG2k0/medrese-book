@@ -6,7 +6,7 @@ import { resolveJournalDate } from '@/features/journal/lib/journal-url'
 
 export const dynamic = 'force-dynamic'
 import { LessonPage } from '@/features/journal/ui/LessonPage'
-import Text from '@/shared/ui/Text'
+import { PageLoader } from '@/shared/ui/PageLoader'
 
 type Props = {
 	params: Promise<{ studentId: string }>
@@ -22,7 +22,7 @@ export default async function StudentLessonPage({ params, searchParams }: Props)
 	if (!lesson) notFound()
 
 	return (
-		<Suspense fallback={<Text>Загрузка...</Text>}>
+		<Suspense fallback={<PageLoader size="lg" />}>
 			<LessonPage
 				groupId={lesson.groupId}
 				studentId={lesson.student.id}

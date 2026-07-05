@@ -15,6 +15,7 @@ import {
   getTeachingSessionDurationMs,
 } from "@/features/journal/lib/teaching-session";
 import { getLocalDateString } from "@/shared/lib/calendar-date";
+import { PageLoader } from "@/shared/ui/PageLoader";
 import Text from "@/shared/ui/Text";
 
 type LessonTimerBarProps = {
@@ -106,7 +107,11 @@ export function LessonTimerBar({
   };
 
   if (isLoading) {
-    return <Text type="secondary">Загрузка статуса урока...</Text>;
+    return (
+      <div className="rounded-lg border border-[#2a2622] bg-[#1a1714] p-4">
+        <PageLoader size="sm" />
+      </div>
+    );
   }
 
   return (

@@ -24,7 +24,7 @@ import {
   isJournalFutureDayBlocked,
 } from "@/shared/lib/calendar-date";
 import type { RiskFlag } from "@/shared/lib/student-metrics/types";
-import Text from "@/shared/ui/Text";
+import { PageLoader } from "@/shared/ui/PageLoader";
 import Title from "@/shared/ui/Title";
 
 type StudentListProps = {
@@ -116,7 +116,7 @@ export function StudentList({ groupId }: StudentListProps) {
 
       <LessonTimerBar groupId={groupId} date={dateFilter} />
 
-      {isLoading && <Text>Загрузка...</Text>}
+      {isLoading && <PageLoader size="lg" />}
 
       {!isLoading && sorted.length > 0 && (
         <AttendanceFilter
