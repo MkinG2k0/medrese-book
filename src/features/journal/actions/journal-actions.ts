@@ -167,10 +167,12 @@ export async function getNextLevelJournalSteps(
 	)
 }
 
-export async function getStudentLesson(studentId: string) {
+export async function getStudentLesson(
+	studentId: string,
+	calendarDate: string = getLessonCalendarDay(),
+) {
 	const session = await requireRole('TEACHER')
-	const today = getLessonCalendarDay()
-	const dayRange = getLessonDayRange(today)
+	const dayRange = getLessonDayRange(calendarDate)
 
 	const student = await prisma.student.findUnique({
 		where: { id: studentId },
@@ -230,8 +232,9 @@ export async function getStudentLesson(studentId: string) {
 
 	const levelStepIds = new Set(student.level.steps.map((step) => step.id))
 	const daySession =
-		student.sessions.find((item) => isLessonCalendarDay(item.date, today)) ??
-		null
+		student.sessions.find((item) =>
+			isLessonCalendarDay(item.date, calendarDate),
+		) ?? null
 
 	const [hasNextLevel, totalProgramSteps, prefetchedSessionSteps] =
 		await Promise.all([
@@ -305,7 +308,7 @@ export async function getStudentLesson(studentId: string) {
 			? { id: nextStudent.id, name: nextStudent.user.name }
 			: null,
 		initialSession,
-		sessionDate: today,
+		sessionDate: calendarDate,
 		riskFlags: metricsBundle?.riskFlags ?? [],
 		periodMetrics: metricsBundle?.periodMetrics ?? null,
 	}

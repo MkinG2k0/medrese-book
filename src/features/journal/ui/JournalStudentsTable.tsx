@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { resumeStudentFromPause } from "@/features/journal/actions/journal-actions";
+import { buildJournalHref } from "@/features/journal/lib/journal-url";
 import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
 import { RiskSignalsColumnTitle } from "@/features/journal/ui/RiskSignalsHelpModal";
 import type { RiskFlag } from "@/shared/lib/student-metrics/types";
@@ -51,11 +52,13 @@ function StudentNameCell({
   status,
   studentId,
   blocked,
+  journalDate,
 }: {
   name: string;
   status: StudentStatus;
   studentId: string;
   blocked: boolean;
+  journalDate: string;
 }) {
   if (blocked) {
     return <span>{name}</span>;
@@ -65,8 +68,10 @@ function StudentNameCell({
     return <Text type="warning">{name}</Text>;
   }
 
+  const href = buildJournalHref(`/journal/${studentId}`, journalDate);
+
   return (
-    <Link href={`/journal/${studentId}`} onClick={(e) => e.stopPropagation()}>
+    <Link href={href} onClick={(e) => e.stopPropagation()}>
       {name}
     </Link>
   );
@@ -76,16 +81,18 @@ export function JournalStudentsTable({
   students,
   blocked = false,
   showRiskBadge = false,
+  journalDate,
 }: {
   students: JournalStudentRow[];
   blocked?: boolean;
   showRiskBadge?: boolean;
+  journalDate: string;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const openLesson = (studentId: string) => {
-    router.push(`/journal/${studentId}`);
+    router.push(buildJournalHref(`/journal/${studentId}`, journalDate));
   };
 
   const handlePausedStudentClick = (record: JournalStudentRow) => {
@@ -142,6 +149,7 @@ export function JournalStudentsTable({
                 status={record.status}
                 studentId={record.id}
                 blocked={blocked}
+                journalDate={journalDate}
               />
             ),
           },

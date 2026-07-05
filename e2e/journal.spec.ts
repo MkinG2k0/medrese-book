@@ -81,7 +81,7 @@ test.describe("Журнал учителя", () => {
       await clickRadioButton(page, "Хорошо");
       await page.getByRole("button", { name: "Сохранить урок" }).click();
 
-      await expect(page).toHaveURL(/\/journal$/);
+      await expect(page).toHaveURL(/\/journal(?:\?date=\d{4}-\d{2}-\d{2})?$/);
       await expect(page.getByText("Урок сохранён")).toBeVisible();
 
       const aliRow = page.getByRole("row", {
@@ -98,7 +98,7 @@ test.describe("Журнал учителя", () => {
       await clickRadioButton(page, "Хорошо");
       await page.getByRole("button", { name: "Сохранить урок" }).click();
 
-      await expect(page).toHaveURL(/\/journal$/);
+      await expect(page).toHaveURL(/\/journal(?:\?date=\d{4}-\d{2}-\d{2})?$/);
       const bilalRow = page.getByRole("row", {
         name: new RegExp(TEST_USERS.studentBilal),
       });
@@ -110,7 +110,7 @@ test.describe("Журнал учителя", () => {
       await expect(page.getByRole("radio", { name: "Пришёл" })).toBeChecked();
       await page.getByRole("button", { name: "Сохранить урок" }).click();
 
-      await expect(page).toHaveURL(/\/journal$/);
+      await expect(page).toHaveURL(/\/journal(?:\?date=\d{4}-\d{2}-\d{2})?$/);
       await expect(page.getByText("Урок сохранён")).toBeVisible();
 
       const khalidRow = page.getByRole("row", {
@@ -133,7 +133,7 @@ test.describe("Журнал учителя", () => {
       await clickRadioButton(page, "Средне");
       await page.getByRole("button", { name: "Сохранить урок" }).click();
 
-      await expect(page).toHaveURL(/\/journal$/);
+      await expect(page).toHaveURL(/\/journal(?:\?date=\d{4}-\d{2}-\d{2})?$/);
       const zaydRow = page.getByRole("row", {
         name: new RegExp(TEST_USERS.studentZayd),
       });

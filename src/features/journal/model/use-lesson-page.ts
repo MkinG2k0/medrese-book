@@ -32,6 +32,7 @@ import { buildInitialStepStates, buildInitialExtraGradeStates } from "@/features
 import { shouldShowOnlyCompletedLessonSteps } from "@/features/journal/lib/lesson-view-mode";
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
 import { useJournalStore, selectExtraAssignmentGrades, selectSessionStepStates } from "@/features/journal/model/journal-store";
+import { useJournalDate } from "@/features/journal/model/use-journal-date";
 import {
   EMPTY_STEP_GRADE_STATE,
   type StepGradeState,
@@ -205,7 +206,8 @@ export function useLessonPage(props: LessonPageProps) {
 
   const { message } = App.useApp();
   const router = useRouter();
-  const { dateFilter, initSessionCompletions, setSessionStepState, setExtraAssignmentGrade } =
+  const { dateFilter, journalHref } = useJournalDate();
+  const { initSessionCompletions, setSessionStepState, setExtraAssignmentGrade } =
     useJournalStore();
 
   const { data: teachingSession } = useTeachingSession(groupId, dateFilter);
@@ -744,7 +746,7 @@ export function useLessonPage(props: LessonPageProps) {
     if (!saved) return;
 
     message.success("Урок сохранён");
-    router.push("/journal");
+    router.push(journalHref("/journal"));
   };
 
   const handleSaveAndNext = async () => {
@@ -753,10 +755,10 @@ export function useLessonPage(props: LessonPageProps) {
 
     if (nextStudent) {
       message.success(`Переход к ${nextStudent.name}`);
-      router.push(`/journal/${nextStudent.id}`);
+      router.push(journalHref(`/journal/${nextStudent.id}`));
     } else {
       message.success("Урок сохранён. Это последний ученик в группе");
-      router.push("/journal");
+      router.push(journalHref("/journal"));
     }
   };
 
@@ -764,11 +766,12 @@ export function useLessonPage(props: LessonPageProps) {
     weekday: "long",
     day: "numeric",
     month: "long",
-  }).format(new Date());
+  }).format(new Date(`${dateFilter}T12:00:00`));
 
   return {
     ...props,
     todayLabel,
+    journalBackHref: journalHref("/journal"),
     isProgramComplete,
     hasNoSteps,
     attendance,

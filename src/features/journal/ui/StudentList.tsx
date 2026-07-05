@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import { useStudentRiskFlags } from "@/entities/student-metrics/api/use-student-risk-flags";
 import { useStudents } from "@/entities/student/api/use-students";
 import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
-import { useJournalStore } from "@/features/journal/model/journal-store";
+import { useJournalDate } from "@/features/journal/model/use-journal-date";
 import { JournalDatePicker } from "@/features/journal/ui/JournalDatePicker";
 import { LessonTimerBar } from "@/features/journal/ui/LessonTimerBar";
 import {
@@ -33,7 +33,7 @@ type StudentListProps = {
 
 export function StudentList({ groupId }: StudentListProps) {
   const { data: session } = useSession();
-  const { dateFilter, setDateFilter } = useJournalStore();
+  const { dateFilter, setDateFilter } = useJournalDate();
   const { data: students, isLoading } = useStudents(groupId, dateFilter);
   const { data: teachingSession } = useTeachingSession(groupId, dateFilter);
   const { data: riskFlagEntries } = useStudentRiskFlags(groupId, dateFilter);
@@ -131,6 +131,7 @@ export function StudentList({ groupId }: StudentListProps) {
           students={filteredStudents}
           blocked={studentsBlocked}
           showRiskBadge={showRiskBadge}
+          journalDate={dateFilter}
         />
       )}
     </div>

@@ -17,6 +17,7 @@ export function LessonPage(props: LessonPageProps) {
         studentId={lesson.studentId}
         studentName={lesson.studentName}
         todayLabel={lesson.todayLabel}
+        journalBackHref={lesson.journalBackHref}
         levelNumber={lesson.levelNumber}
         hasNoSteps={lesson.hasNoSteps}
         isProgramComplete={lesson.isProgramComplete}

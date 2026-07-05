@@ -13,6 +13,7 @@ type LessonPageHeaderProps = {
   studentId: string;
   studentName: string;
   todayLabel: string;
+  journalBackHref: string;
   levelNumber: number;
   hasNoSteps: boolean;
   isProgramComplete: boolean;
@@ -29,6 +30,7 @@ export function LessonPageHeader({
   studentId,
   studentName,
   todayLabel,
+  journalBackHref,
   levelNumber,
   hasNoSteps,
   isProgramComplete,
@@ -46,7 +48,7 @@ export function LessonPageHeader({
 
   return (
     <>
-      <Link href="/journal" className="flex items-center gap-2 no-underline">
+      <Link href={journalBackHref} className="flex items-center gap-2 no-underline">
         <ArrowLeftOutlined />
         <Text>Все ученики · {todayLabel}</Text>
       </Link>

@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import { getTeacherGroup } from '@/features/journal/actions/journal-actions'
 import { StudentList } from '@/features/journal/ui/StudentList'
 import { requireRole } from '@/shared/lib/session'
@@ -11,5 +13,9 @@ export default async function JournalPage() {
 		return <Text>Группа не назначена</Text>
 	}
 
-	return <StudentList groupId={group.id} />
+	return (
+		<Suspense fallback={<Text>Загрузка...</Text>}>
+			<StudentList groupId={group.id} />
+		</Suspense>
+	)
 }

@@ -57,7 +57,7 @@ test.describe("Статусы учеников в журнале", () => {
     });
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Нет" }).click();
-    await expect(page).toHaveURL(/\/journal$/);
+    await expect(page).toHaveURL(/\/journal(?:\?date=\d{4}-\d{2}-\d{2})?$/);
 
     await usmanRow.click();
     await expect(dialog).toBeVisible();
