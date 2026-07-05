@@ -4,6 +4,7 @@ import { CloseOutlined, DownloadOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useCallback, useEffect, useState } from "react";
 
+import { hasPushSubscription } from "@/features/notifications/lib/push-subscription-status";
 import { usePushSubscribe } from "@/features/notifications/model/use-push-subscribe";
 import Text from "@/shared/ui/Text";
 
@@ -22,23 +23,29 @@ export function PwaInstallBanner() {
   const inPwa = isStandalone || isInstalled;
   const { subscribe, loading, error } = usePushSubscribe();
   const [installLoading, setInstallLoading] = useState(false);
-  const [pushGranted, setPushGranted] = useState(false);
+  const [pushReady, setPushReady] = useState(false);
   const [showPushCta, setShowPushCta] = useState(false);
 
   useEffect(() => {
     if (typeof Notification === "undefined") return;
 
-    const granted = Notification.permission === "granted";
-    setPushGranted(granted);
+    void (async () => {
+      if (Notification.permission === "denied") {
+        setPushReady(false);
+        setShowPushCta(false);
+        return;
+      }
 
-    if (granted || Notification.permission === "denied") {
-      setShowPushCta(false);
-      return;
-    }
+      const subscribed = await hasPushSubscription();
+      setPushReady(subscribed);
 
-    if (inPwa || Notification.permission === "default") {
+      if (subscribed) {
+        setShowPushCta(false);
+        return;
+      }
+
       setShowPushCta(true);
-    }
+    })();
   }, [inPwa]);
 
   const handleInstall = useCallback(async () => {
@@ -53,7 +60,7 @@ export function PwaInstallBanner() {
   const handleSubscribe = useCallback(async () => {
     const ok = await subscribe();
     if (ok) {
-      setPushGranted(true);
+      setPushReady(true);
       setShowPushCta(false);
     }
   }, [subscribe]);
@@ -62,7 +69,7 @@ export function PwaInstallBanner() {
     !dismissed && !inPwa && (canInstall || isIos);
 
   if (!showInstallBanner && !showPushCta) return null;
-  if (showPushCta && pushGranted) return null;
+  if (showPushCta && pushReady) return null;
 
   return (
     <div className="shrink-0 border-b border-white/10 bg-[#161412] px-4 py-2 sm:px-6">
@@ -107,7 +114,7 @@ export function PwaInstallBanner() {
         </div>
       ) : null}
 
-      {showPushCta && !pushGranted ? (
+      {showPushCta && !pushReady ? (
         <div className={showInstallBanner ? "mt-2 border-t border-white/10 pt-2" : ""}>
           <Text className="mb-2 block text-sm">
             Получайте уведомления о сообщениях, отпусках и заявках даже при

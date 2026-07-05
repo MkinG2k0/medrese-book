@@ -6,12 +6,14 @@ import { useState } from "react";
 
 import { useNotificationStream, useUnreadCount } from "@/entities/notification";
 
+import { usePushAutoSubscribe } from "../model/use-push-auto-subscribe";
 import { NotificationList } from "./NotificationList";
 import { PushSubscribePrompt } from "./PushSubscribePrompt";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   useNotificationStream();
+  usePushAutoSubscribe();
   const { data: unreadData } = useUnreadCount();
   const unreadCount = unreadData?.count ?? 0;
 

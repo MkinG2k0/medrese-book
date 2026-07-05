@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import Text from "@/shared/ui/Text";
 
+import { hasPushSubscription } from "../lib/push-subscription-status";
 import { usePushSubscribe } from "../model/use-push-subscribe";
 
 const DISMISSED_KEY = "push-prompt-dismissed";
@@ -28,9 +29,16 @@ export function PushSubscribePrompt() {
       return;
     }
 
-    if (Notification.permission === "default") {
-      setVisible(true);
-    }
+    void (async () => {
+      if (Notification.permission === "default") {
+        setVisible(true);
+        return;
+      }
+
+      if (Notification.permission === "granted" && !(await hasPushSubscription())) {
+        setVisible(true);
+      }
+    })();
   }, []);
 
   const handleDismiss = useCallback(() => {
@@ -56,7 +64,8 @@ export function PushSubscribePrompt() {
   return (
     <div className="border-t border-white/10 px-4 py-3">
       <Text className="mb-2 block text-sm">
-        Получайте уведомления о заявках и замещениях даже при закрытой вкладке
+        Получайте уведомления о сообщениях, заявках и замещениях даже при
+        закрытой вкладке
       </Text>
       {error ? (
         <Text type="danger" className="mb-2 block text-sm">

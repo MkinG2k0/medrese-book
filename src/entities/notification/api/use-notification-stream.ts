@@ -3,8 +3,18 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 
+import { showBrowserNotification } from '@/shared/lib/notifications/browser-notification'
+
 const MAX_RETRIES = 3
 const RECONNECT_DELAY_MS = 5000
+
+type NotificationStreamPayload = {
+	type?: string
+	id?: string
+	title?: string
+	body?: string
+	link?: string | null
+}
 
 export function useNotificationStream() {
 	const queryClient = useQueryClient()
@@ -22,15 +32,20 @@ export function useNotificationStream() {
 			es.onmessage = (event) => {
 				retriesRef.current = 0
 				try {
-					const payload = JSON.parse(event.data) as {
-						type?: string
-						id?: string
-					}
+					const payload = JSON.parse(event.data) as NotificationStreamPayload
 					if (payload.type === 'notification') {
 						queryClient.invalidateQueries({ queryKey: ['notifications'] })
 						queryClient.invalidateQueries({
 							queryKey: ['notifications', 'unread-count'],
 						})
+
+						if (payload.title) {
+							showBrowserNotification({
+								title: payload.title,
+								body: payload.body ?? '',
+								link: payload.link,
+							})
+						}
 					}
 				} catch {
 					// ignore malformed SSE payloads

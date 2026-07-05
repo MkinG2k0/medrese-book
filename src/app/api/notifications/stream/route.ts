@@ -24,7 +24,13 @@ export async function GET(request: Request) {
 				for (const row of rows) {
 					controller.enqueue(
 						encoder.encode(
-							`data: ${JSON.stringify({ type: 'notification', id: row.id })}\n\n`,
+							`data: ${JSON.stringify({
+								type: 'notification',
+								id: row.id,
+								title: row.title,
+								body: row.body,
+								link: row.link,
+							})}\n\n`,
 						),
 					)
 					if (row.createdAt > lastSeen) {
