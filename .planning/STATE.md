@@ -170,10 +170,11 @@ None yet.
 | 260704-3en | для менеджера и супер админу нужна история всех действий в системе по типу события и тд | 2026-07-03 | 17d55a1 | [260704-3en-audit-log-ui](./quick/260704-3en-audit-log-ui/) |
 | 260705-q01 | Доп. уроки и доп. задания: справочник, назначение на уроке, оценивание | 2026-07-05 | c5cd728 | [260705-q01-extra-assignments](./quick/260705-q01-extra-assignments/) |
 | 260705-t22 | добавь учителей тоже, роль отображай в badge | 2026-07-05 | 4a6365f | [260705-t22-badge](./quick/260705-t22-badge/) |
+| 260705-t60 | не приходят уведомления в браузере в сообщениях | 2026-07-05 | b2464c6 | [260705-t60-browser-message-notifications-fix](./quick/260705-t60-browser-message-notifications-fix/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-05 - Completed quick task 260705-t22: добавь учителей тоже, роль отображай в badge
+Last activity: 2026-07-05 - Completed quick task 260705-t60: не приходят уведомления в браузере в сообщениях
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
