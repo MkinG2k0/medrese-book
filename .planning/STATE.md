@@ -172,10 +172,11 @@ None yet.
 | 260705-t22 | добавь учителей тоже, роль отображай в badge | 2026-07-05 | 4a6365f | [260705-t22-badge](./quick/260705-t22-badge/) |
 | 260705-t60 | не приходят уведомления в браузере в сообщениях | 2026-07-05 | b2464c6 | [260705-t60-browser-message-notifications-fix](./quick/260705-t60-browser-message-notifications-fix/) |
 | 260705-tza | подключи s3 в проект , и создай энвы я потом их заполню | 2026-07-05 | b5ddde1 | [260705-tza-s3](./quick/260705-tza-s3/) |
+| 260705-uui | система постов: новости, лайки, S3-медиа, уведомления всем | 2026-07-05 | 2a94c23 | [260705-uui-s3](./quick/260705-uui-s3/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-05 - Completed quick task 260705-tza: подключи s3 в проект , и создай энвы я потом их заполню
+Last activity: 2026-07-05 - Completed quick task 260705-uui: система постов
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
