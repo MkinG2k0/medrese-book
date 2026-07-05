@@ -1,6 +1,6 @@
 'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 
 import { showBrowserNotification } from '@/shared/lib/notifications/browser-notification'
@@ -14,6 +14,28 @@ type NotificationStreamPayload = {
 	title?: string
 	body?: string
 	link?: string | null
+}
+
+function invalidateMessagingQueries(
+	queryClient: QueryClient,
+	link: string | null | undefined,
+) {
+	if (!link?.startsWith('/messages')) return
+
+	queryClient.invalidateQueries({ queryKey: ['conversations'] })
+
+	try {
+		const conversationId = new URL(link, 'http://localhost').searchParams.get(
+			'conversation',
+		)
+		if (conversationId) {
+			queryClient.invalidateQueries({ queryKey: ['messages', conversationId] })
+		} else {
+			queryClient.invalidateQueries({ queryKey: ['messages'] })
+		}
+	} catch {
+		queryClient.invalidateQueries({ queryKey: ['messages'] })
+	}
 }
 
 export function useNotificationStream() {
@@ -38,6 +60,7 @@ export function useNotificationStream() {
 						queryClient.invalidateQueries({
 							queryKey: ['notifications', 'unread-count'],
 						})
+						invalidateMessagingQueries(queryClient, payload.link)
 
 						if (payload.title) {
 							showBrowserNotification({

@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { ChatMessage } from '../model/types'
 
+import { messagingPollInterval } from './messaging-poll-interval'
+
 export function useMessages(conversationId: string | null) {
 	return useQuery<ChatMessage[]>({
 		queryKey: ['messages', conversationId],
@@ -14,7 +16,8 @@ export function useMessages(conversationId: string | null) {
 			return json.data
 		},
 		enabled: !!conversationId,
-		refetchInterval: 5000,
+		refetchInterval: messagingPollInterval,
+		refetchIntervalInBackground: false,
 	})
 }
 

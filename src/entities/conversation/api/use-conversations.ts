@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 
 import type { ConversationsPayload } from '../model/types'
 
+import { messagingPollInterval } from './messaging-poll-interval'
+
 export function useConversations() {
 	return useQuery<ConversationsPayload>({
 		queryKey: ['conversations'],
@@ -13,6 +15,7 @@ export function useConversations() {
 			if (json.error) throw new Error(json.error)
 			return json.data
 		},
-		refetchInterval: 5000,
+		refetchInterval: messagingPollInterval,
+		refetchIntervalInBackground: false,
 	})
 }
