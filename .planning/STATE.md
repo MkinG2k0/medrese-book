@@ -173,7 +173,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-07-05 - Completed quick task 260705-q01: доп. уроки и доп. задания
+Last activity: 2026-07-05 - Completed quick task 260705-t22: добавь учителей тоже, роль отображай в badge
 Last session: 2026-07-01T16:41:00.920Z
 Stopped at: Completed 01-02-PLAN.md
 Resume file: .planning/phases/01-student-analytics-history/01-03-PLAN.md
