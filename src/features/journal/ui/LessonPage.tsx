@@ -61,8 +61,8 @@ export function LessonPage(props: LessonPageProps) {
         onCloseAssignModal={lesson.handleCloseAssignModal}
         onEnsureSession={lesson.ensureSession}
         onExtraAssigned={lesson.handleExtraAssigned}
-        onExtraGrade={lesson.handleExtraGrade}
-        onExtraClearGrade={lesson.handleExtraClearGrade}
+        extraGradeStates={lesson.resolvedExtraGradeStates}
+        onExtraStateChange={lesson.updateExtraAssignmentState}
       />
 
       <LessonSaveBar

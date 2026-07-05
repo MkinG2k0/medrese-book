@@ -1,10 +1,11 @@
 import { error, success } from '@/shared/api'
-import {
-	getCalendarDayQueryRange,
-	isSameCalendarDay,
-	isValidCalendarDate,
-} from '@/shared/lib/calendar-date'
+import { isValidCalendarDate } from '@/shared/lib/calendar-date'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import {
+	getExtraAssignmentGradedAt,
+	isExtraAssignmentVisibleOnActiveDay,
+	isExtraAssignmentVisibleOnHistoryDay,
+} from '@/shared/lib/extra-assignment-visibility'
 import { prisma } from '@/shared/lib/prisma'
 import type { StepContent } from '@/shared/lib/validations/step'
 
@@ -52,6 +53,7 @@ function serializeInstance(instance: {
 		id: string
 		grade: number
 		note: string | null
+		gradedAt: Date
 		createdAt: Date
 	} | null
 }) {
@@ -75,6 +77,7 @@ function serializeInstance(instance: {
 					id: instance.completion.id,
 					grade: instance.completion.grade,
 					note: instance.completion.note,
+					gradedAt: getExtraAssignmentGradedAt(instance.completion).toISOString(),
 					createdAt: instance.completion.createdAt.toISOString(),
 				}
 			: null,
@@ -87,9 +90,12 @@ export async function GET(request: Request) {
 	if (!studentId) return error('studentId обязателен')
 
 	const dateStr = searchParams.get('date')
-	if (dateStr && !isValidCalendarDate(dateStr)) {
+	if (!dateStr) return error('date обязателен')
+	if (!isValidCalendarDate(dateStr)) {
 		return error('Некорректная дата')
 	}
+
+	const mode = searchParams.get('mode') === 'history' ? 'history' : 'active'
 
 	const authResult = await authorizeApiRequest({
 		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
@@ -97,24 +103,20 @@ export async function GET(request: Request) {
 	})
 	if ('error' in authResult) return authResult.error
 
-	const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null
-
-	const rawInstances = await prisma.studentExtraAssignment.findMany({
-		where: {
-			studentId,
-			...(dayRange
-				? { session: { date: { gte: dayRange.start, lte: dayRange.end } } }
-				: {}),
-		},
+	const allInstances = await prisma.studentExtraAssignment.findMany({
+		where: { studentId },
 		include: instanceInclude,
 		orderBy: { createdAt: 'asc' },
 	})
 
-	const instances = dateStr
-		? rawInstances.filter((instance) =>
-				isSameCalendarDay(instance.session.date, dateStr),
-			)
-		: rawInstances
+	const isVisible =
+		mode === 'history'
+			? isExtraAssignmentVisibleOnHistoryDay
+			: isExtraAssignmentVisibleOnActiveDay
+
+	const instances = allInstances.filter((instance) =>
+		isVisible(instance, dateStr),
+	)
 
 	return success(instances.map(serializeInstance))
 }

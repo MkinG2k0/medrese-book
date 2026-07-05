@@ -49,8 +49,8 @@ type LessonStepsSectionProps = {
   onCloseAssignModal: () => void;
   onEnsureSession: () => Promise<string | null>;
   onExtraAssigned: () => void;
-  onExtraGrade: (instanceId: string, grade: number, note?: string | null) => void;
-  onExtraClearGrade: (instanceId: string) => void;
+  extraGradeStates: Record<string, StepGradeState>;
+  onExtraStateChange: (instanceId: string, state: StepGradeState) => void;
 };
 
 export function LessonStepsSection({
@@ -83,8 +83,8 @@ export function LessonStepsSection({
   onCloseAssignModal,
   onEnsureSession,
   onExtraAssigned,
-  onExtraGrade,
-  onExtraClearGrade,
+  extraGradeStates,
+  onExtraStateChange,
 }: LessonStepsSectionProps) {
   const instancesByStep = useMemo(() => {
     const map = new Map<string, SessionExtraAssignmentInstance[]>();
@@ -152,14 +152,14 @@ export function LessonStepsSection({
                     onToggleExpand={() => onToggleExpand(step.id)}
                     onStateChange={(state) => onStepStateChange(step.id, state)}
                     extraInstances={instancesByStep.get(step.id) ?? []}
+                    extraGradeStates={extraGradeStates}
                     onGiveExtraAssignment={() =>
                       onOpenAssignModal(
                         step.id,
                         `Шаг ${step.order}: ${step.title}`,
                       )
                     }
-                    onExtraGrade={onExtraGrade}
-                    onExtraClearGrade={onExtraClearGrade}
+                    onExtraStateChange={onExtraStateChange}
                   />
                 </Fragment>
               );

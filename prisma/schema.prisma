@@ -222,6 +222,7 @@ model ExtraAssignmentCompletion {
   studentExtraAssignment   StudentExtraAssignment @relation(fields: [studentExtraAssignmentId], references: [id], onDelete: Cascade)
   grade                    Int
   note                     String?
+  gradedAt                 DateTime               @default(now())
   createdAt                DateTime               @default(now())
 }
 

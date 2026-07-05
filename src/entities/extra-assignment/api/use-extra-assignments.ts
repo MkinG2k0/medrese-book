@@ -114,7 +114,7 @@ export function useAssignExtraAssignment(studentId: string, date: string) {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['session-extra-assignments', studentId, date],
+				queryKey: ['session-extra-assignments', studentId],
 			})
 		},
 	})
@@ -139,7 +139,7 @@ export function useGradeExtraAssignment(studentId: string, date: string) {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['session-extra-assignments', studentId, date],
+				queryKey: ['session-extra-assignments', studentId],
 			})
 			queryClient.invalidateQueries({
 				queryKey: ['extra-assignment-history', studentId],
@@ -162,7 +162,7 @@ export function useClearExtraAssignmentGrade(studentId: string, date: string) {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				queryKey: ['session-extra-assignments', studentId, date],
+				queryKey: ['session-extra-assignments', studentId],
 			})
 		},
 	})

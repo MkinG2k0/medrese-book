@@ -45,6 +45,7 @@ export async function GET(request: Request) {
 						id: instance.completion.id,
 						grade: instance.completion.grade,
 						note: instance.completion.note,
+						gradedAt: instance.completion.gradedAt.toISOString(),
 						createdAt: instance.completion.createdAt.toISOString(),
 					}
 				: null,

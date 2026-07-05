@@ -52,9 +52,9 @@ type StepCardProps = {
   onToggleExpand: () => void;
   onStateChange: (state: StepGradeState) => void;
   extraInstances?: SessionExtraAssignmentInstance[];
+  extraGradeStates?: Record<string, StepGradeState>;
   onGiveExtraAssignment?: () => void;
-  onExtraGrade?: (instanceId: string, grade: number, note?: string | null) => void;
-  onExtraClearGrade?: (instanceId: string) => void;
+  onExtraStateChange?: (instanceId: string, state: StepGradeState) => void;
 };
 
 export function StepCard({
@@ -67,9 +67,9 @@ export function StepCard({
   onToggleExpand,
   onStateChange,
   extraInstances = [],
+  extraGradeStates = {},
   onGiveExtraAssignment,
-  onExtraGrade,
-  onExtraClearGrade,
+  onExtraStateChange,
 }: StepCardProps) {
   const [content, setContent] = useState<StepContent>(step.content);
   const [isContentLoading, setIsContentLoading] = useState(false);
@@ -221,11 +221,13 @@ export function StepCard({
                     <SessionExtraAssignmentCard
                       key={instance.id}
                       instance={instance}
-                      readOnly={readOnly}
-                      onGrade={(grade, note) =>
-                        onExtraGrade?.(instance.id, grade, note)
+                      state={
+                        extraGradeStates[instance.id] ?? EMPTY_STEP_GRADE_STATE
                       }
-                      onClearGrade={() => onExtraClearGrade?.(instance.id)}
+                      readOnly={readOnly}
+                      onStateChange={(nextState) =>
+                        onExtraStateChange?.(instance.id, nextState)
+                      }
                     />
                   ))}
                 </div>

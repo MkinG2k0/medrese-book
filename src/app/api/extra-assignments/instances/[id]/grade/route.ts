@@ -52,6 +52,7 @@ function serializeInstance(instance: {
 		id: string
 		grade: number
 		note: string | null
+		gradedAt: Date
 		createdAt: Date
 	} | null
 }) {
@@ -75,6 +76,7 @@ function serializeInstance(instance: {
 					id: instance.completion.id,
 					grade: instance.completion.grade,
 					note: instance.completion.note,
+					gradedAt: instance.completion.gradedAt.toISOString(),
 					createdAt: instance.completion.createdAt.toISOString(),
 				}
 			: null,
@@ -111,10 +113,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 						create: {
 							grade: parsed.data.grade,
 							note: parsed.data.note ?? null,
+							gradedAt: new Date(),
 						},
 						update: {
 							grade: parsed.data.grade,
 							note: parsed.data.note ?? null,
+							gradedAt: new Date(),
 						},
 					},
 				},

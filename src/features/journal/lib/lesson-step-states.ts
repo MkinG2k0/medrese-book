@@ -1,8 +1,23 @@
+import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
 import type { StepGradeState } from "@/features/journal/ui/StepCard";
 
 import type { JournalStep } from "@/features/journal/actions/journal-actions";
 
 import type { StepCompletionRecord } from "./lesson-types";
+
+export function buildInitialExtraGradeStates(
+  instances: SessionExtraAssignmentInstance[],
+): Record<string, StepGradeState> {
+  return Object.fromEntries(
+    instances.map((instance) => [
+      instance.id,
+      {
+        grade: instance.completion?.grade ?? null,
+        note: instance.completion?.note ?? "",
+      },
+    ]),
+  );
+}
 
 export function buildInitialStepStates(
   steps: JournalStep[],

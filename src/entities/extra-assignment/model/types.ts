@@ -33,6 +33,7 @@ export type ExtraAssignmentCompletion = {
 	id: string
 	grade: number
 	note: string | null
+	gradedAt: string
 	createdAt: string
 } | null
 
