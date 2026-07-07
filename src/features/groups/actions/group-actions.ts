@@ -1,20 +1,21 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
+import {
+	createGroupSchema,
+	updateGroupSchema,
+} from '@/shared/lib/validations/group'
 
-const createGroupSchema = z.object({
-	name: z.string().min(1),
-	teacherId: z.string(),
-})
-
-const updateGroupSchema = z.object({
-	name: z.string().min(1, 'Название обязательно'),
-	teacherId: z.string().min(1, 'Выберите учителя'),
-})
+const enrollmentInclude = {
+	include: {
+		student: { include: { user: true } },
+		level: true,
+	},
+	orderBy: { student: { user: { name: 'asc' as const } } },
+} as const
 
 export async function getGroups() {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
@@ -22,7 +23,8 @@ export async function getGroups() {
 	return prisma.group.findMany({
 		include: {
 			teacher: { include: { user: true } },
-			_count: { select: { students: true } },
+			subject: true,
+			_count: { select: { enrollments: true } },
 		},
 		orderBy: { name: 'asc' },
 	})
@@ -37,13 +39,8 @@ export async function getMyGroup() {
 		where: { teacherId: session.user.teacherId },
 		include: {
 			teacher: { include: { user: true } },
-			students: {
-				include: {
-					user: true,
-					level: true,
-				},
-				orderBy: { user: { name: 'asc' } },
-			},
+			subject: true,
+			enrollments: enrollmentInclude,
 		},
 	})
 }
@@ -55,13 +52,8 @@ export async function getGroup(groupId: string) {
 		where: { id: groupId },
 		include: {
 			teacher: { include: { user: true } },
-			students: {
-				include: {
-					user: true,
-					level: true,
-				},
-				orderBy: { user: { name: 'asc' } },
-			},
+			subject: true,
+			enrollments: enrollmentInclude,
 		},
 	})
 
