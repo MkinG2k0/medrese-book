@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Система предметов
 current_phase: 11
 current_phase_name: Groups & Enrollment
-status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-07-07T19:00:38.893Z"
+status: planned
+stopped_at: Phase 11 plans verified
+last_updated: "2026-07-07T22:45:00.000Z"
 last_activity: 2026-07-07
-last_activity_desc: Phase 10 complete, transitioned to Phase 11
+last_activity_desc: Phase 11 planning complete (6 plans, 4 revisions)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
-  percent: 17
+  total_plans: 6
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 11 — Groups & Enrollment
-Plan: Not started
-Status: Ready to execute 10-05
-Last activity: 2026-07-07 — Phase 10 complete, transitioned to Phase 11
+Plan: 11-01 (not started)
+Status: Planned — ready to execute
+Last activity: 2026-07-07 — Phase 11 planning complete (VERIFICATION PASSED)
 
 ## Performance Metrics
 
@@ -193,5 +193,5 @@ None yet.
 
 Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
 Last session: 2026-07-07T19:00:38.886Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-groups-enrollment/11-CONTEXT.md
+Stopped at: Phase 11 plans verified — execute 11-01
+Resume file: .planning/phases/11-groups-enrollment/11-01-PLAN.md
