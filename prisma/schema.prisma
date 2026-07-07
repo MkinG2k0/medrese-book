@@ -120,10 +120,29 @@ model Teacher {
 model Group {
   id               String            @id @default(cuid())
   name             String
+  subjectId        String
+  subject          Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
   teacherId        String
   teacher          Teacher           @relation(fields: [teacherId], references: [id])
-  students         Student[]
+  enrollments      GroupEnrollment[]
   teachingSessions TeachingSession[]
+
+  @@index([subjectId])
+}
+
+model GroupEnrollment {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  levelId    String
+  level      Level    @relation(fields: [levelId], references: [id], onDelete: Restrict)
+  enrolledAt DateTime @default(now())
+
+  @@unique([studentId, groupId])
+  @@index([groupId])
+  @@index([studentId])
 }
 
 model Student {
@@ -134,10 +153,7 @@ model Student {
   phone          String?
   guardianName   String?
   guardianPhone  String?
-  groupId        String
-  group          Group            @relation(fields: [groupId], references: [id])
-  levelId        String
-  level          Level            @relation(fields: [levelId], references: [id])
+  enrollments    GroupEnrollment[]
   currentStepIdx Int              @default(0)
   status         StudentStatus    @default(ACTIVE)
   tuitionRate    Int              @default(200000)
@@ -157,16 +173,17 @@ model Subject {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   levels      Level[]
+  groups      Group[]
 }
 
 model Level {
   id        String    @id @default(cuid())
   subjectId String
   subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  number    Int
-  title     String
-  students  Student[]
-  steps     Step[]
+  number       Int
+  title        String
+  enrollments  GroupEnrollment[]
+  steps        Step[]
 
   @@unique([subjectId, number])
   @@index([subjectId])
