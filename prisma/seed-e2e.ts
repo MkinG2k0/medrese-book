@@ -125,6 +125,9 @@ async function main() {
   await prisma.donation.deleteMany();
   await prisma.monthClose.deleteMany();
   await prisma.stepCompletion.deleteMany();
+  await prisma.extraAssignmentCompletion.deleteMany();
+  await prisma.studentExtraAssignment.deleteMany();
+  await prisma.extraAssignment.deleteMany();
   await prisma.session.deleteMany();
   await prisma.award.deleteMany();
   await prisma.teachingSession.deleteMany();
@@ -132,6 +135,7 @@ async function main() {
   await prisma.substitution.deleteMany();
   await prisma.leaveRequest.deleteMany();
   await prisma.step.deleteMany();
+  await prisma.groupEnrollment.deleteMany();
   await prisma.student.deleteMany();
   await prisma.group.deleteMany();
   await prisma.teacher.deleteMany();
@@ -202,6 +206,7 @@ async function main() {
   const group1 = await prisma.group.create({
     data: {
       name: "Группа Аль-Фатиха",
+      subjectId: quranSubject.id,
       teacherId: teacher1.id,
     },
   });
@@ -209,6 +214,7 @@ async function main() {
   const group2 = await prisma.group.create({
     data: {
       name: "Группа Ан-Нас",
+      subjectId: quranSubject.id,
       teacherId: teacher2.id,
     },
   });
@@ -238,9 +244,15 @@ async function main() {
         phone: contacts.phone,
         guardianName: contacts.guardianName,
         guardianPhone: contacts.guardianPhone,
+        currentStepIdx,
+      },
+    });
+
+    await prisma.groupEnrollment.create({
+      data: {
+        studentId: student.id,
         groupId: onLevel1 ? group1.id : group2.id,
         levelId: onLevel1 ? level1.id : level2.id,
-        currentStepIdx,
       },
     });
 
