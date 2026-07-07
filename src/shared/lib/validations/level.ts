@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export const createLevelSchema = z.object({
+	subjectId: z.string().min(1),
 	number: z.number().int().min(1),
 	title: z.string().min(1),
 })
