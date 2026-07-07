@@ -3,6 +3,7 @@
 import { Button, Table } from 'antd'
 import Link from 'next/link'
 
+import { programStepEditPath } from '@/features/program-admin/lib/program-paths'
 import Text from '@/shared/ui/Text'
 
 type StepRow = {
@@ -14,9 +15,11 @@ type StepRow = {
 }
 
 export function LevelStepsTable({
+	subjectId,
 	levelId,
 	steps,
 }: {
+	subjectId: string
 	levelId: string
 	steps: StepRow[]
 }) {
@@ -42,7 +45,9 @@ export function LevelStepsTable({
 					title: 'Действия',
 					key: 'actions',
 					render: (_, record) => (
-						<Link href={`/admin/program/${levelId}/steps/${record.id}/edit`}>
+						<Link
+							href={programStepEditPath(subjectId, levelId, record.id)}
+						>
 							<Button size="small">Редактировать</Button>
 						</Link>
 					),

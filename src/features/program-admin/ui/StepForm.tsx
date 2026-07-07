@@ -1,13 +1,17 @@
 'use client'
 
 import { Button, Form, Input, InputNumber } from 'antd'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { createStep, updateStep } from '@/features/program-admin/actions/program-actions'
+import { programLevelPath } from '@/features/program-admin/lib/program-paths'
 import { StepEditor } from '@/features/program-admin/ui/editor/StepEditor'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 type StepFormProps = {
+	subjectId: string
 	levelId: string
 	stepId?: string
 	initial?: {
@@ -19,7 +23,13 @@ type StepFormProps = {
 	}
 }
 
-export function StepForm({ levelId, stepId, initial }: StepFormProps) {
+export function StepForm({
+	subjectId,
+	levelId,
+	stepId,
+	initial,
+}: StepFormProps) {
+	const router = useRouter()
 	const [isPending, startTransition] = useTransition()
 	const [content, setContent] = useState<StepContent>(
 		initial?.content ?? { blocks: [{ type: 'text', value: '' }] },
@@ -29,6 +39,8 @@ export function StepForm({ levelId, stepId, initial }: StepFormProps) {
 	const [hours, setHours] = useState(initial?.hours ?? 1)
 	const [description, setDescription] = useState(initial?.description ?? '')
 
+	const cancelHref = programLevelPath(subjectId, levelId)
+
 	const handleSubmit = () => {
 		startTransition(async () => {
 			const payload = { levelId, order, title, content, description, hours }
@@ -37,7 +49,8 @@ export function StepForm({ levelId, stepId, initial }: StepFormProps) {
 			} else {
 				await createStep(payload)
 			}
-			window.location.href = `/admin/program/${levelId}`
+			router.push(cancelHref)
+			router.refresh()
 		})
 	}
 
@@ -87,7 +100,9 @@ export function StepForm({ levelId, stepId, initial }: StepFormProps) {
 					<Button type="primary" onClick={handleSubmit} loading={isPending}>
 						{stepId ? 'Сохранить' : 'Создать шаг'}
 					</Button>
-					<Button href={`/admin/program/${levelId}`}>Отмена</Button>
+					<Link href={cancelHref}>
+						<Button>Отмена</Button>
+					</Link>
 				</div>
 			</Form>
 		</div>
