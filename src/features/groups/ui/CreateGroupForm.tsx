@@ -6,15 +6,24 @@ import { useTransition } from 'react'
 import { createGroup } from '@/features/groups/actions/group-actions'
 
 type CreateGroupFormProps = {
+	subjects: { id: string; name: string }[]
 	teachers: { id: string; name: string }[]
 	onSuccess?: () => void
 }
 
-export function CreateGroupForm({ teachers, onSuccess }: CreateGroupFormProps) {
+export function CreateGroupForm({
+	subjects,
+	teachers,
+	onSuccess,
+}: CreateGroupFormProps) {
 	const [isPending, startTransition] = useTransition()
 	const [form] = Form.useForm()
 
-	const onFinish = (values: { name: string; teacherId: string }) => {
+	const onFinish = (values: {
+		name: string
+		teacherId: string
+		subjectId: string
+	}) => {
 		startTransition(async () => {
 			await createGroup(values)
 			form.resetFields()
@@ -24,6 +33,18 @@ export function CreateGroupForm({ teachers, onSuccess }: CreateGroupFormProps) {
 
 	return (
 		<Form form={form} layout="vertical" onFinish={onFinish}>
+			<Form.Item
+				name="subjectId"
+				label="Предмет"
+				rules={[{ required: true, message: 'Выберите предмет' }]}
+			>
+				<Select
+					options={subjects.map((subject) => ({
+						value: subject.id,
+						label: subject.name,
+					}))}
+				/>
+			</Form.Item>
 			<Form.Item name="name" label="Название" rules={[{ required: true }]}>
 				<Input />
 			</Form.Item>

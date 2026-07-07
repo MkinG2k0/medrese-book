@@ -9,6 +9,7 @@ type EditGroupFormProps = {
 	groupId: string
 	initialName: string
 	initialTeacherId: string
+	subjectName: string
 	teachers: { id: string; name: string }[]
 	onSuccess?: () => void
 }
@@ -17,6 +18,7 @@ export function EditGroupForm({
 	groupId,
 	initialName,
 	initialTeacherId,
+	subjectName,
 	teachers,
 	onSuccess,
 }: EditGroupFormProps) {
@@ -37,6 +39,9 @@ export function EditGroupForm({
 			initialValues={{ name: initialName, teacherId: initialTeacherId }}
 			onFinish={onFinish}
 		>
+			<Form.Item label="Предмет">
+				<Input value={subjectName} disabled />
+			</Form.Item>
 			<Form.Item
 				name="name"
 				label="Название"

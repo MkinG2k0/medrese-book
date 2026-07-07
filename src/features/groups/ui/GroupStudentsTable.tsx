@@ -25,6 +25,8 @@ type GroupStudentsTableProps = {
   users: UserDetail[];
   groups: { id: string; name: string }[];
   levels: LevelOption[];
+  groupId?: string;
+  subjectId?: string;
   canResetCode?: boolean;
   readOnly?: boolean;
   canEditStatus?: boolean;

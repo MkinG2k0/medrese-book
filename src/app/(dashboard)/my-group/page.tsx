@@ -8,12 +8,14 @@ import { requireRole } from "@/shared/lib/session";
 
 export default async function MyGroupPage() {
   await requireRole("TEACHER");
-  const [group, levels] = await Promise.all([
+  const [group, allLevels] = await Promise.all([
     getMyGroup(),
     getLevelsForStudentProfile(),
   ]);
 
   if (!group) notFound();
+
+  const levels = allLevels.filter((level) => level.subjectId === group.subjectId);
 
   const levelOptions = levels.map((level) => ({
     id: level.id,
@@ -26,10 +28,13 @@ export default async function MyGroupPage() {
     })),
   }));
 
-  const studentUsers = group.students.map((student) => ({
-    ...student.user,
+  const studentUsers = group.enrollments.map((enrollment) => ({
+    ...enrollment.student.user,
     student: {
-      ...student,
+      ...enrollment.student,
+      levelId: enrollment.levelId,
+      groupId: group.id,
+      level: enrollment.level,
       group: { name: group.name },
     },
   }));
@@ -39,10 +44,12 @@ export default async function MyGroupPage() {
   return (
     <GroupStudentsTable
       title="Моя группа"
-      subtitle={group.name}
+      subtitle={`${group.name} · ${group.subject.name}`}
       users={users}
       groups={[{ id: group.id, name: group.name }]}
       levels={levelOptions}
+      groupId={group.id}
+      subjectId={group.subjectId}
       readOnly
       canEditStatus
     />
