@@ -150,12 +150,26 @@ model Student {
   extraAssignments StudentExtraAssignment[]
 }
 
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  levels      Level[]
+}
+
 model Level {
-  id       String    @id @default(cuid())
-  number   Int       @unique
-  title    String
-  students Student[]
-  steps    Step[]
+  id        String    @id @default(cuid())
+  subjectId String
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  number    Int
+  title     String
+  students  Student[]
+  steps     Step[]
+
+  @@unique([subjectId, number])
+  @@index([subjectId])
 }
 
 model Step {
