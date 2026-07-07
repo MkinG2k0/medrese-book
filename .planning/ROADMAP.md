@@ -54,7 +54,15 @@ Plans:
   3. Ученик может быть в нескольких группах одновременно (many-to-many)
   4. Админка групп и учеников отражает новую модель зачисления
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+
+- [ ] 11-01-PLAN.md — Prisma Group.subjectId, GroupEnrollment migration, Zod validations
+- [ ] 11-02-PLAN.md — Group CRUD с предметом, список и фильтр, E2E scaffold
+- [ ] 11-03-PLAN.md — Зачисление/снятие на странице группы, EnrollStudentModal
+- [ ] 11-04-PLAN.md — Journal/API adapter, user-admin, regression E2E
+- [ ] 11-05-PLAN.md — seed.ts и seed-e2e.ts на GroupEnrollment
 
 ### Phase 12: Progress & Sessions
 
