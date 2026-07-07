@@ -510,20 +510,16 @@ await seedMiniProgram(prisma, { subjectId: arabic.id, levels: 3, stepsPerLevel: 
 | A3 | `gen_random_uuid()` в migration SQL заменяется на фиксированный cuid или Prisma-generated id | Pattern 4 | Ошибка SQL на prod Postgres |
 | A4 | Студенты в seed продолжают ссылаться на уровни предмета «Коран» (первый subject) | Seed | Seed падает или неверный прогресс в демо |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Нужен ли `deleteLevel` в Phase 10?**
-   - What we know: D-02 требует удалить уровни перед удалением предмета; `deleteLevel` отсутствует.
-   - What's unclear: Входит ли delete level в scope или только block delete subject.
-   - Recommendation: Добавить минимальный `deleteLevel` (guard: 0 students, cascade steps) в program-admin — иначе D-02 неполноценен.
+   - RESOLVED: Да — включён в **10-03-PLAN.md** Task 2 (guard: 0 students, cascade steps) для полноценного D-02.
 
 2. **Создание уровня: модалка vs страница?**
-   - What we know: UI-SPEC предпочитает модалку; текущая ссылка `/admin/program/new` битая.
-   - Recommendation: Модалка `CreateLevelForm` на `/admin/subjects/[subjectId]/program` по аналогии с `CreateGroupForm`.
+   - RESOLVED: Модалка `CreateLevelForm` — **10-04-PLAN.md** Task 1 по UI-SPEC.
 
 3. **Фиксированный id дефолтного Subject в migration?**
-   - What we know: backfill требует стабильный id для UPDATE Level.
-   - Recommendation: Использовать явный cuid в INSERT migration SQL (как seed-константа).
+   - RESOLVED: `DEFAULT_QURAN_SUBJECT_ID` в **10-01-PLAN.md** migration backfill и seed.
 
 ## Environment Availability
 
