@@ -93,10 +93,11 @@ export function tiptapToStepContent(json: JSONContent): StepContent {
 				) ?? []
 			if (items.some(Boolean)) blocks.push({ type: 'list', items })
 		} else if (node.type === 'image') {
+			const alt = node.attrs?.alt
 			blocks.push({
 				type: 'image',
 				url: (node.attrs?.src as string) ?? '',
-				caption: node.attrs?.alt as string | undefined,
+				...(typeof alt === 'string' && alt.length > 0 ? { caption: alt } : {}),
 			})
 		} else if (node.type === 'arabicBlock') {
 			blocks.push({

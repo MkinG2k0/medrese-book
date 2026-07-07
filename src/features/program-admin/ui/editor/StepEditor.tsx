@@ -5,6 +5,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { App } from 'antd'
 import { useCallback, useState } from 'react'
 
 import {
@@ -24,6 +25,7 @@ type StepEditorProps = {
 }
 
 export function StepEditor({ initialContent, onChange }: StepEditorProps) {
+	const { message } = App.useApp()
 	const [toolbarRevision, setToolbarRevision] = useState(0)
 	const [arabicModalOpen, setArabicModalOpen] = useState(false)
 
@@ -75,11 +77,13 @@ export function StepEditor({ initialContent, onChange }: StepEditorProps) {
 			const res = await fetch('/api/uploads', { method: 'POST', body: formData })
 			const json = await res.json()
 			if (json.data?.url) {
-				editor.chain().focus().setImage({ src: json.data.url }).run()
+				editor.chain().focus().setImage({ src: json.data.url, alt: '' }).run()
+			} else {
+				message.error(json.error ?? 'Не удалось загрузить изображение')
 			}
 		}
 		input.click()
-	}, [editor])
+	}, [editor, message])
 
 	const handleArabicConfirm = useCallback(
 		(value: string, size: 'md' | 'lg' | 'xl') => {

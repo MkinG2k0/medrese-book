@@ -10,7 +10,7 @@ const contentBlockSchema = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('image'),
 		url: z.string(),
-		caption: z.string().optional(),
+		caption: z.string().nullish(),
 	}),
 	z.object({ type: z.literal('list'), items: z.array(z.string()) }),
 ])
