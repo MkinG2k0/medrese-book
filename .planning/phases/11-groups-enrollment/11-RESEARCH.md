@@ -665,19 +665,16 @@ export const DEFAULT_QURAN_SUBJECT_ID = 'clq10defaultquransubject00'
 
 ## Open Questions
 
+**RESOLVED** (2026-07-07, plan revision):
+
 1. **updateStudentUser — убрать groupId/levelId полностью?**
-   - What we know: D-02 — зачисление только на странице группы
-   - What's unclear: редактирование профиля ученика в `/admin/users` — оставить только ФИО/контакты?
-   - Recommendation: убрать group/level из `updateStudentUserSchema`; перенос группы = unenroll + enroll на странице группы
+   - **Resolution:** Да — убрать из updateStudentUserSchema; профиль только ФИО/контакты. Перенос группы = unenroll + enroll на `/groups/[groupId]`. Реализация: plan 11-06 Task 1.
 
 2. **Изменение levelId существующего зачисления**
-   - What we know: D-05 level на enrollment
-   - What's unclear: нужен ли UI «сменить уровень» в Phase 11 или только при enroll
-   - Recommendation: MVP — только при enroll; смена уровня через student-admin progress edit остаётся глобальной до Phase 12 (tech debt)
+   - **Resolution:** MVP Phase 11 — только при enroll; смена уровня в UI зачисления не в scope. student-admin progress edit остаётся глобальным tech debt до Phase 12. Реализация: plan 11-06 Task 2.
 
 3. **SUBJ-07 wording vs D-07**
-   - What we know: REQUIREMENTS говорит «создании/редактировании»; CONTEXT D-07 — read-only при edit
-   - Recommendation: следовать CONTEXT (locked) — subject только при create
+   - **Resolution:** Следовать CONTEXT (locked) — subject только при create, read-only при edit. Реализация: plan 11-02.
 
 ## Environment Availability
 
