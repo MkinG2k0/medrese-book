@@ -10,7 +10,7 @@
 
 **Phase Numbering:** продолжение с Phase 10 (после v1.0 Phase 9)
 
-- [ ] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета
+- [x] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета (completed 2026-07-07)
 - [ ] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп
 - [ ] **Phase 12: Progress & Sessions** — прогресс по предмету, сессии с subjectId
 - [ ] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету
@@ -32,14 +32,14 @@
   4. Prisma-схема содержит `Subject`, `Level.subjectId`, `Step` в скоупе предмета; seed с демо-предметом (например, «Коран»)
   5. Старая глобальная программа заменена предметной моделью (fresh start)
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans complete
 
 Plans:
 
 - [x] 10-01-PLAN.md — Prisma Subject model, prod-safe migration, Zod validations
 - [x] 10-02-PLAN.md — subject-admin CRUD UI and /admin/subjects navigation
 - [x] 10-03-PLAN.md — Subject-scoped program-actions, deleteLevel, offsets
-- [ ] 10-04-PLAN.md — Program editor routes and UI; remove /admin/program
+- [x] 10-04-PLAN.md — Program editor routes and UI; remove /admin/program
 - [x] 10-05-PLAN.md — Multi-subject seed (Коран, Таджвид, Арабский язык)
 
 ### Phase 11: Groups & Enrollment
@@ -116,7 +116,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 10. Subject Foundation | 4/5 | In Progress|  |
+| 10. Subject Foundation | 5/5 | Complete   | 2026-07-07 |
 | 11. Groups & Enrollment | 0/TBD | Not started | - |
 | 12. Progress & Sessions | 0/TBD | Not started | - |
 | 13. Journal | 0/TBD | Not started | - |

@@ -6,15 +6,15 @@ current_phase: 10
 current_phase_name: subject-foundation
 status: executing
 stopped_at: Phase 10 planned
-last_updated: "2026-07-07T18:29:21.024Z"
+last_updated: "2026-07-07T18:56:00.000Z"
 last_activity: 2026-07-07
-last_activity_desc: Completed 10-03 subject-scoped program actions
+last_activity_desc: Completed 10-04 subject-scoped program editor UI
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 17
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 10 (subject-foundation) — EXECUTING
-Plan: 4 of 5 (10-03 complete)
-Status: Ready to execute 10-04
-Last activity: 2026-07-07 — Completed 10-03 subject-scoped program actions
+Plan: 5 of 5 (10-04 complete)
+Status: Ready to execute 10-05
+Last activity: 2026-07-07 — Completed 10-04 subject-scoped program editor UI
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Last activity: 2026-07-07 — Completed 10-03 subject-scoped program actions
 | Phase 10-subject-foundation P05 | 35 | 3 tasks | 5 files |
 | Phase 10-subject-foundation P02 | 15 | 3 tasks | 9 files |
 | Phase 10-subject-foundation P03 | 20 | 3 tasks | 8 files |
+| Phase 10-subject-foundation P04 | 25 | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,8 @@ Recent decisions affecting current work:
 - [Phase 10]: DEFAULT_QURAN_SUBJECT_ID mirrored in src/shared/lib/subject-constants.ts for offsets backward compat
 - [Phase 10]: Legacy /admin/program routes removed in 10-03 before subject-scoped UI in 10-04
 - [Phase 10]: deleteLevel student count guard; getLevelSteps IDOR guard with subjectId
+- [Phase 10]: EditLevelForm modal for Редактировать уровень (legacy /edit route never existed)
+- [Phase 10]: Program editor UI at /admin/subjects/[subjectId]/program with modal level create
 
 ### Pending Todos
 
@@ -187,7 +190,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-07-07 - Completed 10-03-PLAN: subject-scoped program actions
-Last session: 2026-07-07T18:45:00.000Z
-Stopped at: Completed 10-03-PLAN.md
-Resume file: .planning/phases/10-subject-foundation/10-04-PLAN.md
+Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
+Last session: 2026-07-07T18:56:00.000Z
+Stopped at: Completed 10-04-PLAN.md
+Resume file: .planning/phases/10-subject-foundation/10-05-PLAN.md
