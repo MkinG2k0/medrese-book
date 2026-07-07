@@ -28,20 +28,47 @@ export type SeedProgramResult = {
 };
 
 export type SeedProgramOptions = {
-  /** Пропустить загрузку, если уровни уже есть в БД */
+  subjectId: string;
+  /** Пропустить загрузку, если уровни уже есть в БД для этого предмета */
   skipIfExists?: boolean;
   /** Обновить шаги из JSON поверх существующей программы */
   force?: boolean;
 };
 
+export type SeedMiniProgramOptions = {
+  subjectId: string;
+  levels: number;
+  stepsPerLevel: number;
+  titles?: string[];
+};
+
+function buildMiniStepDefs(
+  levelNumber: number,
+  stepsPerLevel: number,
+  subjectLabel: string,
+): StepDef[] {
+  return Array.from({ length: stepsPerLevel }, (_, index) => {
+    const order = index + 1;
+    return {
+      order,
+      title: `${subjectLabel}: уровень ${levelNumber}, шаг ${order}`,
+      lesson: `${order}`,
+      letters: "",
+      task: `Демо-задание ${order} (уровень ${levelNumber})`,
+      hours: 1,
+    };
+  });
+}
+
 async function createLevelWithSteps(
   prisma: PrismaClient,
+  subjectId: string,
   number: number,
   title: string,
   steps: StepDef[],
 ) {
   const level = await prisma.level.create({
-    data: { number, title },
+    data: { subjectId, number, title },
   });
 
   for (const step of steps) {
@@ -61,14 +88,17 @@ async function createLevelWithSteps(
 
 async function upsertLevelWithSteps(
   prisma: PrismaClient,
+  subjectId: string,
   number: number,
   title: string,
   steps: StepDef[],
 ) {
-  let level = await prisma.level.findUnique({ where: { number } });
+  let level = await prisma.level.findFirst({
+    where: { subjectId, number },
+  });
 
   if (!level) {
-    return createLevelWithSteps(prisma, number, title, steps);
+    return createLevelWithSteps(prisma, subjectId, number, title, steps);
   }
 
   await prisma.level.update({
@@ -121,11 +151,13 @@ async function upsertLevelWithSteps(
 
 async function resyncProgram(
   prisma: PrismaClient,
+  subjectId: string,
   levelStepDefs: StepDef[][],
 ) {
   for (const [index, steps] of levelStepDefs.entries()) {
     await upsertLevelWithSteps(
       prisma,
+      subjectId,
       index + 1,
       LEVEL_TITLES[index]!,
       steps,
@@ -133,19 +165,46 @@ async function resyncProgram(
   }
 }
 
-/** Загружает программу обучения (5 уровней) из prisma/data в БД. */
+/** Загружает компактную демо-программу (несколько уровней с простыми шагами). */
+export async function seedMiniProgram(
+  prisma: PrismaClient,
+  options: SeedMiniProgramOptions,
+): Promise<SeedProgramResult> {
+  const { subjectId, levels, stepsPerLevel, titles } = options;
+  const levelStepCounts: number[] = [];
+
+  for (let levelNumber = 1; levelNumber <= levels; levelNumber += 1) {
+    const title =
+      titles?.[levelNumber - 1] ?? `Уровень ${levelNumber}`;
+    const steps = buildMiniStepDefs(levelNumber, stepsPerLevel, title);
+    await createLevelWithSteps(
+      prisma,
+      subjectId,
+      levelNumber,
+      title,
+      steps,
+    );
+    levelStepCounts.push(steps.length);
+  }
+
+  return { skipped: false, resynced: false, levelStepCounts };
+}
+
+/** Загружает полную программу обучения (5 уровней) из prisma/data в БД. */
 export async function seedProgram(
   prisma: PrismaClient,
-  options: SeedProgramOptions = {},
+  options: SeedProgramOptions,
 ): Promise<SeedProgramResult> {
-  const { skipIfExists = false, force = false } = options;
+  const { subjectId, skipIfExists = false, force = false } = options;
   const levelStepDefs = loadAllProgramLevelSteps();
   const levelStepCounts = levelStepDefs.map((steps) => steps.length);
 
-  const existingLevels = await prisma.level.count();
+  const existingLevels = await prisma.level.count({
+    where: { subjectId },
+  });
   if (existingLevels > 0) {
     if (force) {
-      await resyncProgram(prisma, levelStepDefs);
+      await resyncProgram(prisma, subjectId, levelStepDefs);
       return { skipped: false, resynced: true, levelStepCounts };
     }
 
@@ -154,13 +213,19 @@ export async function seedProgram(
     }
 
     throw new Error(
-      "Программа уже загружена. Используйте pnpm db:seed:program -- --force или полный demo-seed.",
+      "Программа уже загружена для этого предмета. Используйте pnpm db:seed:program -- --force или полный demo-seed.",
     );
   }
 
   await Promise.all(
     levelStepDefs.map((steps, index) =>
-      createLevelWithSteps(prisma, index + 1, LEVEL_TITLES[index]!, steps),
+      createLevelWithSteps(
+        prisma,
+        subjectId,
+        index + 1,
+        LEVEL_TITLES[index]!,
+        steps,
+      ),
     ),
   );
 
@@ -173,12 +238,12 @@ export function formatProgramSeedSummary(result: SeedProgramResult): string {
     .join(", ");
 
   if (result.skipped) {
-    return `Программа уже существует (уровни 1–5: ${counts} шагов)`;
+    return `Программа уже существует (уровни 1–${result.levelStepCounts.length}: ${counts} шагов)`;
   }
 
   if (result.resynced) {
-    return `Программа пересоздана из JSON: уровни 1–5 — ${counts} шагов`;
+    return `Программа пересоздана из JSON: уровни 1–${result.levelStepCounts.length} — ${counts} шагов`;
   }
 
-  return `Программа загружена: уровни 1–5 — ${counts} шагов`;
+  return `Программа загружена: уровни 1–${result.levelStepCounts.length} — ${counts} шагов`;
 }
