@@ -32,13 +32,13 @@
   4. Prisma-схема содержит `Subject`, `Level.subjectId`, `Step` в скоупе предмета; seed с демо-предметом (например, «Коран»)
   5. Старая глобальная программа заменена предметной моделью (fresh start)
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 
 Plans:
 
 - [x] 10-01-PLAN.md — Prisma Subject model, prod-safe migration, Zod validations
 - [x] 10-02-PLAN.md — subject-admin CRUD UI and /admin/subjects navigation
-- [ ] 10-03-PLAN.md — Subject-scoped program-actions, deleteLevel, offsets
+- [x] 10-03-PLAN.md — Subject-scoped program-actions, deleteLevel, offsets
 - [ ] 10-04-PLAN.md — Program editor routes and UI; remove /admin/program
 - [x] 10-05-PLAN.md — Multi-subject seed (Коран, Таджвид, Арабский язык)
 
@@ -116,7 +116,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 10. Subject Foundation | 3/5 | In Progress|  |
+| 10. Subject Foundation | 4/5 | In Progress|  |
 | 11. Groups & Enrollment | 0/TBD | Not started | - |
 | 12. Progress & Sessions | 0/TBD | Not started | - |
 | 13. Journal | 0/TBD | Not started | - |
