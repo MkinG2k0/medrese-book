@@ -94,10 +94,10 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <UserOutlined />,
     label: "Пользователи",
   },
-  "/admin/program": {
-    key: "/admin/program",
+  "/admin/subjects": {
+    key: "/admin/subjects",
     icon: <BookOutlined />,
-    label: "Программа",
+    label: "Предметы",
   },
   "/analytics/teachers": {
     key: "/analytics/teachers",
@@ -174,7 +174,7 @@ const menuItemDefs: Record<string, MenuItemDef> = {
 const managerMenuOrder = [
   "/groups",
   "/admin/users",
-  "/admin/program",
+  "/admin/subjects",
   "/extra-assignments",
   "/analytics",
   "/analytics/teachers",
