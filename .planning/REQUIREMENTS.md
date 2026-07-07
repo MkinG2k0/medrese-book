@@ -3,7 +3,51 @@
 **Defined:** 2026-06-24
 **Core Value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
 
-## v1 Requirements
+## v2.0 Requirements — Система предметов
+
+**Milestone:** v2.0 Система предметов
+**Defined:** 2026-07-07
+
+### Предметы и программа
+
+- [ ] **SUBJ-01**: Менеджер и супер-админ создают, редактируют и удаляют предметы
+- [ ] **SUBJ-02**: У каждого предмета своя учебная программа: уровни → шаги (структура как текущая глобальная программа)
+- [ ] **SUBJ-03**: Программа — шаблон на предмет: все группы по одному предмету используют одну программу
+- [ ] **SUBJ-04**: Редактор программы предмета (уровни/шаги, Tiptap) доступен менеджеру и супер-админу
+
+### Группы и зачисление
+
+- [ ] **SUBJ-05**: Группа привязана ровно к одному предмету
+- [ ] **SUBJ-06**: Ученик может быть зачислен в несколько групп (несколько предметов одновременно)
+- [ ] **SUBJ-07**: Менеджер назначает предмет при создании/редактировании группы
+
+### Прогресс и сессии
+
+- [ ] **SUBJ-08**: Прогресс ученика хранится независимо по каждому предмету (уровень + текущий шаг)
+- [ ] **SUBJ-09**: Сессия привязана к ученику, дате и предмету; посещаемость и оценки — в рамках предмета
+- [ ] **SUBJ-10**: Пересчёт прогресса (`currentStepIdx` / prior credit) работает в скоупе предмета
+
+### Журнал
+
+- [ ] **SUBJ-11**: Учитель выбирает группу в журнале; предмет определяется автоматически из группы
+- [ ] **SUBJ-12**: Список учеников группы показывает прогресс по предмету этой группы
+- [ ] **SUBJ-13**: Урок (оценки по шагам, посещаемость) ведётся в контексте предмета группы
+
+### Аналитика
+
+- [ ] **SUBJ-14**: На странице аналитики менеджер/учитель выбирает предмет
+- [ ] **SUBJ-15**: Метрики (топ учеников, статистика по уровням, at-risk) считаются в скоупе выбранного предмета
+
+### Портал ученика и допзадания
+
+- [ ] **SUBJ-16**: Ученик видит прогресс по каждому своему предмету
+- [ ] **SUBJ-17**: Дополнительные задания привязаны к шагам программы предмета
+
+### Данные
+
+- [ ] **SUBJ-18**: Новая Prisma-схема и seed для мультипредметной модели (fresh start, без миграции старых completions)
+
+## v1 Requirements (archived — milestone v1.0)
 
 ### Foundation (техническая база)
 
@@ -94,7 +138,7 @@
 - [ ] **CHAT-02**: История сообщений в диалоге
 - [ ] **CHAT-03**: Менеджер видит все чаты системы и раздел «Мои чаты»
 
-## v2 Requirements
+## v2 Requirements (deferred)
 
 ### Аналитика допзаданий
 
@@ -124,76 +168,40 @@
 | Real-time WebSocket-чат в MVP | Асинхронная модель при внедрении чата |
 | S3-хранилище | Локальные uploads достаточны |
 | Почасовое расписание/кабинеты | Модель medrese — индивидуальное обучение |
-| Автопроверка ДЗ (тесты) | Устное/практическое обучение Корану |
+| Автопроверка ДЗ (тесты) | Устное/практическое обучение |
 | Полная переработка дизайна | Точечные улучшения по бэклогу |
+| Миграция старых completions в v2.0 | Fresh start — новая схема с нуля |
+| Копия программы на каждую группу | Программа — шаблон на предмет |
 
-## Traceability
+## Traceability (v2.0)
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | Phase 0 | Complete |
-| FND-02 | Phase 0 | Complete |
-| FND-03 | Phase 0 | Pending |
-| FND-04 | Phase 0 | Pending |
-| ANLY-01 | Phase 1 | Complete |
-| ANLY-02 | Phase 1 | Complete |
-| ANLY-03 | Phase 1 | Complete |
-| ANLY-04 | Phase 1 | Complete |
-| ANLY-05 | Phase 1 | Complete |
-| ANLY-06 | Phase 1 | Complete |
-| ANLY-07 | Phase 1 | Complete |
-| ANLY-08 | Phase 1 | Complete |
-| ANLY-09 | Phase 1 | Complete |
-| ANLY-10 | Phase 1 | Complete |
-| STUD-01 | Phase 2 | Pending |
-| STUD-02 | Phase 2 | Pending |
-| STUD-03 | Phase 2 | Pending |
-| STUD-04 | Phase 2 | Pending |
-| STUD-05 | Phase 2 | Pending |
-| STUD-06 | Phase 2 | Pending |
-| STUD-07 | Phase 2 | Pending |
-| ASGN-01 | Phase 3 | Pending |
-| ASGN-02 | Phase 3 | Pending |
-| ASGN-03 | Phase 3 | Pending |
-| ASGN-04 | Phase 3 | Pending |
-| ASGN-05 | Phase 3 | Pending |
-| ASGN-06 | Phase 3 | Pending |
-| ASGN-07 | Phase 3 | Pending |
-| TCHR-01 | Phase 4 | Complete |
-| TCHR-02 | Phase 4 | Pending |
-| TCHR-03 | Phase 4 | Complete |
-| TCHR-04 | Phase 4 | Complete |
-| TCHR-05 | Phase 4 | Complete |
-| LEAV-01 | Phase 4 | Complete |
-| LEAV-02 | Phase 4 | Complete |
-| LEAV-03 | Phase 4 | Complete |
-| LEAV-04 | Phase 4 | Complete |
-| SECU-01 | Phase 5 | Pending |
-| SECU-02 | Phase 5 | Pending |
-| NOTF-01 | Phase 6 | Complete |
-| NOTF-02 | Phase 6 | Complete |
-| NOTF-03 | Phase 6 | Pending |
-| NOTF-04 | Phase 6 / 9 | Complete |
-| NOTF-05 | Phase 9 | Complete |
-| NOTF-06 | Phase 9 | Complete |
-| AUDT-01 | Phase 7 | Pending |
-| AUDT-02 | Phase 7 | Pending |
-| AUDT-03 | Phase 7 | Pending |
-| AUDT-04 | Phase 7 | Pending |
-| TANL-01 | Phase 7 | Pending |
-| TANL-02 | Phase 7 | Pending |
-| TANL-03 | Phase 7 | Pending |
-| TANL-04 | Phase 7 | Pending |
-| CHAT-01 | Phase 7 | Pending |
-| CHAT-02 | Phase 7 | Pending |
-| CHAT-03 | Phase 7 | Pending |
+| SUBJ-01 | Phase 10 | Pending |
+| SUBJ-02 | Phase 10 | Pending |
+| SUBJ-03 | Phase 10 | Pending |
+| SUBJ-04 | Phase 10 | Pending |
+| SUBJ-05 | Phase 11 | Pending |
+| SUBJ-06 | Phase 11 | Pending |
+| SUBJ-07 | Phase 11 | Pending |
+| SUBJ-08 | Phase 12 | Pending |
+| SUBJ-09 | Phase 12 | Pending |
+| SUBJ-10 | Phase 12 | Pending |
+| SUBJ-11 | Phase 13 | Pending |
+| SUBJ-12 | Phase 13 | Pending |
+| SUBJ-13 | Phase 13 | Pending |
+| SUBJ-14 | Phase 14 | Pending |
+| SUBJ-15 | Phase 14 | Pending |
+| SUBJ-16 | Phase 15 | Pending |
+| SUBJ-17 | Phase 15 | Pending |
+| SUBJ-18 | Phase 10 | Pending |
 
-**Coverage:**
+**Coverage (v2.0):**
 
-- v1 requirements: 54 total
-- Mapped to phases: 54/54 ✓
+- v2.0 requirements: 18 total
+- Mapped to phases: 18/18 ✓
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-24*
-*Last updated: 2026-06-24 after roadmap traceability*
+*Last updated: 2026-07-07 — milestone v2.0 Система предметов*

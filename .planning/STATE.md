@@ -1,19 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-current_phase: 01
-current_phase_name: student-analytics-history
-status: verifying
-stopped_at: Completed 01-05-PLAN.md
-last_updated: "2026-07-01T19:55:00.000Z"
-last_activity: 2026-07-05 - Completed quick task 260705-t22: добавь учителей тоже, роль отображай в badge
+milestone: v2.0
+milestone_name: Система предметов
+status: planning
+last_updated: "2026-07-07T17:26:58.500Z"
+last_activity: 2026-07-07
 progress:
-  total_phases: 10
-  completed_phases: 4
-  total_plans: 20
-  completed_plans: 20
-  percent: 40
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -23,16 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 01 — student-analytics-history
+**Current focus:** Milestone v2.0 — Система предметов (Phase 10)
 
 ## Current Position
 
-Phase: 01 (student-analytics-history) — VERIFYING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-07-01 — Completed 01-05 automated tests plan
-
-Progress: [████░░░░░░] 40%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-07-07 — Milestone v2.0 started
 
 ## Performance Metrics
 
