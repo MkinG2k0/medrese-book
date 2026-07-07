@@ -7,6 +7,7 @@ import {
   formatProgramSeedSummary,
   seedProgram,
 } from "./lib/seed-program";
+import { DEFAULT_QURAN_SUBJECT_ID } from "./lib/subject-constants";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -33,10 +34,26 @@ function resolveSuperAdminCode(): string {
 
 const SUPER_ADMIN_NAME = "Супер-админ";
 
+async function ensureQuranSubject() {
+  return prisma.subject.upsert({
+    where: { id: DEFAULT_QURAN_SUBJECT_ID },
+    create: {
+      id: DEFAULT_QURAN_SUBJECT_ID,
+      name: "Коран",
+      description: "Полная программа изучения Корана",
+    },
+    update: {},
+  });
+}
+
 async function main() {
   const code = resolveSuperAdminCode();
 
-  const programResult = await seedProgram(prisma, { skipIfExists: true });
+  const quranSubject = await ensureQuranSubject();
+  const programResult = await seedProgram(prisma, {
+    subjectId: quranSubject.id,
+    skipIfExists: true,
+  });
   console.log(formatProgramSeedSummary(programResult));
 
   const existingSuperAdmin = await prisma.user.findFirst({

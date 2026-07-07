@@ -12,6 +12,7 @@ import {
 } from "./lib/program-config";
 import { buildStudentContactData } from "./lib/seed-history";
 import { buildContent, type StepDef } from "./lib/level1-import-utils";
+import { DEFAULT_QURAN_SUBJECT_ID } from "./lib/subject-constants";
 
 const E2E_STEPS_PER_LEVEL = 5;
 
@@ -39,12 +40,13 @@ function buildE2eSteps(): StepDef[] {
 }
 
 async function createLevelWithSteps(
+  subjectId: string,
   number: number,
   title: string,
   steps: StepDef[],
 ) {
   const level = await prisma.level.create({
-    data: { number, title },
+    data: { subjectId, number, title },
   });
 
   await prisma.step.createMany({
@@ -135,6 +137,15 @@ async function main() {
   await prisma.teacher.deleteMany();
   await prisma.user.deleteMany();
   await prisma.level.deleteMany();
+  await prisma.subject.deleteMany();
+
+  const quranSubject = await prisma.subject.create({
+    data: {
+      id: DEFAULT_QURAN_SUBJECT_ID,
+      name: "Коран",
+      description: "E2E программа",
+    },
+  });
 
   const superAdmin = await prisma.user.create({
     data: { name: "Супер-админ", code: "100001", role: "SUPER_ADMIN" },
@@ -162,8 +173,18 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const level1 = await createLevelWithSteps(1, LEVEL1_TITLE, e2eSteps);
-  const level2 = await createLevelWithSteps(2, LEVEL2_TITLE, e2eSteps);
+  const level1 = await createLevelWithSteps(
+    quranSubject.id,
+    1,
+    LEVEL1_TITLE,
+    e2eSteps,
+  );
+  const level2 = await createLevelWithSteps(
+    quranSubject.id,
+    2,
+    LEVEL2_TITLE,
+    e2eSteps,
+  );
 
   const [level1Steps, level2Steps] = await Promise.all([
     prisma.step.findMany({
