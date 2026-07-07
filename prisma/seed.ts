@@ -6,7 +6,12 @@ assertDestructiveSeedAllowed("demo-seed");
 
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { seedProgram } from "./lib/seed-program";
+import {
+  formatProgramSeedSummary,
+  seedMiniProgram,
+  seedProgram,
+} from "./lib/seed-program";
+import { DEFAULT_QURAN_SUBJECT_ID } from "./lib/subject-constants";
 import {
   buildLessonDates,
   buildLevelStepOffsets,
@@ -62,6 +67,7 @@ async function main() {
   await prisma.teacher.deleteMany();
   await prisma.user.deleteMany();
   await prisma.level.deleteMany();
+  await prisma.subject.deleteMany();
 
   const superAdmin = await prisma.user.create({
     data: { name: "Супер-админ", code: "100001", role: "SUPER_ADMIN" },
@@ -89,13 +95,57 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const programResult = await seedProgram(prisma);
-  const levels = await prisma.level.findMany({
+  const quranSubject = await prisma.subject.create({
+    data: {
+      id: DEFAULT_QURAN_SUBJECT_ID,
+      name: "Коран",
+      description: "Полная программа изучения Корана",
+    },
+  });
+
+  const tajweedSubject = await prisma.subject.create({
+    data: {
+      name: "Таджвид",
+      description: "Правила чтения",
+    },
+  });
+
+  const arabicSubject = await prisma.subject.create({
+    data: {
+      name: "Арабский язык",
+      description: "Базовый курс",
+    },
+  });
+
+  const quranProgramResult = await seedProgram(prisma, {
+    subjectId: quranSubject.id,
+  });
+
+  const tajweedProgramResult = await seedMiniProgram(prisma, {
+    subjectId: tajweedSubject.id,
+    levels: 2,
+    stepsPerLevel: 3,
+    titles: ["Таджвид — основы", "Таджвид — практика"],
+  });
+
+  const arabicProgramResult = await seedMiniProgram(prisma, {
+    subjectId: arabicSubject.id,
+    levels: 3,
+    stepsPerLevel: 5,
+    titles: [
+      "Арабский — алфавит",
+      "Арабский — слова",
+      "Арабский — чтение",
+    ],
+  });
+
+  const quranLevels = await prisma.level.findMany({
+    where: { subjectId: quranSubject.id },
     orderBy: { number: "asc" },
   });
 
   const levelStepIds = await Promise.all(
-    levels.map((level) =>
+    quranLevels.map((level) =>
       prisma.step.findMany({
         where: { levelId: level.id },
         orderBy: { order: "asc" },
@@ -104,7 +154,7 @@ async function main() {
     ),
   );
 
-  const levelStepCounts = programResult.levelStepCounts;
+  const levelStepCounts = quranProgramResult.levelStepCounts;
   const levelStepOffsets = buildLevelStepOffsets(levelStepCounts);
 
   const group1 = await prisma.group.create({
@@ -145,7 +195,7 @@ async function main() {
         guardianName: contacts.guardianName,
         guardianPhone: contacts.guardianPhone,
         groupId: groups[profile.groupIndex]!.id,
-        levelId: levels[profile.level - 1]!.id,
+        levelId: quranLevels[profile.level - 1]!.id,
         currentStepIdx: getCurrentStepIdx(profile, levelStepOffsets),
         status: profile.status ?? "ACTIVE",
       },
@@ -157,7 +207,7 @@ async function main() {
   }
 
   const firstLevelSteps = await prisma.step.findMany({
-    where: { levelId: levels[0]!.id },
+    where: { levelId: quranLevels[0]!.id },
     orderBy: { order: "asc" },
     take: 2,
   });
@@ -201,11 +251,23 @@ async function main() {
   const studentCodes = STUDENT_PROFILES.map((p) => p.code);
   const periodLabel = `${seedCtx.periodStart.toISOString().slice(0, 10)} — ${seedCtx.periodEnd.toISOString().slice(0, 10)}`;
 
+  const formatSubjectSummary = (
+    name: string,
+    result: { levelStepCounts: number[] },
+  ) => {
+    const counts = result.levelStepCounts
+      .map((count, index) => `${index + 1}=${count}`)
+      .join(", ");
+    return `  ${name}: ${result.levelStepCounts.length} уровней (${counts} шагов)`;
+  };
+
   console.log("Seed completed:");
-  console.log(
-    `  Уровни 1–5: ${levelStepCounts.map((count, index) => `${index + 1}=${count}`).join(", ")} шагов`,
-  );
-  console.log(`  Учеников: ${STUDENT_PROFILES.length}`);
+  console.log("Предметы:");
+  console.log(formatSubjectSummary("Коран", quranProgramResult));
+  console.log(formatSubjectSummary("Таджвид", tajweedProgramResult));
+  console.log(formatSubjectSummary("Арабский язык", arabicProgramResult));
+  console.log(formatProgramSeedSummary(quranProgramResult));
+  console.log(`  Учеников: ${STUDENT_PROFILES.length} (уровни программы Корана)`);
   console.log(`  Период данных: ${periodLabel}`);
   console.log(`  Занятий групп (вт/чт): ${lessonDates.length} дат на группу`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
