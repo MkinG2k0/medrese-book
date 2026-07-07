@@ -6,15 +6,15 @@ current_phase: 10
 current_phase_name: subject-foundation
 status: executing
 stopped_at: Phase 10 planned
-last_updated: "2026-07-07T17:56:08.120Z"
+last_updated: "2026-07-07T18:04:00.000Z"
 last_activity: 2026-07-07
-last_activity_desc: Completed 10-01-PLAN — Subject schema and migration
+last_activity_desc: Completed 10-05-PLAN — Multi-subject seed
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 10 (subject-foundation) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5 (10-05 complete)
 Status: Ready to execute
-Last activity: 2026-07-07 — Phase 10 execution started
+Last activity: 2026-07-07 — Completed 10-05 multi-subject seed
 
 ## Performance Metrics
 
@@ -70,7 +70,7 @@ Last activity: 2026-07-07 — Phase 10 execution started
 | Phase 01-student-analytics-history P02 | 28 | 3 tasks | 15 files |
 | Phase 01-student-analytics-history P03 | 25 | 3 tasks | 11 files |
 | Phase 01-student-analytics-history P04 | 30 | 3 tasks | 6 files |
-| Phase 10-subject-foundation P01 | 25 | 3 tasks | 5 files |
+| Phase 10-subject-foundation P05 | 35 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -116,6 +116,8 @@ Recent decisions affecting current work:
 - [Phase 01]: At-risk E2E falls back to TopStudents when at-risk empty
 - [Phase 10]: Migration add_subject created manually; deploy via db:migrate:deploy on target env
 - [Phase 10]: DEFAULT_QURAN_SUBJECT_ID clq10defaultquransubject00 shared between migration SQL and subject-constants.ts
+- [Phase 10]: subject.deleteMany after level.deleteMany due to FK Restrict
+- [Phase 10]: Demo seed three subjects Quran Tajweed Arabic; students on Quran levels only
 
 ### Pending Todos
 
@@ -178,7 +180,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-07-05 - Completed quick task 260705-uui: система постов
-Last session: 2026-07-07T17:56:08.112Z
-Stopped at: Completed 10-01-PLAN.md
+Last activity: 2026-07-07 - Completed 10-05-PLAN: multi-subject seed
+Last session: 2026-07-07T18:04:00.000Z
+Stopped at: Completed 10-05-PLAN.md
 Resume file: .planning/phases/10-subject-foundation/10-02-PLAN.md
