@@ -1,22 +1,26 @@
 ---
 phase: 10-subject-foundation
 verified: 2026-07-07T18:39:00Z
-status: human_needed
+status: passed
 score: 13/14 must-haves verified
 behavior_unverified: 1
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "Редактор шагов с Tiptap работает в контексте предмета"
     test: "Войти как менеджер → /admin/subjects → программа предмета → уровень → «Новый шаг» или редактирование шага; ввести текст, арабский блок, изображение; сохранить и перезагрузить страницу"
     expected: "Контент сохраняется в Step.content (JSON blocks), редактор Tiptap отображает сохранённое; редирект на programLevelPath после сохранения"
     why_human: "StepEditor подключён через StepForm, но нет E2E/интеграционного теста, подтверждающего runtime-сохранение Tiptap-контента в subject-scoped маршруте"
 human_verification:
+
   - test: "Полный сценарий менеджера: создать предмет → открыть программу → создать уровень (модал) → создать шаг с Tiptap → вернуться к списку шагов"
     expected: "Все переходы по /admin/subjects/[subjectId]/program/** работают; breadcrumbs корректны; глобальный номер шага в скобках отображается per-subject"
     why_human: "UI-модалки, breadcrumbs и навигация не покрыты E2E; unit-тесты проверяют только server actions"
+
   - test: "Удаление предмета с программой и без"
     expected: "Предмет с levelCount > 0 — ошибка «Нельзя удалить предмет с программой…»; пустой предмет удаляется после deleteLevel всех уровней"
     why_human: "Серверная логика покрыта unit-тестами; клиентский UX confirm-модалок и цепочка deleteLevel → deleteSubject требует ручной проверки"
+
   - test: "Seed: три предмета с разным объёмом программы"
     expected: "После pnpm db:seed — Коран (полная программа), Таджвид (2×3 шага), Арабский (3×5 шагов); ученики на уровнях Корана"
     why_human: "Структура seed подтверждена статическим анализом; объём программ и привязка учеников не прогонялись в этой верификации"

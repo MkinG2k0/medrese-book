@@ -3,7 +3,7 @@ status: complete
 phase: 10-subject-foundation
 source: [10-VERIFICATION.md]
 started: 2026-07-07T18:45:00Z
-updated: 2026-07-07T18:48:00Z
+updated: 2026-07-07T18:50:00Z
 ---
 
 ## Current Test
@@ -18,11 +18,8 @@ result: pass
 
 ### 2. Tiptap в контексте предмета
 expected: Ввести текст, арабский блок, изображение в редакторе шага; сохранить и перезагрузить — контент сохраняется в Step.content, редирект на programLevelPath.
-result: issue
-reported: "изображение не работает — ZodError caption: expected string, received null при сохранении шага с картинкой"
-severity: major
-fix_applied: "36c5c1f — caption nullish в stepContentSchema; tiptap-mapper; alt: '' при вставке"
-retest: pending
+result: pass
+retest_note: "pass после hotfix 36c5c1f (caption nullish)"
 
 ### 3. Удаление предмета с программой и без
 expected: Предмет с levelCount > 0 — ошибка «Нельзя удалить предмет с программой…»; пустой предмет удаляется после deleteLevel всех уровней.
@@ -35,26 +32,12 @@ result: pass
 ## Summary
 
 total: 4
-passed: 3
-issues: 1
+passed: 4
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-```yaml
-- truth: "Сохранение шага с блоком image не падает; в БД хранится URL (S3 или /uploads/)"
-  status: failed
-  reason: "User reported: ZodError caption null при updateStep"
-  severity: major
-  test: 2
-  root_cause: "Tiptap image attrs.alt = null; z.string().optional() не принимает null"
-  fix_commit: 36c5c1f
-  artifacts:
-    - src/shared/lib/validations/step.ts
-    - src/features/program-admin/lib/tiptap-mapper.ts
-    - src/features/program-admin/ui/editor/StepEditor.tsx
-  missing:
-    - retest test 2 после hotfix
-```
+[resolved — test 2 retest passed after 36c5c1f]

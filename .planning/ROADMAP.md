@@ -116,7 +116,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 10. Subject Foundation | 5/5 | Complete   | 2026-07-07 |
+| 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 0/TBD | Not started | - |
 | 12. Progress & Sessions | 0/TBD | Not started | - |
 | 13. Journal | 0/TBD | Not started | - |

@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
-current_phase: 10
-current_phase_name: subject-foundation
+current_phase: 11
+current_phase_name: Groups & Enrollment
 status: executing
-stopped_at: Phase 10 planned
-last_updated: "2026-07-07T18:56:00.000Z"
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-07-07T18:50:23.501Z"
 last_activity: 2026-07-07
-last_activity_desc: Completed 10-04 subject-scoped program editor UI
+last_activity_desc: Phase 10 complete, transitioned to Phase 11
 progress:
   total_phases: 6
   completed_phases: 1
@@ -28,16 +28,16 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 10 (subject-foundation) — EXECUTING
-Plan: 5 of 5 (10-04 complete)
+Phase: 11 — Groups & Enrollment
+Plan: Not started
 Status: Ready to execute 10-05
-Last activity: 2026-07-07 — Completed 10-04 subject-scoped program editor UI
+Last activity: 2026-07-07 — Phase 10 complete, transitioned to Phase 11
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 10
+- Total plans completed: 15
 - Average duration: —
 - Total execution time: —
 
@@ -47,6 +47,7 @@ Last activity: 2026-07-07 — Completed 10-04 subject-scoped program editor UI
 |-------|-------|-------|----------|
 | 08 | 5 | - | - |
 | 9 | 5 | - | - |
+| 10 | 5 | - | - |
 
 **Recent Trend:**
 
