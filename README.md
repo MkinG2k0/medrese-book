@@ -191,8 +191,9 @@ docker compose up app
 | `/analytics` | TEACHER, MANAGER, SUPER_ADMIN | Аналитика учеников |
 | `/analytics/teachers` | MANAGER, SUPER_ADMIN | Аналитика учителей |
 | `/admin/users` | MANAGER, SUPER_ADMIN | Пользователи |
-| `/admin/program` | MANAGER, SUPER_ADMIN | Уровни программы |
-| `/admin/program/[levelId]/steps/...` | MANAGER, SUPER_ADMIN | Редактор шагов |
+| `/admin/subjects` | MANAGER, SUPER_ADMIN | Список предметов |
+| `/admin/subjects/[subjectId]/program` | MANAGER, SUPER_ADMIN | Уровни программы предмета |
+| `/admin/subjects/[subjectId]/program/[levelId]/steps/...` | MANAGER, SUPER_ADMIN | Редактор шагов |
 | `/admin/awards` | MANAGER, SUPER_ADMIN | Награды |
 | `/admin/leave-calendar` | MANAGER, SUPER_ADMIN | Календарь отпусков |
 | `/student/me` | STUDENT | Мой прогресс |
