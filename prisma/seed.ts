@@ -62,6 +62,7 @@ async function main() {
   await prisma.substitution.deleteMany();
   await prisma.leaveRequest.deleteMany();
   await prisma.step.deleteMany();
+  await prisma.groupEnrollment.deleteMany();
   await prisma.student.deleteMany();
   await prisma.group.deleteMany();
   await prisma.teacher.deleteMany();
@@ -160,6 +161,7 @@ async function main() {
   const group1 = await prisma.group.create({
     data: {
       name: "Группа Аль-Фатиха",
+      subjectId: quranSubject.id,
       teacherId: teacher1.id,
     },
   });
@@ -167,6 +169,7 @@ async function main() {
   const group2 = await prisma.group.create({
     data: {
       name: "Группа Ан-Нас",
+      subjectId: quranSubject.id,
       teacherId: teacher2.id,
     },
   });
@@ -194,16 +197,36 @@ async function main() {
         phone: contacts.phone,
         guardianName: contacts.guardianName,
         guardianPhone: contacts.guardianPhone,
-        groupId: groups[profile.groupIndex]!.id,
-        levelId: quranLevels[profile.level - 1]!.id,
         currentStepIdx: getCurrentStepIdx(profile, levelStepOffsets),
         status: profile.status ?? "ACTIVE",
+      },
+    });
+
+    await prisma.groupEnrollment.create({
+      data: {
+        studentId: student.id,
+        groupId: groups[profile.groupIndex]!.id,
+        levelId: quranLevels[profile.level - 1]!.id,
       },
     });
 
     const passedIds = getPassedStepIds(profile, levelStepIds).map((step) => step.id);
 
     await seedStudentHistory(prisma, student.id, profile, passedIds, lessonDates, seedCtx);
+  }
+
+  const dualEnrollmentStudent = await prisma.student.findFirst({
+    where: { user: { code: "300001" } },
+    select: { id: true },
+  });
+  if (dualEnrollmentStudent) {
+    await prisma.groupEnrollment.create({
+      data: {
+        studentId: dualEnrollmentStudent.id,
+        groupId: group2.id,
+        levelId: quranLevels[1]!.id,
+      },
+    });
   }
 
   const firstLevelSteps = await prisma.step.findMany({
