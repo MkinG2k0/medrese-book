@@ -1,31 +1,49 @@
 import { prisma } from '@/shared/lib/prisma'
+import { DEFAULT_QURAN_SUBJECT_ID } from '@/shared/lib/subject-constants'
 
-let cachedOffsets: Map<number, number> | null = null
-let cachedTotalProgramSteps: number | null = null
+const offsetCache = new Map<string, Map<number, number>>()
+const totalStepsCache = new Map<string, number>()
 
-export function invalidateStepOffsetCache() {
-	cachedOffsets = null
-	cachedTotalProgramSteps = null
+export function invalidateStepOffsetCache(subjectId?: string) {
+	if (subjectId) {
+		offsetCache.delete(subjectId)
+		totalStepsCache.delete(subjectId)
+	} else {
+		offsetCache.clear()
+		totalStepsCache.clear()
+	}
 }
 
 export async function getStepOffsetForLevel(
 	levelNumber: number,
+	subjectId?: string,
 ): Promise<number> {
-	if (!cachedOffsets) {
-		cachedOffsets = await getLevelStepOffsets()
+	const sid = subjectId ?? DEFAULT_QURAN_SUBJECT_ID
+	let cached = offsetCache.get(sid)
+	if (!cached) {
+		cached = await getLevelStepOffsets(sid)
+		offsetCache.set(sid, cached)
 	}
-	return cachedOffsets.get(levelNumber) ?? 0
+	return cached.get(levelNumber) ?? 0
 }
 
-export async function getTotalProgramSteps(): Promise<number> {
-	if (cachedTotalProgramSteps === null) {
-		cachedTotalProgramSteps = await prisma.step.count()
-	}
-	return cachedTotalProgramSteps
+export async function getTotalProgramSteps(subjectId?: string): Promise<number> {
+	const sid = subjectId ?? DEFAULT_QURAN_SUBJECT_ID
+	const cached = totalStepsCache.get(sid)
+	if (cached !== undefined) return cached
+
+	const count = await prisma.step.count({
+		where: { level: { subjectId: sid } },
+	})
+	totalStepsCache.set(sid, count)
+	return count
 }
 
-export async function getLevelStepOffsets(): Promise<Map<number, number>> {
+export async function getLevelStepOffsets(
+	subjectId: string,
+): Promise<Map<number, number>> {
 	const levels = await prisma.level.findMany({
+		where: { subjectId },
 		select: { number: true, _count: { select: { steps: true } } },
 		orderBy: { number: 'asc' },
 	})
