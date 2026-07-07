@@ -2,18 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
-current_phase_name: defining requirements
-status: planning
+current_phase: 10
+current_phase_name: subject-foundation
+status: executing
 stopped_at: Phase 10 planned
-last_updated: "2026-07-07T17:46:05.343Z"
+last_updated: "2026-07-07T17:56:08.120Z"
 last_activity: 2026-07-07
-last_activity_desc: Milestone v2.0 started
+last_activity_desc: Completed 10-01-PLAN — Subject schema and migration
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 5
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -23,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Milestone v2.0 — Система предметов (Phase 10)
+**Current focus:** Phase 10 — subject-foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-07-07 — Milestone v2.0 started
+Phase: 10 (subject-foundation) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-07-07 — Phase 10 execution started
 
 ## Performance Metrics
 
@@ -69,6 +70,7 @@ Last activity: 2026-07-07 — Milestone v2.0 started
 | Phase 01-student-analytics-history P02 | 28 | 3 tasks | 15 files |
 | Phase 01-student-analytics-history P03 | 25 | 3 tasks | 11 files |
 | Phase 01-student-analytics-history P04 | 30 | 3 tasks | 6 files |
+| Phase 10-subject-foundation P01 | 25 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -112,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 01]: At-risk teacher column hidden when specific teacher filter selected
 - [Phase 01]: Timer E2E on teacher2 to isolate from journal.spec.ts
 - [Phase 01]: At-risk E2E falls back to TopStudents when at-risk empty
+- [Phase 10]: Migration add_subject created manually; deploy via db:migrate:deploy on target env
+- [Phase 10]: DEFAULT_QURAN_SUBJECT_ID clq10defaultquransubject00 shared between migration SQL and subject-constants.ts
 
 ### Pending Todos
 
@@ -175,6 +179,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-05 - Completed quick task 260705-uui: система постов
-Last session: 2026-07-07T17:46:05.337Z
-Stopped at: Phase 10 planned
-Resume file: .planning/phases/10-subject-foundation/10-01-PLAN.md
+Last session: 2026-07-07T17:56:08.112Z
+Stopped at: Completed 10-01-PLAN.md
+Resume file: .planning/phases/10-subject-foundation/10-02-PLAN.md
