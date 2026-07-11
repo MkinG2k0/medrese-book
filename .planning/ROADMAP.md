@@ -79,7 +79,7 @@ Plans:
 
 **Note**: Intentional deviation от «прогресс по предмету» — решение D-01 (discuss 2026-07-11). UI журнала — Phase 13.
 
-**Plans**: 4/5 plans executed
+**Plans**: 5/5 plans executed
 
 Plans:
 **Wave 1**
@@ -97,7 +97,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 12-05-PLAN.md — Docs SUBJ-08…10, seed, финальная верификация (wave 4)
+- [x] 12-05-PLAN.md — Docs SUBJ-08…10, seed, финальная верификация (wave 4)
 
 ### Phase 13: Journal
 
