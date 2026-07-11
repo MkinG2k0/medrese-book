@@ -169,7 +169,22 @@ Plans:
   2. Дополнительные задания фильтруются и назначаются в контексте шагов предмета
   3. История допзаданий в карточке/портале ученика группируется по предмету
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 15-01-PLAN.md — Дашборд /student/me: карточки per enrollment, метрики, query helpers (wave 1)
+
+**Wave 2** *(blocked on Wave 1 for 15-02; 15-03 parallel)*
+
+- [ ] 15-02-PLAN.md — groupId URL, deep links, scoped lessons/history (wave 2)
+- [ ] 15-03-PLAN.md — Subject scope справочника и assign modal (wave 2)
+
+**Wave 3** *(blocked on Wave 2 + 15-03)*
+
+- [ ] 15-04-PLAN.md — История допзаданий ученика по предметам + E2E (wave 3)
 
 ## Progress (v2.0)
 
@@ -182,7 +197,7 @@ Plans:
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 4/4 | Complete    | 2026-07-11 |
 | 14. Analytics | 3/3 | Complete    | 2026-07-11 |
-| 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
+| 15. Student Portal & Extra Assignments | 0/4 | Not started | - |
 
 ---
 *Roadmap created: 2026-07-07 — milestone v2.0 Система предметов*
