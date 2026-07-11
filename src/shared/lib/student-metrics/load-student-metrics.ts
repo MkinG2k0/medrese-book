@@ -1,6 +1,7 @@
 import { endOfMonth, startOfMonth } from 'date-fns'
 
 import { countableSessionWhere } from '@/shared/lib/analytics-queries/filters'
+import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { isStepPassed } from '@/shared/lib/step-completion'
 import { getStepOffsetForLevel } from '@/shared/lib/student-progress'
@@ -26,15 +27,23 @@ type LoadedStudent = NonNullable<
 	Awaited<ReturnType<typeof loadStudentRecord>>
 >
 
+type PrimaryEnrollment = LoadedStudent['enrollments'][number]
+
 async function loadStudentRecord(studentId: string) {
 	return prisma.student.findUnique({
 		where: { id: studentId },
 		include: {
 			user: true,
-			level: { include: { steps: { orderBy: { order: 'asc' } } } },
-			group: {
+			enrollments: {
+				orderBy: primaryEnrollmentOrderBy,
+				take: 1,
 				include: {
-					teacher: { include: { user: true } },
+					level: { include: { steps: { orderBy: { order: 'asc' } } } },
+					group: {
+						include: {
+							teacher: { include: { user: true } },
+						},
+					},
 				},
 			},
 			sessions: {
@@ -56,14 +65,21 @@ async function loadStudentRecord(studentId: string) {
 	})
 }
 
-function getLevelStepIds(student: LoadedStudent): Set<string> {
-	return new Set(student.level.steps.map((step) => step.id))
+function getPrimaryEnrollment(student: LoadedStudent): PrimaryEnrollment | null {
+	return student.enrollments[0] ?? null
 }
 
-function getCompletedStepsOnLevel(student: LoadedStudent) {
-	const levelStepIds = getLevelStepIds(student)
+function getLevelStepIds(enrollment: PrimaryEnrollment): Set<string> {
+	return new Set(enrollment.level.steps.map((step) => step.id))
+}
+
+function getCompletedStepsOnLevel(
+	student: LoadedStudent,
+	enrollment: PrimaryEnrollment,
+) {
+	const levelStepIds = getLevelStepIds(enrollment)
 	const hoursByStepId = new Map(
-		student.level.steps.map((step) => [step.id, step.hours]),
+		enrollment.level.steps.map((step) => [step.id, step.hours]),
 	)
 
 	return student.completions
@@ -78,8 +94,11 @@ function getCompletedStepsOnLevel(student: LoadedStudent) {
 		}))
 }
 
-function getCompletedStepHoursOnLevel(student: LoadedStudent): number[] {
-	return getCompletedStepsOnLevel(student).map((step) => step.hours)
+function getCompletedStepHoursOnLevel(
+	student: LoadedStudent,
+	enrollment: PrimaryEnrollment,
+): number[] {
+	return getCompletedStepsOnLevel(student, enrollment).map((step) => step.hours)
 }
 
 function getCountableSessions(student: LoadedStudent) {
@@ -130,19 +149,25 @@ export async function loadStudentMetricsContext(
 	const student = await loadStudentRecord(studentId)
 	if (!student) return null
 
+	const enrollment = getPrimaryEnrollment(student)
+	if (!enrollment) return null
+
 	const [levelStepOffset, durationByDateForPeriod] = await Promise.all([
-		getStepOffsetForLevel(student.level.number),
-		buildTeachingSessionDurationByDate(student.groupId, dateRange),
+		getStepOffsetForLevel(enrollment.level.number),
+		buildTeachingSessionDurationByDate(enrollment.groupId, dateRange),
 	])
 
-	const completedStepsOnLevel = getCompletedStepsOnLevel(student)
+	const completedStepsOnLevel = getCompletedStepsOnLevel(student, enrollment)
 	const periodMetrics = computePeriodMetrics({
 		sessions: student.sessions,
 		completions: student.completions,
 		teachingSessionsByDate: teachingSessionsFromDurationMap(
 			durationByDateForPeriod,
 		),
-		completedStepHoursOnLevel: getCompletedStepHoursOnLevel(student),
+		completedStepHoursOnLevel: getCompletedStepHoursOnLevel(
+			student,
+			enrollment,
+		),
 		dateRange,
 		monthLabel,
 	})
@@ -150,7 +175,7 @@ export async function loadStudentMetricsContext(
 	const countableSessions = getCountableSessions(student)
 	const cumulativeRange = sessionDateRange(countableSessions) ?? dateRange
 	const durationByDateCumulative = await buildTeachingSessionDurationByDate(
-		student.groupId,
+		enrollment.groupId,
 		cumulativeRange,
 	)
 
@@ -160,22 +185,25 @@ export async function loadStudentMetricsContext(
 		teachingSessionsByDate: teachingSessionsFromDurationMap(
 			durationByDateCumulative,
 		),
-		completedStepHoursOnLevel: getCompletedStepHoursOnLevel(student),
+		completedStepHoursOnLevel: getCompletedStepHoursOnLevel(
+			student,
+			enrollment,
+		),
 		dateRange: cumulativeRange,
 		monthLabel,
 	}).totalMinutes
 
 	const timeNorm = evaluateTimeNormForLevel({
-		levelId: student.levelId,
+		levelId: enrollment.levelId,
 		actualMinutes: cumulativeActualMinutes,
 		completedStepsOnLevel,
 	})
 
 	const levelProgress = computeLevelProgress({
 		currentStepIdx: student.currentStepIdx,
-		levelNumber: student.level.number,
+		levelNumber: enrollment.level.number,
 		levelStepOffset,
-		totalStepsOnLevel: student.level.steps.length,
+		totalStepsOnLevel: enrollment.level.steps.length,
 		completedStepsOnLevel: completedStepsOnLevel.length,
 	})
 
@@ -200,8 +228,8 @@ export async function loadStudentMetricsContext(
 		riskFlags,
 		timeNorm,
 		absencesInMonth,
-		teacherName: student.group.teacher.user.name,
-		levelTitle: student.level.title,
+		teacherName: enrollment.group.teacher.user.name,
+		levelTitle: enrollment.level.title,
 	}
 }
 

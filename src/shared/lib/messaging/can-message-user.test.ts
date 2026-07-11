@@ -5,7 +5,10 @@ import type { Session } from 'next-auth'
 vi.mock('@/shared/lib/prisma', () => ({
 	prisma: {
 		user: { findUnique: vi.fn() },
-		student: { findUnique: vi.fn() },
+		groupEnrollment: {
+			findMany: vi.fn(),
+			findFirst: vi.fn(),
+		},
 		substitution: { findMany: vi.fn() },
 	},
 }))
@@ -62,8 +65,11 @@ describe('canMessageUser', () => {
 			id: 's1',
 			role: 'STUDENT',
 			teacher: null,
-			student: { group: { teacherId: 'teacher-1' } },
+			student: { id: 'student-1' },
 		} as never)
+		vi.mocked(prisma.groupEnrollment.findMany).mockResolvedValue([
+			{ group: { teacherId: 'teacher-1' } },
+		] as never)
 		vi.mocked(canAccessGroupAsTeacher).mockResolvedValue(true)
 
 		const result = await canMessageUser(
@@ -95,7 +101,7 @@ describe('canMessageUser', () => {
 			teacher: { id: 'teacher-1' },
 			student: null,
 		} as never)
-		vi.mocked(prisma.student.findUnique).mockResolvedValue({
+		vi.mocked(prisma.groupEnrollment.findFirst).mockResolvedValue({
 			group: { teacherId: 'teacher-1' },
 		} as never)
 

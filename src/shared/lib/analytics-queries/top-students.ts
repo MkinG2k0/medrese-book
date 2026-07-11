@@ -41,7 +41,9 @@ export async function getTopStudents(
 	const to = endOfMonth(month)
 
 	const students = await prisma.student.findMany({
-		where: teacherId ? { group: { teacherId } } : undefined,
+		where: teacherId
+			? { enrollments: { some: { group: { teacherId } } } }
+			: undefined,
 		include: {
 			user: true,
 			completions: {

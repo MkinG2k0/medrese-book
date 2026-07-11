@@ -1,5 +1,9 @@
 import type { Session } from 'next-auth'
 
+import {
+	findPrimaryEnrollment,
+	getStudentGroupTeacherIds,
+} from '@/shared/lib/enrollment'
 import { canAccessGroupAsTeacher } from '@/shared/lib/group-access'
 import { prisma } from '@/shared/lib/prisma'
 
@@ -8,6 +12,19 @@ export function sortParticipantIds(
 	userIdB: string,
 ): [string, string] {
 	return userIdA < userIdB ? [userIdA, userIdB] : [userIdB, userIdA]
+}
+
+async function teacherCanAccessStudent(
+	teacherId: string | null,
+	studentId: string,
+): Promise<boolean> {
+	const groupTeacherIds = await getStudentGroupTeacherIds(studentId)
+	for (const groupTeacherId of groupTeacherIds) {
+		if (await canAccessGroupAsTeacher(teacherId, groupTeacherId)) {
+			return true
+		}
+	}
+	return false
 }
 
 export async function canMessageUser(
@@ -21,7 +38,7 @@ export async function canMessageUser(
 		where: { id: targetUserId },
 		include: {
 			teacher: true,
-			student: { include: { group: true } },
+			student: true,
 		},
 	})
 	if (!target || target.role === 'SUPER_ADMIN') return false
@@ -36,10 +53,7 @@ export async function canMessageUser(
 		if (target.role === 'MANAGER') return true
 		if (target.role === 'TEACHER') return true
 		if (target.role === 'STUDENT' && target.student) {
-			return canAccessGroupAsTeacher(
-				teacherId,
-				target.student.group.teacherId,
-			)
+			return teacherCanAccessStudent(teacherId, target.student.id)
 		}
 		return false
 	}
@@ -47,11 +61,8 @@ export async function canMessageUser(
 	if (role === 'STUDENT') {
 		if (target.role === 'MANAGER') return true
 		if (target.role === 'TEACHER' && target.teacher && studentId) {
-			const student = await prisma.student.findUnique({
-				where: { id: studentId },
-				select: { group: { select: { teacherId: true } } },
-			})
-			return student?.group.teacherId === target.teacher.id
+			const enrollment = await findPrimaryEnrollment(studentId)
+			return enrollment?.group.teacherId === target.teacher.id
 		}
 		return false
 	}
@@ -96,7 +107,11 @@ export async function getMessageableContacts(session: Session) {
 						where: {
 							role: 'STUDENT',
 							student: {
-								group: { teacherId: { in: accessibleTeacherIds } },
+								enrollments: {
+									some: {
+										group: { teacherId: { in: accessibleTeacherIds } },
+									},
+								},
 							},
 						},
 						select: { id: true, name: true, role: true },
@@ -108,13 +123,8 @@ export async function getMessageableContacts(session: Session) {
 	}
 
 	if (role === 'STUDENT' && studentId) {
-		const student = await prisma.student.findUnique({
-			where: { id: studentId },
-			include: {
-				group: { include: { teacher: { include: { user: true } } } },
-			},
-		})
-		if (!student) return []
+		const enrollment = await findPrimaryEnrollment(studentId)
+		if (!enrollment) return []
 
 		const managers = await prisma.user.findMany({
 			where: { role: 'MANAGER' },
@@ -122,7 +132,7 @@ export async function getMessageableContacts(session: Session) {
 			orderBy: { name: 'asc' },
 		})
 
-		const teacherUser = student.group.teacher.user
+		const teacherUser = enrollment.group.teacher.user
 		return [
 			{ id: teacherUser.id, name: teacherUser.name, role: teacherUser.role },
 			...managers,

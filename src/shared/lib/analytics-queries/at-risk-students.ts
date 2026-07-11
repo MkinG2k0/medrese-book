@@ -14,7 +14,9 @@ export async function getAtRiskStudents(
 	teacherId?: string | null,
 ): Promise<AtRiskStudentRow[]> {
 	const students = await prisma.student.findMany({
-		where: teacherId ? { group: { teacherId } } : undefined,
+		where: teacherId
+			? { enrollments: { some: { group: { teacherId } } } }
+			: undefined,
 		include: {
 			user: { select: { name: true } },
 		},

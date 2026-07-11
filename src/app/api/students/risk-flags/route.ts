@@ -32,8 +32,10 @@ export async function GET(request: Request) {
 	const group = await prisma.group.findUnique({
 		where: { id: groupId },
 		include: {
-			students: {
-				select: { id: true, status: true },
+			enrollments: {
+				select: {
+					student: { select: { id: true, status: true } },
+				},
 			},
 		},
 	})
@@ -46,9 +48,9 @@ export async function GET(request: Request) {
 		lte: endOfMonth(month),
 	}
 
-	const visibleStudents = group.students.filter((student) =>
-		isJournalVisibleStatus(student.status),
-	)
+	const visibleStudents = group.enrollments
+		.map((enrollment) => enrollment.student)
+		.filter((student) => isJournalVisibleStatus(student.status))
 
 	const entries = await Promise.all(
 		visibleStudents.map(async (student) => {

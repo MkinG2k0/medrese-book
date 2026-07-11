@@ -35,11 +35,12 @@ export async function GET(request: Request) {
   });
   if ("error" in authResult) return authResult.error;
 
-  const student = await prisma.student.findUnique({
-    where: { id: studentId },
-    select: { id: true, groupId: true },
+  const enrollment = await prisma.groupEnrollment.findFirst({
+    where: { studentId },
+    orderBy: { enrolledAt: "asc" },
+    select: { groupId: true },
   });
-  if (!student) return notFound("Ученик");
+  if (!enrollment) return notFound("Ученик");
 
   const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null;
 
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
   const sessionDates = completions.map((completion) => completion.session.date);
   const durationByDate =
     sessionDates.length > 0
-      ? await buildTeachingSessionDurationByDate(student.groupId, {
+      ? await buildTeachingSessionDurationByDate(enrollment.groupId, {
           gte: new Date(
             Math.min(...sessionDates.map((date) => date.getTime())),
           ),
@@ -106,7 +107,7 @@ export async function DELETE(request: Request) {
 
   const completions = await prisma.stepCompletion.findMany({
     where: { id: { in: parsed.data.ids } },
-    include: { student: { include: { group: true } } },
+    include: { student: true },
   });
 
   if (completions.length === 0) return notFound("Записи");

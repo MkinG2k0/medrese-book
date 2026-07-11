@@ -1,4 +1,5 @@
 import { monthKeyToDateRange } from '@/shared/lib/accounting/month'
+import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 
 import {
@@ -28,7 +29,11 @@ export async function queryStudentPaymentsForMonth(
 		where: { status: 'ACTIVE' },
 		include: {
 			user: { select: { name: true } },
-			group: { select: { name: true } },
+			enrollments: {
+				orderBy: primaryEnrollmentOrderBy,
+				take: 1,
+				include: { group: { select: { name: true } } },
+			},
 			tuitionCharges: { select: { month: true, amount: true } },
 			tuitionPayments: { select: { date: true, amount: true } },
 		},
@@ -54,11 +59,12 @@ export async function queryStudentPaymentsForMonth(
 			totalPayments,
 			totalCharges,
 		)
+		const primaryEnrollment = student.enrollments[0]
 
 		return {
 			studentId: student.id,
 			studentName: student.fullName ?? student.user.name,
-			groupName: student.group.name,
+			groupName: primaryEnrollment?.group.name ?? '—',
 			tuitionRateKopecks: student.tuitionRate,
 			discountReason: student.discountReason,
 			monthPaidKopecks,

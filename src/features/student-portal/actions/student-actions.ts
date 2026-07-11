@@ -2,6 +2,7 @@
 
 import { startOfMonth } from 'date-fns'
 
+import { findPrimaryEnrollment } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { requireRole } from '@/shared/lib/session'
@@ -22,12 +23,12 @@ import type { StepContent } from '@/shared/lib/validations/step'
 export async function getStudentProfile() {
 	const session = await requireRole('STUDENT')
 
+	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
+	if (!enrollment) return null
+
 	const student = await prisma.student.findUnique({
 		where: { id: session.user.studentId! },
-		include: {
-			user: true,
-			level: true,
-		},
+		include: { user: true },
 	})
 
 	if (!student) return null
@@ -38,7 +39,7 @@ export async function getStudentProfile() {
 		name: student.user.name,
 		currentStepIdx: student.currentStepIdx,
 		totalSteps,
-		levelTitle: `${student.level.number}й уровень — ${student.level.title}`,
+		levelTitle: `${enrollment.level.number}й уровень — ${enrollment.level.title}`,
 	}
 }
 
@@ -74,10 +75,12 @@ export async function getStudentAwards() {
 export async function getStudentLessons() {
 	const session = await requireRole('STUDENT')
 
+	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
+	if (!enrollment) return null
+
 	const student = await prisma.student.findUnique({
 		where: { id: session.user.studentId! },
 		include: {
-			level: { include: { steps: { orderBy: { order: 'asc' } } } },
 			completions: {
 				select: { stepId: true, grade: true },
 				orderBy: { createdAt: 'asc' },
@@ -87,16 +90,16 @@ export async function getStudentLessons() {
 
 	if (!student) return null
 
-	const steps = student.level.steps
+	const steps = enrollment.level.steps
 	const stepIds = new Set(steps.map((step) => step.id))
 	const completionsByStepId = getCompletionsByStepId(
 		student.completions.filter((c) => stepIds.has(c.stepId)),
 	)
-	const stepOffset = await getStepOffsetForLevel(student.level.number)
+	const stepOffset = await getStepOffsetForLevel(enrollment.level.number)
 	const localStepIdx = getLocalStepIdx(student.currentStepIdx, stepOffset)
 
 	return {
-		levelTitle: student.level.title,
+		levelTitle: enrollment.level.title,
 		lessons: steps.map((step, index) => ({
 			id: step.id,
 			number: index + 1,
@@ -111,10 +114,12 @@ export async function getStudentLessons() {
 export async function getStudentSessionHistory() {
 	const session = await requireRole('STUDENT')
 
+	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
+	if (!enrollment) return null
+
 	const student = await prisma.student.findUnique({
 		where: { id: session.user.studentId! },
 		select: {
-			groupId: true,
 			sessions: {
 				include: { completions: { include: { step: true } } },
 				orderBy: { date: 'desc' },
@@ -128,7 +133,7 @@ export async function getStudentSessionHistory() {
 	const sessionDates = student.sessions.map((item) => item.date)
 	const durationByDate =
 		sessionDates.length > 0
-			? await buildTeachingSessionDurationByDate(student.groupId, {
+			? await buildTeachingSessionDurationByDate(enrollment.groupId, {
 					gte: new Date(
 						Math.min(...sessionDates.map((date) => date.getTime())),
 					),
