@@ -18,12 +18,14 @@ type AtRiskStudentsTableProps = {
   data: AtRiskStudentRow[];
   monthLabel: string;
   showTeacherColumn: boolean;
+  subjectId: string;
 };
 
 export function AtRiskStudentsTable({
   data,
   monthLabel,
   showTeacherColumn,
+  subjectId,
 }: AtRiskStudentsTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<{
     id: string;
@@ -115,6 +117,7 @@ export function AtRiskStudentsTable({
         open={selectedStudent !== null}
         studentId={selectedStudent?.id ?? null}
         studentName={selectedStudent?.name ?? ""}
+        subjectId={subjectId}
         onClose={() => setSelectedStudent(null)}
       />
     </div>

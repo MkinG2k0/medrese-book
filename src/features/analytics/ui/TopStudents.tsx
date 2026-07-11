@@ -86,6 +86,7 @@ export function TopStudents({
         open={selectedStudent !== null}
         studentId={selectedStudent?.id ?? null}
         studentName={selectedStudent?.name ?? ""}
+        subjectId={subjectId}
         onClose={() => setSelectedStudent(null)}
       />
     </div>

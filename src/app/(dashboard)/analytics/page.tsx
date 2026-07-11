@@ -144,6 +144,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 				data={atRiskStudents}
 				monthLabel={monthLabel}
 				showTeacherColumn={selectedTeacher === ALL_TEACHERS}
+				subjectId={filterSubjectId}
 			/>
 		</div>
 	)

@@ -31,6 +31,7 @@ type StudentStudyHistoryModalProps = {
   open: boolean;
   studentId: string | null;
   studentName: string;
+  subjectId: string;
   onClose: () => void;
 };
 
@@ -38,11 +39,13 @@ export function StudentStudyHistoryModal({
   open,
   studentId,
   studentName,
+  subjectId,
   onClose,
 }: StudentStudyHistoryModalProps) {
   const { data: completions, isLoading } = useStepCompletions(
     studentId ?? "",
     null,
+    subjectId,
   );
   const { data: extraHistory = [], isLoading: isExtraLoading } =
     useStudentExtraAssignmentHistory(studentId ?? "");
