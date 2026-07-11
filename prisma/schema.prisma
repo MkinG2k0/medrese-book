@@ -125,20 +125,22 @@ model Group {
   teacherId        String
   teacher          Teacher           @relation(fields: [teacherId], references: [id])
   enrollments      GroupEnrollment[]
+  sessions         Session[]
   teachingSessions TeachingSession[]
 
   @@index([subjectId])
 }
 
 model GroupEnrollment {
-  id         String   @id @default(cuid())
-  studentId  String
-  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  groupId    String
-  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  levelId    String
-  level      Level    @relation(fields: [levelId], references: [id], onDelete: Restrict)
-  enrolledAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  studentId       String
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  levelId         String
+  level           Level    @relation(fields: [levelId], references: [id], onDelete: Restrict)
+  currentStepIdx  Int      @default(0)
+  enrolledAt      DateTime @default(now())
 
   @@unique([studentId, groupId])
   @@index([groupId])
@@ -154,7 +156,6 @@ model Student {
   guardianName   String?
   guardianPhone  String?
   enrollments    GroupEnrollment[]
-  currentStepIdx Int              @default(0)
   status         StudentStatus    @default(ACTIVE)
   tuitionRate    Int              @default(200000)
   discountReason String?
@@ -209,6 +210,8 @@ model Session {
   id            String           @id @default(cuid())
   studentId     String
   student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId       String
+  group         Group            @relation(fields: [groupId], references: [id], onDelete: Restrict)
   date          DateTime
   attendance    Attendance
   lateMinutes   Int?
@@ -217,6 +220,9 @@ model Session {
   completions   StepCompletion[]
   extraAssignments StudentExtraAssignment[]
   createdAt     DateTime         @default(now())
+
+  @@unique([studentId, date, groupId])
+  @@index([groupId, date])
 }
 
 model ExtraAssignment {
