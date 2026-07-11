@@ -159,6 +159,7 @@ export async function getNextLevelJournalSteps(
 export async function getStudentLesson(
 	studentId: string,
 	calendarDate: string = getLessonCalendarDay(),
+	groupId?: string,
 ) {
 	const session = await requireRole('TEACHER')
 	const dayRange = getLessonDayRange(calendarDate)
@@ -166,11 +167,14 @@ export async function getStudentLesson(
 	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
 	if (!teacherGroup) return null
 
+	const targetGroupId = groupId ?? teacherGroup.id
+
 	const enrollment = await prisma.groupEnrollment.findUnique({
 		where: {
-			studentId_groupId: { studentId, groupId: teacherGroup.id },
+			studentId_groupId: { studentId, groupId: targetGroupId },
 		},
 		include: {
+			group: { select: { subjectId: true } },
 			level: {
 				include: {
 					steps: {
@@ -194,6 +198,7 @@ export async function getStudentLesson(
 					},
 					sessions: {
 						where: {
+							groupId: targetGroupId,
 							date: { gte: dayRange.start, lte: dayRange.end },
 						},
 						select: {
@@ -236,7 +241,7 @@ export async function getStudentLesson(
 				where: { number: level.number + 1 },
 				select: { id: true },
 			}),
-			getTotalProgramSteps(),
+			getTotalProgramSteps(enrollment.group.subjectId),
 			fetchSessionOutsideLevelSteps(
 				levelStepIds,
 				daySession?.completions ?? [],
@@ -288,11 +293,11 @@ export async function getStudentLesson(
 	)
 
 	return {
-		groupId: teacherGroup.id,
+		groupId: targetGroupId,
 		student: {
 			id: student.id,
 			name: student.user.name,
-			currentStepIdx: student.currentStepIdx,
+			currentStepIdx: enrollment.currentStepIdx,
 		},
 		level: {
 			number: level.number,
@@ -331,7 +336,7 @@ export async function getStudentStepHistory(studentId: string) {
 		student: {
 			id: student.id,
 			name: student.user.name,
-			currentStepIdx: student.currentStepIdx,
+			currentStepIdx: enrollment.currentStepIdx,
 		},
 		level: {
 			number: enrollment.level.number,
