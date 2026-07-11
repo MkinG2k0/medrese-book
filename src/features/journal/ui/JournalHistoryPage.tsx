@@ -5,23 +5,50 @@ import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 
 import { useStudents } from "@/entities/student/api/use-students";
+import type { TeacherJournalGroup } from "@/features/journal/actions/journal-actions";
+import { useJournalHistoryGroup } from "@/features/journal/model/use-journal-history-group";
 import { StepHistoryPage } from "@/features/journal/ui/StepHistoryPage";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
 type JournalHistoryPageProps = {
-  groupId: string;
+  groups: TeacherJournalGroup[];
+  defaultGroupId: string;
 };
 
-export function JournalHistoryPage({ groupId }: JournalHistoryPageProps) {
+export function JournalHistoryPage({
+  groups,
+  defaultGroupId,
+}: JournalHistoryPageProps) {
+  const allowedGroupIds = useMemo(
+    () => groups.map((group) => group.id),
+    [groups],
+  );
+  const { groupId, setGroupId } = useJournalHistoryGroup({
+    allowedGroupIds,
+    defaultGroupId,
+  });
   const [studentId, setStudentId] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const { data: students, isLoading } = useStudents(groupId);
+
+  const groupOptions = useMemo(
+    () =>
+      groups.map((group) => ({
+        value: group.id,
+        label: `${group.name} — ${group.subjectName}`,
+      })),
+    [groups],
+  );
 
   const sortedStudents = useMemo(
     () => [...(students ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
     [students],
   );
+
+  useEffect(() => {
+    setStudentId(null);
+  }, [groupId]);
 
   useEffect(() => {
     if (!studentId && sortedStudents.length > 0) {
@@ -38,6 +65,14 @@ export function JournalHistoryPage({ groupId }: JournalHistoryPageProps) {
           История шагов
         </Title>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <Select
+            value={groupId}
+            onChange={setGroupId}
+            options={groupOptions}
+            disabled={groups.length <= 1}
+            className="w-full sm:min-w-[220px]"
+            aria-label="Группа"
+          />
           <Select
             value={studentId ?? undefined}
             onChange={setStudentId}
@@ -67,7 +102,7 @@ export function JournalHistoryPage({ groupId }: JournalHistoryPageProps) {
 
       {selectedStudent && (
         <StepHistoryPage
-          key={`${selectedStudent.id}:${dateFilter ?? "all"}`}
+          key={`${groupId}:${selectedStudent.id}:${dateFilter ?? "all"}`}
           studentId={selectedStudent.id}
           studentName={selectedStudent.name}
           currentStepIdx={selectedStudent.currentStepIdx}
