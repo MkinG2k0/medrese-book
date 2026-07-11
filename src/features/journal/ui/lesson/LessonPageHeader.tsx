@@ -12,6 +12,9 @@ import Title from "@/shared/ui/Title";
 type LessonPageHeaderProps = {
   studentId: string;
   studentName: string;
+  groupId: string;
+  groupName: string;
+  subjectName: string;
   todayLabel: string;
   journalBackHref: string;
   levelNumber: number;
@@ -29,6 +32,9 @@ type LessonPageHeaderProps = {
 export function LessonPageHeader({
   studentId,
   studentName,
+  groupId,
+  groupName,
+  subjectName,
   todayLabel,
   journalBackHref,
   levelNumber,
@@ -61,6 +67,9 @@ export function LessonPageHeader({
               {studentName}
             </Title>
             <Text type="secondary">
+              {groupName} · {subjectName}
+            </Text>
+            <Text type="secondary">
               {hasNoSteps ? (
                 <>Уровень {levelNumber} · Шаги не настроены</>
               ) : isProgramComplete ? (
@@ -77,7 +86,7 @@ export function LessonPageHeader({
             </Text>
           </div>
         </div>
-        <Link href={`/journal/${studentId}/history`}>
+        <Link href={`/journal/${studentId}/history?groupId=${groupId}`}>
           <Button type="link">История шагов</Button>
         </Link>
       </div>

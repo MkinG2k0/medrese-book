@@ -181,6 +181,8 @@ function resolveInitialUiState(
 export function useLessonPage(props: LessonPageProps) {
   const {
     groupId,
+    groupName,
+    subjectName,
     studentId,
     steps,
     allSteps,
@@ -206,7 +208,10 @@ export function useLessonPage(props: LessonPageProps) {
 
   const { message } = App.useApp();
   const router = useRouter();
-  const { dateFilter, journalHref } = useJournalDate();
+  const { dateFilter, journalHref } = useJournalDate({
+    allowedGroupIds: [groupId],
+    defaultGroupId: groupId,
+  });
   const { initSessionCompletions, setSessionStepState, setExtraAssignmentGrade } =
     useJournalStore();
 
@@ -217,7 +222,7 @@ export function useLessonPage(props: LessonPageProps) {
   );
 
   const { data: existingSession, isLoading: isSessionLoading } =
-    useStudentSession(studentId, dateFilter, {
+    useStudentSession(studentId, dateFilter, groupId, {
       initialSession,
       seededDate: sessionDate,
     });
@@ -610,6 +615,7 @@ export function useLessonPage(props: LessonPageProps) {
     try {
       const session = await createSession.mutateAsync({
         studentId,
+        groupId,
         date: toSessionDate(dateFilter).toISOString(),
         attendance,
         lateMinutes: attendance === "LATE" ? lateMinutes : null,
@@ -717,6 +723,7 @@ export function useLessonPage(props: LessonPageProps) {
     try {
       await createSession.mutateAsync({
         studentId,
+        groupId,
         date: toSessionDate(dateFilter).toISOString(),
         attendance,
         lateMinutes: attendance === "LATE" ? lateMinutes : null,

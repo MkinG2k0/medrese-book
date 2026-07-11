@@ -16,6 +16,9 @@ export function LessonPage(props: LessonPageProps) {
       <LessonPageHeader
         studentId={lesson.studentId}
         studentName={lesson.studentName}
+        groupId={lesson.groupId}
+        groupName={lesson.groupName}
+        subjectName={lesson.subjectName}
         todayLabel={lesson.todayLabel}
         journalBackHref={lesson.journalBackHref}
         levelNumber={lesson.levelNumber}

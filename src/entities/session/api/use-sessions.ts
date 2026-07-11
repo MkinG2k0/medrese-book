@@ -6,6 +6,7 @@ type Attendance = 'PRESENT' | 'LATE' | 'ABSENT'
 
 type CreateSessionPayload = {
 	studentId: string
+	groupId: string
 	date: string
 	attendance: Attendance
 	lateMinutes?: number | null
@@ -35,20 +36,21 @@ type UseStudentSessionOptions = {
 export function useStudentSession(
 	studentId: string,
 	date: string,
+	groupId: string,
 	options?: UseStudentSessionOptions,
 ) {
 	const isSeededDate = options?.seededDate === date
 
 	return useQuery<StudentSession | null>({
-		queryKey: ['student-session', studentId, date],
+		queryKey: ['student-session', studentId, groupId, date],
 		queryFn: async () => {
-			const params = new URLSearchParams({ studentId, date })
+			const params = new URLSearchParams({ studentId, groupId, date })
 			const res = await fetch(`/api/sessions?${params}`)
 			const json = await res.json()
 			if (json.error) throw new Error(json.error)
 			return json.data
 		},
-		enabled: !!studentId && !!date,
+		enabled: !!studentId && !!groupId && !!date,
 		initialData: isSeededDate ? options!.initialSession : undefined,
 		staleTime: isSeededDate ? 60_000 : 0,
 	})
@@ -74,6 +76,7 @@ export function useCreateSession() {
 				queryKey: [
 					'student-session',
 					variables.studentId,
+					variables.groupId,
 					variables.date.slice(0, 10),
 				],
 			})
