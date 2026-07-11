@@ -25,7 +25,7 @@
 
 - [x] **SUBJ-08**: Прогресс ученика хранится независимо по каждому предмету (уровень + текущий шаг)
 - [x] **SUBJ-09**: Сессия привязана к ученику, дате и предмету; посещаемость и оценки — в рамках предмета
-- [ ] **SUBJ-10**: Пересчёт прогресса (`currentStepIdx` / prior credit) работает в скоупе предмета
+- [x] **SUBJ-10**: Пересчёт прогресса (`currentStepIdx` / prior credit) работает в скоупе предмета
 
 ### Журнал
 
@@ -186,7 +186,7 @@
 | SUBJ-07 | Phase 11 | Pending |
 | SUBJ-08 | Phase 12 | Complete |
 | SUBJ-09 | Phase 12 | Complete |
-| SUBJ-10 | Phase 12 | Pending |
+| SUBJ-10 | Phase 12 | Complete |
 | SUBJ-11 | Phase 13 | Pending |
 | SUBJ-12 | Phase 13 | Pending |
 | SUBJ-13 | Phase 13 | Pending |

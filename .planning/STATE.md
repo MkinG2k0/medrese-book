@@ -6,14 +6,14 @@ current_phase: 12
 current_phase_name: progress-sessions
 status: executing
 stopped_at: Phase 12 context gathered
-last_updated: "2026-07-11T20:46:55.279Z"
+last_updated: "2026-07-11T20:50:12.908Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 12 execution started
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 16
-  completed_plans: 12
+  completed_plans: 13
   percent: 33
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 12 (progress-sessions) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-07-11 — Phase 12 execution started
 
@@ -75,6 +75,7 @@ Last activity: 2026-07-11 — Phase 12 execution started
 | Phase 10-subject-foundation P02 | 15 | 3 tasks | 9 files |
 | Phase 10-subject-foundation P03 | 20 | 3 tasks | 8 files |
 | Phase 10-subject-foundation P04 | 25 | 3 tasks | 12 files |
+| Phase 12-progress-sessions P02 | 12min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,8 @@ Recent decisions affecting current work:
 - [Phase 10]: deleteLevel student count guard; getLevelSteps IDOR guard with subjectId
 - [Phase 10]: EditLevelForm modal for Редактировать уровень (legacy /edit route never existed)
 - [Phase 10]: Program editor UI at /admin/subjects/[subjectId]/program with modal level create
+- [Phase 12]: recalculateStudentStepIdx accepts (studentId, groupId) and writes only to GroupEnrollment per D-01/D-08
+- [Phase 12]: syncCompletionsForProgress filters adjustment sessions by groupId per SUBJ-10
 
 ### Pending Todos
 
@@ -193,6 +196,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
-Last session: 2026-07-11T20:46:55.272Z
+Last session: 2026-07-11T20:49:39.635Z
 Stopped at: Phase 12 context gathered
 Resume file: .planning/phases/12-progress-sessions/12-CONTEXT.md

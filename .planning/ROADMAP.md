@@ -79,7 +79,7 @@ Plans:
 
 **Note**: Intentional deviation от «прогресс по предмету» — решение D-01 (discuss 2026-07-11). UI журнала — Phase 13.
 
-**Plans**: 1/5 plans executed
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1**
@@ -88,7 +88,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 12-02-PLAN.md — recalculate и syncCompletionsForProgress per enrollment (wave 2)
+- [x] 12-02-PLAN.md — recalculate и syncCompletionsForProgress per enrollment (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -147,7 +147,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
-| 12. Progress & Sessions | 1/5 | In Progress|  |
+| 12. Progress & Sessions | 2/5 | In Progress|  |
 | 13. Journal | 0/TBD | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
