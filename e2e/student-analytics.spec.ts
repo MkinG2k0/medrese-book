@@ -3,12 +3,24 @@ import { expect, test, type Page } from "@playwright/test";
 import { AUTH_STATE } from "./helpers/auth-state";
 import { TEST_USERS } from "./helpers/codes";
 
+async function ensureAnalyticsSubjectInUrl(page: Page) {
+  await expect(page.getByRole("combobox", { name: "Предмет" })).toBeVisible();
+
+  const url = new URL(page.url());
+  if (!url.searchParams.has("subjectId")) {
+    await page.getByRole("combobox", { name: "Предмет" }).click();
+    await page.getByTitle("Коран", { exact: true }).click();
+    await expect(page).toHaveURL(/subjectId=/);
+  }
+}
+
 async function openHistoryModalFromAnalytics(page: Page) {
   await page.goto("/analytics");
   await expect(page.getByRole("heading", { name: "Аналитика" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Требуют внимания" }),
   ).toBeVisible();
+  await ensureAnalyticsSubjectInUrl(page);
 
   const atRiskSection = page
     .locator("div")
@@ -91,12 +103,50 @@ test.describe("Аналитика ученика — учитель", () => {
 test.describe("Аналитика ученика — учитель (группа 1)", () => {
   test.use({ storageState: AUTH_STATE.teacher1 });
 
-  test("страница аналитики загружается с блоком at-risk", async ({ page }) => {
+  test("страница аналитики загружается с блоком at-risk и селектом предмета", async ({
+    page,
+  }) => {
     await page.goto("/analytics");
     await expect(page.getByRole("heading", { name: "Аналитика" })).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Требуют внимания" }),
     ).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Предмет" })).toBeVisible();
+  });
+});
+
+test.describe("Аналитика — смена предмета", () => {
+  test.use({ storageState: AUTH_STATE.teacher1 });
+
+  test("смена предмета сбрасывает groupId в URL", async ({ page }) => {
+    await page.goto("/analytics");
+    await ensureAnalyticsSubjectInUrl(page);
+
+    const groupSelect = page.getByRole("combobox", { name: "Группа" });
+    await expect(groupSelect).toBeVisible();
+    await groupSelect.click();
+    await page.getByTitle(`${TEST_USERS.group1} — Коран`, { exact: true }).click();
+    await expect(page).toHaveURL(/groupId=/);
+
+    await page.getByRole("combobox", { name: "Предмет" }).click();
+    const subjectOptions = page.locator(
+      ".ant-select-dropdown:visible .ant-select-item-option",
+    );
+    const optionCount = await subjectOptions.count();
+    test.skip(
+      optionCount < 2,
+      "В seed-e2e один предмет — смена subjectId недоступна",
+    );
+
+    const secondSubject = subjectOptions.nth(1);
+    const secondSubjectLabel = (await secondSubject.textContent())?.trim() ?? "";
+    await secondSubject.click();
+
+    await expect(page).toHaveURL(/subjectId=/);
+    await expect(page).not.toHaveURL(/groupId=/);
+    await expect(page.getByRole("combobox", { name: "Предмет" })).toContainText(
+      secondSubjectLabel,
+    );
   });
 });
 
