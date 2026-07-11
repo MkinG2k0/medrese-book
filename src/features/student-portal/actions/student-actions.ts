@@ -2,7 +2,11 @@
 
 import { startOfMonth } from 'date-fns'
 
-import { findPrimaryEnrollment } from '@/shared/lib/enrollment'
+import {
+	findEnrollmentInGroup,
+	findPrimaryEnrollment,
+	primaryEnrollmentOrderBy,
+} from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { requireRole } from '@/shared/lib/session'
@@ -93,47 +97,26 @@ export async function getStudentEnrollmentDashboard(): Promise<StudentEnrollment
 	}
 }
 
-export async function getStudentProfile() {
-	const session = await requireRole('STUDENT')
-
-	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
-	if (!enrollment) return null
-
-	const student = await prisma.student.findUnique({
-		where: { id: session.user.studentId! },
-		include: { user: true },
-	})
-
-	if (!student) return null
-
-	const totalSteps = await getTotalProgramSteps(enrollment.group.subjectId)
-
-	return {
-		name: student.user.name,
-		currentStepIdx: enrollment.currentStepIdx,
-		totalSteps,
-		levelTitle: `${enrollment.level.number}й уровень — ${enrollment.level.title}`,
+async function resolveStudentEnrollment(studentId: string, groupId?: string) {
+	if (groupId) {
+		return findEnrollmentInGroup(studentId, groupId)
 	}
+
+	return findPrimaryEnrollment(studentId)
 }
 
-export async function getStudentPeriodMetrics(): Promise<StudentPeriodMetrics | null> {
+export async function getStudentEnrollmentGroupIds(): Promise<string[]> {
 	const session = await requireRole('STUDENT')
 	const studentId = session.user.studentId
-	if (!studentId) return null
+	if (!studentId) return []
 
-	const enrollment = await findPrimaryEnrollment(studentId)
-	if (!enrollment) return null
-
-	const month = startOfMonth(new Date())
-	const monthLabel = formatAnalyticsMonth(month)
-	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel, {
-		subjectId: enrollment.group.subjectId,
-		groupId: enrollment.groupId,
+	const enrollments = await prisma.groupEnrollment.findMany({
+		where: { studentId },
+		orderBy: primaryEnrollmentOrderBy,
+		select: { groupId: true },
 	})
 
-	if (!metrics) return null
-
-	return metrics.periodMetrics
+	return enrollments.map((enrollment) => enrollment.groupId)
 }
 
 export async function getStudentAwards() {
@@ -151,23 +134,29 @@ export async function getStudentAwards() {
 	return { awards: student.awards }
 }
 
-export async function getStudentLessons() {
+export async function getStudentLessons(groupId?: string) {
 	const session = await requireRole('STUDENT')
-
-	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
+	const studentId = session.user.studentId!
+	const enrollment = await resolveStudentEnrollment(studentId, groupId)
 	if (!enrollment) return null
 
-	const student = await prisma.student.findUnique({
-		where: { id: session.user.studentId! },
-		include: {
-			completions: {
-				select: { stepId: true, grade: true },
-				orderBy: { createdAt: 'asc' },
+	const [student, groupWithSubject] = await Promise.all([
+		prisma.student.findUnique({
+			where: { id: studentId },
+			include: {
+				completions: {
+					select: { stepId: true, grade: true },
+					orderBy: { createdAt: 'asc' },
+				},
 			},
-		},
-	})
+		}),
+		prisma.group.findUnique({
+			where: { id: enrollment.groupId },
+			select: { name: true, subject: { select: { name: true } } },
+		}),
+	])
 
-	if (!student) return null
+	if (!student || !groupWithSubject) return null
 
 	const steps = enrollment.level.steps
 	const stepIds = new Set(steps.map((step) => step.id))
@@ -181,7 +170,9 @@ export async function getStudentLessons() {
 	const localStepIdx = getLocalStepIdx(enrollment.currentStepIdx, stepOffset)
 
 	return {
-		levelTitle: enrollment.level.title,
+		groupName: groupWithSubject.name,
+		subjectName: groupWithSubject.subject.name,
+		levelTitle: `${enrollment.level.number}й уровень — ${enrollment.level.title}`,
 		lessons: steps.map((step, index) => ({
 			id: step.id,
 			number: index + 1,
@@ -193,26 +184,31 @@ export async function getStudentLessons() {
 	}
 }
 
-export async function getStudentSessionHistory() {
+export async function getStudentSessionHistory(groupId?: string) {
 	const session = await requireRole('STUDENT')
-
-	const enrollment = await findPrimaryEnrollment(session.user.studentId!)
+	const studentId = session.user.studentId!
+	const enrollment = await resolveStudentEnrollment(studentId, groupId)
 	if (!enrollment) return null
 
-	const student = await prisma.student.findUnique({
-		where: { id: session.user.studentId! },
-		select: {
-			sessions: {
-				include: { completions: { include: { step: true } } },
-				orderBy: { date: 'desc' },
-				take: 50,
+	const [sessions, groupWithSubject] = await Promise.all([
+		prisma.session.findMany({
+			where: {
+				studentId,
+				groupId: enrollment.groupId,
 			},
-		},
-	})
+			include: { completions: { include: { step: true } } },
+			orderBy: { date: 'desc' },
+			take: 50,
+		}),
+		prisma.group.findUnique({
+			where: { id: enrollment.groupId },
+			select: { name: true, subject: { select: { name: true } } },
+		}),
+	])
 
-	if (!student) return null
+	if (!groupWithSubject) return null
 
-	const sessionDates = student.sessions.map((item) => item.date)
+	const sessionDates = sessions.map((item) => item.date)
 	const durationByDate =
 		sessionDates.length > 0
 			? await buildTeachingSessionDurationByDate(enrollment.groupId, {
@@ -226,7 +222,9 @@ export async function getStudentSessionHistory() {
 			: new Map<string, number | null>()
 
 	return {
-		sessions: student.sessions.map((item) => ({
+		groupName: groupWithSubject.name,
+		subjectName: groupWithSubject.subject.name,
+		sessions: sessions.map((item) => ({
 			...item,
 			durationMinutes: teachingSessionDurationFromMap(
 				durationByDate,
