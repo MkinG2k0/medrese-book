@@ -280,6 +280,7 @@ export async function seedTeachingSessions(
 export async function seedStudentHistory(
   prisma: PrismaClient,
   studentId: string,
+  groupId: string,
   profile: StudentSeedProfile,
   passedStepIds: string[],
   lessonDates: Date[],
@@ -293,6 +294,7 @@ export async function seedStudentHistory(
     await prisma.session.create({
       data: {
         studentId,
+        groupId,
         date: firstLesson,
         attendance: "PRESENT",
         note: "Первое занятие",
@@ -321,6 +323,7 @@ export async function seedStudentHistory(
     const session = await prisma.session.create({
       data: {
         studentId,
+        groupId,
         date,
         attendance,
         lateMinutes,

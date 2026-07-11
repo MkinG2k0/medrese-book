@@ -197,22 +197,33 @@ async function main() {
         phone: contacts.phone,
         guardianName: contacts.guardianName,
         guardianPhone: contacts.guardianPhone,
-        currentStepIdx: getCurrentStepIdx(profile, levelStepOffsets),
         status: profile.status ?? "ACTIVE",
       },
     });
 
+    const enrollmentGroupId = groups[profile.groupIndex]!.id;
+    const enrollmentStepIdx = getCurrentStepIdx(profile, levelStepOffsets);
+
     await prisma.groupEnrollment.create({
       data: {
         studentId: student.id,
-        groupId: groups[profile.groupIndex]!.id,
+        groupId: enrollmentGroupId,
         levelId: quranLevels[profile.level - 1]!.id,
+        currentStepIdx: enrollmentStepIdx,
       },
     });
 
     const passedIds = getPassedStepIds(profile, levelStepIds).map((step) => step.id);
 
-    await seedStudentHistory(prisma, student.id, profile, passedIds, lessonDates, seedCtx);
+    await seedStudentHistory(
+      prisma,
+      student.id,
+      enrollmentGroupId,
+      profile,
+      passedIds,
+      lessonDates,
+      seedCtx,
+    );
   }
 
   const dualEnrollmentStudent = await prisma.student.findFirst({
@@ -225,6 +236,7 @@ async function main() {
         studentId: dualEnrollmentStudent.id,
         groupId: group2.id,
         levelId: quranLevels[1]!.id,
+        currentStepIdx: levelStepOffsets[1]!,
       },
     });
   }

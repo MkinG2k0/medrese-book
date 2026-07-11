@@ -66,6 +66,7 @@ const PASSING_GRADE = 3;
 
 async function seedStudentCompletions(
   studentId: string,
+  groupId: string,
   passedStepIds: string[],
 ) {
   if (passedStepIds.length === 0) return;
@@ -73,6 +74,7 @@ async function seedStudentCompletions(
   const session = await prisma.session.create({
     data: {
       studentId,
+      groupId,
       date: new Date(),
       attendance: "PRESENT",
       note: "E2E seed",
@@ -237,6 +239,8 @@ async function main() {
       { name: studentNames[i]!, code: studentCodes[i]! },
       i,
     );
+    const enrollmentGroupId = onLevel1 ? group1.id : group2.id;
+
     const student = await prisma.student.create({
       data: {
         userId: user.id,
@@ -244,20 +248,21 @@ async function main() {
         phone: contacts.phone,
         guardianName: contacts.guardianName,
         guardianPhone: contacts.guardianPhone,
-        currentStepIdx,
       },
     });
 
     await prisma.groupEnrollment.create({
       data: {
         studentId: student.id,
-        groupId: onLevel1 ? group1.id : group2.id,
+        groupId: enrollmentGroupId,
         levelId: onLevel1 ? level1.id : level2.id,
+        currentStepIdx,
       },
     });
 
     await seedStudentCompletions(
       student.id,
+      enrollmentGroupId,
       getPassedStepIds(
         currentStepIdx,
         level1Steps,
