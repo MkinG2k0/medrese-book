@@ -276,17 +276,21 @@ async function main() {
       prisma.group.findUnique({
         where: { id: ctx.groupId },
         include: {
-          students: {
+          enrollments: {
             include: {
-              user: true,
-              level: true,
-              sessions: {
-                where: {
-                  date: { gte: ctx.dayRange.start, lte: ctx.dayRange.end },
+              student: {
+                include: {
+                  user: true,
+                  sessions: {
+                    where: {
+                      date: { gte: ctx.dayRange.start, lte: ctx.dayRange.end },
+                    },
+                    orderBy: { date: "desc" },
+                    include: { completions: true },
+                  },
                 },
-                orderBy: { date: "desc" },
-                include: { completions: true },
               },
+              level: true,
             },
           },
         },
@@ -296,17 +300,10 @@ async function main() {
 
   results.push(
     await measure("lesson", "Страница урока (getStudentLesson)", () =>
-      prisma.student.findUnique({
-        where: { id: ctx.studentId },
+      prisma.groupEnrollment.findFirst({
+        where: { studentId: ctx.studentId },
+        orderBy: { enrolledAt: "asc" },
         include: {
-          user: true,
-          group: {
-            include: {
-              students: {
-                include: { user: { select: { name: true } } },
-              },
-            },
-          },
           level: {
             include: {
               steps: {
@@ -321,29 +318,31 @@ async function main() {
               },
             },
           },
-          completions: {
-            where: {
-              step: { level: { students: { some: { id: ctx.studentId } } } },
-            },
-            select: { stepId: true, grade: true, note: true },
-            orderBy: { createdAt: "asc" },
-          },
-          sessions: {
-            where: {
-              date: { gte: ctx.dayRange.start, lte: ctx.dayRange.end },
-            },
-            select: {
-              id: true,
-              studentId: true,
-              date: true,
-              attendance: true,
-              lateMinutes: true,
-              note: true,
+          student: {
+            include: {
+              user: true,
               completions: {
                 select: { stepId: true, grade: true, note: true },
+                orderBy: { createdAt: "asc" },
+              },
+              sessions: {
+                where: {
+                  date: { gte: ctx.dayRange.start, lte: ctx.dayRange.end },
+                },
+                select: {
+                  id: true,
+                  studentId: true,
+                  date: true,
+                  attendance: true,
+                  lateMinutes: true,
+                  note: true,
+                  completions: {
+                    select: { stepId: true, grade: true, note: true },
+                  },
+                },
+                orderBy: { date: "desc" },
               },
             },
-            orderBy: { date: "desc" },
           },
         },
       }),
