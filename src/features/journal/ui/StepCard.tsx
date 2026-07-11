@@ -1,7 +1,7 @@
 "use client";
 
 import { DownOutlined, PlusOutlined, RightOutlined } from "@ant-design/icons";
-import { Button, Card, Flex, Form, Input, Radio, Spin, Tag } from "antd";
+import { Button, Card, Collapse, Flex, Form, Input, Radio, Spin, Tag } from "antd";
 import { useEffect, useState } from "react";
 
 import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
@@ -154,7 +154,7 @@ export function StepCard({
 
         {expanded && !disabled && (
           <Flex vertical gap={16} className="pt-2">
-            <Form layout="vertical">
+            <Form layout="vertical" >
               <Form.Item label="Содержание" className="mb-4">
                 {isContentLoading ? (
                   <Spin />
@@ -163,16 +163,34 @@ export function StepCard({
                 )}
               </Form.Item>
 
-              {step.description?.trim() && (
-                <Form.Item label="Описание для учителя" className="mb-0">
-                  <Text>{step.description}</Text>
-                </Form.Item>
+              {hasVisibleStepContent(teacherNote) && (
+                <Collapse
+                  className="mb-4"
+                  defaultActiveKey={[]}
+                  items={[
+                    {
+                      key: "teacher-note",
+                      label: "Заметка учителя",
+                      children: (
+                        <StepContentPreview content={teacherNote} />
+                      ),
+                    },
+                  ]}
+                />
               )}
 
-              {hasVisibleStepContent(teacherNote) && (
-                <Form.Item label="Заметка учителя" className="mb-0">
-                  <StepContentPreview content={teacherNote} />
-                </Form.Item>
+              {step.description?.trim() && (
+                <Collapse
+                  className="mb-4! mt-2!"
+                  defaultActiveKey={[]}
+                  items={[
+                    {
+                      key: "teacher-description",
+                      label: "Описание для учителя",
+                      children: <Text>{step.description}</Text>,
+                    },
+                  ]}
+                />
               )}
             </Form>
 

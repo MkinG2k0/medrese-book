@@ -10,7 +10,7 @@ status: complete
 
 ## Commits
 
-- feat(steps): add teacherNote field with editor and journal display
+- feat(steps): add teacherNote field with editor and journal display (`b7e7339`)
 
 ## Files changed
 
