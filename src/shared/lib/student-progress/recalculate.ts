@@ -1,4 +1,4 @@
-import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
+import { findEnrollmentInGroup } from '@/shared/lib/enrollment'
 import { prisma, type Prisma } from '@/shared/lib/prisma'
 import {
 	countConsecutivePassedSteps,
@@ -10,25 +10,22 @@ import { getStepOffsetForLevel } from './offsets'
 
 type Tx = Prisma.TransactionClient
 
+/**
+ * Пересчитывает глобальный индекс шага для зачисления ученика в группе.
+ * С Phase 12 требует `groupId` — прогресс хранится на GroupEnrollment, не на Student.
+ */
 export async function recalculateStudentStepIdx(
 	studentId: string,
+	groupId: string,
 	tx?: Tx,
 ) {
 	const db = tx ?? prisma
 
-	const enrollment = await db.groupEnrollment.findFirst({
-		where: { studentId },
-		orderBy: primaryEnrollmentOrderBy,
-		include: {
-			level: { include: { steps: { orderBy: { order: 'asc' } } } },
-			student: { select: { currentStepIdx: true } },
-		},
-	})
+	const enrollment = await findEnrollmentInGroup(studentId, groupId, db)
 
 	if (!enrollment) return
 
 	const level = enrollment.level
-	const student = enrollment.student
 	const levelStepIds = level.steps.map((step) => step.id)
 	const levelCompletions =
 		levelStepIds.length === 0
@@ -39,7 +36,8 @@ export async function recalculateStudentStepIdx(
 					orderBy: { createdAt: 'asc' },
 				})
 
-	const stepOffset = await getStepOffsetForLevel(level.number)
+	const subjectId = enrollment.group.subjectId
+	const stepOffset = await getStepOffsetForLevel(level.number, subjectId)
 	const completionsByStepId = getCompletionsByStepId(levelCompletions)
 	const steps = level.steps
 	const passedInCurrentLevel = countConsecutivePassedSteps(
@@ -56,25 +54,21 @@ export async function recalculateStudentStepIdx(
 
 	if (allPassed) {
 		const nextLevel = await db.level.findFirst({
-			where: { number: level.number + 1 },
+			where: { number: level.number + 1, subjectId },
 		})
 
 		if (nextLevel) {
 			await db.groupEnrollment.update({
 				where: { id: enrollment.id },
-				data: { levelId: nextLevel.id },
-			})
-			await db.student.update({
-				where: { id: studentId },
-				data: { currentStepIdx: newIdx },
+				data: { levelId: nextLevel.id, currentStepIdx: newIdx },
 			})
 			return newIdx
 		}
 	}
 
-	if (newIdx !== student.currentStepIdx) {
-		await db.student.update({
-			where: { id: studentId },
+	if (newIdx !== enrollment.currentStepIdx) {
+		await db.groupEnrollment.update({
+			where: { id: enrollment.id },
 			data: { currentStepIdx: newIdx },
 		})
 	}
