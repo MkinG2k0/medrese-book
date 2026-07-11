@@ -23,37 +23,58 @@ import { buildStudentRiskFlags } from './risk-flags'
 import { evaluateTimeNormForLevel } from './time-norm'
 import type { RiskFlag, StudentPeriodMetrics, TimeNormResult } from './types'
 
+export type StudentMetricsScope = {
+	subjectId: string
+	groupId?: string | null
+}
+
 type LoadedStudent = NonNullable<
 	Awaited<ReturnType<typeof loadStudentRecord>>
 >
 
-type PrimaryEnrollment = LoadedStudent['enrollments'][number]
+type ScopedEnrollment = LoadedStudent['enrollments'][number]
 
-async function loadStudentRecord(studentId: string) {
-	return prisma.student.findUnique({
+async function loadStudentRecord(studentId: string, scope: StudentMetricsScope) {
+	const enrollments = await prisma.groupEnrollment.findMany({
+		where: {
+			studentId,
+			group: {
+				subjectId: scope.subjectId,
+				...(scope.groupId ? { id: scope.groupId } : {}),
+			},
+		},
+		orderBy: primaryEnrollmentOrderBy,
+		include: {
+			level: { include: { steps: { orderBy: { order: 'asc' } } } },
+			group: {
+				include: {
+					teacher: { include: { user: true } },
+				},
+			},
+		},
+	})
+
+	if (enrollments.length === 0) return null
+
+	const groupIds = enrollments.map((enrollment) => enrollment.groupId)
+
+	const student = await prisma.student.findUnique({
 		where: { id: studentId },
 		include: {
 			user: true,
-			enrollments: {
-				orderBy: primaryEnrollmentOrderBy,
-				take: 1,
-				include: {
-					level: { include: { steps: { orderBy: { order: 'asc' } } } },
-					group: {
-						include: {
-							teacher: { include: { user: true } },
-						},
-					},
-				},
-			},
 			sessions: {
+				where: { groupId: { in: groupIds } },
 				select: {
 					date: true,
 					attendance: true,
 					isAdjustment: true,
+					groupId: true,
 				},
 			},
 			completions: {
+				where: {
+					session: { groupId: { in: groupIds } },
+				},
 				select: {
 					createdAt: true,
 					isPriorCredit: true,
@@ -63,19 +84,19 @@ async function loadStudentRecord(studentId: string) {
 			},
 		},
 	})
+
+	if (!student) return null
+
+	return { ...student, enrollments }
 }
 
-function getPrimaryEnrollment(student: LoadedStudent): PrimaryEnrollment | null {
-	return student.enrollments[0] ?? null
-}
-
-function getLevelStepIds(enrollment: PrimaryEnrollment): Set<string> {
+function getLevelStepIds(enrollment: ScopedEnrollment): Set<string> {
 	return new Set(enrollment.level.steps.map((step) => step.id))
 }
 
 function getCompletedStepsOnLevel(
 	student: LoadedStudent,
-	enrollment: PrimaryEnrollment,
+	enrollment: ScopedEnrollment,
 ) {
 	const levelStepIds = getLevelStepIds(enrollment)
 	const hoursByStepId = new Map(
@@ -96,7 +117,7 @@ function getCompletedStepsOnLevel(
 
 function getCompletedStepHoursOnLevel(
 	student: LoadedStudent,
-	enrollment: PrimaryEnrollment,
+	enrollment: ScopedEnrollment,
 ): number[] {
 	return getCompletedStepsOnLevel(student, enrollment).map((step) => step.hours)
 }
@@ -131,6 +152,16 @@ function sessionDateRange(sessions: { date: Date }[]) {
 	return { gte: new Date(min), lte: new Date(max) }
 }
 
+function pickWorstCaseBundle(
+	bundles: StudentMetricsBundle[],
+): StudentMetricsBundle {
+	return [...bundles].sort((a, b) => {
+		const flagDiff = b.riskFlags.length - a.riskFlags.length
+		if (flagDiff !== 0) return flagDiff
+		return b.absencesInMonth - a.absencesInMonth
+	})[0]!
+}
+
 export type StudentMetricsBundle = {
 	periodMetrics: StudentPeriodMetrics
 	levelProgress: LevelProgress
@@ -141,17 +172,12 @@ export type StudentMetricsBundle = {
 	levelTitle: string
 }
 
-export async function loadStudentMetricsContext(
-	studentId: string,
+async function computeMetricsForEnrollment(
+	student: LoadedStudent,
+	enrollment: ScopedEnrollment,
 	dateRange: { gte: Date; lte: Date },
 	monthLabel: string,
-): Promise<StudentMetricsBundle | null> {
-	const student = await loadStudentRecord(studentId)
-	if (!student) return null
-
-	const enrollment = getPrimaryEnrollment(student)
-	if (!enrollment) return null
-
+): Promise<StudentMetricsBundle> {
 	const [levelStepOffset, durationByDateForPeriod] = await Promise.all([
 		getStepOffsetForLevel(enrollment.level.number),
 		buildTeachingSessionDurationByDate(enrollment.groupId, dateRange),
@@ -233,16 +259,47 @@ export async function loadStudentMetricsContext(
 	}
 }
 
+export async function loadStudentMetricsContext(
+	studentId: string,
+	dateRange: { gte: Date; lte: Date },
+	monthLabel: string,
+	scope: StudentMetricsScope,
+): Promise<StudentMetricsBundle | null> {
+	const student = await loadStudentRecord(studentId, scope)
+	if (!student) return null
+
+	const enrollments = student.enrollments
+	if (enrollments.length === 0) return null
+
+	if (scope.groupId || enrollments.length === 1) {
+		return computeMetricsForEnrollment(
+			student,
+			enrollments[0]!,
+			dateRange,
+			monthLabel,
+		)
+	}
+
+	const bundles = await Promise.all(
+		enrollments.map((enrollment) =>
+			computeMetricsForEnrollment(student, enrollment, dateRange, monthLabel),
+		),
+	)
+
+	return pickWorstCaseBundle(bundles)
+}
+
 export async function loadStudentMetricsForMonth(
 	studentId: string,
 	month: Date,
 	monthLabel: string,
+	scope: StudentMetricsScope,
 ) {
 	const dateRange = {
 		gte: startOfMonth(month),
 		lte: endOfMonth(month),
 	}
-	return loadStudentMetricsContext(studentId, dateRange, monthLabel)
+	return loadStudentMetricsContext(studentId, dateRange, monthLabel, scope)
 }
 
 export { teachingSessionDurationFromMap }

@@ -48,9 +48,15 @@ export async function getStudentPeriodMetrics(): Promise<StudentPeriodMetrics | 
 	const studentId = session.user.studentId
 	if (!studentId) return null
 
+	const enrollment = await findPrimaryEnrollment(studentId)
+	if (!enrollment) return null
+
 	const month = startOfMonth(new Date())
 	const monthLabel = formatAnalyticsMonth(month)
-	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel)
+	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel, {
+		subjectId: enrollment.group.subjectId,
+		groupId: enrollment.groupId,
+	})
 
 	if (!metrics) return null
 

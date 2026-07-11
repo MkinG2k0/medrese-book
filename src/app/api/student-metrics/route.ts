@@ -4,6 +4,7 @@ import {
 	parseAnalyticsMonth,
 } from '@/shared/lib/analytics'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
+import { findPrimaryEnrollment } from '@/shared/lib/enrollment'
 import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
 import { studentMetricsQuerySchema } from '@/entities/student-metrics/model/types'
 
@@ -26,7 +27,13 @@ export async function GET(request: Request) {
 	const month = parseAnalyticsMonth(monthParam)
 	const monthLabel = formatAnalyticsMonth(month)
 
-	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel)
+	const enrollment = await findPrimaryEnrollment(studentId)
+	if (!enrollment) return error('Ученик не найден', 404)
+
+	const metrics = await loadStudentMetricsForMonth(studentId, month, monthLabel, {
+		subjectId: enrollment.group.subjectId,
+		groupId: enrollment.groupId,
+	})
 	if (!metrics) return error('Ученик не найден', 404)
 
 	return success({

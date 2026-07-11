@@ -31,7 +31,8 @@ export async function GET(request: Request) {
 
 	const group = await prisma.group.findUnique({
 		where: { id: groupId },
-		include: {
+		select: {
+			subjectId: true,
 			enrollments: {
 				select: {
 					student: { select: { id: true, status: true } },
@@ -58,6 +59,7 @@ export async function GET(request: Request) {
 				student.id,
 				dateRange,
 				monthLabel,
+				{ subjectId: group.subjectId, groupId },
 			)
 			return {
 				studentId: student.id,

@@ -9,23 +9,41 @@ function formatMonthLabel(month: Date): string {
 	}).format(month)
 }
 
-export async function getAtRiskStudents(
-	month: Date,
+function buildGroupScopeFilter(
+	subjectId: string,
 	teacherId?: string | null,
 	groupId?: string | null,
+) {
+	return {
+		subjectId,
+		...(groupId ? { id: groupId } : {}),
+		...(teacherId && !groupId ? { teacherId } : {}),
+	}
+}
+
+export async function getAtRiskStudents(
+	month: Date,
+	teacherId: string | null | undefined,
+	groupId: string | null | undefined,
+	subjectId: string,
 ): Promise<AtRiskStudentRow[]> {
+	const groupScope = buildGroupScopeFilter(subjectId, teacherId, groupId)
+
 	const students = await prisma.student.findMany({
-		where: groupId
-			? { enrollments: { some: { groupId } } }
-			: teacherId
-				? { enrollments: { some: { group: { teacherId } } } }
-				: undefined,
+		where: {
+			enrollments: {
+				some: {
+					group: groupScope,
+				},
+			},
+		},
 		include: {
 			user: { select: { name: true } },
 		},
 	})
 
 	const monthLabel = formatMonthLabel(month)
+	const scope = { subjectId, groupId: groupId ?? undefined }
 
 	const rows: AtRiskStudentRow[] = []
 
@@ -34,6 +52,7 @@ export async function getAtRiskStudents(
 			student.id,
 			month,
 			monthLabel,
+			scope,
 		)
 		if (!metrics || metrics.riskFlags.length === 0) continue
 
@@ -47,7 +66,6 @@ export async function getAtRiskStudents(
 			budgetMinutes: metrics.timeNorm.budgetMinutes,
 		})
 	}
-
 
 	return rows.sort((a, b) =>
 		a.student.name.localeCompare(b.student.name, 'ru'),

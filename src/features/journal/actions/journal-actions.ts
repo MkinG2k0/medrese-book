@@ -320,6 +320,10 @@ export async function getStudentLesson(
 		studentId,
 		month,
 		monthLabel,
+		{
+			subjectId: enrollment.group.subjectId,
+			groupId: targetGroupId,
+		},
 	)
 
 	return {
