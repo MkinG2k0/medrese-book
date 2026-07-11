@@ -29,6 +29,7 @@ export default async function StudentProgressEditPage({ params }: Props) {
 				groupName={data.student.groupName}
 				levels={data.levels}
 				initial={{
+					groupId: data.student.groupId,
 					levelId: data.student.levelId,
 					localStepIndex: data.student.localStepIndex,
 				}}

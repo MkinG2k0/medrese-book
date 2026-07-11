@@ -1,11 +1,14 @@
 import type { Role } from '@/shared/lib/prisma'
-import { findPrimaryEnrollment } from '@/shared/lib/enrollment'
+import { findEnrollmentInGroup, findPrimaryEnrollment } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
 
 const EDIT_ROLES: Role[] = ['TEACHER', 'MANAGER', 'SUPER_ADMIN']
 
-export async function requireStudentEditAccess(studentId: string) {
+export async function requireStudentEditAccess(
+	studentId: string,
+	groupId?: string,
+) {
 	const session = await requireRoles(EDIT_ROLES)
 
 	const student = await prisma.student.findUnique({
@@ -17,7 +20,9 @@ export async function requireStudentEditAccess(studentId: string) {
 
 	if (!student) return { session, student: null, enrollment: null } as const
 
-	const enrollment = await findPrimaryEnrollment(studentId)
+	const enrollment = groupId
+		? await findEnrollmentInGroup(studentId, groupId)
+		: await findPrimaryEnrollment(studentId)
 	if (!enrollment) return { session, student: null, enrollment: null } as const
 
 	if (
