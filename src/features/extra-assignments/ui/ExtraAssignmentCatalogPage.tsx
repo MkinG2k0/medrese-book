@@ -3,7 +3,7 @@
 import { PlusOutlined } from '@ant-design/icons'
 import { App, Button, Input, Select, Table } from 'antd'
 import { useSession } from 'next-auth/react'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useTransition } from 'react'
 
 import {
 	useCreateExtraAssignment,
@@ -12,21 +12,34 @@ import {
 	useUpdateExtraAssignment,
 	type ExtraAssignmentTemplate,
 } from '@/entities/extra-assignment'
+import {
+	getProgramStepsForExtraAssignments,
+	type ExtraAssignmentSubjectOption,
+	type ProgramLevelWithSteps,
+} from '@/features/extra-assignments/actions/extra-assignment-actions'
 import { ExtraAssignmentFormModal } from '@/features/extra-assignments/ui/ExtraAssignmentFormModal'
-import type { ProgramLevelWithSteps } from '@/features/extra-assignments/ui/ExtraAssignmentFormModal'
 import { formatDate } from '@/shared/lib/utils'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
 type ExtraAssignmentCatalogPageProps = {
-	programLevels: ProgramLevelWithSteps[]
+	subjects: ExtraAssignmentSubjectOption[]
+	initialSubjectId: string
+	initialProgramLevels: ProgramLevelWithSteps[]
 }
 
 export function ExtraAssignmentCatalogPage({
-	programLevels,
+	subjects,
+	initialSubjectId,
+	initialProgramLevels,
 }: ExtraAssignmentCatalogPageProps) {
 	const { data: session } = useSession()
 	const { modal, message } = App.useApp()
+	const [isPending, startTransition] = useTransition()
+
+	const [selectedSubjectId, setSelectedSubjectId] = useState(initialSubjectId)
+	const [programLevels, setProgramLevels] =
+		useState<ProgramLevelWithSteps[]>(initialProgramLevels)
 
 	const [levelFilter, setLevelFilter] = useState<string | undefined>()
 	const [stepFilter, setStepFilter] = useState<string | undefined>()
@@ -38,18 +51,24 @@ export function ExtraAssignmentCatalogPage({
 
 	const filters = useMemo(
 		() => ({
+			subjectId: selectedSubjectId,
 			levelId: levelFilter,
 			stepId: stepFilter,
 			title: titleFilter.trim() || undefined,
 			authorId: authorFilter,
 		}),
-		[levelFilter, stepFilter, titleFilter, authorFilter],
+		[selectedSubjectId, levelFilter, stepFilter, titleFilter, authorFilter],
 	)
 
 	const { data: assignments = [], isLoading } = useExtraAssignments(filters)
 	const createMutation = useCreateExtraAssignment()
 	const updateMutation = useUpdateExtraAssignment()
 	const deleteMutation = useDeleteExtraAssignment()
+
+	const subjectOptions = useMemo(
+		() => subjects.map((subject) => ({ value: subject.id, label: subject.name })),
+		[subjects],
+	)
 
 	const stepOptions = useMemo(() => {
 		const levels = levelFilter
@@ -77,6 +96,18 @@ export function ExtraAssignmentCatalogPage({
 	}))
 
 	const currentUserId = session?.user?.id
+
+	const handleSubjectChange = useCallback(
+		(subjectId: string) => {
+			setSelectedSubjectId(subjectId)
+			setLevelFilter(undefined)
+			setStepFilter(undefined)
+			startTransition(() => {
+				void getProgramStepsForExtraAssignments(subjectId).then(setProgramLevels)
+			})
+		},
+		[startTransition],
+	)
 
 	const handleCreate = () => {
 		setEditing(null)
@@ -139,11 +170,21 @@ export function ExtraAssignmentCatalogPage({
 
 			<div className="flex flex-wrap gap-3">
 				<Select
+					value={selectedSubjectId}
+					options={subjectOptions}
+					onChange={handleSubjectChange}
+					className="min-w-[180px]"
+					disabled={subjects.length === 0}
+					placeholder="Предмет"
+					aria-label="Предмет"
+				/>
+				<Select
 					allowClear
 					placeholder="Уровень"
 					className="min-w-[180px]"
 					options={levelOptions}
 					value={levelFilter}
+					loading={isPending}
 					onChange={(value) => {
 						setLevelFilter(value)
 						setStepFilter(undefined)
@@ -152,9 +193,10 @@ export function ExtraAssignmentCatalogPage({
 				<Select
 					allowClear
 					placeholder="Шаг"
-						className="min-w-[180px]"
+					className="min-w-[180px]"
 					options={stepOptions}
 					value={stepFilter}
+					loading={isPending}
 					onChange={setStepFilter}
 				/>
 				<Select
@@ -165,7 +207,7 @@ export function ExtraAssignmentCatalogPage({
 					value={authorFilter}
 					onChange={setAuthorFilter}
 				/>
-					<Input
+				<Input
 					allowClear
 					placeholder="Поиск по названию"
 					className="min-w-[200px]"
@@ -176,7 +218,7 @@ export function ExtraAssignmentCatalogPage({
 
 			<Table<ExtraAssignmentTemplate>
 				rowKey="id"
-				loading={isLoading}
+				loading={isLoading || isPending}
 				dataSource={assignments}
 				locale={{ emptyText: 'Нет доп. заданий' }}
 				columns={[
