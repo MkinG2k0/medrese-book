@@ -6,15 +6,15 @@ current_phase: 15
 current_phase_name: student-portal-extra-assignments
 status: executing
 stopped_at: Phase 15 context gathered
-last_updated: "2026-07-11T23:10:00.000Z"
+last_updated: "2026-07-11T23:12:00.000Z"
 last_activity: 2026-07-12
-last_activity_desc: Completed 15-03 subject-scoped extra assignments
+last_activity_desc: Completed 15-02 student portal groupId navigation
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 27
-  completed_plans: 25
-  percent: 93
+  completed_plans: 26
+  percent: 96
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 Phase: 15 (student-portal-extra-assignments) — EXECUTING
 Plan: 4 of 4
 Status: Ready to execute plan 15-04
-Last activity: 2026-07-12 — Completed 15-03 subject-scoped extra assignments
+Last activity: 2026-07-12 — Completed 15-02 student portal groupId navigation
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Last activity: 2026-07-12 — Completed 15-03 subject-scoped extra assignments
 | Phase 13-journal P02 | 15min | 3 tasks | 3 files |
 | Phase 13-journal P04 | 25min | 3 tasks | 9 files |
 | Phase 15 P01 | 8min | 3 tasks | 6 files |
+| Phase 15 P02 | 12min | 3 tasks | 5 files |
 | Phase 15 P03 | 15min | 3 tasks | 11 files |
 
 ## Accumulated Context
@@ -147,6 +148,9 @@ Recent decisions affecting current work:
 - [Phase 13]: getTeacherGroup removed from journal feature after history routes migrated
 - [Phase 15]: Dashboard /student/me с карточками per GroupEnrollment и subject-scoped metrics
 - [Phase 15]: student-portal groupId helpers готовы для plan 15-02
+- [Phase 15]: Subject scope допзаданий через Step.level.subjectId без миграции schema
+- [Phase 15]: getExtraAssignmentSubjects role-scoped — teacher только предметы своих групп
+- [Phase 15]: groupId navigation — URL param > primary enrollment; localStorage при клике с карточки (D-07/D-08)
 
 ### Pending Todos
 
@@ -212,6 +216,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-11 - Completed quick task 260712-12i: Fix duplicate React keys in LevelStats Table
-Last session: 2026-07-11T22:57:33.726Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-student-portal-extra-assignments/15-CONTEXT.md
+Last session: 2026-07-11T23:12:00.000Z
+Stopped at: Completed 15-02-PLAN.md
+Resume file: None
