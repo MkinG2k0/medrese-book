@@ -1,42 +1,28 @@
 import { notFound } from "next/navigation";
 
-import {
-  getStudentPeriodMetrics,
-  getStudentProfile,
-} from "@/features/student-portal/actions/student-actions";
-import { StudentMetricsCards } from "@/features/analytics/ui/StudentMetricsCards";
-import { ProgressBar } from "@/shared/ui/ProgressBar";
-import Text from "@/shared/ui/Text";
+import { getStudentEnrollmentDashboard } from "@/features/student-portal/actions/student-actions";
+import { StudentEnrollmentCard } from "@/features/student-portal/ui/StudentEnrollmentCard";
 import Title from "@/shared/ui/Title";
 import { requireRole } from "@/shared/lib/session";
 
 export default async function StudentMePage() {
   await requireRole("STUDENT");
-  const [profile, periodMetrics] = await Promise.all([
-    getStudentProfile(),
-    getStudentPeriodMetrics(),
-  ]);
+  const dashboard = await getStudentEnrollmentDashboard();
 
-  if (!profile) notFound();
+  if (!dashboard || dashboard.enrollments.length === 0) notFound();
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <Title level={3}>{profile.name}</Title>
-      <Text type="secondary">{profile.levelTitle}</Text>
+      <Title level={3}>{dashboard.studentName}</Title>
 
-      <div>
-        <Text className="mb-2 block">
-          Прогресс: шаг {profile.currentStepIdx + 1} из {profile.totalSteps}
-        </Text>
-        <ProgressBar
-          current={profile.currentStepIdx}
-          total={profile.totalSteps}
-        />
+      <div className="flex flex-col gap-4">
+        {dashboard.enrollments.map((enrollment) => (
+          <StudentEnrollmentCard
+            key={enrollment.groupId}
+            enrollment={enrollment}
+          />
+        ))}
       </div>
-
-      {periodMetrics ? (
-        <StudentMetricsCards metrics={periodMetrics} variant="portal" />
-      ) : null}
     </div>
   );
 }
