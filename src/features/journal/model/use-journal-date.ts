@@ -1,17 +1,30 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import {
 	buildJournalHref,
 	JOURNAL_DATE_PARAM,
+	JOURNAL_GROUP_PARAM,
 	resolveJournalDate,
+	resolveJournalGroupId,
 } from '@/features/journal/lib/journal-url'
+import {
+	JOURNAL_GROUP_STORAGE_KEY,
+	readJournalGroupId,
+	writeJournalGroupId,
+} from '@/features/journal/lib/journal-storage'
 import { useJournalStore } from '@/features/journal/model/journal-store'
 import { getLocalDateString } from '@/shared/lib/calendar-date'
 
-export function useJournalDate() {
+type UseJournalDateOptions = {
+	allowedGroupIds?: string[]
+	defaultGroupId?: string
+}
+
+export function useJournalDate(options: UseJournalDateOptions = {}) {
+	const { allowedGroupIds = [], defaultGroupId = '' } = options
 	const router = useRouter()
 	const pathname = usePathname()
 	const searchParams = useSearchParams()
@@ -20,6 +33,20 @@ export function useJournalDate() {
 
 	const dateFilter = resolveJournalDate(searchParams.get(JOURNAL_DATE_PARAM))
 
+	const fallbackGroupId = useMemo(() => {
+		const storedGroupId = readJournalGroupId(JOURNAL_GROUP_STORAGE_KEY)
+		if (storedGroupId && allowedGroupIds.includes(storedGroupId)) {
+			return storedGroupId
+		}
+		return defaultGroupId
+	}, [allowedGroupIds, defaultGroupId])
+
+	const groupId = resolveJournalGroupId(
+		searchParams.get(JOURNAL_GROUP_PARAM),
+		allowedGroupIds,
+		fallbackGroupId,
+	)
+
 	useEffect(() => {
 		if (!searchParams.get(JOURNAL_DATE_PARAM)) {
 			const params = new URLSearchParams(searchParams.toString())
@@ -27,6 +54,18 @@ export function useJournalDate() {
 			router.replace(`${pathname}?${params.toString()}`)
 		}
 	}, [pathname, router, searchParams])
+
+	useEffect(() => {
+		if (
+			!searchParams.get(JOURNAL_GROUP_PARAM) &&
+			fallbackGroupId &&
+			allowedGroupIds.includes(fallbackGroupId)
+		) {
+			const params = new URLSearchParams(searchParams.toString())
+			params.set(JOURNAL_GROUP_PARAM, fallbackGroupId)
+			router.replace(`${pathname}?${params.toString()}`)
+		}
+	}, [allowedGroupIds, fallbackGroupId, pathname, router, searchParams])
 
 	useEffect(() => {
 		if (storeDate !== dateFilter) {
@@ -44,10 +83,25 @@ export function useJournalDate() {
 		[pathname, router, searchParams, setStoreDate],
 	)
 
-	const journalHref = useCallback(
-		(targetPathname: string) => buildJournalHref(targetPathname, dateFilter),
-		[dateFilter],
+	const setGroupId = useCallback(
+		(nextGroupId: string) => {
+			writeJournalGroupId(JOURNAL_GROUP_STORAGE_KEY, nextGroupId)
+			const params = new URLSearchParams(searchParams.toString())
+			params.set(JOURNAL_GROUP_PARAM, nextGroupId)
+			router.replace(`${pathname}?${params.toString()}`)
+		},
+		[pathname, router, searchParams],
 	)
 
-	return { dateFilter, setDateFilter, journalHref }
+	const journalHref = useCallback(
+		(targetPathname: string) =>
+			buildJournalHref(
+				targetPathname,
+				dateFilter,
+				groupId || undefined,
+			),
+		[dateFilter, groupId],
+	)
+
+	return { dateFilter, setDateFilter, groupId, setGroupId, journalHref }
 }
