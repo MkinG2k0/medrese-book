@@ -142,7 +142,21 @@ Plans:
   2. Топ учеников, статистика по уровням, at-risk считаются для выбранного предмета
   3. История ученика в аналитике показывает занятия по выбранному предмету
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 14-01-PLAN.md — Селект предмета, subjectId в URL, role-scoped subjects, совместимость групп (wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 14-02-PLAN.md — getTopStudents/getLevelStats/getAtRiskStudents в subject scope (wave 2)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 14-03-PLAN.md — История учёбы по предмету, API/hook, E2E (wave 3)
 
 ### Phase 15: Student Portal & Extra Assignments
 
@@ -167,7 +181,7 @@ Plans:
 | 11. Groups & Enrollment | 6/6 | Complete    | 2026-07-11 |
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 4/4 | Complete    | 2026-07-11 |
-| 14. Analytics | 0/TBD | Not started | - |
+| 14. Analytics | 0/3 | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
 
 ---
