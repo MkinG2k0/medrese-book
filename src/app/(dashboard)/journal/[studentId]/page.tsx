@@ -10,14 +10,16 @@ import { PageLoader } from '@/shared/ui/PageLoader'
 
 type Props = {
 	params: Promise<{ studentId: string }>
-	searchParams: Promise<{ date?: string }>
+	searchParams: Promise<{ date?: string; groupId?: string }>
 }
 
 export default async function StudentLessonPage({ params, searchParams }: Props) {
 	const { studentId } = await params
-	const { date: dateParam } = await searchParams
+	const { date: dateParam, groupId } = await searchParams
+	if (!groupId) notFound()
+
 	const calendarDate = resolveJournalDate(dateParam)
-	const lesson = await getStudentLesson(studentId, calendarDate)
+	const lesson = await getStudentLesson(studentId, calendarDate, groupId)
 
 	if (!lesson) notFound()
 
@@ -25,6 +27,8 @@ export default async function StudentLessonPage({ params, searchParams }: Props)
 		<Suspense fallback={<PageLoader size="lg" />}>
 			<LessonPage
 				groupId={lesson.groupId}
+				groupName={lesson.groupName}
+				subjectName={lesson.subjectName}
 				studentId={lesson.student.id}
 				studentName={lesson.student.name}
 				currentStepIdx={lesson.currentStepIdx}

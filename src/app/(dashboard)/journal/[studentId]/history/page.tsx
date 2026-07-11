@@ -4,12 +4,21 @@ import { getStudentStepHistory } from '@/features/journal/actions/journal-action
 import { StepHistoryPage } from '@/features/journal/ui/StepHistoryPage'
 import { requireRole } from '@/shared/lib/session'
 
-type Props = { params: Promise<{ studentId: string }> }
+type Props = {
+	params: Promise<{ studentId: string }>
+	searchParams: Promise<{ groupId?: string }>
+}
 
-export default async function StudentStepHistoryPage({ params }: Props) {
+export default async function StudentStepHistoryPage({
+	params,
+	searchParams,
+}: Props) {
 	await requireRole('TEACHER')
 	const { studentId } = await params
-	const history = await getStudentStepHistory(studentId)
+	const { groupId } = await searchParams
+	if (!groupId) notFound()
+
+	const history = await getStudentStepHistory(studentId, groupId)
 
 	if (!history) notFound()
 
