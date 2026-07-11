@@ -29,23 +29,44 @@ export type LevelStats = {
 export async function getLevelStats(
 	month: Date,
 	teacherId?: string | null,
+	groupId?: string | null,
 ): Promise<LevelStats[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
 
+	const groupSubjectId = groupId
+		? (
+				await prisma.group.findUnique({
+					where: { id: groupId },
+					select: { subjectId: true },
+				})
+			)?.subjectId
+		: null
+
 	const levels = await prisma.level.findMany({
+		where: groupSubjectId ? { subjectId: groupSubjectId } : undefined,
 		include: {
 			steps: true,
 			enrollments: {
-				where: teacherId ? { group: { teacherId } } : undefined,
+				where: groupId
+					? { groupId }
+					: teacherId
+						? { group: { teacherId } }
+						: undefined,
 				include: {
 					student: {
 						include: {
 							completions: {
-								where: analyticsCompletionFilter({ gte: from, lte: to }),
+								where: {
+									...analyticsCompletionFilter({ gte: from, lte: to }),
+									...(groupId ? { session: { groupId } } : {}),
+								},
 							},
 							sessions: {
-								where: analyticsSessionFilter({ gte: from, lte: to }),
+								where: {
+									...analyticsSessionFilter({ gte: from, lte: to }),
+									...(groupId ? { groupId } : {}),
+								},
 							},
 						},
 					},

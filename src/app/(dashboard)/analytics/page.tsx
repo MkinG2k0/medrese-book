@@ -1,8 +1,10 @@
-import { getAnalyticsTeachers } from '@/features/analytics/actions/analytics-actions'
+import { getAnalyticsGroupsByTeacher, getAnalyticsTeachers } from '@/features/analytics/actions/analytics-actions'
 import {
 	ALL_TEACHERS,
+	resolveAnalyticsGroupFilter,
 	resolveAnalyticsTeacherFilter,
 } from '@/features/analytics/lib/analytics-query'
+import { AnalyticsGroupPicker } from '@/features/analytics/ui/AnalyticsGroupPicker'
 import { AnalyticsMonthPicker } from '@/features/analytics/ui/AnalyticsMonthPicker'
 import { AnalyticsTeacherPicker } from '@/features/analytics/ui/AnalyticsTeacherPicker'
 import { AtRiskStudentsTable } from '@/features/analytics/ui/AtRiskStudentsTable'
@@ -19,13 +21,14 @@ import { requireRoles } from '@/shared/lib/session'
 import Title from '@/shared/ui/Title'
 
 type AnalyticsPageProps = {
-	searchParams: Promise<{ month?: string; teacher?: string }>
+	searchParams: Promise<{ month?: string; teacher?: string; groupId?: string }>
 }
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
 	const session = await requireRoles(['TEACHER', 'MANAGER', 'SUPER_ADMIN'])
 
-	const { month: monthParam, teacher: teacherParam } = await searchParams
+	const { month: monthParam, teacher: teacherParam, groupId: groupIdParam } =
+		await searchParams
 	const month = parseAnalyticsMonth(monthParam)
 	const monthLabel = formatAnalyticsMonth(month)
 	const monthValue = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
@@ -39,10 +42,20 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		validTeacherIds,
 	)
 
+	const teacherGroups = filterTeacherId
+		? await getAnalyticsGroupsByTeacher(filterTeacherId)
+		: []
+	const validGroupIds = teacherGroups.map((group) => group.id)
+	const { filterGroupId, selectedGroupId } = resolveAnalyticsGroupFilter(
+		filterTeacherId,
+		groupIdParam,
+		validGroupIds,
+	)
+
 	const [atRiskStudents, topStudents, levelStats] = await Promise.all([
-		getAtRiskStudents(month, filterTeacherId),
-		getTopStudents(month, filterTeacherId),
-		getLevelStats(month, filterTeacherId),
+		getAtRiskStudents(month, filterTeacherId, filterGroupId),
+		getTopStudents(month, filterTeacherId, filterGroupId),
+		getLevelStats(month, filterTeacherId, filterGroupId),
 	])
 
 	return (
@@ -57,10 +70,16 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 						selectedTeacher={selectedTeacher}
 						month={monthValue}
 					/>
+					<AnalyticsGroupPicker
+						groups={teacherGroups}
+						selectedTeacher={selectedTeacher}
+						selectedGroupId={selectedGroupId}
+						month={monthValue}
+					/>
 					<AnalyticsMonthPicker month={month} selectedTeacher={selectedTeacher} />
 				</div>
 			</div>
-			
+
 			<TopStudents data={topStudents} monthLabel={monthLabel} />
 			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
 			<AtRiskStudentsTable

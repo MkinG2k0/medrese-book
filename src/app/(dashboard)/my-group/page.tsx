@@ -1,18 +1,43 @@
 import { notFound } from "next/navigation";
 
-import { getMyGroup } from "@/features/groups/actions/group-actions";
-import { GroupStudentsTable } from "@/features/groups/ui/GroupStudentsTable";
+import { getMyGroupById } from "@/features/groups/actions/group-actions";
+import { MyGroupView } from "@/features/groups/ui/MyGroupView";
+import { getTeacherGroups } from "@/features/journal/actions/journal-actions";
 import { getLevelsForStudentProfile } from "@/features/user-admin/actions/user-actions";
 import { mapUsersToDetails } from "@/features/user-admin/lib/map-users-to-details";
 import { requireRole } from "@/shared/lib/session";
+import Text from "@/shared/ui/Text";
+import Title from "@/shared/ui/Title";
 
-export default async function MyGroupPage() {
+type MyGroupPageProps = {
+  searchParams: Promise<{ groupId?: string }>;
+};
+
+export default async function MyGroupPage({ searchParams }: MyGroupPageProps) {
   await requireRole("TEACHER");
-  const [group, allLevels] = await Promise.all([
-    getMyGroup(),
+  const { groupId: groupIdParam } = await searchParams;
+
+  const [groups, allLevels] = await Promise.all([
+    getTeacherGroups(),
     getLevelsForStudentProfile(),
   ]);
 
+  if (groups.length === 0) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Title level={3}>Моя группа</Title>
+        <Text type="secondary">Группа не назначена</Text>
+      </div>
+    );
+  }
+
+  const defaultGroupId = groups[0]!.id;
+  const selectedGroupId =
+    groupIdParam && groups.some((group) => group.id === groupIdParam)
+      ? groupIdParam
+      : defaultGroupId;
+
+  const group = await getMyGroupById(selectedGroupId);
   if (!group) notFound();
 
   const levels = allLevels.filter((level) => level.subjectId === group.subjectId);
@@ -47,16 +72,12 @@ export default async function MyGroupPage() {
   const users = mapUsersToDetails(studentUsers, levelOptions);
 
   return (
-    <GroupStudentsTable
-      title="Моя группа"
-      subtitle={`${group.name} · ${group.subject.name}`}
+    <MyGroupView
+      groups={groups}
+      selectedGroupId={selectedGroupId}
       users={users}
-      groups={[{ id: group.id, name: group.name }]}
       levels={levelOptions}
-      groupId={group.id}
       subjectId={group.subjectId}
-      readOnly
-      canEditStatus
     />
   );
 }

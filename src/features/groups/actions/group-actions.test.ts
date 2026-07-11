@@ -248,6 +248,36 @@ describe('group-actions', () => {
 		})
 	})
 
+	describe('getMyGroupById', () => {
+		it('loads only the teacher-owned group by id', async () => {
+			groupFindFirstMock.mockResolvedValue({
+				id: 'group-2',
+				name: 'Группа Аль-Ихлас',
+				subjectId: 'subject-1',
+				enrollments: [],
+			})
+
+			const { getMyGroupById } = await import('./group-actions')
+			const group = await getMyGroupById('group-2')
+
+			expect(groupFindFirstMock).toHaveBeenCalledWith({
+				where: { id: 'group-2', teacherId: 'teacher-1' },
+				include: {
+					teacher: { include: { user: true } },
+					subject: true,
+					enrollments: {
+						include: {
+							student: { include: { user: true } },
+							level: true,
+						},
+						orderBy: { student: { user: { name: 'asc' } } },
+					},
+				},
+			})
+			expect(group?.name).toBe('Группа Аль-Ихлас')
+		})
+	})
+
 	describe('enrollStudent', () => {
 		it('creates GroupEnrollment when level belongs to group subject', async () => {
 			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })

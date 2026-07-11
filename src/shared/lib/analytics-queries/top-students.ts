@@ -36,21 +36,30 @@ export type TopEntry = {
 export async function getTopStudents(
 	month: Date,
 	teacherId?: string | null,
+	groupId?: string | null,
 ): Promise<TopEntry[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
 
 	const students = await prisma.student.findMany({
-		where: teacherId
-			? { enrollments: { some: { group: { teacherId } } } }
-			: undefined,
+		where: groupId
+			? { enrollments: { some: { groupId } } }
+			: teacherId
+				? { enrollments: { some: { group: { teacherId } } } }
+				: undefined,
 		include: {
 			user: true,
 			completions: {
-				where: analyticsCompletionFilter({ gte: from, lte: to }),
+				where: {
+					...analyticsCompletionFilter({ gte: from, lte: to }),
+					...(groupId ? { session: { groupId } } : {}),
+				},
 			},
 			sessions: {
-				where: analyticsSessionFilter({ gte: from, lte: to }),
+				where: {
+					...analyticsSessionFilter({ gte: from, lte: to }),
+					...(groupId ? { groupId } : {}),
+				},
 			},
 		},
 	})

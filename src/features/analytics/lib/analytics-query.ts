@@ -1,12 +1,15 @@
 export const ALL_TEACHERS = 'all'
+export const ALL_GROUPS = 'all'
 
 export function buildAnalyticsSearchParams(params: {
 	month?: string
 	teacher?: string
+	groupId?: string
 }): string {
 	const search = new URLSearchParams()
 	if (params.month) search.set('month', params.month)
 	if (params.teacher) search.set('teacher', params.teacher)
+	if (params.groupId) search.set('groupId', params.groupId)
 	const qs = search.toString()
 	return qs ? `?${qs}` : ''
 }
@@ -35,4 +38,24 @@ export function resolveAnalyticsTeacherFilter(
 	}
 
 	return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
+}
+
+export function resolveAnalyticsGroupFilter(
+	filterTeacherId: string | null,
+	groupParam: string | undefined,
+	validGroupIds: string[],
+): { filterGroupId: string | null; selectedGroupId: string | null } {
+	if (!filterTeacherId || validGroupIds.length === 0) {
+		return { filterGroupId: null, selectedGroupId: null }
+	}
+
+	if (groupParam === ALL_GROUPS) {
+		return { filterGroupId: null, selectedGroupId: ALL_GROUPS }
+	}
+
+	if (groupParam && validGroupIds.includes(groupParam)) {
+		return { filterGroupId: groupParam, selectedGroupId: groupParam }
+	}
+
+	return { filterGroupId: null, selectedGroupId: ALL_GROUPS }
 }

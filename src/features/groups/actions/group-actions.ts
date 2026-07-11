@@ -52,6 +52,21 @@ export async function getMyGroup() {
 	})
 }
 
+export async function getMyGroupById(groupId: string) {
+	const session = await requireRoles(['TEACHER'])
+
+	if (!session.user.teacherId) return null
+
+	return prisma.group.findFirst({
+		where: { id: groupId, teacherId: session.user.teacherId },
+		include: {
+			teacher: { include: { user: true } },
+			subject: true,
+			enrollments: enrollmentInclude,
+		},
+	})
+}
+
 export async function getGroup(groupId: string) {
 	const session = await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 

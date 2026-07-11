@@ -4,7 +4,10 @@ import { DatePicker } from 'antd'
 import dayjs from 'dayjs'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-import { buildAnalyticsSearchParams } from '@/features/analytics/lib/analytics-query'
+import {
+	ALL_TEACHERS,
+	buildAnalyticsSearchParams,
+} from '@/features/analytics/lib/analytics-query'
 
 type AnalyticsMonthPickerProps = {
 	month: Date
@@ -26,10 +29,15 @@ export function AnalyticsMonthPicker({
 			onChange={(value) => {
 				if (!value) return
 				const teacher = searchParams.get('teacher') ?? selectedTeacher
+				const groupId =
+					teacher !== ALL_TEACHERS
+						? (searchParams.get('groupId') ?? undefined)
+						: undefined
 				router.push(
 					`${pathname}${buildAnalyticsSearchParams({
 						month: value.format('YYYY-MM'),
 						teacher,
+						groupId,
 					})}`,
 				)
 			}}

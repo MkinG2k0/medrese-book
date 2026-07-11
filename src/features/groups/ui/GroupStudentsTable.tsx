@@ -5,7 +5,14 @@ import { App, Button, Input, Modal, Table, Tag, Typography } from "antd";
 import type { InputRef } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 
 import { unenrollStudent } from "@/features/groups/actions/group-actions";
 import { EnrollStudentModal } from "@/features/groups/ui/EnrollStudentModal";
@@ -25,6 +32,7 @@ import Title from "@/shared/ui/Title";
 type GroupStudentsTableProps = {
   title: string;
   subtitle?: string;
+  headerControls?: ReactNode;
   users: UserDetail[];
   groups: { id: string; name: string }[];
   levels: LevelOption[];
@@ -45,6 +53,7 @@ const STATUS_TAG_COLORS: Record<StudentStatus, string> = {
 export function GroupStudentsTable({
   title,
   subtitle,
+  headerControls,
   users,
   groups,
   levels,
@@ -228,13 +237,18 @@ export function GroupStudentsTable({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <Title level={3}>{title}</Title>
-          {subtitle && <Text type="secondary">{subtitle}</Text>}
+          {subtitle && !headerControls && (
+            <Text type="secondary">{subtitle}</Text>
+          )}
         </div>
-        {canManageEnrollment && groupId && subjectId && (
-          <Button type="primary" onClick={() => setEnrollOpen(true)}>
-            Добавить ученика
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {headerControls}
+          {canManageEnrollment && groupId && subjectId && (
+            <Button type="primary" onClick={() => setEnrollOpen(true)}>
+              Добавить ученика
+            </Button>
+          )}
+        </div>
       </div>
 
       <Table

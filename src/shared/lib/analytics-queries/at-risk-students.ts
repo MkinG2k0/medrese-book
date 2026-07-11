@@ -12,11 +12,14 @@ function formatMonthLabel(month: Date): string {
 export async function getAtRiskStudents(
 	month: Date,
 	teacherId?: string | null,
+	groupId?: string | null,
 ): Promise<AtRiskStudentRow[]> {
 	const students = await prisma.student.findMany({
-		where: teacherId
-			? { enrollments: { some: { group: { teacherId } } } }
-			: undefined,
+		where: groupId
+			? { enrollments: { some: { groupId } } }
+			: teacherId
+				? { enrollments: { some: { group: { teacherId } } } }
+				: undefined,
 		include: {
 			user: { select: { name: true } },
 		},
