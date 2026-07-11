@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { getLevels } from '@/features/program-admin/actions/program-actions'
 import { prisma } from '@/shared/lib/prisma'
 import { getStepOffsetForLevel } from '@/shared/lib/student-progress/offsets'
-import { syncCompletionsForProgress } from '@/shared/lib/sync-completions-for-progress'
+import { syncCompletionsForProgress } from '@/shared/lib/student-progress'
 import { requireRoles } from '@/shared/lib/session'
 import {
 	enrollStudentSchema,
@@ -152,17 +152,14 @@ export async function enrollStudent(groupId: string, input: unknown) {
 				studentId: data.studentId,
 				groupId,
 				levelId: data.levelId,
+				currentStepIdx,
 			},
-		})
-
-		await tx.student.update({
-			where: { id: data.studentId },
-			data: { currentStepIdx },
 		})
 
 		await syncCompletionsForProgress(
 			tx,
 			data.studentId,
+			groupId,
 			level.steps,
 			localStepIndex,
 		)

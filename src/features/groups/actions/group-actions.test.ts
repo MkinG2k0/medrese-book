@@ -28,7 +28,7 @@ vi.mock('@/shared/lib/student-progress/offsets', () => ({
 		getStepOffsetForLevelMock(...args),
 }))
 
-vi.mock('@/shared/lib/sync-completions-for-progress', () => ({
+vi.mock('@/shared/lib/student-progress', () => ({
 	syncCompletionsForProgress: (...args: unknown[]) =>
 		syncCompletionsForProgressMock(...args),
 }))
@@ -261,7 +261,6 @@ describe('group-actions', () => {
 			transactionMock.mockImplementation(async (fn) => {
 				const tx = {
 					groupEnrollment: { create: groupEnrollmentCreateMock },
-					student: { update: studentUpdateMock },
 				}
 				return fn(tx)
 			})
@@ -282,13 +281,16 @@ describe('group-actions', () => {
 					studentId: 'student-1',
 					groupId: 'group-1',
 					levelId: 'level-1',
+					currentStepIdx: 0,
 				},
 			})
-			expect(studentUpdateMock).toHaveBeenCalledWith({
-				where: { id: 'student-1' },
-				data: { currentStepIdx: 0 },
-			})
-			expect(syncCompletionsForProgressMock).toHaveBeenCalled()
+			expect(syncCompletionsForProgressMock).toHaveBeenCalledWith(
+				expect.anything(),
+				'student-1',
+				'group-1',
+				[{ id: 'step-1', order: 1 }],
+				0,
+			)
 			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-1')
 		})
 

@@ -34,6 +34,7 @@ export async function GET(request: Request) {
 							sessions: dayRange
 								? {
 										where: {
+											groupId,
 											date: { gte: dayRange.start, lte: dayRange.end },
 										},
 										orderBy: { date: 'desc' },
@@ -70,7 +71,7 @@ export async function GET(request: Request) {
 				id: student.id,
 				name: student.user.name,
 				status: student.status,
-				currentStepIdx: student.currentStepIdx,
+				currentStepIdx: enrollment.currentStepIdx,
 				groupId: enrollment.groupId,
 				levelNumber: enrollment.level.number,
 				levelTitle: enrollment.level.title,
