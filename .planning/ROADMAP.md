@@ -11,7 +11,7 @@
 **Phase Numbering:** продолжение с Phase 10 (после v1.0 Phase 9)
 
 - [x] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета (completed 2026-07-07)
-- [ ] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп
+- [x] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп (completed 2026-07-11)
 - [ ] **Phase 12: Progress & Sessions** — прогресс по предмету, сессии с subjectId
 - [ ] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету
 - [ ] **Phase 14: Analytics** — аналитика с селектом предмета
@@ -54,16 +54,16 @@ Plans:
   3. Ученик может быть в нескольких группах одновременно (many-to-many)
   4. Админка групп и учеников отражает новую модель зачисления
 
-**Plans**: 6/6 plans ready (verified 2026-07-07)
+**Plans**: 6/6 plans complete
 
 Plans:
 
-- [ ] 11-01-PLAN.md — Prisma Group.subjectId, GroupEnrollment migration, Zod validations (wave 1)
-- [ ] 11-05-PLAN.md — seed.ts и seed-e2e.ts на GroupEnrollment (wave 2, до E2E)
-- [ ] 11-02-PLAN.md — Group CRUD, getGroup/getMyGroup enrollments, страницы [groupId]/my-group, E2E scaffold (wave 3)
-- [ ] 11-03-PLAN.md — EnrollStudentModal, enrollment actions, E2E multi-enrollment (wave 4)
-- [ ] 11-04-PLAN.md — Journal/API adapters, recalculate.ts, compile gate, regression E2E (wave 5)
-- [ ] 11-06-PLAN.md — user-admin/student-admin adapter, CreateUserForm, UserDetailModal, admin E2E (wave 5)
+- [x] 11-01-PLAN.md — Prisma Group.subjectId, GroupEnrollment migration, Zod validations (wave 1)
+- [x] 11-05-PLAN.md — seed.ts и seed-e2e.ts на GroupEnrollment (wave 2, до E2E)
+- [x] 11-02-PLAN.md — Group CRUD, getGroup/getMyGroup enrollments, страницы [groupId]/my-group, E2E scaffold (wave 3)
+- [x] 11-03-PLAN.md — EnrollStudentModal, enrollment actions, E2E multi-enrollment (wave 4)
+- [x] 11-04-PLAN.md — Journal/API adapters, recalculate.ts, compile gate, regression E2E (wave 5)
+- [x] 11-06-PLAN.md — user-admin/student-admin adapter, CreateUserForm, UserDetailModal, admin E2E (wave 5)
 
 ### Phase 12: Progress & Sessions
 
