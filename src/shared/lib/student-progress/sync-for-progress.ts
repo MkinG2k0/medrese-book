@@ -11,6 +11,7 @@ type Tx = Prisma.TransactionClient
 export async function syncCompletionsForProgress(
 	tx: Tx,
 	studentId: string,
+	groupId: string,
 	levelSteps: { id: string }[],
 	localStepIndex: number,
 ) {
@@ -30,6 +31,7 @@ export async function syncCompletionsForProgress(
 	let adjustmentSession = await tx.session.findFirst({
 		where: {
 			studentId,
+			groupId,
 			isAdjustment: true,
 			date: { gte: dayRange.start, lte: dayRange.end },
 		},
@@ -39,6 +41,7 @@ export async function syncCompletionsForProgress(
 		adjustmentSession = await tx.session.create({
 			data: {
 				studentId,
+				groupId,
 				date: toSessionDate(today),
 				attendance: 'PRESENT',
 				note: 'Корректировка прогресса',
