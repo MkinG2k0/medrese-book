@@ -178,6 +178,7 @@ export function StudentList({ groups, defaultGroupId }: StudentListProps) {
           blocked={studentsBlocked}
           showRiskBadge={showRiskBadge}
           journalDate={dateFilter}
+          journalGroupId={groupId}
         />
       )}
     </div>

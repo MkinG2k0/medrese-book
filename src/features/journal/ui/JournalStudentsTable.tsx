@@ -53,12 +53,14 @@ function StudentNameCell({
   studentId,
   blocked,
   journalDate,
+  journalGroupId,
 }: {
   name: string;
   status: StudentStatus;
   studentId: string;
   blocked: boolean;
   journalDate: string;
+  journalGroupId: string;
 }) {
   if (blocked) {
     return <span>{name}</span>;
@@ -68,7 +70,11 @@ function StudentNameCell({
     return <Text type="warning">{name}</Text>;
   }
 
-  const href = buildJournalHref(`/journal/${studentId}`, journalDate);
+  const href = buildJournalHref(
+    `/journal/${studentId}`,
+    journalDate,
+    journalGroupId,
+  );
 
   return (
     <Link href={href} onClick={(e) => e.stopPropagation()}>
@@ -82,17 +88,21 @@ export function JournalStudentsTable({
   blocked = false,
   showRiskBadge = false,
   journalDate,
+  journalGroupId,
 }: {
   students: JournalStudentRow[];
   blocked?: boolean;
   showRiskBadge?: boolean;
   journalDate: string;
+  journalGroupId: string;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const openLesson = (studentId: string) => {
-    router.push(buildJournalHref(`/journal/${studentId}`, journalDate));
+    router.push(
+      buildJournalHref(`/journal/${studentId}`, journalDate, journalGroupId),
+    );
   };
 
   const handlePausedStudentClick = (record: JournalStudentRow) => {
@@ -150,6 +160,7 @@ export function JournalStudentsTable({
                 studentId={record.id}
                 blocked={blocked}
                 journalDate={journalDate}
+                journalGroupId={journalGroupId}
               />
             ),
           },
