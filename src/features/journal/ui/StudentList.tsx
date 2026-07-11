@@ -1,7 +1,7 @@
 "use client";
 
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { App, Button, Select } from "antd";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useStudentRiskFlags } from "@/entities/student-metrics/api/use-student-risk-flags";
 import { useStudents } from "@/entities/student/api/use-students";
 import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
+import type { TeacherJournalGroup } from "@/features/journal/actions/journal-actions";
 import { useJournalDate } from "@/features/journal/model/use-journal-date";
 import { JournalDatePicker } from "@/features/journal/ui/JournalDatePicker";
 import { LessonTimerBar } from "@/features/journal/ui/LessonTimerBar";
@@ -28,17 +29,35 @@ import { PageLoader } from "@/shared/ui/PageLoader";
 import Title from "@/shared/ui/Title";
 
 type StudentListProps = {
-  groupId: string;
+  groups: TeacherJournalGroup[];
+  defaultGroupId: string;
 };
 
-export function StudentList({ groupId }: StudentListProps) {
+export function StudentList({ groups, defaultGroupId }: StudentListProps) {
+  const { modal } = App.useApp();
   const { data: session } = useSession();
-  const { dateFilter, setDateFilter } = useJournalDate();
+  const allowedGroupIds = useMemo(
+    () => groups.map((group) => group.id),
+    [groups],
+  );
+  const { dateFilter, setDateFilter, groupId, setGroupId } = useJournalDate({
+    allowedGroupIds,
+    defaultGroupId,
+  });
   const { data: students, isLoading } = useStudents(groupId, dateFilter);
   const { data: teachingSession } = useTeachingSession(groupId, dateFilter);
   const { data: riskFlagEntries } = useStudentRiskFlags(groupId, dateFilter);
   const [attendanceFilter, setAttendanceFilter] =
     useState<AttendanceFilterValue>("ALL");
+
+  const groupOptions = useMemo(
+    () =>
+      groups.map((group) => ({
+        value: group.id,
+        label: `${group.name} — ${group.subjectName}`,
+      })),
+    [groups],
+  );
 
   const showRiskBadge =
     session?.user?.role === "TEACHER" || session?.user?.role === "MANAGER";
@@ -90,27 +109,54 @@ export function StudentList({ groupId }: StudentListProps) {
     dayjs(dateFilter).add(1, "day").format("YYYY-MM-DD"),
   );
 
+  const handleGroupChange = (nextGroupId: string) => {
+    if (nextGroupId === groupId) return;
+
+    if (teachingSession?.isActive) {
+      modal.confirm({
+        title: "Переключить группу?",
+        content: "Урок идёт в другой группе. Переключить?",
+        okText: "Переключить",
+        cancelText: "Отмена",
+        onOk: () => setGroupId(nextGroupId),
+      });
+      return;
+    }
+
+    setGroupId(nextGroupId);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Title level={3}>Журнал на сегодня</Title>
-        <div className="flex items-center gap-1">
-          <Button
-            icon={<LeftOutlined />}
-            aria-label="Предыдущий день"
-            onClick={() => shiftDate(-1)}
+        <div className="flex items-center gap-2">
+          <Select
+            value={groupId || undefined}
+            options={groupOptions}
+            onChange={handleGroupChange}
+            disabled={groups.length <= 1}
+            className="min-w-[220px]"
+            aria-label="Группа"
           />
-          <JournalDatePicker
-            groupId={groupId}
-            value={dateFilter}
-            onChange={setDateFilter}
-          />
-          <Button
-            icon={<RightOutlined />}
-            aria-label="Следующий день"
-            disabled={!canGoForward}
-            onClick={() => shiftDate(1)}
-          />
+          <div className="flex items-center gap-1">
+            <Button
+              icon={<LeftOutlined />}
+              aria-label="Предыдущий день"
+              onClick={() => shiftDate(-1)}
+            />
+            <JournalDatePicker
+              groupId={groupId}
+              value={dateFilter}
+              onChange={setDateFilter}
+            />
+            <Button
+              icon={<RightOutlined />}
+              aria-label="Следующий день"
+              disabled={!canGoForward}
+              onClick={() => shiftDate(1)}
+            />
+          </div>
         </div>
       </div>
 
