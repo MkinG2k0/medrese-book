@@ -155,8 +155,8 @@ export async function deleteLevel(subjectId: string, levelId: string) {
 		throw new Error('Уровень не найден')
 	}
 
-	const studentCount = await prisma.student.count({ where: { levelId } })
-	if (studentCount > 0) {
+	const enrollmentCount = await prisma.groupEnrollment.count({ where: { levelId } })
+	if (enrollmentCount > 0) {
 		throw new Error('Нельзя удалить уровень с учениками')
 	}
 

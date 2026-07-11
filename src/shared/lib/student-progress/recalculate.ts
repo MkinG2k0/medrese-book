@@ -1,3 +1,4 @@
+import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
 import { prisma, type Prisma } from '@/shared/lib/prisma'
 import {
 	countConsecutivePassedSteps,
@@ -15,16 +16,20 @@ export async function recalculateStudentStepIdx(
 ) {
 	const db = tx ?? prisma
 
-	const student = await db.student.findUnique({
-		where: { id: studentId },
+	const enrollment = await db.groupEnrollment.findFirst({
+		where: { studentId },
+		orderBy: primaryEnrollmentOrderBy,
 		include: {
 			level: { include: { steps: { orderBy: { order: 'asc' } } } },
+			student: { select: { currentStepIdx: true } },
 		},
 	})
 
-	if (!student) return
+	if (!enrollment) return
 
-	const levelStepIds = student.level.steps.map((step) => step.id)
+	const level = enrollment.level
+	const student = enrollment.student
+	const levelStepIds = level.steps.map((step) => step.id)
 	const levelCompletions =
 		levelStepIds.length === 0
 			? []
@@ -34,9 +39,9 @@ export async function recalculateStudentStepIdx(
 					orderBy: { createdAt: 'asc' },
 				})
 
-	const stepOffset = await getStepOffsetForLevel(student.level.number)
+	const stepOffset = await getStepOffsetForLevel(level.number)
 	const completionsByStepId = getCompletionsByStepId(levelCompletions)
-	const steps = student.level.steps
+	const steps = level.steps
 	const passedInCurrentLevel = countConsecutivePassedSteps(
 		steps,
 		completionsByStepId,
@@ -51,13 +56,17 @@ export async function recalculateStudentStepIdx(
 
 	if (allPassed) {
 		const nextLevel = await db.level.findFirst({
-			where: { number: student.level.number + 1 },
+			where: { number: level.number + 1 },
 		})
 
 		if (nextLevel) {
+			await db.groupEnrollment.update({
+				where: { id: enrollment.id },
+				data: { levelId: nextLevel.id },
+			})
 			await db.student.update({
 				where: { id: studentId },
-				data: { levelId: nextLevel.id, currentStepIdx: newIdx },
+				data: { currentStepIdx: newIdx },
 			})
 			return newIdx
 		}

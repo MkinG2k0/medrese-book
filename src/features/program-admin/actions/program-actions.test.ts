@@ -9,7 +9,7 @@ const levelCreateMock = vi.fn()
 const levelUpdateMock = vi.fn()
 const levelDeleteMock = vi.fn()
 const subjectFindUniqueMock = vi.fn()
-const studentCountMock = vi.fn()
+const groupEnrollmentCountMock = vi.fn()
 const stepFindUniqueMock = vi.fn()
 const stepFindUniqueOrThrowMock = vi.fn()
 const stepCreateMock = vi.fn()
@@ -49,8 +49,8 @@ vi.mock('@/shared/lib/prisma', () => ({
 		subject: {
 			findUnique: (...args: unknown[]) => subjectFindUniqueMock(...args),
 		},
-		student: {
-			count: (...args: unknown[]) => studentCountMock(...args),
+		groupEnrollment: {
+			count: (...args: unknown[]) => groupEnrollmentCountMock(...args),
 		},
 		step: {
 			findUnique: (...args: unknown[]) => stepFindUniqueMock(...args),
@@ -121,12 +121,12 @@ describe('program-actions', () => {
 	})
 
 	describe('deleteLevel', () => {
-		it('rejects when student count is greater than zero', async () => {
+		it('rejects when enrollment count is greater than zero', async () => {
 			levelFindFirstMock.mockResolvedValue({
 				id: 'lvl-1',
 				subjectId: 'sub-a',
 			})
-			studentCountMock.mockResolvedValue(3)
+			groupEnrollmentCountMock.mockResolvedValue(3)
 
 			const { deleteLevel } = await import('./program-actions')
 
@@ -136,12 +136,12 @@ describe('program-actions', () => {
 			expect(levelDeleteMock).not.toHaveBeenCalled()
 		})
 
-		it('deletes level when there are no students', async () => {
+		it('deletes level when there are no enrollments', async () => {
 			levelFindFirstMock.mockResolvedValue({
 				id: 'lvl-1',
 				subjectId: 'sub-a',
 			})
-			studentCountMock.mockResolvedValue(0)
+			groupEnrollmentCountMock.mockResolvedValue(0)
 			levelDeleteMock.mockResolvedValue({ id: 'lvl-1' })
 
 			const { deleteLevel } = await import('./program-actions')
