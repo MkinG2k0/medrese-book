@@ -173,14 +173,14 @@ Plans:
 
 Plans:
 
-**Wave 1**
+**Wave 1** *(15-01 and 15-03 parallel)*
 
 - [ ] 15-01-PLAN.md — Дашборд /student/me: карточки per enrollment, метрики, query helpers (wave 1)
+- [ ] 15-03-PLAN.md — Subject scope справочника и assign modal (wave 1)
 
-**Wave 2** *(blocked on Wave 1 for 15-02; 15-03 parallel)*
+**Wave 2** *(blocked on Wave 1 completion of 15-01)*
 
 - [ ] 15-02-PLAN.md — groupId URL, deep links, scoped lessons/history (wave 2)
-- [ ] 15-03-PLAN.md — Subject scope справочника и assign modal (wave 2)
 
 **Wave 3** *(blocked on Wave 2 + 15-03)*
 
