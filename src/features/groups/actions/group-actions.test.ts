@@ -6,7 +6,18 @@ const groupFindFirstMock = vi.fn()
 const groupFindUniqueMock = vi.fn()
 const groupCreateMock = vi.fn()
 const groupUpdateMock = vi.fn()
+const groupEnrollmentFindUniqueMock = vi.fn()
+const groupEnrollmentCreateMock = vi.fn()
+const groupEnrollmentDeleteMock = vi.fn()
+const groupEnrollmentFindManyMock = vi.fn()
+const levelFindFirstMock = vi.fn()
+const studentFindManyMock = vi.fn()
+const getLevelsMock = vi.fn()
 const revalidatePathMock = vi.fn()
+
+vi.mock('@/features/program-admin/actions/program-actions', () => ({
+	getLevels: (...args: unknown[]) => getLevelsMock(...args),
+}))
 
 vi.mock('@/shared/lib/session', () => ({
 	requireRoles: (...args: unknown[]) => requireRolesMock(...args),
@@ -27,6 +38,18 @@ vi.mock('@/shared/lib/prisma', () => ({
 		},
 		teacher: {
 			findMany: vi.fn(),
+		},
+		groupEnrollment: {
+			findUnique: (...args: unknown[]) => groupEnrollmentFindUniqueMock(...args),
+			create: (...args: unknown[]) => groupEnrollmentCreateMock(...args),
+			delete: (...args: unknown[]) => groupEnrollmentDeleteMock(...args),
+			findMany: (...args: unknown[]) => groupEnrollmentFindManyMock(...args),
+		},
+		level: {
+			findFirst: (...args: unknown[]) => levelFindFirstMock(...args),
+		},
+		student: {
+			findMany: (...args: unknown[]) => studentFindManyMock(...args),
 		},
 	},
 }))
@@ -206,6 +229,116 @@ describe('group-actions', () => {
 				},
 			})
 			expect(group?.enrollments[0]?.student.user.name).toBe('Усман')
+		})
+	})
+
+	describe('enrollStudent', () => {
+		it('creates GroupEnrollment when level belongs to group subject', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue({ id: 'level-1' })
+			groupEnrollmentFindUniqueMock.mockResolvedValue(null)
+			groupEnrollmentCreateMock.mockResolvedValue({ id: 'enrollment-1' })
+
+			const { enrollStudent } = await import('./group-actions')
+			await enrollStudent('group-1', {
+				studentId: 'student-1',
+				levelId: 'level-1',
+			})
+
+			expect(levelFindFirstMock).toHaveBeenCalledWith({
+				where: { id: 'level-1', subjectId: 'subject-1' },
+			})
+			expect(groupEnrollmentCreateMock).toHaveBeenCalledWith({
+				data: {
+					studentId: 'student-1',
+					groupId: 'group-1',
+					levelId: 'level-1',
+				},
+			})
+			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-1')
+		})
+
+		it('throws when level.subjectId does not match group subject (T-11-02)', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue(null)
+
+			const { enrollStudent } = await import('./group-actions')
+			await expect(
+				enrollStudent('group-1', {
+					studentId: 'student-1',
+					levelId: 'level-wrong',
+				}),
+			).rejects.toThrow('Уровень не принадлежит предмету группы')
+			expect(groupEnrollmentCreateMock).not.toHaveBeenCalled()
+		})
+
+		it('rejects duplicate studentId+groupId enrollment', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue({ id: 'level-1' })
+			groupEnrollmentFindUniqueMock.mockResolvedValue({ id: 'existing' })
+
+			const { enrollStudent } = await import('./group-actions')
+			await expect(
+				enrollStudent('group-1', {
+					studentId: 'student-1',
+					levelId: 'level-1',
+				}),
+			).rejects.toThrow('Ученик уже зачислен в эту группу')
+			expect(groupEnrollmentCreateMock).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('unenrollStudent', () => {
+		it('deletes enrollment by composite key', async () => {
+			groupEnrollmentDeleteMock.mockResolvedValue({ id: 'enrollment-1' })
+
+			const { unenrollStudent } = await import('./group-actions')
+			await unenrollStudent('group-1', { studentId: 'student-1' })
+
+			expect(groupEnrollmentDeleteMock).toHaveBeenCalledWith({
+				where: {
+					studentId_groupId: {
+						studentId: 'student-1',
+						groupId: 'group-1',
+					},
+				},
+			})
+		})
+	})
+
+	describe('searchStudentsForEnroll', () => {
+		it('excludes students already enrolled in the group', async () => {
+			groupEnrollmentFindManyMock.mockResolvedValue([
+				{ studentId: 'student-1' },
+			])
+			studentFindManyMock.mockResolvedValue([
+				{ id: 'student-2', user: { name: 'Билал' } },
+			])
+
+			const { searchStudentsForEnroll } = await import('./group-actions')
+			const result = await searchStudentsForEnroll('group-1')
+
+			expect(studentFindManyMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.objectContaining({
+						id: { notIn: ['student-1'] },
+					}),
+				}),
+			)
+			expect(result).toEqual([{ id: 'student-2', name: 'Билал' }])
+		})
+	})
+
+	describe('getGroupLevels', () => {
+		it('loads levels for group subjectId', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			getLevelsMock.mockResolvedValue([{ id: 'level-1', number: 1 }])
+
+			const { getGroupLevels } = await import('./group-actions')
+			const result = await getGroupLevels('group-1')
+
+			expect(getLevelsMock).toHaveBeenCalledWith('subject-1')
+			expect(result).toHaveLength(1)
 		})
 	})
 })

@@ -147,3 +147,83 @@ test.describe("Группы: предмет и фильтр", () => {
     });
   });
 });
+
+test.describe("Группы: зачисление учеников", () => {
+  test.use({ storageState: AUTH_STATE.manager });
+
+  test("зачисляет ученика с уровнем на странице группы", async ({ page }) => {
+    await page.goto("/groups");
+    await page.getByRole("link", { name: TEST_USERS.group1, exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Добавить ученика" }),
+    ).toBeVisible();
+
+    await page.getByRole("button", { name: "Добавить ученика" }).click();
+    const dialog = page.getByRole("dialog", { name: "Зачислить ученика" });
+    await expect(dialog).toBeVisible();
+
+    await pickAntdSelectOption(
+      page,
+      dialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Ученик" })
+        .getByRole("combobox"),
+      TEST_USERS.studentKhalid,
+    );
+
+    await pickAntdSelectOption(
+      page,
+      dialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Уровень" })
+        .getByRole("combobox"),
+      "1й уровень",
+    );
+
+    await dialog.getByRole("button", { name: "Зачислить" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentKhalid, exact: true }),
+    ).toBeVisible();
+  });
+
+  test("зачисляет ученика во вторую группу с независимым уровнем", async ({
+    page,
+  }) => {
+    await page.goto("/groups");
+    await page.getByRole("link", { name: TEST_USERS.group2, exact: true }).click();
+
+    await page.getByRole("button", { name: "Добавить ученика" }).click();
+    const dialog = page.getByRole("dialog", { name: "Зачислить ученика" });
+    await pickAntdSelectOption(
+      page,
+      dialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Ученик" })
+        .getByRole("combobox"),
+      TEST_USERS.studentAli,
+    );
+    await pickAntdSelectOption(
+      page,
+      dialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Уровень" })
+        .getByRole("combobox"),
+      "2й уровень",
+    );
+    await dialog.getByRole("button", { name: "Зачислить" }).click();
+    await expect(dialog).toBeHidden();
+
+    const aliInGroup2 = page
+      .getByRole("row")
+      .filter({ hasText: TEST_USERS.studentAli });
+    await expect(aliInGroup2.getByRole("cell").nth(1)).toContainText("2");
+
+    await page.goto("/groups");
+    await page.getByRole("link", { name: TEST_USERS.group1, exact: true }).click();
+    const aliInGroup1 = page
+      .getByRole("row")
+      .filter({ hasText: TEST_USERS.studentAli });
+    await expect(aliInGroup1.getByRole("cell").nth(1)).toContainText("1");
+  });
+});

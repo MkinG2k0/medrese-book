@@ -1,11 +1,14 @@
 "use client";
 
 import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Modal, Table, Tag, Typography } from "antd";
+import { App, Button, Input, Modal, Table, Tag, Typography } from "antd";
 import type { InputRef } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 
+import { unenrollStudent } from "@/features/groups/actions/group-actions";
+import { EnrollStudentModal } from "@/features/groups/ui/EnrollStudentModal";
 import { resetUserCode } from "@/features/user-admin/actions/user-actions";
 import type { LevelOption } from "@/features/user-admin/lib/map-users-to-details";
 import {
@@ -27,6 +30,7 @@ type GroupStudentsTableProps = {
   levels: LevelOption[];
   groupId?: string;
   subjectId?: string;
+  canManageEnrollment?: boolean;
   canResetCode?: boolean;
   readOnly?: boolean;
   canEditStatus?: boolean;
@@ -44,12 +48,18 @@ export function GroupStudentsTable({
   users,
   groups,
   levels,
+  groupId,
+  subjectId,
+  canManageEnrollment = false,
   canResetCode = false,
   readOnly = false,
   canEditStatus = false,
 }: GroupStudentsTableProps) {
+  const { modal, message } = App.useApp();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
+  const [enrollOpen, setEnrollOpen] = useState(false);
   const [codeModal, setCodeModal] = useState<{ name: string; code: string } | null>(
     null,
   );
@@ -68,6 +78,34 @@ export function GroupStudentsTable({
       });
     },
     [users],
+  );
+
+  const handleUnenroll = useCallback(
+    (studentId: string, studentName: string) => {
+      if (!groupId) return;
+
+      modal.confirm({
+        title: "Снять ученика с группы?",
+        content: `Ученик «${studentName}» будет снят с группы.`,
+        okText: "Снять",
+        okType: "danger",
+        cancelText: "Отмена",
+        onOk: async () => {
+          try {
+            await unenrollStudent(groupId, { studentId });
+            message.success("Ученик снят с группы");
+            router.refresh();
+          } catch (err) {
+            message.error(
+              err instanceof Error
+                ? err.message
+                : "Не удалось снять ученика с группы",
+            );
+          }
+        },
+      });
+    },
+    [groupId, message, modal, router],
   );
 
   const columns: ColumnsType<UserDetail> = useMemo(
@@ -156,14 +194,48 @@ export function GroupStudentsTable({
           <Tag>Шаг {(record.student?.currentStepIdx ?? 0) + 1}</Tag>
         ),
       },
+      ...(canManageEnrollment && groupId
+        ? [
+            {
+              title: "Действия",
+              key: "actions",
+              render: (_: unknown, record: UserDetail) => {
+                const studentId = record.student?.id;
+                if (!studentId) return null;
+                return (
+                  <Button
+                    type="link"
+                    danger
+                    size="small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleUnenroll(studentId, record.name);
+                    }}
+                  >
+                    Снять с группы
+                  </Button>
+                );
+              },
+            } satisfies ColumnsType<UserDetail>[number],
+          ]
+        : []),
     ],
-    [],
+    [canManageEnrollment, groupId, handleUnenroll],
   );
 
   return (
     <div className="flex flex-col gap-4">
-      <Title level={3}>{title}</Title>
-      {subtitle && <Text type="secondary">{subtitle}</Text>}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Title level={3}>{title}</Title>
+          {subtitle && <Text type="secondary">{subtitle}</Text>}
+        </div>
+        {canManageEnrollment && groupId && subjectId && (
+          <Button type="primary" onClick={() => setEnrollOpen(true)}>
+            Добавить ученика
+          </Button>
+        )}
+      </div>
 
       <Table
         dataSource={users}
@@ -187,6 +259,16 @@ export function GroupStudentsTable({
         onResetCode={canResetCode ? handleReset : undefined}
         isResetting={isPending}
       />
+
+      {canManageEnrollment && groupId && subjectId && (
+        <EnrollStudentModal
+          groupId={groupId}
+          subjectId={subjectId}
+          levels={levels}
+          open={enrollOpen}
+          onClose={() => setEnrollOpen(false)}
+        />
+      )}
 
       <Modal
         title="Код доступа"

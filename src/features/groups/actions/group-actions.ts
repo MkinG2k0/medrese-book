@@ -2,8 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { getLevels } from '@/features/program-admin/actions/program-actions'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
+import {
+	enrollStudentSchema,
+	unenrollStudentSchema,
+} from '@/shared/lib/validations/enrollment'
 import {
 	createGroupSchema,
 	updateGroupSchema,
@@ -97,4 +102,107 @@ export async function getTeachers() {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 
 	return prisma.teacher.findMany({ include: { user: true } })
+}
+
+export async function enrollStudent(groupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = enrollStudentSchema.parse(input)
+
+	const group = await prisma.group.findUnique({
+		where: { id: groupId },
+		select: { subjectId: true },
+	})
+	if (!group) {
+		throw new Error('Группа не найдена')
+	}
+
+	const level = await prisma.level.findFirst({
+		where: { id: data.levelId, subjectId: group.subjectId },
+	})
+	if (!level) {
+		throw new Error('Уровень не принадлежит предмету группы')
+	}
+
+	const existing = await prisma.groupEnrollment.findUnique({
+		where: {
+			studentId_groupId: {
+				studentId: data.studentId,
+				groupId,
+			},
+		},
+	})
+	if (existing) {
+		throw new Error('Ученик уже зачислен в эту группу')
+	}
+
+	await prisma.groupEnrollment.create({
+		data: {
+			studentId: data.studentId,
+			groupId,
+			levelId: data.levelId,
+		},
+	})
+
+	revalidatePath(`/groups/${groupId}`)
+	revalidatePath('/groups')
+	revalidatePath('/journal')
+}
+
+export async function unenrollStudent(groupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = unenrollStudentSchema.parse(input)
+
+	await prisma.groupEnrollment.delete({
+		where: {
+			studentId_groupId: {
+				studentId: data.studentId,
+				groupId,
+			},
+		},
+	})
+
+	revalidatePath(`/groups/${groupId}`)
+	revalidatePath('/groups')
+	revalidatePath('/journal')
+}
+
+export async function searchStudentsForEnroll(groupId: string, query?: string) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+
+	const enrolled = await prisma.groupEnrollment.findMany({
+		where: { groupId },
+		select: { studentId: true },
+	})
+	const excludeIds = enrolled.map((row) => row.studentId)
+
+	const students = await prisma.student.findMany({
+		where: {
+			...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+			...(query
+				? { user: { name: { contains: query, mode: 'insensitive' } } }
+				: {}),
+		},
+		include: { user: true },
+		orderBy: { user: { name: 'asc' } },
+		take: 50,
+	})
+
+	return students.map((student) => ({
+		id: student.id,
+		name: student.user.name,
+	}))
+}
+
+export async function getGroupLevels(groupId: string) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+
+	const group = await prisma.group.findUnique({
+		where: { id: groupId },
+		select: { subjectId: true },
+	})
+	if (!group) {
+		throw new Error('Группа не найдена')
+	}
+
+	return getLevels(group.subjectId)
 }

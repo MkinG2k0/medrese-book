@@ -57,6 +57,7 @@ export default async function GroupDetailPage({ params }: Props) {
       levels={levelOptions}
       groupId={group.id}
       subjectId={group.subjectId}
+      canManageEnrollment
       canResetCode={session.user.role === "SUPER_ADMIN"}
     />
   );
