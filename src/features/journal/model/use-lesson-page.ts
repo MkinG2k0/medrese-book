@@ -574,7 +574,7 @@ export function useLessonPage(props: LessonPageProps) {
     if (hasNextLevel && fetchedNextLevelSteps.length === 0) {
       setIsLoadingNextLevel(true);
       try {
-        const fetched = await getNextLevelJournalSteps(studentId);
+        const fetched = await getNextLevelJournalSteps(studentId, groupId);
         setFetchedNextLevelSteps(fetched);
         stepsPool = [...prefetchedSessionSteps, ...fetched];
       } catch (err) {

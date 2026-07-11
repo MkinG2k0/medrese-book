@@ -112,7 +112,7 @@ export function JournalStudentsTable({
       okText: "Да",
       cancelText: "Нет",
       onOk: async () => {
-        await resumeStudentFromPause(record.id);
+        await resumeStudentFromPause(record.id, journalGroupId);
         await queryClient.invalidateQueries({ queryKey: ["students"] });
         openLesson(record.id);
       },

@@ -12,7 +12,7 @@ import {
 } from '@/features/journal/lib/journal-step'
 import { serializeDaySession } from '@/features/journal/lib/get-student-session'
 import type { ClientDaySession } from '@/features/journal/lib/get-student-session'
-import { findEnrollmentInGroup, findPrimaryEnrollment } from '@/shared/lib/enrollment'
+import { findEnrollmentInGroup } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
@@ -47,12 +47,12 @@ async function getTeacherGroupForSession(teacherId: string) {
 	})
 }
 
-async function requireTeacherStudent(studentId: string) {
+async function requireTeacherStudent(studentId: string, groupId: string) {
 	const session = await requireRole('TEACHER')
-	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
-	if (!teacherGroup) return null
+	const group = await assertTeacherOwnsGroup(session.user.teacherId!, groupId)
+	if (!group) return null
 
-	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	const enrollment = await findEnrollmentInGroup(studentId, groupId)
 	if (!enrollment) return null
 
 	return session
@@ -119,12 +119,12 @@ export async function getTeacherGroups(): Promise<TeacherJournalGroup[]> {
 	}))
 }
 
-export async function resumeStudentFromPause(studentId: string) {
+export async function resumeStudentFromPause(studentId: string, groupId: string) {
 	const session = await requireRole('TEACHER')
-	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
-	if (!teacherGroup) throw new Error('Ученик не найден')
+	const group = await assertTeacherOwnsGroup(session.user.teacherId!, groupId)
+	if (!group) throw new Error('Ученик не найден')
 
-	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	const enrollment = await findEnrollmentInGroup(studentId, groupId)
 	if (!enrollment) throw new Error('Ученик не найден')
 
 	const student = enrollment.student
@@ -159,11 +159,12 @@ export async function getJournalStepContent(
 
 export async function getNextLevelJournalSteps(
 	studentId: string,
+	groupId: string,
 ): Promise<JournalStep[]> {
-	const access = await requireTeacherStudent(studentId)
+	const access = await requireTeacherStudent(studentId, groupId)
 	if (!access) return []
 
-	const enrollment = await findPrimaryEnrollment(studentId)
+	const enrollment = await findEnrollmentInGroup(studentId, groupId)
 	if (!enrollment) return []
 
 	const nextLevel = await prisma.level.findFirst({
@@ -192,22 +193,31 @@ export async function getNextLevelJournalSteps(
 export async function getStudentLesson(
 	studentId: string,
 	calendarDate: string = getLessonCalendarDay(),
-	groupId?: string,
+	groupId: string,
 ) {
 	const session = await requireRole('TEACHER')
 	const dayRange = getLessonDayRange(calendarDate)
 
-	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
-	if (!teacherGroup) return null
+	const ownedGroup = await assertTeacherOwnsGroup(
+		session.user.teacherId!,
+		groupId,
+	)
+	if (!ownedGroup) return null
 
-	const targetGroupId = groupId ?? teacherGroup.id
+	const targetGroupId = groupId
 
 	const enrollment = await prisma.groupEnrollment.findUnique({
 		where: {
 			studentId_groupId: { studentId, groupId: targetGroupId },
 		},
 		include: {
-			group: { select: { subjectId: true } },
+			group: {
+				select: {
+					subjectId: true,
+					name: true,
+					subject: { select: { name: true } },
+				},
+			},
 			level: {
 				include: {
 					steps: {
@@ -280,7 +290,7 @@ export async function getStudentLesson(
 				daySession?.completions ?? [],
 			),
 			prisma.groupEnrollment.findMany({
-				where: { groupId: teacherGroup.id },
+				where: { groupId: targetGroupId },
 				include: {
 					student: {
 						include: { user: { select: { name: true } } },
@@ -327,6 +337,8 @@ export async function getStudentLesson(
 
 	return {
 		groupId: targetGroupId,
+		groupName: enrollment.group.name,
+		subjectName: enrollment.group.subject.name,
 		currentStepIdx: enrollment.currentStepIdx,
 		student: {
 			id: student.id,
@@ -355,12 +367,12 @@ export async function getStudentLesson(
 	}
 }
 
-export async function getStudentStepHistory(studentId: string) {
+export async function getStudentStepHistory(studentId: string, groupId: string) {
 	const session = await requireRole('TEACHER')
-	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
-	if (!teacherGroup) return null
+	const group = await assertTeacherOwnsGroup(session.user.teacherId!, groupId)
+	if (!group) return null
 
-	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	const enrollment = await findEnrollmentInGroup(studentId, groupId)
 	if (!enrollment) return null
 
 	const student = enrollment.student
