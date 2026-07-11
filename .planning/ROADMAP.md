@@ -13,7 +13,7 @@
 - [x] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета (completed 2026-07-07)
 - [x] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп (completed 2026-07-11)
 - [x] **Phase 12: Progress & Sessions** — прогресс на зачисление (группу), сессии с groupId (completed 2026-07-11)
-- [ ] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету
+- [x] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету (completed 2026-07-12)
 - [ ] **Phase 14: Analytics** — аналитика с селектом предмета
 - [ ] **Phase 15: Student Portal & Extra Assignments** — портал ученика и допзадания по предмету
 
@@ -111,7 +111,7 @@ Plans:
   3. Страница урока: оценки по шагам программы предмета, посещаемость по предмету
   4. Таймер урока и сохранение сессии работают с `subjectId`
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 
 Plans:
 
@@ -129,7 +129,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3)*
 
-- [ ] 13-04-PLAN.md — History routes, E2E, удаление getTeacherGroup (wave 4)
+- [x] 13-04-PLAN.md — History routes, E2E, удаление getTeacherGroup (wave 4)
 
 ### Phase 14: Analytics
 

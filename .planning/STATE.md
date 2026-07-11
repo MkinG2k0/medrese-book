@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Система предметов
 current_phase: 13
 current_phase_name: journal
-status: executing
-stopped_at: Phase 13 context gathered
-last_updated: "2026-07-11T21:30:01.170Z"
-last_activity: 2026-07-11
-last_activity_desc: Phase 13 execution started
+status: complete
+stopped_at: Completed 13-04-PLAN.md
+last_updated: "2026-07-11T21:55:00.000Z"
+last_activity: 2026-07-12
+last_activity_desc: Phase 13 plan 04 complete — history routes, E2E, getTeacherGroup removed
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 20
-  completed_plans: 19
-  percent: 50
+  completed_plans: 20
+  percent: 67
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 13 (journal) — EXECUTING
+Phase: 13 (journal) — COMPLETE
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-07-11 — Phase 13 execution started
+Status: All plans complete
+Last activity: 2026-07-12 — Completed 13-04-PLAN.md
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ Last activity: 2026-07-11 — Phase 13 execution started
 | Phase 10-subject-foundation P04 | 25 | 3 tasks | 12 files |
 | Phase 12-progress-sessions P02 | 12min | 3 tasks | 6 files |
 | Phase 13-journal P02 | 15min | 3 tasks | 3 files |
+| Phase 13-journal P04 | 25min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,9 @@ Recent decisions affecting current work:
 - [Phase 12]: syncCompletionsForProgress filters adjustment sessions by groupId per SUBJ-10
 - [Phase ?]: Select disabled when teacher has only one group but still visible with single option
 - [Phase ?]: Active lesson guard uses teachingSession.isActive not deprecated status enum
+- [Phase 13]: History group picker uses JOURNAL_HISTORY_GROUP_STORAGE_KEY independent from main journal (D-14)
+- [Phase 13]: seed-e2e dual enrollment Khalid/Zayd in teacher1 second group for E2E switch
+- [Phase 13]: getTeacherGroup removed from journal feature after history routes migrated
 
 ### Pending Todos
 
@@ -200,6 +204,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
-Last session: 2026-07-11T21:30:01.163Z
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-journal/13-CONTEXT.md
+Last session: 2026-07-11T21:55:00.000Z
+Stopped at: Completed 13-04-PLAN.md
+Resume file: None
