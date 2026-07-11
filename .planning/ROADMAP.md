@@ -111,7 +111,7 @@ Plans:
   3. Страница урока: оценки по шагам программы предмета, посещаемость по предмету
   4. Таймер урока и сохранение сессии работают с `subjectId`
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 
 Plans:
 
@@ -125,7 +125,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 13-03-PLAN.md — Страница урока с groupId, LessonPageHeader контекст (wave 3)
+- [x] 13-03-PLAN.md — Страница урока с groupId, LessonPageHeader контекст (wave 3)
 
 **Wave 4** *(blocked on Wave 3)*
 
@@ -166,7 +166,7 @@ Plans:
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
-| 13. Journal | 2/4 | In Progress|  |
+| 13. Journal | 3/4 | In Progress|  |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
 
