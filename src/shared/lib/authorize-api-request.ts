@@ -3,6 +3,7 @@ import type { NextResponse } from 'next/server'
 
 import { forbidden, unauthorized } from '@/shared/api'
 import { auth } from '@/shared/lib/auth'
+import { getStudentGroupTeacherIds } from '@/shared/lib/enrollment'
 import { canAccessGroupAsTeacher } from '@/shared/lib/group-access'
 import { prisma, type Role } from '@/shared/lib/prisma'
 
@@ -27,6 +28,19 @@ async function teacherCanAccessGroupTeacher(
 	return canAccessGroupAsTeacher(teacherId, groupTeacherId)
 }
 
+async function teacherCanAccessStudent(
+	teacherId: string | null,
+	studentId: string,
+): Promise<boolean> {
+	const groupTeacherIds = await getStudentGroupTeacherIds(studentId)
+	for (const groupTeacherId of groupTeacherIds) {
+		if (await teacherCanAccessGroupTeacher(teacherId, groupTeacherId)) {
+			return true
+		}
+	}
+	return false
+}
+
 export async function authorizeApiRequest(
 	options: AuthorizeOptions = {},
 ): Promise<AuthorizeSuccess | AuthorizeFailure> {
@@ -46,39 +60,33 @@ export async function authorizeApiRequest(
 			return { error: forbidden() }
 		}
 		if (ctx.groupId) {
-			const own = await prisma.student.findUnique({
-				where: { id: actorStudentId! },
-				select: { groupId: true },
+			const enrollment = await prisma.groupEnrollment.findUnique({
+				where: {
+					studentId_groupId: {
+						studentId: actorStudentId!,
+						groupId: ctx.groupId,
+					},
+				},
 			})
-			if (!own || own.groupId !== ctx.groupId) return { error: forbidden() }
+			if (!enrollment) return { error: forbidden() }
 		}
 	}
 
 	if (role === 'TEACHER' && ctx.completionId) {
 		const completion = await prisma.stepCompletion.findUnique({
 			where: { id: ctx.completionId },
-			include: { student: { include: { group: true } } },
+			select: { studentId: true },
 		})
 		if (
 			!completion ||
-			!(await teacherCanAccessGroupTeacher(
-				teacherId,
-				completion.student.group.teacherId,
-			))
+			!(await teacherCanAccessStudent(teacherId, completion.studentId))
 		) {
 			return { error: forbidden() }
 		}
 	}
 
 	if (role === 'TEACHER' && ctx.studentId) {
-		const student = await prisma.student.findUnique({
-			where: { id: ctx.studentId },
-			include: { group: true },
-		})
-		if (
-			!student ||
-			!(await teacherCanAccessGroupTeacher(teacherId, student.group.teacherId))
-		) {
+		if (!(await teacherCanAccessStudent(teacherId, ctx.studentId))) {
 			return { error: forbidden() }
 		}
 	}

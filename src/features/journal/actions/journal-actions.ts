@@ -12,6 +12,7 @@ import {
 } from '@/features/journal/lib/journal-step'
 import { serializeDaySession } from '@/features/journal/lib/get-student-session'
 import type { ClientDaySession } from '@/features/journal/lib/get-student-session'
+import { findEnrollmentInGroup, findPrimaryEnrollment } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { formatAnalyticsMonth } from '@/shared/lib/analytics'
 import { loadStudentMetricsForMonth } from '@/shared/lib/student-metrics/load-student-metrics'
@@ -27,20 +28,19 @@ import type { StepContent } from '@/shared/lib/validations/step'
 
 export type { JournalStep } from '@/features/journal/lib/journal-step'
 
+async function getTeacherGroupForSession(teacherId: string) {
+	return prisma.group.findFirst({
+		where: { teacherId },
+	})
+}
+
 async function requireTeacherStudent(studentId: string) {
 	const session = await requireRole('TEACHER')
+	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
+	if (!teacherGroup) return null
 
-	const student = await prisma.student.findUnique({
-		where: { id: studentId },
-		select: {
-			id: true,
-			group: { select: { teacherId: true } },
-		},
-	})
-
-	if (!student || student.group.teacherId !== session.user.teacherId) {
-		return null
-	}
+	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	if (!enrollment) return null
 
 	return session
 }
@@ -83,23 +83,18 @@ async function fetchSessionOutsideLevelSteps(
 export async function getTeacherGroup() {
 	const session = await requireRole('TEACHER')
 
-	return prisma.group.findFirst({
-		where: { teacherId: session.user.teacherId! },
-	})
+	return getTeacherGroupForSession(session.user.teacherId!)
 }
 
 export async function resumeStudentFromPause(studentId: string) {
 	const session = await requireRole('TEACHER')
+	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
+	if (!teacherGroup) throw new Error('Ученик не найден')
 
-	const student = await prisma.student.findUnique({
-		where: { id: studentId },
-		include: { group: { select: { teacherId: true } } },
-	})
+	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	if (!enrollment) throw new Error('Ученик не найден')
 
-	if (!student || student.group.teacherId !== session.user.teacherId) {
-		throw new Error('Ученик не найден')
-	}
-
+	const student = enrollment.student
 	if (student.status !== 'PAUSE') {
 		throw new Error('Ученик не на паузе')
 	}
@@ -135,17 +130,11 @@ export async function getNextLevelJournalSteps(
 	const access = await requireTeacherStudent(studentId)
 	if (!access) return []
 
-	const student = await prisma.student.findUnique({
-		where: { id: studentId },
-		select: {
-			level: { select: { number: true, title: true } },
-		},
-	})
-
-	if (!student) return []
+	const enrollment = await findPrimaryEnrollment(studentId)
+	if (!enrollment) return []
 
 	const nextLevel = await prisma.level.findFirst({
-		where: { number: student.level.number + 1 },
+		where: { number: enrollment.level.number + 1 },
 		include: {
 			steps: {
 				select: {
@@ -174,17 +163,14 @@ export async function getStudentLesson(
 	const session = await requireRole('TEACHER')
 	const dayRange = getLessonDayRange(calendarDate)
 
-	const student = await prisma.student.findUnique({
-		where: { id: studentId },
+	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
+	if (!teacherGroup) return null
+
+	const enrollment = await prisma.groupEnrollment.findUnique({
+		where: {
+			studentId_groupId: { studentId, groupId: teacherGroup.id },
+		},
 		include: {
-			user: true,
-			group: {
-				include: {
-					students: {
-						include: { user: { select: { name: true } } },
-					},
-				},
-			},
 			level: {
 				include: {
 					steps: {
@@ -199,47 +185,55 @@ export async function getStudentLesson(
 					},
 				},
 			},
-			completions: {
-				where: {
-					step: { level: { students: { some: { id: studentId } } } },
-				},
-				select: { stepId: true, grade: true, note: true },
-				orderBy: { createdAt: 'asc' },
-			},
-			sessions: {
-				where: {
-					date: { gte: dayRange.start, lte: dayRange.end },
-				},
-				select: {
-					id: true,
-					studentId: true,
-					date: true,
-					attendance: true,
-					lateMinutes: true,
-					note: true,
+			student: {
+				include: {
+					user: true,
 					completions: {
 						select: { stepId: true, grade: true, note: true },
+						orderBy: { createdAt: 'asc' },
+					},
+					sessions: {
+						where: {
+							date: { gte: dayRange.start, lte: dayRange.end },
+						},
+						select: {
+							id: true,
+							studentId: true,
+							date: true,
+							attendance: true,
+							lateMinutes: true,
+							note: true,
+							completions: {
+								select: { stepId: true, grade: true, note: true },
+							},
+						},
+						orderBy: { date: 'desc' },
 					},
 				},
-				orderBy: { date: 'desc' },
 			},
 		},
 	})
 
-	if (!student) return null
-	if (student.group.teacherId !== session.user.teacherId) return null
+	if (!enrollment) return null
+
+	const student = enrollment.student
 	if (student.status === 'ARCHIVE') return null
 
-	const levelStepIds = new Set(student.level.steps.map((step) => step.id))
+	const level = enrollment.level
+	const levelStepIds = new Set(level.steps.map((step) => step.id))
+	const levelCompletions = student.completions.filter((completion) =>
+		levelStepIds.has(completion.stepId),
+	)
+
 	const daySession =
 		student.sessions.find((item) =>
 			isLessonCalendarDay(item.date, calendarDate),
 		) ?? null
 
-	const [hasNextLevel, totalProgramSteps, prefetchedSessionSteps] =
+	const [hasNextLevel, totalProgramSteps, prefetchedSessionSteps, groupEnrollments] =
 		await Promise.all([
 			prisma.level.findFirst({
-				where: { number: student.level.number + 1 },
+				where: { number: level.number + 1 },
 				select: { id: true },
 			}),
 			getTotalProgramSteps(),
@@ -247,16 +241,25 @@ export async function getStudentLesson(
 				levelStepIds,
 				daySession?.completions ?? [],
 			),
+			prisma.groupEnrollment.findMany({
+				where: { groupId: teacherGroup.id },
+				include: {
+					student: {
+						include: { user: { select: { name: true } } },
+					},
+				},
+			}),
 		])
 
-	const allSteps = student.level.steps.map((step) =>
-		mapStepMeta(step, student.level.number, student.level.title),
+	const allSteps = level.steps.map((step) =>
+		mapStepMeta(step, level.number, level.title),
 	)
-	const completionsByStepId = getCompletionsByStepId(student.completions)
+	const completionsByStepId = getCompletionsByStepId(levelCompletions)
 	const incompleteSteps = filterIncompleteSteps(allSteps, completionsByStepId)
 	const totalHours = sumPassedStepHours(allSteps, completionsByStepId)
 
-	const sortedActiveStudents = [...student.group.students]
+	const sortedActiveStudents = groupEnrollments
+		.map((item) => item.student)
 		.filter((item) => isActiveForLesson(item.status))
 		.sort((a, b) => a.user.name.localeCompare(b.user.name))
 	const currentIndex = sortedActiveStudents.findIndex(
@@ -268,7 +271,7 @@ export async function getStudentLesson(
 		string,
 		{ stepId: string; grade: number; note: string | null }
 	>()
-	for (const completion of student.completions) {
+	for (const completion of levelCompletions) {
 		stepCompletionsByStep.set(completion.stepId, completion)
 	}
 
@@ -285,15 +288,15 @@ export async function getStudentLesson(
 	)
 
 	return {
-		groupId: student.groupId,
+		groupId: teacherGroup.id,
 		student: {
 			id: student.id,
 			name: student.user.name,
 			currentStepIdx: student.currentStepIdx,
 		},
 		level: {
-			number: student.level.number,
-			title: student.level.title,
+			number: level.number,
+			title: level.title,
 		},
 		totalSteps: allSteps.length,
 		totalProgramSteps,
@@ -316,18 +319,13 @@ export async function getStudentLesson(
 
 export async function getStudentStepHistory(studentId: string) {
 	const session = await requireRole('TEACHER')
+	const teacherGroup = await getTeacherGroupForSession(session.user.teacherId!)
+	if (!teacherGroup) return null
 
-	const student = await prisma.student.findUnique({
-		where: { id: studentId },
-		include: {
-			user: true,
-			level: true,
-			group: true,
-		},
-	})
+	const enrollment = await findEnrollmentInGroup(studentId, teacherGroup.id)
+	if (!enrollment) return null
 
-	if (!student) return null
-	if (student.group.teacherId !== session.user.teacherId) return null
+	const student = enrollment.student
 
 	return {
 		student: {
@@ -336,8 +334,8 @@ export async function getStudentStepHistory(studentId: string) {
 			currentStepIdx: student.currentStepIdx,
 		},
 		level: {
-			number: student.level.number,
-			title: student.level.title,
+			number: enrollment.level.number,
+			title: enrollment.level.title,
 		},
 	}
 }

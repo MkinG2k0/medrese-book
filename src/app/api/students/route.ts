@@ -26,19 +26,23 @@ export async function GET(request: Request) {
 	const group = await prisma.group.findUnique({
 		where: { id: groupId },
 		include: {
-			students: {
+			enrollments: {
 				include: {
-					user: true,
+					student: {
+						include: {
+							user: true,
+							sessions: dayRange
+								? {
+										where: {
+											date: { gte: dayRange.start, lte: dayRange.end },
+										},
+										orderBy: { date: 'desc' },
+										include: { completions: true },
+									}
+								: false,
+						},
+					},
 					level: true,
-					sessions: dayRange
-						? {
-								where: {
-									date: { gte: dayRange.start, lte: dayRange.end },
-								},
-								orderBy: { date: 'desc' },
-								include: { completions: true },
-							}
-						: false,
 				},
 			},
 		},
@@ -46,37 +50,38 @@ export async function GET(request: Request) {
 
 	if (!group) return error('Группа не найдена', 404)
 
-	const students = group.students
-		.filter((s) => isJournalVisibleStatus(s.status))
-		.map((s) => {
-		const todaySession =
-			dateStr && Array.isArray(s.sessions)
-				? s.sessions.find((session) =>
-						isSameCalendarDay(session.date, dateStr),
-					)
-				: undefined
+	const students = group.enrollments
+		.filter((enrollment) => isJournalVisibleStatus(enrollment.student.status))
+		.map((enrollment) => {
+			const student = enrollment.student
+			const todaySession =
+				dateStr && Array.isArray(student.sessions)
+					? student.sessions.find((session) =>
+							isSameCalendarDay(session.date, dateStr),
+						)
+					: undefined
 
-		const completions =
-			todaySession && 'completions' in todaySession
-				? (todaySession.completions as { grade: number }[])
-				: []
+			const completions =
+				todaySession && 'completions' in todaySession
+					? (todaySession.completions as { grade: number }[])
+					: []
 
-		return {
-			id: s.id,
-			name: s.user.name,
-			status: s.status,
-			currentStepIdx: s.currentStepIdx,
-			groupId: s.groupId,
-			levelNumber: s.level.number,
-			levelTitle: s.level.title,
-			hasSessionToday: !!todaySession,
-			todayAttendance: todaySession?.attendance ?? null,
-			todayStepsCompleted: completions.filter((c) =>
-				isStepPassed(c.grade),
-			).length,
-			todayGrades: completions.map((c) => c.grade),
-		}
-	})
+			return {
+				id: student.id,
+				name: student.user.name,
+				status: student.status,
+				currentStepIdx: student.currentStepIdx,
+				groupId: enrollment.groupId,
+				levelNumber: enrollment.level.number,
+				levelTitle: enrollment.level.title,
+				hasSessionToday: !!todaySession,
+				todayAttendance: todaySession?.attendance ?? null,
+				todayStepsCompleted: completions.filter((c) =>
+					isStepPassed(c.grade),
+				).length,
+				todayGrades: completions.map((c) => c.grade),
+			}
+		})
 
 	return success(students)
 }
