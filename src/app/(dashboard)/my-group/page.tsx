@@ -32,10 +32,14 @@ export default async function MyGroupPage() {
     ...enrollment.student.user,
     student: {
       ...enrollment.student,
-      levelId: enrollment.levelId,
-      groupId: group.id,
-      level: enrollment.level,
-      group: { name: group.name },
+      enrollments: [
+        {
+          levelId: enrollment.levelId,
+          groupId: group.id,
+          level: enrollment.level,
+          group: { name: group.name },
+        },
+      ],
     },
   }));
 

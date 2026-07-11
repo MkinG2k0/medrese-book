@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { AUTH_STATE } from "./helpers/auth-state";
 import { TEST_USERS } from "./helpers/codes";
+import { getGroupIdByName } from "./helpers/db";
 
 test.describe("Админ-панель менеджера", () => {
   test.use({ storageState: AUTH_STATE.manager });
@@ -82,6 +83,7 @@ test.describe("Админ-панель менеджера", () => {
     await createDialog.getByPlaceholder("Ибрагимов Камал Ахмедович").fill(studentName);
     await createDialog.locator('.ant-select[name="groupId"]').click();
     await page.getByTitle(TEST_USERS.group1).click();
+    await expect(createDialog.locator('.ant-select[name="levelId"]')).not.toBeDisabled();
     await createDialog.getByRole("button", { name: "Создать" }).click();
 
     const codeDialog = page.getByRole("dialog", { name: "Код доступа" });
@@ -89,6 +91,10 @@ test.describe("Админ-панель менеджера", () => {
     await expect(codeDialog.getByText(studentName)).toBeVisible();
     await expect(codeDialog.getByRole("heading", { level: 3 })).toHaveText(/^\d{6}$/);
     await codeDialog.getByRole("button", { name: "Понятно" }).click();
+    await expect(page.getByRole("cell", { name: studentName, exact: true })).toBeVisible();
+
+    const groupId = await getGroupIdByName(TEST_USERS.group1);
+    await page.goto(`/groups/${groupId}`);
     await expect(page.getByRole("cell", { name: studentName, exact: true })).toBeVisible();
   });
 
@@ -100,6 +106,7 @@ test.describe("Админ-панель менеджера", () => {
     await createDialog.getByPlaceholder("Ибрагимов Камал Ахмедович").fill(studentName);
     await createDialog.locator('.ant-select[name="groupId"]').click();
     await page.getByTitle(TEST_USERS.group1).click();
+    await expect(createDialog.locator('.ant-select[name="levelId"]')).not.toBeDisabled();
     await createDialog.getByRole("button", { name: "Создать" }).click();
     await page.getByRole("dialog", { name: "Код доступа" }).getByRole("button", { name: "Понятно" }).click();
 

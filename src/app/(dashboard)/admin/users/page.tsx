@@ -1,4 +1,4 @@
-import { getLevelsForCreateUser, getUsers } from '@/features/user-admin/actions/user-actions'
+import { getUsers } from '@/features/user-admin/actions/user-actions'
 import { mapUsersToDetails } from '@/features/user-admin/lib/map-users-to-details'
 import { UsersTable } from '@/features/user-admin/ui/UsersTable'
 import { prisma } from '@/shared/lib/prisma'
@@ -8,8 +8,14 @@ export default async function AdminUsersPage() {
 	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 	const [users, groups, levels] = await Promise.all([
 		getUsers(),
-		prisma.group.findMany({ select: { id: true, name: true } }),
-		getLevelsForCreateUser(),
+		prisma.group.findMany({
+			select: { id: true, name: true, subjectId: true },
+			orderBy: { name: 'asc' },
+		}),
+		prisma.level.findMany({
+			include: { steps: { orderBy: { order: 'asc' } } },
+			orderBy: { number: 'asc' },
+		}),
 	])
 
 	const levelOptions = levels.map((level) => ({

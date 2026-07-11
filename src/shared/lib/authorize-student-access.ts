@@ -1,4 +1,5 @@
 import type { Role } from '@/shared/lib/prisma'
+import { findPrimaryEnrollment } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
 
@@ -11,19 +12,20 @@ export async function requireStudentEditAccess(studentId: string) {
 		where: { id: studentId },
 		include: {
 			user: true,
-			group: { include: { teacher: { include: { user: true } } } },
-			level: true,
 		},
 	})
 
-	if (!student) return { session, student: null } as const
+	if (!student) return { session, student: null, enrollment: null } as const
+
+	const enrollment = await findPrimaryEnrollment(studentId)
+	if (!enrollment) return { session, student: null, enrollment: null } as const
 
 	if (
 		session.user.role === 'TEACHER' &&
-		session.user.teacherId !== student.group.teacherId
+		session.user.teacherId !== enrollment.group.teacherId
 	) {
-		return { session, student: null } as const
+		return { session, student: null, enrollment: null } as const
 	}
 
-	return { session, student } as const
+	return { session, student, enrollment } as const
 }

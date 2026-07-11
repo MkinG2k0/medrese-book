@@ -14,18 +14,19 @@ import { updateStudentProgressSchema } from '@/shared/lib/validations/student-pr
 import { updateStudentStatusSchema } from '@/shared/lib/validations/student-status'
 
 export async function getStudentProgressEdit(studentId: string) {
-	const { student } = await requireStudentEditAccess(studentId)
-	if (!student) return null
+	const { student, enrollment } = await requireStudentEditAccess(studentId)
+	if (!student || !enrollment) return null
 
 	const [levels, stepOffset] = await Promise.all([
 		prisma.level.findMany({
+			where: { subjectId: enrollment.group.subjectId },
 			include: { steps: { orderBy: { order: 'asc' } } },
 			orderBy: { number: 'asc' },
 		}),
-		getStepOffsetForLevel(student.level.number),
+		getStepOffsetForLevel(enrollment.level.number),
 	])
 
-	const currentLevel = levels.find((l) => l.id === student.levelId)
+	const currentLevel = levels.find((l) => l.id === enrollment.levelId)
 	const stepCount = currentLevel?.steps.length ?? 0
 	const localStepIndex = Math.min(
 		Math.max(0, student.currentStepIdx - stepOffset),
@@ -36,9 +37,9 @@ export async function getStudentProgressEdit(studentId: string) {
 		student: {
 			id: student.id,
 			name: student.user.name,
-			groupId: student.groupId,
-			groupName: student.group.name,
-			levelId: student.levelId,
+			groupId: enrollment.groupId,
+			groupName: enrollment.group.name,
+			levelId: enrollment.levelId,
 			currentStepIdx: student.currentStepIdx,
 			localStepIndex,
 		},
@@ -52,22 +53,22 @@ export async function getStudentProgressEdit(studentId: string) {
 				title: step.title,
 			})),
 		})),
-		currentLevelNumber: currentLevel?.number ?? student.level.number,
+		currentLevelNumber: currentLevel?.number ?? enrollment.level.number,
 	}
 }
 
 export async function updateStudentProgress(studentId: string, input: unknown) {
-	const { session, student } = await requireStudentEditAccess(studentId)
-	if (!student) throw new Error('Ученик не найден')
+	const { session, student, enrollment } = await requireStudentEditAccess(studentId)
+	if (!student || !enrollment) throw new Error('Ученик не найден')
 
 	const data = updateStudentProgressSchema.parse(input)
 
-	const level = await prisma.level.findUnique({
-		where: { id: data.levelId },
+	const level = await prisma.level.findFirst({
+		where: { id: data.levelId, subjectId: enrollment.group.subjectId },
 		include: { steps: { orderBy: { order: 'asc' } } },
 	})
 
-	if (!level) throw new Error('Уровень не найден')
+	if (!level) throw new Error('Уровень не принадлежит предмету группы')
 
 	if (data.localStepIndex > level.steps.length) {
 		throw new Error('Шаг выходит за пределы уровня')
@@ -75,7 +76,7 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 
 	const stepOffset = await getStepOffsetForLevel(level.number)
 	const currentStepIdx = stepOffset + data.localStepIndex
-	const previousLevelId = student.levelId
+	const previousLevelId = enrollment.levelId
 	const previousStepIdx = student.currentStepIdx
 
 	await prisma.$transaction(async (tx) => {
@@ -86,12 +87,14 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 			data.localStepIndex,
 		)
 
+		await tx.groupEnrollment.update({
+			where: { id: enrollment.id },
+			data: { levelId: data.levelId },
+		})
+
 		await tx.student.update({
 			where: { id: studentId },
-			data: {
-				levelId: data.levelId,
-				currentStepIdx,
-			},
+			data: { currentStepIdx },
 		})
 
 		await recalculateStudentStepIdx(studentId, tx)
@@ -114,9 +117,16 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 		)
 	})
 
+	const enrollments = await prisma.groupEnrollment.findMany({
+		where: { studentId },
+		select: { groupId: true },
+	})
+
 	revalidatePath('/groups')
 	revalidatePath('/my-group')
-	revalidatePath(`/groups/${student.groupId}`)
+	for (const item of enrollments) {
+		revalidatePath(`/groups/${item.groupId}`)
+	}
 	revalidatePath('/journal')
 	revalidatePath(`/journal/${studentId}`)
 	revalidatePath(`/students/${studentId}/edit`)
@@ -129,8 +139,8 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 }
 
 export async function updateStudentStatus(studentId: string, input: unknown) {
-	const { session, student } = await requireStudentEditAccess(studentId)
-	if (!student) throw new Error('Ученик не найден')
+	const { session, student, enrollment } = await requireStudentEditAccess(studentId)
+	if (!student || !enrollment) throw new Error('Ученик не найден')
 
 	const { status } = updateStudentStatusSchema.parse(input)
 	const previousStatus = student.status
@@ -157,10 +167,17 @@ export async function updateStudentStatus(studentId: string, input: unknown) {
 		)
 	})
 
+	const enrollments = await prisma.groupEnrollment.findMany({
+		where: { studentId },
+		select: { groupId: true },
+	})
+
 	revalidatePath('/admin/users')
 	revalidatePath('/groups')
 	revalidatePath('/my-group')
-	revalidatePath(`/groups/${student.groupId}`)
+	for (const item of enrollments) {
+		revalidatePath(`/groups/${item.groupId}`)
+	}
 	revalidatePath('/journal')
 	revalidatePath(`/journal/${studentId}`)
 

@@ -58,6 +58,12 @@ export type UserDetail = {
     groupId: string;
     localStepIndex: number;
     status: StudentStatus;
+    enrollmentGroups?: {
+      groupId: string;
+      groupName: string;
+      levelId: string;
+      levelTitle: string;
+    }[];
   };
 };
 
@@ -88,8 +94,6 @@ function getStudentDefaultValues(user: UserDetail): UpdateStudentUserFormInput {
     phone: user.student?.phone ?? "",
     guardianName: user.student?.guardianName ?? "",
     guardianPhone: user.student?.guardianPhone ?? "",
-    groupId: user.student?.groupId ?? "",
-    levelId: user.student?.levelId ?? "",
     localStepIndex: user.student?.localStepIndex ?? 0,
     status: user.student?.status ?? "ACTIVE",
   };
@@ -113,19 +117,24 @@ const FORM_LAYOUT = {
 function StudentEditFields({
   control,
   setValue,
-  groups,
   levels,
+  enrollmentGroups,
   readOnly = false,
   canEditStatus = false,
 }: {
   control: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["control"];
   setValue: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["setValue"];
-  groups: { id: string; name: string }[];
   levels: LevelOption[];
+  enrollmentGroups?: {
+    groupId: string;
+    groupName: string;
+    levelId: string;
+    levelTitle: string;
+  }[];
   readOnly?: boolean;
   canEditStatus?: boolean;
 }) {
-  const levelId = useWatch({ control, name: "levelId" });
+  const levelId = enrollmentGroups?.[0]?.levelId;
   const localStepIndex = useWatch({ control, name: "localStepIndex" });
   const selectedLevel = levels.find((level) => level.id === levelId);
 
@@ -181,52 +190,22 @@ function StudentEditFields({
         )}
       />
 
-      <Controller
-        name="groupId"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Form.Item
-            label="Группа"
-            validateStatus={fieldState.error ? "error" : ""}
-            help={fieldState.error?.message}
-          >
-            <Select
-              {...field}
-              disabled={readOnly}
-              options={groups.map((group) => ({
-                value: group.id,
-                label: group.name,
-              }))}
-              placeholder="Выберите группу"
-            />
-          </Form.Item>
-        )}
-      />
+      <Form.Item label="Группы">
+        <Input
+          disabled
+          value={
+            enrollmentGroups && enrollmentGroups.length > 0
+              ? enrollmentGroups
+                  .map((enrollment) => `${enrollment.groupName} (${enrollment.levelTitle})`)
+                  .join(", ")
+              : "—"
+          }
+        />
+      </Form.Item>
 
-      <Controller
-        name="levelId"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Form.Item
-            label="Уровень"
-            validateStatus={fieldState.error ? "error" : ""}
-            help={fieldState.error?.message}
-          >
-            <Select
-              {...field}
-              disabled={readOnly}
-              onChange={(value) => {
-                field.onChange(value);
-                setValue("localStepIndex", 0);
-              }}
-              options={levels.map((level) => ({
-                value: level.id,
-                label: `Уровень ${level.number}: ${level.title}`,
-              }))}
-            />
-          </Form.Item>
-        )}
-      />
+      <Form.Item label="Уровень">
+        <Input disabled value={enrollmentGroups?.[0]?.levelTitle ?? "—"} />
+      </Form.Item>
 
       <Controller
         name="localStepIndex"
@@ -318,8 +297,6 @@ export function UserDetailModal({
         phone: values.phone?.trim() || undefined,
         guardianName: values.guardianName?.trim() || undefined,
         guardianPhone: values.guardianPhone?.trim() || undefined,
-        groupId: values.groupId,
-        levelId: values.levelId,
         localStepIndex: values.localStepIndex,
         status: values.status,
       });
@@ -469,8 +446,8 @@ export function UserDetailModal({
                 <StudentEditFields
                   control={studentForm.control}
                   setValue={studentForm.setValue}
-                  groups={groups}
                   levels={levels}
+                  enrollmentGroups={user.student?.enrollmentGroups}
                   readOnly={readOnly}
                   canEditStatus={canEditStatus}
                 />

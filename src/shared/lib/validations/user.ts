@@ -110,8 +110,6 @@ export const updateStudentUserSchema = z.object({
 	phone: optionalPhoneSchema,
 	guardianName: optionalTextSchema,
 	guardianPhone: optionalPhoneSchema,
-	groupId: z.string().min(1, 'Выберите группу'),
-	levelId: z.string().min(1, 'Выберите уровень'),
 	localStepIndex: z.number().int().min(0),
 	status: z.enum(STUDENT_STATUS_VALUES),
 })
@@ -126,8 +124,6 @@ export const updateStudentUserFormSchema = z.object({
 	phone: z.string().optional(),
 	guardianName: z.string().optional(),
 	guardianPhone: z.string().optional(),
-	groupId: z.string().min(1, 'Выберите группу'),
-	levelId: z.string().min(1, 'Выберите уровень'),
 	localStepIndex: z.number().int().min(0),
 	status: z.enum(STUDENT_STATUS_VALUES),
 })

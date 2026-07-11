@@ -2,10 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Form, Input, Select } from 'antd'
-import { useEffect, useMemo, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 
-import { createUsers } from '@/features/user-admin/actions/user-actions'
+import {
+	createUsers,
+	getLevelsWithStepsForSubject,
+} from '@/features/user-admin/actions/user-actions'
 import {
 	buildCreateUsersPayload,
 	createUserFormSchema,
@@ -21,8 +24,7 @@ type LevelOption = {
 }
 
 type CreateUserFormProps = {
-	groups: { id: string; name: string }[]
-	levels: LevelOption[]
+	groups: { id: string; name: string; subjectId: string }[]
 	onSuccess: (users: { name: string; code: string }[]) => void
 }
 
@@ -35,9 +37,10 @@ function getStepOffset(levels: LevelOption[], levelNumber: number): number {
 	return offset
 }
 
-export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProps) {
+export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const [isPending, startTransition] = useTransition()
-	const defaultLevelId = levels[0]?.id ?? ''
+	const [levels, setLevels] = useState<LevelOption[]>([])
+	const [levelsLoading, setLevelsLoading] = useState(false)
 
 	const { control, handleSubmit, setValue } = useForm<CreateUserFormInput>({
 		resolver: zodResolver(createUserFormSchema),
@@ -48,13 +51,13 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 			studentPhone: '',
 			guardianName: '',
 			guardianPhone: '',
-			levelId: defaultLevelId,
 			localStepIndex: 0,
 		},
 	})
 
 	const role = useWatch({ control, name: 'role' })
 	const names = useWatch({ control, name: 'names' })
+	const groupId = useWatch({ control, name: 'groupId' })
 	const levelId = useWatch({ control, name: 'levelId' })
 	const localStepIndex = useWatch({ control, name: 'localStepIndex' })
 
@@ -65,7 +68,47 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 	const isSingleStudent = role === 'STUDENT' && parsedEntries.length === 1
 	const isMultipleStudents = role === 'STUDENT' && parsedEntries.length > 1
 
+	const selectedGroup = groups.find((group) => group.id === groupId)
 	const selectedLevel = levels.find((level) => level.id === levelId)
+
+	useEffect(() => {
+		if (role !== 'STUDENT' || !selectedGroup) {
+			setLevels([])
+			setValue('levelId', undefined)
+			return
+		}
+
+		let cancelled = false
+		setLevelsLoading(true)
+
+		getLevelsWithStepsForSubject(selectedGroup.subjectId)
+			.then((loadedLevels) => {
+				if (cancelled) return
+
+				const levelOptions = loadedLevels.map((level) => ({
+					id: level.id,
+					number: level.number,
+					title: level.title,
+					steps: level.steps.map((step) => ({
+						id: step.id,
+						order: step.order,
+						title: step.title,
+					})),
+				}))
+
+				setLevels(levelOptions)
+				const defaultLevelId = levelOptions[0]?.id
+				setValue('levelId', defaultLevelId)
+				setValue('localStepIndex', 0)
+			})
+			.finally(() => {
+				if (!cancelled) setLevelsLoading(false)
+			})
+
+		return () => {
+			cancelled = true
+		}
+	}, [role, selectedGroup, setValue])
 
 	useEffect(() => {
 		if (!selectedLevel) return
@@ -211,6 +254,11 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 							>
 								<Select
 									{...field}
+									onChange={(value) => {
+										field.onChange(value)
+										setValue('levelId', undefined)
+										setValue('localStepIndex', 0)
+									}}
 									options={groups.map((g) => ({ value: g.id, label: g.name }))}
 									placeholder="Выберите группу"
 								/>
@@ -233,10 +281,15 @@ export function CreateUserForm({ groups, levels, onSuccess }: CreateUserFormProp
 										field.onChange(value)
 										setValue('localStepIndex', 0)
 									}}
+									loading={levelsLoading}
+									disabled={!groupId || levelsLoading}
 									options={levels.map((level) => ({
 										value: level.id,
 										label: `Уровень ${level.number}: ${level.title}`,
 									}))}
+									placeholder={
+										groupId ? 'Выберите уровень' : 'Сначала выберите группу'
+									}
 								/>
 							</Form.Item>
 						)}

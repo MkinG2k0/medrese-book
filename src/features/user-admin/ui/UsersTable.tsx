@@ -46,7 +46,7 @@ type LevelOption = {
 
 type UsersTableProps = {
   users: UserDetail[];
-  groups: { id: string; name: string }[];
+  groups: { id: string; name: string; subjectId?: string }[];
   levels: LevelOption[];
   canResetCode: boolean;
   title?: string;
@@ -57,10 +57,11 @@ type UsersTableProps = {
 };
 
 function matchesGroupFilter(record: UserDetail, groupName: string) {
-  return (
-    record.groupName === groupName ||
-    (record.teacherGroupNames?.includes(groupName) ?? false)
-  );
+  if (record.groupName === groupName) return true;
+  if (record.student?.enrollmentGroups?.some((e) => e.groupName === groupName)) {
+    return true;
+  }
+  return record.teacherGroupNames?.includes(groupName) ?? false;
 }
 
 export function UsersTable({
@@ -275,8 +276,10 @@ export function UsersTable({
         destroyOnHidden
       >
         <CreateUserForm
-          groups={groups}
-          levels={levels}
+          groups={groups.filter(
+            (group): group is { id: string; name: string; subjectId: string } =>
+              !!group.subjectId,
+          )}
           onSuccess={(createdUsers) => {
             setShowCreate(false);
             setCodeModal(createdUsers);

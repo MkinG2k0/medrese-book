@@ -39,10 +39,14 @@ export default async function GroupDetailPage({ params }: Props) {
     ...enrollment.student.user,
     student: {
       ...enrollment.student,
-      levelId: enrollment.levelId,
-      groupId: group.id,
-      level: enrollment.level,
-      group: { name: group.name },
+      enrollments: [
+        {
+          levelId: enrollment.levelId,
+          groupId: group.id,
+          level: enrollment.level,
+          group: { name: group.name },
+        },
+      ],
     },
   }));
 

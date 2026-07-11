@@ -24,16 +24,26 @@ export async function getUsers() {
 		where: { role: { not: 'SUPER_ADMIN' } },
 		include: {
 			teacher: { include: { groups: true } },
-			student: { include: { group: true, level: true } },
+			student: {
+				include: {
+					enrollments: {
+						include: {
+							group: true,
+							level: true,
+						},
+					},
+				},
+			},
 		},
 		orderBy: { createdAt: 'desc' },
 	})
 }
 
-export async function getLevelsForCreateUser() {
+export async function getLevelsWithStepsForSubject(subjectId: string) {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
 	return prisma.level.findMany({
+		where: { subjectId },
 		include: { steps: { orderBy: { order: 'asc' } } },
 		orderBy: { number: 'asc' },
 	})
@@ -63,13 +73,22 @@ export async function createUsers(input: unknown) {
 
 	if (data.role === 'STUDENT') {
 		const levelId = data.levelId ?? (await getDefaultLevelId())
-		const foundLevel = await prisma.level.findUnique({
-			where: { id: levelId },
+		const group = await prisma.group.findUnique({
+			where: { id: data.groupId! },
+			select: { subjectId: true },
+		})
+
+		if (!group) {
+			throw new Error('Группа не найдена')
+		}
+
+		const foundLevel = await prisma.level.findFirst({
+			where: { id: levelId, subjectId: group.subjectId },
 			include: { steps: { orderBy: { order: 'asc' } } },
 		})
 
 		if (!foundLevel) {
-			throw new Error('Уровень не найден')
+			throw new Error('Уровень не принадлежит предмету группы')
 		}
 
 		const localStepIndex = data.localStepIndex ?? 0
@@ -102,13 +121,19 @@ export async function createUsers(input: unknown) {
 								phone: entry.phone,
 								guardianName: entry.guardianName,
 								guardianPhone: entry.guardianPhone,
-								groupId: data.groupId!,
-								levelId: level.id,
 								currentStepIdx,
 							},
 						},
 					},
 					include: { student: true },
+				})
+
+				await tx.groupEnrollment.create({
+					data: {
+						studentId: user.student!.id,
+						groupId: data.groupId!,
+						levelId: level.id,
+					},
 				})
 
 				await syncCompletionsForProgress(
@@ -139,6 +164,7 @@ export async function createUsers(input: unknown) {
 			})
 
 			users.push({ name: createdStudent.name, code: createdStudent.code })
+			revalidatePath(`/groups/${data.groupId}`)
 			continue
 		}
 
@@ -158,6 +184,8 @@ export async function createUsers(input: unknown) {
 	}
 
 	revalidatePath('/admin/users')
+	revalidatePath('/groups')
+	revalidatePath('/journal')
 	return { users }
 }
 
@@ -176,24 +204,34 @@ export async function updateUser(userId: string, input: unknown) {
 	if (user.role === 'STUDENT' && user.student) {
 		const data = updateStudentUserSchema.parse(input)
 
-		const level = await prisma.level.findUnique({
-			where: { id: data.levelId },
-			include: { steps: { orderBy: { order: 'asc' } } },
+		const enrollment = await prisma.groupEnrollment.findFirst({
+			where: { studentId: user.student.id },
+			include: {
+				level: {
+					include: { steps: { orderBy: { order: 'asc' } } },
+				},
+			},
+			orderBy: { enrolledAt: 'asc' },
 		})
 
-		if (!level) {
-			throw new Error('Уровень не найден')
+		if (!enrollment) {
+			throw new Error('Ученик не зачислен ни в одну группу')
 		}
+
+		const level = enrollment.level
 
 		if (data.localStepIndex > level.steps.length) {
 			throw new Error('Шаг выходит за пределы уровня')
 		}
 
-		const previousGroupId = user.student.groupId
-		const previousLevelId = user.student.levelId
 		const previousStepIdx = user.student.currentStepIdx
 		const stepOffset = await getStepOffsetForLevel(level.number)
 		const currentStepIdx = stepOffset + data.localStepIndex
+
+		const enrollments = await prisma.groupEnrollment.findMany({
+			where: { studentId: user.student.id },
+			select: { groupId: true },
+		})
 
 		await prisma.$transaction(async (tx) => {
 			await syncCompletionsForProgress(
@@ -210,8 +248,6 @@ export async function updateUser(userId: string, input: unknown) {
 					phone: data.phone,
 					guardianName: data.guardianName,
 					guardianPhone: data.guardianPhone,
-					groupId: data.groupId,
-					levelId: data.levelId,
 					currentStepIdx,
 					status: data.status,
 				},
@@ -230,11 +266,9 @@ export async function updateUser(userId: string, input: unknown) {
 					entityId: user.student!.id,
 					payload: {
 						userId,
-						previousGroupId,
-						previousLevelId,
+						previousLevelId: enrollment.levelId,
 						previousStepIdx,
-						groupId: data.groupId,
-						levelId: data.levelId,
+						levelId: enrollment.levelId,
 						currentStepIdx,
 						localStepIndex: data.localStepIndex,
 						status: data.status,
@@ -247,9 +281,8 @@ export async function updateUser(userId: string, input: unknown) {
 		revalidatePath('/admin/users')
 		revalidatePath('/groups')
 		revalidatePath('/my-group')
-		revalidatePath(`/groups/${data.groupId}`)
-		if (previousGroupId !== data.groupId) {
-			revalidatePath(`/groups/${previousGroupId}`)
+		for (const { groupId } of enrollments) {
+			revalidatePath(`/groups/${groupId}`)
 		}
 		revalidatePath('/journal')
 		revalidatePath(`/journal/${user.student.id}`)
@@ -338,14 +371,22 @@ export async function deleteUser(userId: string) {
 		})
 	} else {
 		const studentId = user.student?.id
-		const groupId = user.student?.groupId
+		const enrollmentGroupIds =
+			user.student
+				? (
+						await prisma.groupEnrollment.findMany({
+							where: { studentId: user.student.id },
+							select: { groupId: true },
+						})
+					).map((enrollment) => enrollment.groupId)
+				: []
 
 		await prisma.user.delete({ where: { id: userId } })
 
 		if (studentId) {
 			revalidatePath('/groups')
 			revalidatePath('/my-group')
-			if (groupId) {
+			for (const groupId of enrollmentGroupIds) {
 				revalidatePath(`/groups/${groupId}`)
 			}
 			revalidatePath('/journal')

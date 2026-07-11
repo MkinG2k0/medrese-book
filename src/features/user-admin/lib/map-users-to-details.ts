@@ -23,11 +23,14 @@ type UserWithRelations = {
 		guardianName: string | null
 		guardianPhone: string | null
 		currentStepIdx: number
-		levelId: string
-		groupId: string
 		status: StudentStatus
-		level: { title: string }
-		group?: { name: string } | null
+		enrollments: {
+			groupId: string
+			levelId: string
+			enrolledAt?: Date
+			group: { name: string }
+			level: { title: string; number?: number }
+		}[]
 	} | null
 }
 
@@ -40,13 +43,33 @@ function getStepOffset(levels: LevelOption[], levelNumber: number): number {
 	return offset
 }
 
+function getPrimaryEnrollment(
+	enrollments: NonNullable<UserWithRelations['student']>['enrollments'],
+) {
+	if (enrollments.length === 0) return undefined
+	return [...enrollments].sort(
+		(a, b) => (a.enrolledAt?.getTime() ?? 0) - (b.enrolledAt?.getTime() ?? 0),
+	)[0]
+}
+
+function formatGroupNames(
+	enrollments: NonNullable<UserWithRelations['student']>['enrollments'],
+): string | undefined {
+	if (enrollments.length === 0) return undefined
+	if (enrollments.length === 1) return enrollments[0]!.group.name
+	return `${enrollments.length} групп`
+}
+
 export function mapUsersToDetails(
 	users: UserWithRelations[],
 	levels: LevelOption[],
 ): UserDetail[] {
 	return users.map((user) => {
-		const studentLevel = user.student
-			? levels.find((level) => level.id === user.student!.levelId)
+		const enrollments = user.student?.enrollments ?? []
+		const primaryEnrollment = getPrimaryEnrollment(enrollments)
+
+		const studentLevel = primaryEnrollment
+			? levels.find((level) => level.id === primaryEnrollment.levelId)
 			: undefined
 		const stepOffset = studentLevel
 			? getStepOffset(levels, studentLevel.number)
@@ -67,7 +90,7 @@ export function mapUsersToDetails(
 			role: user.role,
 			phone: user.phone ?? undefined,
 			createdAt: user.createdAt.toISOString(),
-			groupName: user.student?.group?.name,
+			groupName: formatGroupNames(enrollments),
 			teacherGroupNames: user.teacher?.groups.map((group) => group.name),
 			student: user.student
 				? {
@@ -77,11 +100,17 @@ export function mapUsersToDetails(
 						guardianName: user.student.guardianName ?? undefined,
 						guardianPhone: user.student.guardianPhone ?? undefined,
 						currentStepIdx: user.student.currentStepIdx,
-						levelId: user.student.levelId,
-						levelTitle: user.student.level.title,
-						groupId: user.student.groupId,
+						levelId: primaryEnrollment?.levelId ?? '',
+						levelTitle: primaryEnrollment?.level.title,
+						groupId: primaryEnrollment?.groupId ?? '',
 						localStepIndex,
 						status: user.student.status,
+						enrollmentGroups: enrollments.map((enrollment) => ({
+							groupId: enrollment.groupId,
+							groupName: enrollment.group.name,
+							levelId: enrollment.levelId,
+							levelTitle: enrollment.level.title,
+						})),
 					}
 				: undefined,
 		}
