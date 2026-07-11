@@ -71,16 +71,20 @@ export async function GET(request: Request) {
 		stepId: searchParams.get('stepId') ?? undefined,
 		levelId: searchParams.get('levelId') ?? undefined,
 		title: searchParams.get('title') ?? undefined,
+		subjectId: searchParams.get('subjectId') ?? undefined,
 	})
 	if (!parsed.success) return error(parsed.error.message)
 
-	const { authorId, stepId, levelId, title } = parsed.data
+	const { authorId, stepId, levelId, title, subjectId } = parsed.data
 
 	const templates = await prisma.extraAssignment.findMany({
 		where: {
 			...(authorId ? { authorId } : {}),
 			...(stepId ? { stepId } : {}),
 			...(levelId ? { step: { levelId } } : {}),
+			...(subjectId
+				? { step: { level: { subjectId } } }
+				: {}),
 			...(title
 				? { title: { contains: title, mode: 'insensitive' as const } }
 				: {}),

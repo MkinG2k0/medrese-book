@@ -18,6 +18,7 @@ export type ExtraAssignmentFilters = {
 	stepId?: string
 	levelId?: string
 	title?: string
+	subjectId?: string
 }
 
 export function useExtraAssignments(filters: ExtraAssignmentFilters = {}) {
@@ -29,6 +30,7 @@ export function useExtraAssignments(filters: ExtraAssignmentFilters = {}) {
 			if (filters.stepId) params.set('stepId', filters.stepId)
 			if (filters.levelId) params.set('levelId', filters.levelId)
 			if (filters.title) params.set('title', filters.title)
+			if (filters.subjectId) params.set('subjectId', filters.subjectId)
 			const res = await fetch(`/api/extra-assignments?${params}`)
 			const json = await res.json()
 			if (json.error) throw new Error(json.error)

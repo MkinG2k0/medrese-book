@@ -15,6 +15,7 @@ export const listExtraAssignmentsQuerySchema = z.object({
 	stepId: z.string().optional(),
 	levelId: z.string().optional(),
 	title: z.string().optional(),
+	subjectId: z.string().optional(),
 })
 
 export const assignExtraAssignmentSchema = z.object({
