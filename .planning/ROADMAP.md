@@ -197,7 +197,7 @@ Plans:
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 4/4 | Complete    | 2026-07-11 |
 | 14. Analytics | 3/3 | Complete    | 2026-07-11 |
-| 15. Student Portal & Extra Assignments | 4/4 | Complete   | 2026-07-11 |
+| 15. Student Portal & Extra Assignments | 4/4 | Complete    | 2026-07-11 |
 
 ---
 *Roadmap created: 2026-07-07 — milestone v2.0 Система предметов*

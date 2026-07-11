@@ -24,6 +24,8 @@
 - ✓ Зачёт предыдущих шагов при установке прогресса (`syncCompletionsForProgress`) — existing
 - ✓ FSD-архитектура на Next.js 16 App Router + Prisma 7 + PostgreSQL — existing
 - ✓ E2E-тесты Playwright — existing
+- ✓ Портал ученика: дашборд per enrollment, навигация с groupId, история допзаданий — Phase 15
+- ✓ Допзадания subject-scoped: справочник, назначение на уроке, история по предмету — Phase 15
 
 ## Current Milestone: v2.0 Система предметов
 
@@ -41,7 +43,7 @@
 
 ### Active (v2.0)
 
-**Milestone v2.0 — система предметов** (см. `.planning/REQUIREMENTS.md` SUBJ-*)
+**Milestone v2.0 завершён** (фазы 10–15, UAT Phase 15 passed 2026-07-12). Следующий milestone — планировать через `/gsd-new-milestone`.
 
 ### Archived (v1.0)
 
