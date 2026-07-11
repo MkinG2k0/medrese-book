@@ -21,4 +21,5 @@ export const TEST_USERS = {
   studentZayd: "Зайд",
   group1: "Группа Аль-Фатиха",
   group2: "Группа Ан-Нас",
+  groupTeacher1Second: "Группа Аль-Ихлас",
 } as const;

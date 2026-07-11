@@ -41,12 +41,6 @@ async function assertTeacherOwnsGroup(teacherId: string, groupId: string) {
 	})
 }
 
-async function getTeacherGroupForSession(teacherId: string) {
-	return prisma.group.findFirst({
-		where: { teacherId },
-	})
-}
-
 async function requireTeacherStudent(studentId: string, groupId: string) {
 	const session = await requireRole('TEACHER')
 	const group = await assertTeacherOwnsGroup(session.user.teacherId!, groupId)
@@ -91,13 +85,6 @@ async function fetchSessionOutsideLevelSteps(
 			step.level.title,
 		),
 	)
-}
-
-/** @deprecated Use getTeacherGroups() and explicit groupId — removed in 13-02/04 */
-export async function getTeacherGroup() {
-	const session = await requireRole('TEACHER')
-
-	return getTeacherGroupForSession(session.user.teacherId!)
 }
 
 export async function getTeacherGroups(): Promise<TeacherJournalGroup[]> {

@@ -213,6 +213,14 @@ async function main() {
     },
   });
 
+  const teacher1Group2 = await prisma.group.create({
+    data: {
+      name: "Группа Аль-Ихлас",
+      subjectId: quranSubject.id,
+      teacherId: teacher1.id,
+    },
+  });
+
   const group2 = await prisma.group.create({
     data: {
       name: "Группа Ан-Нас",
@@ -224,6 +232,10 @@ async function main() {
   const studentNames = ["Али", "Усман", "Билал", "Халид", "Зайд"];
   const studentCodes = ["300001", "300002", "300003", "300004", "300005"];
   const level2StepOffset = e2eSteps.length;
+  const studentsByName = new Map<
+    string,
+    { id: string; onLevel1: boolean; currentStepIdx: number }
+  >();
 
   for (let i = 0; i < studentNames.length; i++) {
     const onLevel1 = i < 3;
@@ -271,6 +283,26 @@ async function main() {
         onLevel1,
       ),
     );
+
+    studentsByName.set(studentNames[i]!, {
+      id: student.id,
+      onLevel1,
+      currentStepIdx,
+    });
+  }
+
+  for (const studentName of ["Халид", "Зайд"] as const) {
+    const entry = studentsByName.get(studentName);
+    if (!entry) continue;
+
+    await prisma.groupEnrollment.create({
+      data: {
+        studentId: entry.id,
+        groupId: teacher1Group2.id,
+        levelId: entry.onLevel1 ? level1.id : level2.id,
+        currentStepIdx: entry.currentStepIdx,
+      },
+    });
   }
 
   console.log("E2E seed completed:");
