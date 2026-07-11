@@ -12,7 +12,7 @@
 
 - [x] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета (completed 2026-07-07)
 - [x] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп (completed 2026-07-11)
-- [ ] **Phase 12: Progress & Sessions** — прогресс по предмету, сессии с subjectId
+- [ ] **Phase 12: Progress & Sessions** — прогресс на зачисление (группу), сессии с groupId
 - [ ] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету
 - [ ] **Phase 14: Analytics** — аналитика с селектом предмета
 - [ ] **Phase 15: Student Portal & Extra Assignments** — портал ученика и допзадания по предмету
@@ -67,17 +67,27 @@ Plans:
 
 ### Phase 12: Progress & Sessions
 
-**Goal**: Прогресс и сессии работают в скоупе предмета
+**Goal**: Прогресс и сессии работают в скоупе группы (зачисления)
 **Depends on**: Phase 11
 **Requirements**: SUBJ-08, SUBJ-09, SUBJ-10
 **Success Criteria** (what must be TRUE):
 
-  1. У каждого ученика независимый прогресс (уровень + шаг) на каждый предмет
-  2. Сессия уникальна по ученику + дате + предмету; посещаемость привязана к предмету
-  3. `recalculate-step-progress` и prior credit работают в скоупе предмета
-  4. API и server actions возвращают прогресс с `subjectId`
+  1. У каждого зачисления (GroupEnrollment) независимый прогресс (уровень + шаг); ученик в двух группах — два прогресса
+  2. Сессия уникальна по ученику + дате + groupId; посещаемость и оценки в рамках занятия группы
+  3. `recalculate-step-progress` и prior credit работают per enrollment (auto-promote только текущего зачисления)
+  4. API и server actions возвращают прогресс с контекстом groupId / enrollment
 
-**Plans**: TBD
+**Note**: Intentional deviation от «прогресс по предмету» — решение D-01 (discuss 2026-07-11). UI журнала — Phase 13.
+
+**Plans**: 5 plans
+
+Plans:
+
+- [ ] 12-01-PLAN.md — Schema GroupEnrollment.currentStepIdx, Session.groupId, prod-safe migration (wave 1)
+- [ ] 12-02-PLAN.md — recalculate и syncCompletionsForProgress per enrollment (wave 2)
+- [ ] 12-03-PLAN.md — Sessions API, step-completions, journal-actions (wave 3)
+- [ ] 12-04-PLAN.md — students API, student-admin, group enroll, compile sweep (wave 3)
+- [ ] 12-05-PLAN.md — Docs SUBJ-08…10, seed, финальная верификация (wave 4)
 
 ### Phase 13: Journal
 
@@ -126,8 +136,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
-| 11. Groups & Enrollment | 0/TBD | Not started | - |
-| 12. Progress & Sessions | 0/TBD | Not started | - |
+| 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
+| 12. Progress & Sessions | 0/5 | Not started | - |
 | 13. Journal | 0/TBD | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
