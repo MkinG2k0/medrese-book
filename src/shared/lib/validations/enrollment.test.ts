@@ -35,6 +35,19 @@ describe('group schemas', () => {
 })
 
 describe('enrollment schemas', () => {
+	it('enrollStudentSchema принимает localStepIndex', () => {
+		const result = enrollStudentSchema.safeParse({
+			studentId: 'student-1',
+			levelId: 'level-1',
+			localStepIndex: 2,
+		})
+
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.localStepIndex).toBe(2)
+		}
+	})
+
 	it('enrollStudentSchema отклоняет пустой levelId', () => {
 		const result = enrollStudentSchema.safeParse({
 			studentId: 'student-1',

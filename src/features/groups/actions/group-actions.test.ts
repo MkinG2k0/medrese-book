@@ -13,10 +13,24 @@ const groupEnrollmentFindManyMock = vi.fn()
 const levelFindFirstMock = vi.fn()
 const studentFindManyMock = vi.fn()
 const getLevelsMock = vi.fn()
+const getStepOffsetForLevelMock = vi.fn()
+const syncCompletionsForProgressMock = vi.fn()
+const transactionMock = vi.fn()
+const studentUpdateMock = vi.fn()
 const revalidatePathMock = vi.fn()
 
 vi.mock('@/features/program-admin/actions/program-actions', () => ({
 	getLevels: (...args: unknown[]) => getLevelsMock(...args),
+}))
+
+vi.mock('@/shared/lib/student-progress/offsets', () => ({
+	getStepOffsetForLevel: (...args: unknown[]) =>
+		getStepOffsetForLevelMock(...args),
+}))
+
+vi.mock('@/shared/lib/sync-completions-for-progress', () => ({
+	syncCompletionsForProgress: (...args: unknown[]) =>
+		syncCompletionsForProgressMock(...args),
 }))
 
 vi.mock('@/shared/lib/session', () => ({
@@ -29,6 +43,7 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/shared/lib/prisma', () => ({
 	prisma: {
+		$transaction: (...args: unknown[]) => transactionMock(...args),
 		group: {
 			findMany: (...args: unknown[]) => groupFindManyMock(...args),
 			findFirst: (...args: unknown[]) => groupFindFirstMock(...args),
@@ -50,6 +65,7 @@ vi.mock('@/shared/lib/prisma', () => ({
 		},
 		student: {
 			findMany: (...args: unknown[]) => studentFindManyMock(...args),
+			update: (...args: unknown[]) => studentUpdateMock(...args),
 		},
 	},
 }))
@@ -235,18 +251,31 @@ describe('group-actions', () => {
 	describe('enrollStudent', () => {
 		it('creates GroupEnrollment when level belongs to group subject', async () => {
 			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
-			levelFindFirstMock.mockResolvedValue({ id: 'level-1' })
+			levelFindFirstMock.mockResolvedValue({
+				id: 'level-1',
+				number: 1,
+				steps: [{ id: 'step-1', order: 1 }],
+			})
 			groupEnrollmentFindUniqueMock.mockResolvedValue(null)
-			groupEnrollmentCreateMock.mockResolvedValue({ id: 'enrollment-1' })
+			getStepOffsetForLevelMock.mockResolvedValue(0)
+			transactionMock.mockImplementation(async (fn) => {
+				const tx = {
+					groupEnrollment: { create: groupEnrollmentCreateMock },
+					student: { update: studentUpdateMock },
+				}
+				return fn(tx)
+			})
 
 			const { enrollStudent } = await import('./group-actions')
 			await enrollStudent('group-1', {
 				studentId: 'student-1',
 				levelId: 'level-1',
+				localStepIndex: 0,
 			})
 
 			expect(levelFindFirstMock).toHaveBeenCalledWith({
 				where: { id: 'level-1', subjectId: 'subject-1' },
+				include: { steps: { orderBy: { order: 'asc' } } },
 			})
 			expect(groupEnrollmentCreateMock).toHaveBeenCalledWith({
 				data: {
@@ -255,6 +284,11 @@ describe('group-actions', () => {
 					levelId: 'level-1',
 				},
 			})
+			expect(studentUpdateMock).toHaveBeenCalledWith({
+				where: { id: 'student-1' },
+				data: { currentStepIdx: 0 },
+			})
+			expect(syncCompletionsForProgressMock).toHaveBeenCalled()
 			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-1')
 		})
 
@@ -274,7 +308,11 @@ describe('group-actions', () => {
 
 		it('rejects duplicate studentId+groupId enrollment', async () => {
 			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
-			levelFindFirstMock.mockResolvedValue({ id: 'level-1' })
+			levelFindFirstMock.mockResolvedValue({
+				id: 'level-1',
+				number: 1,
+				steps: [{ id: 'step-1', order: 1 }],
+			})
 			groupEnrollmentFindUniqueMock.mockResolvedValue({ id: 'existing' })
 
 			const { enrollStudent } = await import('./group-actions')

@@ -20,11 +20,12 @@ export function usePushAutoSubscribe() {
 		void (async () => {
 			const existing = await getPushSubscription()
 			if (existing) {
-				await fetch('/api/push/subscribe', {
+				const res = await fetch('/api/push/subscribe', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(existing.toJSON()),
 				})
+				if (res.status === 401) return
 				return
 			}
 

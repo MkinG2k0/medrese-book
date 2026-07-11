@@ -1,4 +1,4 @@
-import { created, error, serverError, success } from '@/shared/api'
+import { created, error, serverError, success, unauthorized } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { prisma } from '@/shared/lib/prisma'
 import {
@@ -25,6 +25,14 @@ export async function POST(request: Request) {
 	if (!parsed.success) return error(parsed.error.message)
 
 	const { endpoint, keys } = parsed.data
+
+	const sessionUser = await prisma.user.findUnique({
+		where: { id: session.user.id },
+		select: { id: true },
+	})
+	if (!sessionUser) {
+		return unauthorized()
+	}
 
 	try {
 		const subscription = await prisma.pushSubscription.upsert({

@@ -111,7 +111,7 @@ Each task was committed atomically:
 2. **Task 2: Subject-scoped program route pages** - `0fcf086` (feat)
 3. **Task 3: Verify no legacy /admin/program references** - `e15e3db` (docs)
 
-**Plan metadata:** `881ef0b` (docs: complete plan)
+**Plan metadata:** `b4783ee` (docs: complete plan)
 
 ## Files Created/Modified
 

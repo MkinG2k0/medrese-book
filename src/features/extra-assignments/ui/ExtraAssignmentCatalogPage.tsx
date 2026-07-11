@@ -152,17 +152,10 @@ export function ExtraAssignmentCatalogPage({
 				<Select
 					allowClear
 					placeholder="Шаг"
-					className="min-w-[220px]"
+						className="min-w-[180px]"
 					options={stepOptions}
 					value={stepFilter}
 					onChange={setStepFilter}
-				/>
-				<Input
-					allowClear
-					placeholder="Поиск по названию"
-					className="min-w-[200px]"
-					value={titleFilter}
-					onChange={(e) => setTitleFilter(e.target.value)}
 				/>
 				<Select
 					allowClear
@@ -171,6 +164,13 @@ export function ExtraAssignmentCatalogPage({
 					options={authorOptions}
 					value={authorFilter}
 					onChange={setAuthorFilter}
+				/>
+					<Input
+					allowClear
+					placeholder="Поиск по названию"
+					className="min-w-[200px]"
+					value={titleFilter}
+					onChange={(e) => setTitleFilter(e.target.value)}
 				/>
 			</div>
 

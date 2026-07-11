@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getLevels } from '@/features/program-admin/actions/program-actions'
 import { prisma } from '@/shared/lib/prisma'
+import { getStepOffsetForLevel } from '@/shared/lib/student-progress/offsets'
+import { syncCompletionsForProgress } from '@/shared/lib/sync-completions-for-progress'
 import { requireRoles } from '@/shared/lib/session'
 import {
 	enrollStudentSchema,
@@ -118,9 +120,15 @@ export async function enrollStudent(groupId: string, input: unknown) {
 
 	const level = await prisma.level.findFirst({
 		where: { id: data.levelId, subjectId: group.subjectId },
+		include: { steps: { orderBy: { order: 'asc' } } },
 	})
 	if (!level) {
 		throw new Error('Уровень не принадлежит предмету группы')
+	}
+
+	const localStepIndex = data.localStepIndex ?? 0
+	if (localStepIndex > level.steps.length) {
+		throw new Error('Шаг выходит за пределы уровня')
 	}
 
 	const existing = await prisma.groupEnrollment.findUnique({
@@ -135,12 +143,29 @@ export async function enrollStudent(groupId: string, input: unknown) {
 		throw new Error('Ученик уже зачислен в эту группу')
 	}
 
-	await prisma.groupEnrollment.create({
-		data: {
-			studentId: data.studentId,
-			groupId,
-			levelId: data.levelId,
-		},
+	const stepOffset = await getStepOffsetForLevel(level.number, group.subjectId)
+	const currentStepIdx = stepOffset + localStepIndex
+
+	await prisma.$transaction(async (tx) => {
+		await tx.groupEnrollment.create({
+			data: {
+				studentId: data.studentId,
+				groupId,
+				levelId: data.levelId,
+			},
+		})
+
+		await tx.student.update({
+			where: { id: data.studentId },
+			data: { currentStepIdx },
+		})
+
+		await syncCompletionsForProgress(
+			tx,
+			data.studentId,
+			level.steps,
+			localStepIndex,
+		)
 	})
 
 	revalidatePath(`/groups/${groupId}`)

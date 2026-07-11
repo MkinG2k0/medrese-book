@@ -1,7 +1,7 @@
 'use client'
 
 import { App, Form, Modal, Select } from 'antd'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import {
@@ -20,9 +20,17 @@ type EnrollStudentModalProps = {
 
 type StudentOption = { id: string; name: string }
 
+function getStepOffset(levels: LevelOption[], levelNumber: number): number {
+	let offset = 0
+	for (const level of levels) {
+		if (level.number >= levelNumber) break
+		offset += level.steps.length
+	}
+	return offset
+}
+
 export function EnrollStudentModal({
 	groupId,
-	subjectId,
 	levels,
 	open,
 	onClose,
@@ -30,9 +38,25 @@ export function EnrollStudentModal({
 	const { message } = App.useApp()
 	const router = useRouter()
 	const [isPending, startTransition] = useTransition()
-	const [form] = Form.useForm()
+	const [form] = Form.useForm<{
+		studentId: string
+		levelId: string
+		localStepIndex: number
+	}>()
 	const [students, setStudents] = useState<StudentOption[]>([])
 	const [loadingStudents, setLoadingStudents] = useState(false)
+
+	const levelId = Form.useWatch('levelId', form)
+	const selectedLevel = levels.find((level) => level.id === levelId)
+
+	const stepOptions = useMemo(() => {
+		if (!selectedLevel) return []
+		const offset = getStepOffset(levels, selectedLevel.number)
+		return selectedLevel.steps.map((step, index) => ({
+			value: index,
+			label: `Шаг ${offset + index + 1}: ${step.title}`,
+		}))
+	}, [levels, selectedLevel])
 
 	useEffect(() => {
 		if (!open) {
@@ -74,7 +98,11 @@ export function EnrollStudentModal({
 			})
 	}
 
-	const handleFinish = (values: { studentId: string; levelId: string }) => {
+	const handleFinish = (values: {
+		studentId: string
+		levelId: string
+		localStepIndex: number
+	}) => {
 		startTransition(async () => {
 			try {
 				await enrollStudent(groupId, values)
@@ -103,7 +131,12 @@ export function EnrollStudentModal({
 			confirmLoading={isPending}
 			destroyOnHidden
 		>
-			<Form form={form} layout="vertical" onFinish={handleFinish}>
+			<Form
+				form={form}
+				layout="vertical"
+				onFinish={handleFinish}
+				initialValues={{ localStepIndex: 0 }}
+			>
 				<Form.Item
 					name="studentId"
 					label="Ученик"
@@ -132,6 +165,18 @@ export function EnrollStudentModal({
 							value: level.id,
 							label: `${level.number}й уровень — ${level.title}`,
 						}))}
+						onChange={() => form.setFieldValue('localStepIndex', 0)}
+					/>
+				</Form.Item>
+				<Form.Item
+					name="localStepIndex"
+					label="Текущий шаг"
+					rules={[{ required: true, message: 'Выберите шаг' }]}
+				>
+					<Select
+						placeholder="Выберите шаг"
+						disabled={!selectedLevel}
+						options={stepOptions}
 					/>
 				</Form.Item>
 			</Form>

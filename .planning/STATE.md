@@ -188,6 +188,7 @@ None yet.
 | 260705-t60 | не приходят уведомления в браузере в сообщениях | 2026-07-05 | b2464c6 | [260705-t60-browser-message-notifications-fix](./quick/260705-t60-browser-message-notifications-fix/) |
 | 260705-tza | подключи s3 в проект , и создай энвы я потом их заполню | 2026-07-05 | b5ddde1 | [260705-tza-s3](./quick/260705-tza-s3/) |
 | 260705-uui | система постов: новости, лайки, S3-медиа, уведомления всем | 2026-07-05 | 2a94c23 | [260705-uui-s3](./quick/260705-uui-s3/) |
+| 260711-push-subscribe-fk | Fix 500 FK на POST /api/push/subscribe при устаревшей сессии | 2026-07-11 | — | [260711-push-subscribe-fk](./quick/260711-push-subscribe-fk/) |
 
 ## Session Continuity
 
