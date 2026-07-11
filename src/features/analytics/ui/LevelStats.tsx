@@ -30,7 +30,7 @@ export function LevelStatsChart({
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart data={data}>
 						<CartesianGrid strokeDasharray="3 3" stroke="#2a2622" />
-						<XAxis dataKey="level" stroke="#8a8375" />
+						<XAxis dataKey="label" stroke="#8a8375" />
 						<YAxis stroke="#8a8375" />
 						<Tooltip />
 						<Bar dataKey="avgGrade" fill="#4a9eff" name="Ср. оценка" />
@@ -40,10 +40,10 @@ export function LevelStatsChart({
 
 			<Table
 				dataSource={data}
-				rowKey="level"
+				rowKey="levelId"
 				pagination={false}
 				columns={[
-					{ title: 'Уровень', dataIndex: 'level', key: 'level' },
+					{ title: 'Уровень', dataIndex: 'label', key: 'label' },
 					{ title: 'Ср. оценка', dataIndex: 'avgGrade', key: 'avgGrade' },
 					{ title: 'Прогулы', dataIndex: 'totalAbsences', key: 'absences' },
 					{

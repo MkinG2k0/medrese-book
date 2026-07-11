@@ -19,7 +19,9 @@ function sumLateMinutes(sessions: SessionWithLateness[]): number {
 }
 
 export type LevelStats = {
+	levelId: string
 	level: number
+	label: string
 	avgGrade: number
 	totalAbsences: number
 	totalLateMinutes: number
@@ -46,6 +48,7 @@ export async function getLevelStats(
 	const levels = await prisma.level.findMany({
 		where: groupSubjectId ? { subjectId: groupSubjectId } : undefined,
 		include: {
+			subject: { select: { name: true } },
 			steps: true,
 			enrollments: {
 				where: groupId
@@ -75,6 +78,9 @@ export async function getLevelStats(
 		},
 	})
 
+	const hasMultipleSubjects =
+		new Set(levels.map((level) => level.subjectId)).size > 1
+
 	return levels.map((level) => {
 		const enrolledStudents = level.enrollments.map(
 			(enrollment) => enrollment.student,
@@ -90,8 +96,14 @@ export async function getLevelStats(
 		const totalLateMinutes = sumLateMinutes(allSessions)
 		const lateHours = totalLateMinutes / 60
 
+		const label = hasMultipleSubjects
+			? `${level.number} (${level.subject.name})`
+			: String(level.number)
+
 		return {
+			levelId: level.id,
 			level: level.number,
+			label,
 			avgGrade: Math.round(avgGrade * 10) / 10,
 			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
 			totalLateMinutes,
