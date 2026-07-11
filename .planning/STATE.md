@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
-current_phase: 14
-current_phase_name: Analytics
-status: verifying
+current_phase: 12
+current_phase_name: Progress & Sessions
+status: executing
 stopped_at: Completed 13-04-PLAN.md
-last_updated: "2026-07-11T21:56:38.807Z"
+last_updated: "2026-07-11T22:00:57.746Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 13 complete, transitioned to Phase 14
+last_activity_desc: Phase 11 complete, transitioned to Phase 12
 progress:
   total_phases: 6
   completed_phases: 4
@@ -24,20 +24,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 13 — journal
+**Current focus:** Phase 11 — groups-enrollment
 
 ## Current Position
 
-Phase: 14 — Analytics
+Phase: 12 — Progress & Sessions
 Plan: Not started
-Status: Awaiting human verification — see 13-UAT.md
-Last activity: 2026-07-11 — Phase 13 complete, transitioned to Phase 14
+Status: Executing Phase 11
+Last activity: 2026-07-11 — Phase 11 complete, transitioned to Phase 12
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 24
+- Total plans completed: 30
 - Average duration: —
 - Total execution time: —
 
@@ -50,6 +50,7 @@ Last activity: 2026-07-11 — Phase 13 complete, transitioned to Phase 14
 | 10 | 5 | - | - |
 | 12 | 5 | - | - |
 | 13 | 4 | - | - |
+| 11 | 6 | - | - |
 
 **Recent Trend:**
 
