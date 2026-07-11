@@ -1,7 +1,10 @@
-import { Card } from "antd";
+import { Button, Card } from "antd";
+import { BookOutlined, HistoryOutlined } from "@ant-design/icons";
 
 import { StudentMetricsCards } from "@/features/analytics/ui/StudentMetricsCards";
 import type { StudentEnrollmentDashboardItem } from "@/features/student-portal/actions/student-actions";
+import { buildStudentPortalHref } from "@/features/student-portal/lib/student-portal-query";
+import { StudentPortalGroupLink } from "@/features/student-portal/ui/StudentPortalGroupLink";
 import { ProgressBar } from "@/shared/ui/ProgressBar";
 import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
@@ -38,6 +41,28 @@ export function StudentEnrollmentCard({
           metrics={enrollment.periodMetrics}
           variant="portal"
         />
+
+        <div className="flex flex-wrap gap-2">
+          <StudentPortalGroupLink
+            href={buildStudentPortalHref("/student/lessons", enrollment.groupId)}
+            groupId={enrollment.groupId}
+          >
+            <Button type="default" icon={<BookOutlined />}>
+              Уроки
+            </Button>
+          </StudentPortalGroupLink>
+          <StudentPortalGroupLink
+            href={buildStudentPortalHref(
+              "/student/history",
+              enrollment.groupId,
+            )}
+            groupId={enrollment.groupId}
+          >
+            <Button type="default" icon={<HistoryOutlined />}>
+              История
+            </Button>
+          </StudentPortalGroupLink>
+        </div>
       </div>
     </Card>
   );
