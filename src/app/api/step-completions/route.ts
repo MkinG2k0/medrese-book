@@ -19,6 +19,42 @@ import {
 } from "@/shared/lib/teaching-session-duration-map";
 import { deleteStepCompletionsSchema } from "@/shared/lib/validations/step-completion";
 
+async function buildDurationMapsByGroup(
+  completions: Array<{ session: { date: Date; groupId: string } }>,
+): Promise<Map<string, Map<string, number | null>>> {
+  const groupDateRanges = new Map<string, { gte: Date; lte: Date }>();
+
+  for (const completion of completions) {
+    const groupId = completion.session.groupId;
+    const sessionTime = completion.session.date.getTime();
+    const existing = groupDateRanges.get(groupId);
+
+    if (!existing) {
+      groupDateRanges.set(groupId, {
+        gte: completion.session.date,
+        lte: completion.session.date,
+      });
+      continue;
+    }
+
+    existing.gte = new Date(Math.min(existing.gte.getTime(), sessionTime));
+    existing.lte = new Date(Math.max(existing.lte.getTime(), sessionTime));
+  }
+
+  const durationMapsByGroup = new Map<string, Map<string, number | null>>();
+
+  await Promise.all(
+    [...groupDateRanges.entries()].map(async ([groupId, dateRange]) => {
+      durationMapsByGroup.set(
+        groupId,
+        await buildTeachingSessionDurationByDate(groupId, dateRange),
+      );
+    }),
+  );
+
+  return durationMapsByGroup;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
@@ -29,31 +65,55 @@ export async function GET(request: Request) {
     return error("Некорректная дата");
   }
 
+  const subjectId = searchParams.get("subjectId");
+
   const authResult = await authorizeApiRequest({
     allowedRoles: ["TEACHER", "MANAGER", "SUPER_ADMIN"],
     context: { studentId },
   });
   if ("error" in authResult) return authResult.error;
 
-  const enrollment = await prisma.groupEnrollment.findFirst({
-    where: { studentId },
-    orderBy: { enrolledAt: "asc" },
-    select: { groupId: true },
-  });
-  if (!enrollment) return notFound("Ученик");
+  let legacyGroupId: string | null = null;
+  if (!subjectId) {
+    const enrollment = await prisma.groupEnrollment.findFirst({
+      where: { studentId },
+      orderBy: { enrolledAt: "asc" },
+      select: { groupId: true },
+    });
+    if (!enrollment) return notFound("Ученик");
+    legacyGroupId = enrollment.groupId;
+  }
 
   const dayRange = dateStr ? getCalendarDayQueryRange(dateStr) : null;
+
+  const sessionWhere = subjectId
+    ? {
+        isAdjustment: false,
+        group: { subjectId },
+        ...(dayRange
+          ? { date: { gte: dayRange.start, lte: dayRange.end } }
+          : {}),
+      }
+    : dayRange
+      ? { date: { gte: dayRange.start, lte: dayRange.end } }
+      : undefined;
 
   const rawCompletions = await prisma.stepCompletion.findMany({
     where: {
       studentId,
-      ...(dayRange
-        ? { session: { date: { gte: dayRange.start, lte: dayRange.end } } }
-        : {}),
+      ...(subjectId ? { isPriorCredit: false } : {}),
+      ...(sessionWhere ? { session: sessionWhere } : {}),
     },
     include: {
       step: true,
-      session: { select: { id: true, date: true, attendance: true } },
+      session: {
+        select: {
+          id: true,
+          date: true,
+          attendance: true,
+          ...(subjectId ? { groupId: true } : {}),
+        },
+      },
     },
     orderBy: [{ step: { order: "asc" } }, { createdAt: "desc" }],
   });
@@ -64,39 +124,58 @@ export async function GET(request: Request) {
       )
     : rawCompletions;
 
-  const sessionDates = completions.map((completion) => completion.session.date);
-  const durationByDate =
-    sessionDates.length > 0
-      ? await buildTeachingSessionDurationByDate(enrollment.groupId, {
-          gte: new Date(
-            Math.min(...sessionDates.map((date) => date.getTime())),
-          ),
-          lte: new Date(
-            Math.max(...sessionDates.map((date) => date.getTime())),
-          ),
-        })
-      : new Map<string, number | null>();
+  let durationByDate = new Map<string, number | null>();
+  let durationMapsByGroup = new Map<string, Map<string, number | null>>();
+
+  if (subjectId && completions.length > 0) {
+    durationMapsByGroup = await buildDurationMapsByGroup(
+      completions as Array<{ session: { date: Date; groupId: string } }>,
+    );
+  } else if (!subjectId && legacyGroupId) {
+    const sessionDates = completions.map((completion) => completion.session.date);
+    if (sessionDates.length > 0) {
+      durationByDate = await buildTeachingSessionDurationByDate(legacyGroupId, {
+        gte: new Date(
+          Math.min(...sessionDates.map((date) => date.getTime())),
+        ),
+        lte: new Date(
+          Math.max(...sessionDates.map((date) => date.getTime())),
+        ),
+      });
+    }
+  }
 
   return success(
-    completions.map((completion) => ({
-      id: completion.id,
-      stepId: completion.stepId,
-      grade: completion.grade,
-      note: completion.note,
-      createdAt: completion.createdAt,
-      step: {
-        order: completion.step.order,
-        title: completion.step.title,
-        hours: completion.step.hours,
-      },
-      session: {
-        ...completion.session,
-        sessionDurationMinutes: teachingSessionDurationFromMap(
-          durationByDate,
-          completion.session.date,
-        ),
-      },
-    })),
+    completions.map((completion) => {
+      const sessionDurationMinutes = subjectId
+        ? teachingSessionDurationFromMap(
+            durationMapsByGroup.get(
+              (completion.session as { groupId: string }).groupId,
+            ) ?? new Map(),
+            completion.session.date,
+          )
+        : teachingSessionDurationFromMap(
+            durationByDate,
+            completion.session.date,
+          );
+
+      return {
+        id: completion.id,
+        stepId: completion.stepId,
+        grade: completion.grade,
+        note: completion.note,
+        createdAt: completion.createdAt,
+        step: {
+          order: completion.step.order,
+          title: completion.step.title,
+          hours: completion.step.hours,
+        },
+        session: {
+          ...completion.session,
+          sessionDurationMinutes,
+        },
+      };
+    }),
   );
 }
 

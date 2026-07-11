@@ -21,12 +21,17 @@ export type StepCompletionRow = {
   };
 };
 
-export function useStepCompletions(studentId: string, date?: string | null) {
+export function useStepCompletions(
+  studentId: string,
+  date?: string | null,
+  subjectId?: string | null,
+) {
   return useQuery<StepCompletionRow[]>({
-    queryKey: ["step-completions", studentId, date ?? "all"],
+    queryKey: ["step-completions", studentId, date ?? "all", subjectId ?? "all"],
     queryFn: async () => {
       const params = new URLSearchParams({ studentId });
       if (date) params.set("date", date);
+      if (subjectId) params.set("subjectId", subjectId);
       const res = await fetch(`/api/step-completions?${params}`);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
