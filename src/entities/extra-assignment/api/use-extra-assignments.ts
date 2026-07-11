@@ -1,6 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 
 import type {
 	ExtraAssignmentHistoryRow,
@@ -170,16 +171,26 @@ export function useClearExtraAssignmentGrade(studentId: string, date: string) {
 	})
 }
 
-export function useStudentExtraAssignmentHistory(studentId: string) {
+export function useStudentExtraAssignmentHistory(studentId?: string) {
+	const { data: session } = useSession()
+	const isStudent = session?.user?.role === 'STUDENT'
+	const resolvedStudentId = isStudent ? session?.user?.studentId : studentId
+
 	return useQuery<ExtraAssignmentHistoryRow[]>({
-		queryKey: ['extra-assignment-history', studentId],
+		queryKey: ['extra-assignment-history', resolvedStudentId ?? 'self'],
 		queryFn: async () => {
-			const params = new URLSearchParams({ studentId })
-			const res = await fetch(`/api/extra-assignments/history?${params}`)
+			const params = new URLSearchParams()
+			if (!isStudent && studentId) {
+				params.set('studentId', studentId)
+			}
+			const query = params.toString()
+			const res = await fetch(
+				`/api/extra-assignments/history${query ? `?${query}` : ''}`,
+			)
 			const json = await res.json()
 			if (json.error) throw new Error(json.error)
 			return json.data
 		},
-		enabled: !!studentId,
+		enabled: isStudent ? !!session?.user?.studentId : !!studentId,
 	})
 }

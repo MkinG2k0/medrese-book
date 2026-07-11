@@ -164,6 +164,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <HistoryOutlined />,
     label: "История занятий",
   },
+  "/student/extra-assignments": {
+    key: "/student/extra-assignments",
+    icon: <FileTextOutlined />,
+    label: "Доп. задания",
+  },
   "/student/awards": {
     key: "/student/awards",
     icon: <TrophyOutlined />,
@@ -212,6 +217,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/student/me",
     "/student/lessons",
     "/student/history",
+    "/student/extra-assignments",
     "/student/awards",
     "/news",
     "/messages",
