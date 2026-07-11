@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Card } from "antd";
 import { BookOutlined, HistoryOutlined } from "@ant-design/icons";
 
