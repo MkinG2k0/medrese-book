@@ -111,7 +111,25 @@ Plans:
   3. Страница урока: оценки по шагам программы предмета, посещаемость по предмету
   4. Таймер урока и сохранение сессии работают с `subjectId`
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 13-01-PLAN.md — journal-url, storage, getTeacherGroups, useJournalDate groupId (wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 13-02-PLAN.md — Group Select на /journal, список учеников per enrollment (wave 2)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 13-03-PLAN.md — Страница урока с groupId, LessonPageHeader контекст (wave 3)
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [ ] 13-04-PLAN.md — History routes, E2E, удаление getTeacherGroup (wave 4)
 
 ### Phase 14: Analytics
 
@@ -148,7 +166,7 @@ Plans:
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
-| 13. Journal | 0/TBD | Not started | - |
+| 13. Journal | 0/4 | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
 
