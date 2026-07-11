@@ -20,6 +20,79 @@ import {
 import { getCompletionsByStepId } from '@/shared/lib/step-completion'
 import type { StepContent } from '@/shared/lib/validations/step'
 
+export type StudentEnrollmentDashboardItem = {
+	groupId: string
+	subjectName: string
+	groupName: string
+	levelTitle: string
+	currentStepIdx: number
+	totalSteps: number
+	periodMetrics: StudentPeriodMetrics
+}
+
+export type StudentEnrollmentDashboard = {
+	studentName: string
+	enrollments: StudentEnrollmentDashboardItem[]
+}
+
+export async function getStudentEnrollmentDashboard(): Promise<StudentEnrollmentDashboard | null> {
+	const session = await requireRole('STUDENT')
+	const studentId = session.user.studentId
+	if (!studentId) return null
+
+	const student = await prisma.student.findUnique({
+		where: { id: studentId },
+		include: { user: true },
+	})
+	if (!student) return null
+
+	const enrollments = await prisma.groupEnrollment.findMany({
+		where: { studentId },
+		orderBy: { enrolledAt: 'asc' },
+		include: {
+			group: { include: { subject: true } },
+			level: true,
+		},
+	})
+
+	if (enrollments.length === 0) return null
+
+	const month = startOfMonth(new Date())
+	const monthLabel = formatAnalyticsMonth(month)
+
+	const enrollmentCards = await Promise.all(
+		enrollments.map(async (enrollment) => {
+			const [totalSteps, metricsResult] = await Promise.all([
+				getTotalProgramSteps(enrollment.group.subjectId),
+				loadStudentMetricsForMonth(studentId, month, monthLabel, {
+					subjectId: enrollment.group.subjectId,
+					groupId: enrollment.groupId,
+				}),
+			])
+
+			return {
+				groupId: enrollment.groupId,
+				subjectName: enrollment.group.subject.name,
+				groupName: enrollment.group.name,
+				levelTitle: `${enrollment.level.number}й уровень — ${enrollment.level.title}`,
+				currentStepIdx: enrollment.currentStepIdx,
+				totalSteps,
+				periodMetrics: metricsResult?.periodMetrics ?? {
+					lessonsCount: 0,
+					stepsCount: 0,
+					totalMinutes: 0,
+					monthLabel,
+				},
+			}
+		}),
+	)
+
+	return {
+		studentName: student.user.name,
+		enrollments: enrollmentCards,
+	}
+}
+
 export async function getStudentProfile() {
 	const session = await requireRole('STUDENT')
 
@@ -33,7 +106,7 @@ export async function getStudentProfile() {
 
 	if (!student) return null
 
-	const totalSteps = await getTotalProgramSteps()
+	const totalSteps = await getTotalProgramSteps(enrollment.group.subjectId)
 
 	return {
 		name: student.user.name,
@@ -101,7 +174,10 @@ export async function getStudentLessons() {
 	const completionsByStepId = getCompletionsByStepId(
 		student.completions.filter((c) => stepIds.has(c.stepId)),
 	)
-	const stepOffset = await getStepOffsetForLevel(enrollment.level.number)
+	const stepOffset = await getStepOffsetForLevel(
+		enrollment.level.number,
+		enrollment.group.subjectId,
+	)
 	const localStepIdx = getLocalStepIdx(enrollment.currentStepIdx, stepOffset)
 
 	return {
