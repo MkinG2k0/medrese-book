@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
-current_phase: 15
-status: executing
+current_phase: 0
+status: Awaiting next milestone
 stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-07-11T23:12:34.242Z"
+last_updated: "2026-07-11T23:24:18.137Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 15 complete
+last_activity_desc: Milestone v2.0 completed and archived
 progress:
   total_phases: 6
   completed_phases: 6
@@ -21,17 +21,44 @@ current_phase_name: student-portal-extra-assignments
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-24)
+See: .planning/PROJECT.md (updated 2026-07-12)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 15 — student-portal-extra-assignments
+**Current focus:** Planning next milestone — run `/gsd-new-milestone`
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-07-12:
+
+| Category | Item | Status |
+|----------|------|--------|
+| quick_task | 260606-v2w-lessonpage-lib-fsd | unknown |
+| quick_task | 260624-psw-restrict-user-switcher | unknown |
+| quick_task | 260624-sk2-post-api-sessions-5 | unknown |
+| quick_task | 260625-0pl-1 | unknown |
+| quick_task | 260625-0wt-lesson-time-tracking | unknown |
+| quick_task | 260625-1jf-teacher-lessons-analytics | unknown |
+| quick_task | 260625-1q6-userstable | unknown |
+| quick_task | 260625-22r-analytics-student-history-modal | unknown |
+| quick_task | 260625-28w-student-status | unknown |
+| quick_task | 260625-2mj-integrate-app-icon | unknown |
+| quick_task | 260625-2ov-groups | unknown |
+| quick_task | 260625-2sa-ui-student | unknown |
+| quick_task | 260625-33a-deduplikatsiya-uchenikov | unknown |
+| quick_task | 260625-krf-messenger | unknown |
+| quick_task | 260625-lbe-substitution-header | unknown |
+| quick_task | 260625-ljc-pwa | unknown |
+| quick_task | 260625-m6v-mobile | unknown |
+| quick_task | 260701-x4v-calendar-lesson-days | missing |
+
+Note: многие quick tasks фактически выполнены (см. Quick Tasks Completed ниже); audit-open флагирует отсутствие SUMMARY.md.
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
-Status: Ready to execute plan 15-04
-Last activity: 2026-07-11 — Phase 15 complete
+Phase: Milestone v2.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-11 — Milestone v2.0 completed and archived
 
 ## Performance Metrics
 
@@ -220,3 +247,8 @@ Last activity: 2026-07-11 - Completed quick task 260712-12i: Fix duplicate React
 Last session: 2026-07-11T23:05:29.581Z
 Stopped at: Completed 15-02-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with `/gsd-new-milestone`
+- Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
