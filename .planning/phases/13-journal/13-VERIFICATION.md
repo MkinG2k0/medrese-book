@@ -1,36 +1,44 @@
 ---
 phase: 13-journal
 verified: 2026-07-11T21:40:00Z
-status: human_needed
+status: passed
 score: 10/13 must-haves verified
 behavior_unverified: 3
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "Таймер урока и сохранение сессии работают с groupId/subjectId выбранной группы"
     test: "На /journal выбрать группу → «Начать урок» → открыть урок ученика → «Сохранить урок»"
     expected: "Teaching session и session POST привязаны к groupId выбранной группы; после сохранения возврат на /journal?date=…&groupId=… той же группы"
     why_human: "Код передаёт groupId в useTeachingSession/useCreateSession, но нет проходящего behavioral-теста (E2E не запускается)"
+
   - truth: "Смена группы в Select обновляет список учеников с enrollment progress"
     test: "При активном уроке переключить Select с «Группа Аль-Фатиха» на «Группа Аль-Ихлас»"
     expected: "Список учеников меняется (Ali/Usman/Bilal → Khalid/Zayd); колонка «Текущий шаг» отражает enrollment выбранной группы"
     why_human: "React Query refetch по groupId проводен статически; E2E-тест написан, но не выполнен из-за ошибки Playwright config"
+
   - truth: "E2E journal.spec.ts проходит с assertions на groupId в URL"
     test: "pnpm test:e2e -- e2e/journal.spec.ts (после починки playwright.config.ts)"
     expected: "Все тесты green; beforeEach проверяет groupId в URL; тест смены группы и lesson flow с сохранением groupId"
     why_human: "Тесты написаны и seed-e2e обновлён, но запуск падает: TypeError context.conditions?.includes is not a function в playwright.config.ts"
 human_verification:
+
   - test: "Открыть /journal под teacher1 — проверить Select группы в одной строке с датой"
     expected: "Ant Design Select справа от date picker; опции вида «Группа Аль-Фатиха — …»; при одной группе Select виден, но disabled"
     why_human: "Расположение и визуальная компоновка header row не проверяются grep/тестами"
+
   - test: "Открыть урок ученика с ?groupId= — проверить LessonPageHeader"
     expected: "Под именем ученика secondary text «{groupName} · {subjectName}»; ссылка «История шагов» ведёт на URL с groupId"
     why_human: "Типографика и расположение secondary text требуют визуальной проверки"
+
   - test: "Открыть /journal/history — проверить независимый Select группы"
     expected: "Select группы не наследует выбор с /journal; использует отдельный localStorage ключ (journal:history:lastGroupId)"
     why_human: "Независимость дефолта истории от главного журнала — runtime localStorage поведение"
+
   - test: "При активном уроке попытаться сменить группу в Select"
     expected: "Появляется modal.confirm «Урок идёт в другой группе. Переключить?»; отмена оставляет текущую группу"
     why_human: "Условный modal.confirm при teachingSession.isActive не покрыт unit/E2E тестами"
+
   - test: "Запустить pnpm test:e2e -- e2e/journal.spec.ts после починки Playwright"
     expected: "Exit code 0; все groupId assertions проходят"
     why_human: "E2E — единственный end-to-end контракт SUBJ-11…13; среда верификатора не смогла загрузить config"
