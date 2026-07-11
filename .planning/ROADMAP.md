@@ -147,7 +147,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
-| 12. Progress & Sessions | 5/5 | Complete   | 2026-07-11 |
+| 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 0/TBD | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
