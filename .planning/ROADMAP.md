@@ -15,7 +15,7 @@
 - [x] **Phase 12: Progress & Sessions** — прогресс на зачисление (группу), сессии с groupId (completed 2026-07-11)
 - [x] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету (awaiting human verification) (completed 2026-07-11)
 - [x] **Phase 14: Analytics** — аналитика с селектом предмета (completed 2026-07-11)
-- [ ] **Phase 15: Student Portal & Extra Assignments** — портал ученика и допзадания по предмету
+- [x] **Phase 15: Student Portal & Extra Assignments** — портал ученика и допзадания по предмету (completed 2026-07-11)
 
 ## Phase Details
 
@@ -169,7 +169,7 @@ Plans:
   2. Дополнительные задания фильтруются и назначаются в контексте шагов предмета
   3. История допзаданий в карточке/портале ученика группируется по предмету
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 
 Plans:
 
@@ -184,7 +184,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 + 15-03)*
 
-- [ ] 15-04-PLAN.md — История допзаданий ученика по предметам + E2E (wave 3)
+- [x] 15-04-PLAN.md — История допзаданий ученика по предметам + E2E (wave 3)
 
 ## Progress (v2.0)
 
@@ -197,7 +197,7 @@ Plans:
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 4/4 | Complete    | 2026-07-11 |
 | 14. Analytics | 3/3 | Complete    | 2026-07-11 |
-| 15. Student Portal & Extra Assignments | 3/4 | In Progress|  |
+| 15. Student Portal & Extra Assignments | 4/4 | Complete   | 2026-07-11 |
 
 ---
 *Roadmap created: 2026-07-07 — milestone v2.0 Система предметов*
