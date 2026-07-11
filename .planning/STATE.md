@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
 current_phase: 15
-current_phase_name: Student Portal & Extra Assignments
+current_phase_name: student-portal-extra-assignments
 status: executing
 stopped_at: Phase 15 context gathered
-last_updated: "2026-07-11T22:50:36.417Z"
+last_updated: "2026-07-11T22:54:25.472Z"
 last_activity: 2026-07-11
-last_activity_desc: Phase 14 complete, transitioned to Phase 15
+last_activity_desc: Phase 15 execution started
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 23
-  completed_plans: 23
+  total_plans: 27
+  completed_plans: 24
   percent: 83
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Phase 14 — analytics
+**Current focus:** Phase 15 — student-portal-extra-assignments
 
 ## Current Position
 
-Phase: 15 — Student Portal & Extra Assignments
-Plan: Not started
+Phase: 15 (student-portal-extra-assignments) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-07-11 — Phase 14 complete, transitioned to Phase 15
+Last activity: 2026-07-11 — Phase 15 execution started
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Last activity: 2026-07-11 — Phase 14 complete, transitioned to Phase 15
 | Phase 12-progress-sessions P02 | 12min | 3 tasks | 6 files |
 | Phase 13-journal P02 | 15min | 3 tasks | 3 files |
 | Phase 13-journal P04 | 25min | 3 tasks | 9 files |
+| Phase 15 P01 | 8min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,8 @@ Recent decisions affecting current work:
 - [Phase 13]: History group picker uses JOURNAL_HISTORY_GROUP_STORAGE_KEY independent from main journal (D-14)
 - [Phase 13]: seed-e2e dual enrollment Khalid/Zayd in teacher1 second group for E2E switch
 - [Phase 13]: getTeacherGroup removed from journal feature after history routes migrated
+- [Phase 15]: Dashboard /student/me с карточками per GroupEnrollment и subject-scoped metrics
+- [Phase 15]: student-portal groupId helpers готовы для plan 15-02
 
 ### Pending Todos
 
@@ -208,6 +211,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-11 - Completed quick task 260712-12i: Fix duplicate React keys in LevelStats Table
-Last session: 2026-07-11T22:42:25.276Z
+Last session: 2026-07-11T22:53:55.188Z
 Stopped at: Phase 15 context gathered
 Resume file: .planning/phases/15-student-portal-extra-assignments/15-CONTEXT.md
