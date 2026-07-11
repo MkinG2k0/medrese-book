@@ -329,6 +329,7 @@ export async function getStudentLesson(
 	return {
 		groupId: targetGroupId,
 		groupName: enrollment.group.name,
+		subjectId: enrollment.group.subjectId,
 		subjectName: enrollment.group.subject.name,
 		currentStepIdx: enrollment.currentStepIdx,
 		student: {

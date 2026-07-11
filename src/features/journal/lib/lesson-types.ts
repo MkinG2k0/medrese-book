@@ -12,6 +12,7 @@ export type StepCompletionRecord = {
 export type LessonPageProps = {
   groupId: string;
   groupName: string;
+  subjectId: string;
   subjectName: string;
   studentId: string;
   studentName: string;

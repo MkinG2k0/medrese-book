@@ -13,6 +13,7 @@ type AssignExtraAssignmentModalProps = {
 	open: boolean
 	studentId: string
 	sessionId: string | null
+	subjectId: string
 	displayStepId: string
 	displayStepLabel?: string
 	date: string
@@ -25,6 +26,7 @@ export function AssignExtraAssignmentModal({
 	open,
 	studentId,
 	sessionId,
+	subjectId,
 	displayStepId,
 	displayStepLabel,
 	date,
@@ -40,11 +42,12 @@ export function AssignExtraAssignmentModal({
 
 	const filters = useMemo(
 		() => ({
+			subjectId,
 			authorId: authorFilter,
 			stepId: stepFilter,
 			title: titleFilter.trim() || undefined,
 		}),
-		[authorFilter, stepFilter, titleFilter],
+		[subjectId, authorFilter, stepFilter, titleFilter],
 	)
 
 	const { data: templates = [], isLoading } = useExtraAssignments(filters)

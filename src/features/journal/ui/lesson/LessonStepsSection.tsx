@@ -42,6 +42,7 @@ type LessonStepsSectionProps = {
   studentId: string;
   sessionId: string | null;
   sessionDate: string;
+  subjectId: string;
   extraInstances: SessionExtraAssignmentInstance[];
   assignModalStepId: string | null;
   assignModalStepLabel: string | null;
@@ -76,6 +77,7 @@ export function LessonStepsSection({
   studentId,
   sessionId,
   sessionDate,
+  subjectId,
   extraInstances,
   assignModalStepId,
   assignModalStepLabel,
@@ -191,6 +193,7 @@ export function LessonStepsSection({
         open={assignModalStepId !== null}
         studentId={studentId}
         sessionId={sessionId}
+        subjectId={subjectId}
         displayStepId={assignModalStepId ?? ""}
         displayStepLabel={assignModalStepLabel ?? undefined}
         date={sessionDate}

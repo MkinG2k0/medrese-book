@@ -28,6 +28,7 @@ export default async function StudentLessonPage({ params, searchParams }: Props)
 			<LessonPage
 				groupId={lesson.groupId}
 				groupName={lesson.groupName}
+				subjectId={lesson.subjectId}
 				subjectName={lesson.subjectName}
 				studentId={lesson.student.id}
 				studentName={lesson.student.name}

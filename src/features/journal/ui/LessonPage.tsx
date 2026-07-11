@@ -58,6 +58,7 @@ export function LessonPage(props: LessonPageProps) {
         studentId={lesson.studentId}
         sessionId={lesson.sessionId}
         sessionDate={lesson.sessionDate}
+        subjectId={props.subjectId}
         extraInstances={lesson.extraInstances}
         assignModalStepId={lesson.assignModalStepId}
         assignModalStepLabel={lesson.assignModalStepLabel}
