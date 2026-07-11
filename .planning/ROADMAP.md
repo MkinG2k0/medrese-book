@@ -82,11 +82,21 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
+**Wave 1**
 
 - [ ] 12-01-PLAN.md — Schema GroupEnrollment.currentStepIdx, Session.groupId, prod-safe migration (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 12-02-PLAN.md — recalculate и syncCompletionsForProgress per enrollment (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 12-03-PLAN.md — Sessions API, step-completions, journal-actions (wave 3)
 - [ ] 12-04-PLAN.md — students API, student-admin, group enroll, compile sweep (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 12-05-PLAN.md — Docs SUBJ-08…10, seed, финальная верификация (wave 4)
 
 ### Phase 13: Journal
