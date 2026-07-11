@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const createSessionSchema = z.object({
 	studentId: z.string(),
+	groupId: z.string().min(1, 'groupId обязателен'),
 	date: z.string().datetime().or(z.string().date()),
 	attendance: z.enum(['PRESENT', 'LATE', 'ABSENT']),
 	lateMinutes: z.number().int().min(0).optional().nullable(),
