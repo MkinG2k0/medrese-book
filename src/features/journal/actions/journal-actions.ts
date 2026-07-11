@@ -294,10 +294,10 @@ export async function getStudentLesson(
 
 	return {
 		groupId: targetGroupId,
+		currentStepIdx: enrollment.currentStepIdx,
 		student: {
 			id: student.id,
 			name: student.user.name,
-			currentStepIdx: enrollment.currentStepIdx,
 		},
 		level: {
 			number: level.number,
@@ -333,10 +333,10 @@ export async function getStudentStepHistory(studentId: string) {
 	const student = enrollment.student
 
 	return {
+		currentStepIdx: enrollment.currentStepIdx,
 		student: {
 			id: student.id,
 			name: student.user.name,
-			currentStepIdx: enrollment.currentStepIdx,
 		},
 		level: {
 			number: enrollment.level.number,

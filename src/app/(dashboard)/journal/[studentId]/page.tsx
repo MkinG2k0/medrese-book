@@ -27,7 +27,7 @@ export default async function StudentLessonPage({ params, searchParams }: Props)
 				groupId={lesson.groupId}
 				studentId={lesson.student.id}
 				studentName={lesson.student.name}
-				currentStepIdx={lesson.student.currentStepIdx}
+				currentStepIdx={lesson.currentStepIdx}
 				levelNumber={lesson.level.number}
 				totalSteps={lesson.totalSteps}
 				totalProgramSteps={lesson.totalProgramSteps}

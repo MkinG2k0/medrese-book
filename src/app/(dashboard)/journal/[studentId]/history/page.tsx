@@ -17,7 +17,7 @@ export default async function StudentStepHistoryPage({ params }: Props) {
 		<StepHistoryPage
 			studentId={history.student.id}
 			studentName={history.student.name}
-			currentStepIdx={history.student.currentStepIdx}
+			currentStepIdx={history.currentStepIdx}
 			levelNumber={history.level.number}
 			levelTitle={history.level.title}
 			backHref={`/journal/${studentId}`}

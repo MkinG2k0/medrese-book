@@ -36,6 +36,7 @@ export default async function MyGroupPage() {
         {
           levelId: enrollment.levelId,
           groupId: group.id,
+          currentStepIdx: enrollment.currentStepIdx,
           level: enrollment.level,
           group: { name: group.name },
         },

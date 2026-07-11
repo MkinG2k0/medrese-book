@@ -22,11 +22,11 @@ type UserWithRelations = {
 		phone: string | null
 		guardianName: string | null
 		guardianPhone: string | null
-		currentStepIdx: number
 		status: StudentStatus
 		enrollments: {
 			groupId: string
 			levelId: string
+			currentStepIdx: number
 			enrolledAt?: Date
 			group: { name: string }
 			level: { title: string; number?: number }
@@ -75,10 +75,11 @@ export function mapUsersToDetails(
 			? getStepOffset(levels, studentLevel.number)
 			: 0
 		const stepCount = studentLevel?.steps.length ?? 0
+		const enrollmentStepIdx = primaryEnrollment?.currentStepIdx ?? 0
 		const localStepIndex =
 			user.student && studentLevel
 				? Math.min(
-						Math.max(0, user.student.currentStepIdx - stepOffset),
+						Math.max(0, enrollmentStepIdx - stepOffset),
 						Math.max(0, stepCount - 1),
 					)
 				: 0
@@ -99,7 +100,7 @@ export function mapUsersToDetails(
 						phone: user.student.phone ?? undefined,
 						guardianName: user.student.guardianName ?? undefined,
 						guardianPhone: user.student.guardianPhone ?? undefined,
-						currentStepIdx: user.student.currentStepIdx,
+						currentStepIdx: enrollmentStepIdx,
 						levelId: primaryEnrollment?.levelId ?? '',
 						levelTitle: primaryEnrollment?.level.title,
 						groupId: primaryEnrollment?.groupId ?? '',

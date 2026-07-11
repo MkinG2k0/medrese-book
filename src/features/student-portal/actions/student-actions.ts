@@ -37,7 +37,7 @@ export async function getStudentProfile() {
 
 	return {
 		name: student.user.name,
-		currentStepIdx: student.currentStepIdx,
+		currentStepIdx: enrollment.currentStepIdx,
 		totalSteps,
 		levelTitle: `${enrollment.level.number}й уровень — ${enrollment.level.title}`,
 	}
@@ -96,7 +96,7 @@ export async function getStudentLessons() {
 		student.completions.filter((c) => stepIds.has(c.stepId)),
 	)
 	const stepOffset = await getStepOffsetForLevel(enrollment.level.number)
-	const localStepIdx = getLocalStepIdx(student.currentStepIdx, stepOffset)
+	const localStepIdx = getLocalStepIdx(enrollment.currentStepIdx, stepOffset)
 
 	return {
 		levelTitle: enrollment.level.title,

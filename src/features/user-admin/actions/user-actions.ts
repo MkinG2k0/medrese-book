@@ -71,6 +71,8 @@ export async function createUsers(input: unknown) {
 		  }
 		| undefined
 
+	let groupSubjectId: string | undefined
+
 	if (data.role === 'STUDENT') {
 		const levelId = data.levelId ?? (await getDefaultLevelId())
 		const group = await prisma.group.findUnique({
@@ -81,6 +83,8 @@ export async function createUsers(input: unknown) {
 		if (!group) {
 			throw new Error('Группа не найдена')
 		}
+
+		groupSubjectId = group.subjectId
 
 		const foundLevel = await prisma.level.findFirst({
 			where: { id: levelId, subjectId: group.subjectId },
@@ -106,7 +110,10 @@ export async function createUsers(input: unknown) {
 
 		if (data.role === 'STUDENT' && level) {
 			const localStepIndex = data.localStepIndex ?? 0
-			const stepOffset = await getStepOffsetForLevel(level.number)
+			const stepOffset = await getStepOffsetForLevel(
+				level.number,
+				groupSubjectId,
+			)
 			const currentStepIdx = stepOffset + localStepIndex
 
 			const createdStudent = await prisma.$transaction(async (tx) => {
@@ -121,7 +128,6 @@ export async function createUsers(input: unknown) {
 								phone: entry.phone,
 								guardianName: entry.guardianName,
 								guardianPhone: entry.guardianPhone,
-								currentStepIdx,
 							},
 						},
 					},
@@ -133,12 +139,14 @@ export async function createUsers(input: unknown) {
 						studentId: user.student!.id,
 						groupId: data.groupId!,
 						levelId: level.id,
+						currentStepIdx,
 					},
 				})
 
 				await syncCompletionsForProgress(
 					tx,
 					user.student!.id,
+					data.groupId!,
 					level.steps,
 					localStepIndex,
 				)
@@ -207,6 +215,7 @@ export async function updateUser(userId: string, input: unknown) {
 		const enrollment = await prisma.groupEnrollment.findFirst({
 			where: { studentId: user.student.id },
 			include: {
+				group: { select: { subjectId: true } },
 				level: {
 					include: { steps: { orderBy: { order: 'asc' } } },
 				},
@@ -224,8 +233,11 @@ export async function updateUser(userId: string, input: unknown) {
 			throw new Error('Шаг выходит за пределы уровня')
 		}
 
-		const previousStepIdx = user.student.currentStepIdx
-		const stepOffset = await getStepOffsetForLevel(level.number)
+		const previousStepIdx = enrollment.currentStepIdx
+		const stepOffset = await getStepOffsetForLevel(
+			level.number,
+			enrollment.group.subjectId,
+		)
 		const currentStepIdx = stepOffset + data.localStepIndex
 
 		const enrollments = await prisma.groupEnrollment.findMany({
@@ -237,9 +249,15 @@ export async function updateUser(userId: string, input: unknown) {
 			await syncCompletionsForProgress(
 				tx,
 				user.student!.id,
+				enrollment.groupId,
 				level.steps,
 				data.localStepIndex,
 			)
+
+			await tx.groupEnrollment.update({
+				where: { id: enrollment.id },
+				data: { currentStepIdx },
+			})
 
 			await tx.student.update({
 				where: { id: user.student!.id },
@@ -248,7 +266,6 @@ export async function updateUser(userId: string, input: unknown) {
 					phone: data.phone,
 					guardianName: data.guardianName,
 					guardianPhone: data.guardianPhone,
-					currentStepIdx,
 					status: data.status,
 				},
 			})

@@ -200,7 +200,7 @@ export async function loadStudentMetricsContext(
 	})
 
 	const levelProgress = computeLevelProgress({
-		currentStepIdx: student.currentStepIdx,
+		currentStepIdx: enrollment.currentStepIdx,
 		levelNumber: enrollment.level.number,
 		levelStepOffset,
 		totalStepsOnLevel: enrollment.level.steps.length,

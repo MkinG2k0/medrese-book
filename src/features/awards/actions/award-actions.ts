@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRoles } from '@/shared/lib/session'
 
@@ -25,18 +26,25 @@ export async function getStudentsForAwards() {
 	const students = await prisma.student.findMany({
 		include: {
 			user: true,
+			enrollments: {
+				orderBy: primaryEnrollmentOrderBy,
+				take: 1,
+				select: { currentStepIdx: true },
+			},
 			sessions: { select: { attendance: true, lateMinutes: true } },
 		},
-		orderBy: { currentStepIdx: 'desc' },
+		orderBy: { user: { name: 'asc' } },
 	})
 
-	return students.map((student) => ({
-		id: student.id,
-		name: student.user.name,
-		currentStepIdx: student.currentStepIdx,
-		absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
-		lateCount: student.sessions.filter((s) => s.attendance === 'LATE').length,
-	}))
+	return students
+		.map((student) => ({
+			id: student.id,
+			name: student.user.name,
+			currentStepIdx: student.enrollments[0]?.currentStepIdx ?? 0,
+			absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
+			lateCount: student.sessions.filter((s) => s.attendance === 'LATE').length,
+		}))
+		.sort((a, b) => b.currentStepIdx - a.currentStepIdx)
 }
 
 export async function createAward(input: unknown) {
