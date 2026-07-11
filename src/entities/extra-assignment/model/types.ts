@@ -55,9 +55,15 @@ export type SessionExtraAssignmentInstance = {
 	completion: ExtraAssignmentCompletion
 }
 
+export type ExtraAssignmentHistorySubject = {
+	id: string
+	name: string
+}
+
 export type ExtraAssignmentHistoryRow = {
 	id: string
 	createdAt: string
+	subject: ExtraAssignmentHistorySubject
 	displayStep: {
 		order: number
 		title: string

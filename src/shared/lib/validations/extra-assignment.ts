@@ -30,7 +30,15 @@ export const gradeExtraAssignmentSchema = z.object({
 	note: z.string().nullable().optional(),
 })
 
+export const extraAssignmentHistoryQuerySchema = z.object({
+	studentId: z.string().optional(),
+	subjectId: z.string().optional(),
+})
+
 export type CreateExtraAssignmentInput = z.infer<typeof createExtraAssignmentSchema>
 export type UpdateExtraAssignmentInput = z.infer<typeof updateExtraAssignmentSchema>
 export type AssignExtraAssignmentInput = z.infer<typeof assignExtraAssignmentSchema>
 export type GradeExtraAssignmentInput = z.infer<typeof gradeExtraAssignmentSchema>
+export type ExtraAssignmentHistoryQuery = z.infer<
+	typeof extraAssignmentHistoryQuerySchema
+>

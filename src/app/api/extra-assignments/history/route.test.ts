@@ -37,11 +37,17 @@ describe("GET /api/extra-assignments/history", () => {
   });
 
   it("allows STUDENT without studentId query param", async () => {
-    authorizeApiRequestMock.mockResolvedValue({
-      session: {
-        user: { id: "student-user", role: "STUDENT", studentId: "student-ali" },
-      },
-    });
+    authorizeApiRequestMock
+      .mockResolvedValueOnce({
+        session: {
+          user: { id: "student-user", role: "STUDENT", studentId: "student-ali" },
+        },
+      })
+      .mockResolvedValueOnce({
+        session: {
+          user: { id: "student-user", role: "STUDENT", studentId: "student-ali" },
+        },
+      });
 
     const { GET } = await import("./route");
     const response = await GET(
@@ -49,7 +55,7 @@ describe("GET /api/extra-assignments/history", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(authorizeApiRequestMock).toHaveBeenCalledWith({
+    expect(authorizeApiRequestMock).toHaveBeenLastCalledWith({
       allowedRoles: ["TEACHER", "MANAGER", "SUPER_ADMIN", "STUDENT"],
       context: { studentId: "student-ali" },
     });
@@ -61,8 +67,10 @@ describe("GET /api/extra-assignments/history", () => {
   });
 
   it("returns 403 when STUDENT requests foreign studentId", async () => {
-    authorizeApiRequestMock.mockResolvedValue({
-      error: { status: 403 },
+    authorizeApiRequestMock.mockResolvedValueOnce({
+      session: {
+        user: { id: "student-user", role: "STUDENT", studentId: "student-ali" },
+      },
     });
 
     const { GET } = await import("./route");
