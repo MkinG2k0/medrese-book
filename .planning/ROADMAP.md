@@ -12,7 +12,7 @@
 
 - [x] **Phase 10: Subject Foundation** — схема, CRUD предметов, редактор программы предмета (completed 2026-07-07)
 - [x] **Phase 11: Groups & Enrollment** — предмет у группы, зачисление учеников в несколько групп (completed 2026-07-11)
-- [ ] **Phase 12: Progress & Sessions** — прогресс на зачисление (группу), сессии с groupId
+- [x] **Phase 12: Progress & Sessions** — прогресс на зачисление (группу), сессии с groupId (completed 2026-07-11)
 - [ ] **Phase 13: Journal** — журнал учителя с выбором группы и уроком по предмету
 - [ ] **Phase 14: Analytics** — аналитика с селектом предмета
 - [ ] **Phase 15: Student Portal & Extra Assignments** — портал ученика и допзадания по предмету
@@ -79,7 +79,7 @@ Plans:
 
 **Note**: Intentional deviation от «прогресс по предмету» — решение D-01 (discuss 2026-07-11). UI журнала — Phase 13.
 
-**Plans**: 5/5 plans executed
+**Plans**: 5/5 plans complete
 
 Plans:
 **Wave 1**
@@ -147,7 +147,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
-| 12. Progress & Sessions | 4/5 | In Progress|  |
+| 12. Progress & Sessions | 5/5 | Complete   | 2026-07-11 |
 | 13. Journal | 0/TBD | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
