@@ -26,6 +26,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     include: {
       step: { select: { title: true, order: true } },
       student: { include: { user: { select: { name: true } } } },
+      session: { select: { groupId: true } },
     },
   });
   if (!existing) return notFound("Запись");
@@ -48,7 +49,11 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
       });
 
-      await recalculateStudentStepIdx(completion.studentId, tx);
+      await recalculateStudentStepIdx(
+        completion.studentId,
+        existing.session.groupId,
+        tx,
+      );
 
       await dispatchDomainEvent(
         {

@@ -7,4 +7,5 @@ export const updateStepCompletionSchema = z.object({
 
 export const deleteStepCompletionsSchema = z.object({
   ids: z.array(z.string()).min(1),
+  groupId: z.string().min(1).optional(),
 });

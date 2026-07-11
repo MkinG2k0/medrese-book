@@ -107,7 +107,10 @@ export async function DELETE(request: Request) {
 
   const completions = await prisma.stepCompletion.findMany({
     where: { id: { in: parsed.data.ids } },
-    include: { student: true },
+    include: {
+      student: true,
+      session: { select: { groupId: true } },
+    },
   });
 
   if (completions.length === 0) return notFound("Записи");
@@ -118,9 +121,19 @@ export async function DELETE(request: Request) {
   }
 
   const studentId = completions[0]!.studentId;
+  const groupIds = new Set(completions.map((c) => c.session.groupId));
+  if (groupIds.size !== 1) {
+    return error("Можно удалять записи только одной группы");
+  }
+  const groupId = parsed.data.groupId ?? [...groupIds][0]!;
+
+  if (parsed.data.groupId && parsed.data.groupId !== groupId) {
+    return error("groupId не совпадает с сессией записей");
+  }
+
   const authResult = await authorizeApiRequest({
     allowedRoles: ["TEACHER"],
-    context: { studentId },
+    context: { studentId, groupId },
   });
   if ("error" in authResult) return authResult.error;
 
@@ -133,7 +146,7 @@ export async function DELETE(request: Request) {
       await tx.stepCompletion.deleteMany({
         where: { id: { in: parsed.data.ids } },
       });
-      await recalculateStudentStepIdx(studentId, tx);
+      await recalculateStudentStepIdx(studentId, groupId, tx);
       await dispatchDomainEvent(
         {
           actorId: authResult.session.user.id,
