@@ -18,6 +18,18 @@ function sumLateMinutes(sessions: SessionWithLateness[]): number {
 		.reduce((sum, s) => sum + (s.lateMinutes ?? 0), 0)
 }
 
+function buildGroupScopeFilter(
+	subjectId: string,
+	teacherId?: string | null,
+	groupId?: string | null,
+) {
+	return {
+		subjectId,
+		...(groupId ? { id: groupId } : {}),
+		...(teacherId && !groupId ? { teacherId } : {}),
+	}
+}
+
 export type LevelStats = {
 	levelId: string
 	level: number
@@ -30,45 +42,37 @@ export type LevelStats = {
 
 export async function getLevelStats(
 	month: Date,
-	teacherId?: string | null,
-	groupId?: string | null,
+	teacherId: string | null | undefined,
+	groupId: string | null | undefined,
+	subjectId: string,
 ): Promise<LevelStats[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
-
-	const groupSubjectId = groupId
-		? (
-				await prisma.group.findUnique({
-					where: { id: groupId },
-					select: { subjectId: true },
-				})
-			)?.subjectId
-		: null
+	const groupScope = buildGroupScopeFilter(subjectId, teacherId, groupId)
 
 	const levels = await prisma.level.findMany({
-		where: groupSubjectId ? { subjectId: groupSubjectId } : undefined,
+		where: { subjectId },
 		include: {
-			subject: { select: { name: true } },
 			steps: true,
 			enrollments: {
-				where: groupId
-					? { groupId }
-					: teacherId
-						? { group: { teacherId } }
-						: undefined,
+				where: {
+					group: groupScope,
+				},
 				include: {
 					student: {
 						include: {
 							completions: {
 								where: {
 									...analyticsCompletionFilter({ gte: from, lte: to }),
-									...(groupId ? { session: { groupId } } : {}),
+									session: {
+										group: groupScope,
+									},
 								},
 							},
 							sessions: {
 								where: {
 									...analyticsSessionFilter({ gte: from, lte: to }),
-									...(groupId ? { groupId } : {}),
+									group: groupScope,
 								},
 							},
 						},
@@ -77,9 +81,6 @@ export async function getLevelStats(
 			},
 		},
 	})
-
-	const hasMultipleSubjects =
-		new Set(levels.map((level) => level.subjectId)).size > 1
 
 	return levels.map((level) => {
 		const enrolledStudents = level.enrollments.map(
@@ -96,14 +97,10 @@ export async function getLevelStats(
 		const totalLateMinutes = sumLateMinutes(allSessions)
 		const lateHours = totalLateMinutes / 60
 
-		const label = hasMultipleSubjects
-			? `${level.number} (${level.subject.name})`
-			: String(level.number)
-
 		return {
 			levelId: level.id,
 			level: level.number,
-			label,
+			label: String(level.number),
 			avgGrade: Math.round(avgGrade * 10) / 10,
 			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
 			totalLateMinutes,

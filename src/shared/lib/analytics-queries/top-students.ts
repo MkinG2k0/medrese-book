@@ -24,6 +24,18 @@ function sumLateMinutes(sessions: SessionWithLateness[]): number {
 		.reduce((sum, s) => sum + (s.lateMinutes ?? 0), 0)
 }
 
+function buildGroupScopeFilter(
+	subjectId: string,
+	teacherId?: string | null,
+	groupId?: string | null,
+) {
+	return {
+		subjectId,
+		...(groupId ? { id: groupId } : {}),
+		...(teacherId && !groupId ? { teacherId } : {}),
+	}
+}
+
 export type TopEntry = {
 	student: { id: string; name: string }
 	stepsCompleted: number
@@ -35,30 +47,36 @@ export type TopEntry = {
 
 export async function getTopStudents(
 	month: Date,
-	teacherId?: string | null,
-	groupId?: string | null,
+	teacherId: string | null | undefined,
+	groupId: string | null | undefined,
+	subjectId: string,
 ): Promise<TopEntry[]> {
 	const from = startOfMonth(month)
 	const to = endOfMonth(month)
+	const groupScope = buildGroupScopeFilter(subjectId, teacherId, groupId)
 
 	const students = await prisma.student.findMany({
-		where: groupId
-			? { enrollments: { some: { groupId } } }
-			: teacherId
-				? { enrollments: { some: { group: { teacherId } } } }
-				: undefined,
+		where: {
+			enrollments: {
+				some: {
+					group: groupScope,
+				},
+			},
+		},
 		include: {
 			user: true,
 			completions: {
 				where: {
 					...analyticsCompletionFilter({ gte: from, lte: to }),
-					...(groupId ? { session: { groupId } } : {}),
+					session: {
+						group: groupScope,
+					},
 				},
 			},
 			sessions: {
 				where: {
 					...analyticsSessionFilter({ gte: from, lte: to }),
-					...(groupId ? { groupId } : {}),
+					group: groupScope,
 				},
 			},
 		},
