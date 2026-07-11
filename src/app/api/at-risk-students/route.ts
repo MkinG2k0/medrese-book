@@ -1,9 +1,10 @@
-import { error, success } from '@/shared/api'
+import { error, forbidden, success } from '@/shared/api'
 import { getAtRiskStudents, parseAnalyticsMonth } from '@/shared/lib/analytics'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { prisma } from '@/shared/lib/prisma'
+import { getAnalyticsSubjects } from '@/features/analytics/actions/analytics-actions'
 import {
-	ALL_TEACHERS,
+	resolveAnalyticsSubjectFilter,
 	resolveAnalyticsTeacherFilter,
 } from '@/features/analytics/lib/analytics-query'
 import { atRiskStudentsQuerySchema } from '@/entities/student-metrics/model/types'
@@ -18,11 +19,22 @@ export async function GET(request: Request) {
 	const parsed = atRiskStudentsQuerySchema.safeParse({
 		month: searchParams.get('month') ?? undefined,
 		teacher: searchParams.get('teacher') ?? undefined,
+		subjectId: searchParams.get('subjectId') ?? undefined,
 	})
 	if (!parsed.success) return error(parsed.error.issues[0]?.message ?? 'Некорректные параметры')
 
-	const { month: monthParam, teacher: teacherParam } = parsed.data
+	const { month: monthParam, teacher: teacherParam, subjectId } = parsed.data
 	const month = parseAnalyticsMonth(monthParam)
+
+	const subjects = await getAnalyticsSubjects()
+	const validSubjectIds = subjects.map((subject) => subject.id)
+	const { filterSubjectId } = resolveAnalyticsSubjectFilter(
+		subjectId,
+		validSubjectIds,
+	)
+	if (!filterSubjectId || filterSubjectId !== subjectId) {
+		return forbidden()
+	}
 
 	const teachers = await prisma.teacher.findMany({
 		select: { id: true },
@@ -32,10 +44,15 @@ export async function GET(request: Request) {
 	const { filterTeacherId } = resolveAnalyticsTeacherFilter(
 		authResult.session.user.role,
 		authResult.session.user.teacherId,
-		teacherParam ?? ALL_TEACHERS,
+		teacherParam,
 		validTeacherIds,
 	)
 
-	const data = await getAtRiskStudents(month, filterTeacherId)
+	const data = await getAtRiskStudents(
+		month,
+		filterTeacherId,
+		null,
+		filterSubjectId,
+	)
 	return success(data)
 }

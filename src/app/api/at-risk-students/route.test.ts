@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const authorizeApiRequestMock = vi.fn();
 const getAtRiskStudentsMock = vi.fn();
 const teacherFindManyMock = vi.fn();
+const getAnalyticsSubjectsMock = vi.fn();
 
 vi.mock("@/shared/lib/authorize-api-request", () => ({
   authorizeApiRequest: (...args: unknown[]) => authorizeApiRequestMock(...args),
@@ -11,6 +12,10 @@ vi.mock("@/shared/lib/authorize-api-request", () => ({
 vi.mock("@/shared/lib/analytics", () => ({
   getAtRiskStudents: (...args: unknown[]) => getAtRiskStudentsMock(...args),
   parseAnalyticsMonth: () => new Date("2026-07-01T00:00:00.000Z"),
+}));
+
+vi.mock("@/features/analytics/actions/analytics-actions", () => ({
+  getAnalyticsSubjects: (...args: unknown[]) => getAnalyticsSubjectsMock(...args),
 }));
 
 vi.mock("@/shared/lib/prisma", () => ({
@@ -25,6 +30,9 @@ describe("GET /api/at-risk-students", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     teacherFindManyMock.mockResolvedValue([{ id: "teacher-1" }]);
+    getAnalyticsSubjectsMock.mockResolvedValue([
+      { id: "subject-quran", name: "Коран" },
+    ]);
     getAtRiskStudentsMock.mockResolvedValue([]);
   });
 
@@ -39,7 +47,9 @@ describe("GET /api/at-risk-students", () => {
 
     const { GET } = await import("./route");
     const response = await GET(
-      new Request("http://localhost/api/at-risk-students"),
+      new Request(
+        "http://localhost/api/at-risk-students?subjectId=subject-quran",
+      ),
     );
 
     expect(response.status).toBe(403);
@@ -48,7 +58,27 @@ describe("GET /api/at-risk-students", () => {
     expect(getAtRiskStudentsMock).not.toHaveBeenCalled();
   });
 
-  it("returns at-risk data for TEACHER", async () => {
+  it("returns 400 when subjectId is missing", async () => {
+    authorizeApiRequestMock.mockResolvedValue({
+      session: {
+        user: {
+          role: "TEACHER",
+          teacherId: "teacher-1",
+          id: "user-1",
+        },
+      },
+    });
+
+    const { GET } = await import("./route");
+    const response = await GET(
+      new Request("http://localhost/api/at-risk-students?month=2026-07"),
+    );
+
+    expect(response.status).toBe(400);
+    expect(getAtRiskStudentsMock).not.toHaveBeenCalled();
+  });
+
+  it("returns at-risk data for TEACHER with subjectId", async () => {
     authorizeApiRequestMock.mockResolvedValue({
       session: {
         user: {
@@ -74,7 +104,9 @@ describe("GET /api/at-risk-students", () => {
 
     const { GET } = await import("./route");
     const response = await GET(
-      new Request("http://localhost/api/at-risk-students?month=2026-07"),
+      new Request(
+        "http://localhost/api/at-risk-students?month=2026-07&subjectId=subject-quran",
+      ),
     );
 
     expect(response.status).toBe(200);
@@ -84,6 +116,11 @@ describe("GET /api/at-risk-students", () => {
     };
     expect(json.error).toBeNull();
     expect(json.data).toEqual(mockRows);
-    expect(getAtRiskStudentsMock).toHaveBeenCalledOnce();
+    expect(getAtRiskStudentsMock).toHaveBeenCalledWith(
+      expect.any(Date),
+      "teacher-1",
+      null,
+      "subject-quran",
+    );
   });
 });

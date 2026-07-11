@@ -4,6 +4,7 @@ import {
 	getAnalyticsTeachers,
 } from '@/features/analytics/actions/analytics-actions'
 import {
+	ALL_TEACHERS,
 	resolveAnalyticsGroupFilter,
 	resolveAnalyticsSubjectFilter,
 	resolveAnalyticsTeacherFilter,
@@ -12,11 +13,19 @@ import { AnalyticsGroupPicker } from '@/features/analytics/ui/AnalyticsGroupPick
 import { AnalyticsMonthPicker } from '@/features/analytics/ui/AnalyticsMonthPicker'
 import { AnalyticsSubjectPicker } from '@/features/analytics/ui/AnalyticsSubjectPicker'
 import { AnalyticsTeacherPicker } from '@/features/analytics/ui/AnalyticsTeacherPicker'
-import { parseAnalyticsMonth } from '@/shared/lib/analytics'
+import { AtRiskStudentsTable } from '@/features/analytics/ui/AtRiskStudentsTable'
+import { LevelStatsChart } from '@/features/analytics/ui/LevelStats'
+import { TopStudents } from '@/features/analytics/ui/TopStudents'
+import {
+	formatAnalyticsMonth,
+	getLevelStats,
+	getTopStudents,
+	parseAnalyticsMonth,
+} from '@/shared/lib/analytics'
+import { getAtRiskStudents } from '@/shared/lib/analytics-queries/at-risk-students'
 import { requireRoles } from '@/shared/lib/session'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
-import { Empty } from 'antd'
 
 type AnalyticsPageProps = {
 	searchParams: Promise<{
@@ -37,6 +46,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		subjectId: subjectIdParam,
 	} = await searchParams
 	const month = parseAnalyticsMonth(monthParam)
+	const monthLabel = formatAnalyticsMonth(month)
 	const monthValue = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
 
 	const subjects = await getAnalyticsSubjects()
@@ -73,11 +83,22 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		(group) => group.subjectId === filterSubjectId,
 	)
 	const validGroupIds = teacherGroups.map((group) => group.id)
-	const { selectedGroupId } = resolveAnalyticsGroupFilter(
+	const { filterGroupId, selectedGroupId } = resolveAnalyticsGroupFilter(
 		filterTeacherId,
 		groupIdParam,
 		validGroupIds,
 	)
+
+	const [atRiskStudents, topStudents, levelStats] = await Promise.all([
+		getAtRiskStudents(
+			month,
+			filterTeacherId,
+			filterGroupId,
+			filterSubjectId,
+		),
+		getTopStudents(month, filterTeacherId, filterGroupId, filterSubjectId),
+		getLevelStats(month, filterTeacherId, filterGroupId, filterSubjectId),
+	])
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -113,9 +134,16 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 				</div>
 			</div>
 
-			<Empty
-				description="Выберите предмет — метрики подключатся на следующем шаге"
-				image={Empty.PRESENTED_IMAGE_SIMPLE}
+			<TopStudents
+				data={topStudents}
+				monthLabel={monthLabel}
+				subjectId={filterSubjectId}
+			/>
+			<LevelStatsChart data={levelStats} monthLabel={monthLabel} />
+			<AtRiskStudentsTable
+				data={atRiskStudents}
+				monthLabel={monthLabel}
+				showTeacherColumn={selectedTeacher === ALL_TEACHERS}
 			/>
 		</div>
 	)

@@ -24,18 +24,24 @@ export function useStudentMetrics(studentId?: string, month?: string) {
 	})
 }
 
-export function useAtRiskStudents(month?: string, teacherId?: string | null) {
+export function useAtRiskStudents(
+	month: string | undefined,
+	teacherId: string | null | undefined,
+	subjectId: string,
+) {
 	return useQuery<AtRiskStudentApiRow[]>({
-		queryKey: ['at-risk-students', month, teacherId ?? 'all'],
+		queryKey: ['at-risk-students', month, teacherId ?? 'all', subjectId],
 		queryFn: async () => {
 			const params = new URLSearchParams()
 			if (month) params.set('month', month)
 			if (teacherId) params.set('teacher', teacherId)
+			params.set('subjectId', subjectId)
 			const res = await fetch(`/api/at-risk-students?${params}`)
 			const json = await res.json()
 			if (json.error) throw new Error(json.error)
 			return json.data
 		},
+		enabled: !!subjectId,
 	})
 }
 

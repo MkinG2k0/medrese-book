@@ -39,6 +39,7 @@ export const atRiskStudentsQuerySchema = z.object({
 		.regex(/^\d{4}-\d{2}$/, 'month должен быть в формате YYYY-MM')
 		.optional(),
 	teacher: z.string().optional(),
+	subjectId: z.string().min(1, 'subjectId обязателен'),
 })
 
 export const studentRiskFlagsQuerySchema = z.object({

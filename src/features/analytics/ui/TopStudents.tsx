@@ -20,9 +20,11 @@ import Title from "@/shared/ui/Title";
 export function TopStudents({
   data,
   monthLabel,
+  subjectId,
 }: {
   data: TopEntry[];
   monthLabel: string;
+  subjectId: string;
 }) {
   const [selectedStudent, setSelectedStudent] = useState<{
     id: string;
