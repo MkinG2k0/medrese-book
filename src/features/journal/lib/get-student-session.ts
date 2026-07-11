@@ -18,11 +18,13 @@ export type DaySessionRecord = {
 export async function findStudentSessionForDay(
 	studentId: string,
 	dateStr: string,
+	groupId?: string,
 ): Promise<DaySessionRecord | null> {
 	const dayRange = getCalendarDayQueryRange(dateStr)
 	const daySessions = await prisma.session.findMany({
 		where: {
 			studentId,
+			...(groupId ? { groupId } : {}),
 			date: { gte: dayRange.start, lte: dayRange.end },
 		},
 		select: {

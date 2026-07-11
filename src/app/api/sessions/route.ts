@@ -22,20 +22,26 @@ export async function POST(request: Request) {
   const parsed = createSessionSchema.safeParse(body);
   if (!parsed.success) return error(parsed.error.message);
 
-  const { studentId, date, attendance, lateMinutes, note, completions } =
+  const { studentId, groupId, date, attendance, lateMinutes, note, completions } =
     parsed.data;
 
   const authResult = await authorizeApiRequest({
     allowedRoles: ["TEACHER"],
-    context: { studentId },
+    context: { studentId, groupId },
   });
   if ("error" in authResult) return authResult.error;
+
+  const enrollment = await prisma.groupEnrollment.findUnique({
+    where: { studentId_groupId: { studentId, groupId } },
+  });
+  if (!enrollment) return error("Ученик не зачислен в группу");
 
   const calendarDay = getLocalDateString(new Date(date));
   const dayRange = getCalendarDayQueryRange(calendarDay);
   const existingSessions = await prisma.session.findMany({
     where: {
       studentId,
+      groupId,
       date: { gte: dayRange.start, lte: dayRange.end },
     },
     include: { completions: true },
@@ -71,6 +77,7 @@ export async function POST(request: Request) {
       : await tx.session.create({
           data: {
             studentId,
+            groupId,
             date: toSessionDate(calendarDay),
             ...sessionData,
             completions: {
@@ -85,7 +92,7 @@ export async function POST(request: Request) {
           include: { completions: true },
         });
 
-    await recalculateStudentStepIdx(studentId, tx);
+    await recalculateStudentStepIdx(studentId, groupId, tx);
 
     const stepIds = [...new Set(completions.map((c) => c.stepId))];
     const [steps, student] = await Promise.all([
@@ -133,6 +140,7 @@ export async function POST(request: Request) {
         entityId: session.id,
         payload: {
           studentId,
+          groupId,
           attendance,
           completionCount: completions.length,
           isUpdate: Boolean(existingSession),
@@ -155,16 +163,22 @@ export async function GET(request: Request) {
   const studentId = searchParams.get("studentId");
   if (!studentId) return error("studentId обязателен");
 
+  const groupId = searchParams.get("groupId");
+
   const authResult = await authorizeApiRequest({
     allowedRoles: ["TEACHER", "MANAGER", "SUPER_ADMIN", "STUDENT"],
-    context: { studentId },
+    context: { studentId, groupId },
   });
   if ("error" in authResult) return authResult.error;
 
   const dateStr = searchParams.get("date");
 
   if (dateStr) {
-    const daySession = await findStudentSessionForDay(studentId, dateStr);
+    const daySession = await findStudentSessionForDay(
+      studentId,
+      dateStr,
+      groupId ?? undefined,
+    );
 
     if (!daySession) return success(null);
 
@@ -172,7 +186,10 @@ export async function GET(request: Request) {
   }
 
   const sessions = await prisma.session.findMany({
-    where: { studentId },
+    where: {
+      studentId,
+      ...(groupId ? { groupId } : {}),
+    },
     include: { completions: { include: { step: true } } },
     orderBy: { date: "desc" },
     take: 30,
