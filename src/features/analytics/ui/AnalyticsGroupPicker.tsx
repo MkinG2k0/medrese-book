@@ -16,6 +16,7 @@ type AnalyticsGroupPickerProps = {
 	selectedTeacher: string
 	selectedGroupId: string | null
 	month: string
+	selectedSubjectId: string
 }
 
 export function AnalyticsGroupPicker({
@@ -23,6 +24,7 @@ export function AnalyticsGroupPicker({
 	selectedTeacher,
 	selectedGroupId,
 	month,
+	selectedSubjectId,
 }: AnalyticsGroupPickerProps) {
 	const router = useRouter()
 	const pathname = usePathname()
@@ -48,11 +50,14 @@ export function AnalyticsGroupPicker({
 			onChange={(groupId) => {
 				const nextMonth = searchParams.get('month') ?? month
 				const teacher = searchParams.get('teacher') ?? selectedTeacher
+				const subjectId =
+					searchParams.get('subjectId') ?? selectedSubjectId
 				router.push(
 					`${pathname}${buildAnalyticsSearchParams({
 						month: nextMonth,
 						teacher,
 						groupId,
+						subjectId,
 					})}`,
 				)
 			}}

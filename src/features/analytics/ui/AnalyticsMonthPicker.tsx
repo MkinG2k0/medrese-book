@@ -12,11 +12,13 @@ import {
 type AnalyticsMonthPickerProps = {
 	month: Date
 	selectedTeacher: string
+	selectedSubjectId: string
 }
 
 export function AnalyticsMonthPicker({
 	month,
 	selectedTeacher,
+	selectedSubjectId,
 }: AnalyticsMonthPickerProps) {
 	const router = useRouter()
 	const pathname = usePathname()
@@ -29,6 +31,8 @@ export function AnalyticsMonthPicker({
 			onChange={(value) => {
 				if (!value) return
 				const teacher = searchParams.get('teacher') ?? selectedTeacher
+				const subjectId =
+					searchParams.get('subjectId') ?? selectedSubjectId
 				const groupId =
 					teacher !== ALL_TEACHERS
 						? (searchParams.get('groupId') ?? undefined)
@@ -38,6 +42,7 @@ export function AnalyticsMonthPicker({
 						month: value.format('YYYY-MM'),
 						teacher,
 						groupId,
+						subjectId,
 					})}`,
 				)
 			}}

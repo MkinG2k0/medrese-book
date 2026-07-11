@@ -17,12 +17,14 @@ type AnalyticsTeacherPickerProps = {
 	teachers: TeacherOption[]
 	selectedTeacher: string
 	month: string
+	selectedSubjectId: string
 }
 
 export function AnalyticsTeacherPicker({
 	teachers,
 	selectedTeacher,
 	month,
+	selectedSubjectId,
 }: AnalyticsTeacherPickerProps) {
 	const router = useRouter()
 	const pathname = usePathname()
@@ -42,10 +44,13 @@ export function AnalyticsTeacherPicker({
 			options={options}
 			onChange={(teacher) => {
 				const nextMonth = searchParams.get('month') ?? month
+				const subjectId =
+					searchParams.get('subjectId') ?? selectedSubjectId
 				router.push(
 					`${pathname}${buildAnalyticsSearchParams({
 						month: nextMonth,
 						teacher,
+						subjectId,
 					})}`,
 				)
 			}}

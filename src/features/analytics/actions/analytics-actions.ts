@@ -56,6 +56,7 @@ export async function getAnalyticsTeachers() {
 export type AnalyticsGroupOption = {
 	id: string
 	name: string
+	subjectId: string
 	subjectName: string
 }
 
@@ -73,6 +74,7 @@ export async function getAnalyticsGroupsByTeacher(
 	return groups.map((group) => ({
 		id: group.id,
 		name: group.name,
+		subjectId: group.subjectId,
 		subjectName: group.subject.name,
 	}))
 }
