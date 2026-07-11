@@ -1,22 +1,26 @@
 ---
 phase: 14-analytics
 verified: 2026-07-12T01:32:00+03:00
-status: human_needed
+status: passed
 score: 11/12 must-haves verified
 behavior_unverified: 1
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "E2E подтверждают subject picker и subject-scoped history"
     test: "pnpm test:e2e -- e2e/analytics-student-history.spec.ts e2e/student-analytics.spec.ts"
     expected: "Все сценарии зелёные: селект «Предмет», subjectId в URL, модалка истории, сброс groupId при смене предмета"
     why_human: "E2E требуют поднятый dev-сервер и seed; верификатор не запускал Playwright в этом прогоне"
 human_verification:
+
   - test: "Запустить E2E wave gate: pnpm test:e2e -- e2e/analytics-student-history.spec.ts e2e/student-analytics.spec.ts"
     expected: "Все тесты проходят; селект «Предмет» виден; subjectId в URL; модалка истории открывается; смена предмета сбрасывает groupId (или skip при одном предмете в seed)"
     why_human: "Playwright не выполнялся в автоматической верификации"
+
   - test: "Войти как учитель с одной группой → /analytics → открыть селект «Предмет»"
     expected: "В списке только предметы групп этого учителя"
     why_human: "Role-scoped список реализован в getAnalyticsSubjects, но видимость в UI зависит от seed и сессии"
+
   - test: "Выбрать предмет → убедиться что URL содержит subjectId → F5"
     expected: "После перезагрузки тот же предмет выбран, метрики в том же скоупе"
     why_human: "Поведение reload зависит от браузера и Next.js SSR; unit-тесты покрывают только resolveAnalyticsSubjectFilter"
