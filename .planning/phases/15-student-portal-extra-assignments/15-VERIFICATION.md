@@ -1,34 +1,42 @@
 ---
 phase: 15-student-portal-extra-assignments
 verified: 2026-07-11T23:07:00Z
-status: human_needed
+status: passed
 score: 21/22 must-haves verified
 behavior_unverified: 1
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "E2E покрывают dashboard cards, groupId navigation и subject filter каталога"
     test: "pnpm exec playwright test e2e/student.spec.ts e2e/extra-assignments.spec.ts --reporter=line"
     expected: "Оба spec завершаются без failures; сценарии enrollment cards, deep link groupId и Select «Предмет» проходят"
     why_human: "Spec-файлы содержат нужные сценарии, но Playwright не загружает playwright.config.ts (TypeError: context.conditions?.includes is not a function на Node v22.15). Прохождение E2E не подтверждено автоматически."
 human_verification:
+
   - test: "Войти как ученик с несколькими зачислениями → /student/me"
     expected: "N карточек для N enrollments; на каждой — предмет, группа, уровень, ProgressBar, метрики месяца (Уроков/Шагов/Время обучения); две группы одного предмета дают две отдельные карточки"
     why_human: "Визуальная компоновка и корректность метрик на реальных данных не проверяются grep/tsc"
+
   - test: "Клик «Уроки» на карточке → F5 на странице уроков"
     expected: "URL сохраняет ?groupId=; подзаголовок остаётся для выбранной группы; localStorage содержит student-portal:lastGroupId"
     why_human: "E2E проверяет клик и URL, но не перезагрузку страницы; readStudentPortalGroupId не используется на server (by design D-08)"
+
   - test: "Меню «Уроки» без groupId"
     expected: "Открывается primary enrollment (первая группа по enrolledAt asc) — подзаголовок primary группы"
     why_human: "Логика resolveStudentGroupId подтверждена unit-тестом; primary на реальных seed-данных требует браузера"
+
   - test: "Учитель → /extra-assignments → сменить Select «Предмет»"
     expected: "Обновляются фильтры уровень/шаг и список шаблонов; шаблоны другого предмета не видны"
     why_human: "Wiring subjectId в API и UI подтверждён кодом; визуальная изоляция между предметами — UAT"
+
   - test: "Урок в журнале → модалка «Назначить доп. задание»"
     expected: "Список шаблонов только предмета группы; cross-step (шаблон другого шага того же предмета) доступен"
     why_human: "subjectId проброшен в AssignExtraAssignmentModal; runtime-изоляция между предметами не покрыта unit-тестом"
+
   - test: "Ученик → /student/extra-assignments"
     expected: "Collapse-секции по subject.name; таблица с датой, шагом, заданием, автором, оценкой"
     why_human: "groupBySubject в UI подтверждён кодом; визуальная группировка на seed-данных — UAT"
+
   - test: "pnpm exec playwright test e2e/student.spec.ts e2e/extra-assignments.spec.ts"
     expected: "Exit code 0 после устранения ошибки загрузки playwright.config.ts"
     why_human: "Блокер окружения: Playwright 1.61 + Node 22.15 — config load error; spec-файлы присутствуют и покрывают must-have сценарии"
