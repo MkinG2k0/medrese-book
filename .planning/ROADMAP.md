@@ -181,7 +181,7 @@ Plans:
 | 11. Groups & Enrollment | 6/6 | Complete    | 2026-07-11 |
 | 12. Progress & Sessions | 5/5 | Complete    | 2026-07-11 |
 | 13. Journal | 4/4 | Complete    | 2026-07-11 |
-| 14. Analytics | 3/3 | Complete   | 2026-07-11 |
+| 14. Analytics | 3/3 | Complete    | 2026-07-11 |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
 
 ---
