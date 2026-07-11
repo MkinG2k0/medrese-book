@@ -38,6 +38,25 @@ test.describe("Доп. задания", () => {
       await expect(
         page.getByRole("heading", { name: "Доп. задания" }),
       ).toBeVisible();
+      await expect(page.getByLabel("Предмет")).toBeVisible();
+
+      const stepSelect = page.locator(".ant-select").filter({
+        has: page.locator(".ant-select-selection-placeholder", {
+          hasText: "Шаг",
+        }),
+      });
+      await stepSelect.click();
+      const quranStepCount = await page.locator(".ant-select-item-option").count();
+      await page.keyboard.press("Escape");
+
+      await page.getByLabel("Предмет").click();
+      await page.getByTitle("Таджвид", { exact: true }).click();
+      await expect(stepSelect).toBeVisible();
+
+      await stepSelect.click();
+      const tajweedStepCount = await page.locator(".ant-select-item-option").count();
+      await page.keyboard.press("Escape");
+      expect(tajweedStepCount).toBeLessThan(quranStepCount);
 
       await page.getByRole("button", { name: "Создать задание" }).click();
       const dialog = page.getByRole("dialog", { name: "Создать задание" });

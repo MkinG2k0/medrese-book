@@ -10,9 +10,36 @@ test.describe("Личный кабинет ученика", () => {
     await expect(page.getByRole("heading", { name: "Али" })).toBeVisible();
   });
 
-  test("отображает профиль и прогресс", async ({ page }) => {
-    await expect(page.getByText(/Прогресс: шаг \d+ из \d+/)).toBeVisible();
+  test("отображает карточки зачислений с прогрессом и метриками", async ({
+    page,
+  }) => {
+    await expect(page.getByText(/Коран — Группа Аль-Фатиха/)).toBeVisible();
+    await expect(page.getByText(/Таджвид — Группа Таджвид/)).toBeVisible();
+    await expect(page.getByText(/Прогресс: шаг \d+ из \d+/).first()).toBeVisible();
+    await expect(page.getByText("Уроков").first()).toBeVisible();
+    await expect(page.getByText("Шагов").first()).toBeVisible();
+    await expect(page.getByText("Время обучения").first()).toBeVisible();
     await expect(page.getByRole("heading", { name: /Текущий урок:/ })).toHaveCount(0);
+  });
+
+  test("deep link с карточки передаёт groupId в URL уроков", async ({
+    page,
+  }) => {
+    const tajweedCard = page
+      .locator(".ant-card")
+      .filter({ hasText: "Таджвид — Группа Таджвид" });
+    await tajweedCard.getByRole("button", { name: "Уроки" }).click();
+    await expect(page).toHaveURL(/groupId=/);
+    await expect(page.getByRole("heading", { name: "Уроки" })).toBeVisible();
+    await expect(page.getByText("Таджвид — Группа Таджвид")).toBeVisible();
+  });
+
+  test("меню Уроки без groupId открывает primary enrollment", async ({
+    page,
+  }) => {
+    await page.getByRole("menuitem", { name: "Уроки" }).click();
+    await expect(page).toHaveURL(/\/student\/lessons(?:\?.*)?$/);
+    await expect(page.getByText(/Коран — Группа Аль-Фатиха/)).toBeVisible();
   });
 
   test("не показывает раздел наград на странице прогресса", async ({ page }) => {
@@ -26,6 +53,21 @@ test.describe("Личный кабинет ученика", () => {
   test("не имеет доступа к журналу учителя", async ({ page }) => {
     await page.goto("/journal");
     await expect(page).toHaveURL(/\/login/);
+  });
+});
+
+test.describe("Доп. задания ученика", () => {
+  test.use({ storageState: AUTH_STATE.studentAli });
+
+  test("отображает историю с группировкой по предметам", async ({ page }) => {
+    await page.goto("/student/extra-assignments");
+    await expect(
+      page.getByRole("heading", { name: "Доп. задания", level: 3 }),
+    ).toBeVisible();
+    await expect(page.getByText("Коран", { exact: true })).toBeVisible();
+    await expect(page.getByText("Таджвид", { exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Хорошо" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Отлично" })).toBeVisible();
   });
 });
 
