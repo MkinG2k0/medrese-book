@@ -15,6 +15,7 @@ type TeacherLessonsDateFilterProps = {
 	from: string
 	to: string
 	selectedTeacher?: string
+	selectedGroupId?: string | null
 }
 
 function disableFutureDate(current: Dayjs | null): boolean {
@@ -27,6 +28,7 @@ export function TeacherLessonsDateFilter({
 	from,
 	to,
 	selectedTeacher,
+	selectedGroupId,
 }: TeacherLessonsDateFilterProps) {
 	const router = useRouter()
 	const pathname = usePathname()
@@ -35,6 +37,8 @@ export function TeacherLessonsDateFilter({
 	const pushRange = (nextFrom: string, nextTo: string) => {
 		const teacher =
 			selectedTeacher ?? searchParams.get('teacher') ?? undefined
+		const groupId =
+			selectedGroupId ?? searchParams.get('groupId') ?? undefined
 		const params = new URLSearchParams(searchParams.toString())
 		params.set('from', nextFrom)
 		params.set('to', nextTo)
@@ -42,6 +46,11 @@ export function TeacherLessonsDateFilter({
 			params.set('teacher', teacher)
 		} else {
 			params.delete('teacher')
+		}
+		if (groupId) {
+			params.set('groupId', groupId)
+		} else {
+			params.delete('groupId')
 		}
 		const qs = params.toString()
 		router.push(qs ? `${pathname}?${qs}` : pathname)

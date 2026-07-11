@@ -1,4 +1,6 @@
 import { getMyTeacherHoursAnalytics } from '@/features/analytics/actions/teacher-lessons-actions'
+import { getAnalyticsGroupsByTeacher } from '@/features/analytics/actions/analytics-actions'
+import { ALL_GROUPS, resolveAnalyticsGroupFilter } from '@/features/analytics/lib/analytics-query'
 import { MySalaryPage } from '@/features/accounting'
 import { getAccountingMonth } from '@/shared/lib/accounting/month'
 import { requireRole } from '@/shared/lib/session'
@@ -8,7 +10,7 @@ type PageProps = {
 }
 
 export default async function TeacherMySalaryPage({ searchParams }: PageProps) {
-	await requireRole('TEACHER')
+	const session = await requireRole('TEACHER')
 	const params = await searchParams
 	const urlParams = new URLSearchParams(
 		Object.entries(params).flatMap(([key, value]) =>
@@ -19,12 +21,24 @@ export default async function TeacherMySalaryPage({ searchParams }: PageProps) {
 
 	const fromParam = urlParams.get('from') ?? undefined
 	const toParam = urlParams.get('to') ?? undefined
+	const groupIdParam = urlParams.get('groupId') ?? undefined
+
+	const teacherGroups = await getAnalyticsGroupsByTeacher(
+		session.user.teacherId!,
+	)
+	const validGroupIds = teacherGroups.map((group) => group.id)
+	const { selectedGroupId } = resolveAnalyticsGroupFilter(
+		session.user.teacherId,
+		groupIdParam,
+		validGroupIds,
+	)
+
 	const {
 		rows: hoursRows,
 		from: hoursFrom,
 		to: hoursTo,
 		isRange: hoursIsRange,
-	} = await getMyTeacherHoursAnalytics(fromParam, toParam)
+	} = await getMyTeacherHoursAnalytics(fromParam, toParam, groupIdParam)
 
 	return (
 		<MySalaryPage
@@ -33,6 +47,8 @@ export default async function TeacherMySalaryPage({ searchParams }: PageProps) {
 			hoursFrom={hoursFrom}
 			hoursTo={hoursTo}
 			hoursIsRange={hoursIsRange}
+			hoursGroups={teacherGroups}
+			selectedGroupId={selectedGroupId ?? ALL_GROUPS}
 		/>
 	)
 }

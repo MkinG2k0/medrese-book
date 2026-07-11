@@ -17,6 +17,8 @@ import {
 export type TeacherLessonAnalyticsRow = {
 	teacherId: string
 	teacherName: string
+	groupId: string
+	groupName: string
 	loginAt: string | null
 	logoutAt: string | null
 	lessonStartedAt: string | null
@@ -35,9 +37,16 @@ type TeacherRecord = {
 	name: string
 }
 
+type GroupRecord = {
+	id: string
+	teacherId: string
+	name: string
+}
+
 type TeachingSessionRecord = {
 	id: string
 	teacherId: string
+	groupId: string
 	startedAt: Date
 	endedAt: Date | null
 	date: Date
@@ -128,16 +137,55 @@ function findLastAuditTimeForDay(
 	return last
 }
 
-function buildRowForTeacher(
+function getGroupsForTeacher(
 	teacher: TeacherRecord,
+	groups: GroupRecord[],
+	sessions: TeachingSessionRecord[],
+	groupIdFilter: string | null,
+): GroupRecord[] {
+	const groupMap = new Map<string, GroupRecord>()
+
+	for (const group of groups) {
+		if (group.teacherId === teacher.id) {
+			groupMap.set(group.id, group)
+		}
+	}
+
+	for (const session of sessions) {
+		if (session.teacherId !== teacher.id || groupMap.has(session.groupId)) {
+			continue
+		}
+
+		groupMap.set(session.groupId, {
+			id: session.groupId,
+			teacherId: teacher.id,
+			name: '—',
+		})
+	}
+
+	let result = [...groupMap.values()].sort((left, right) =>
+		left.name.localeCompare(right.name, 'ru'),
+	)
+
+	if (groupIdFilter) {
+		result = result.filter((group) => group.id === groupIdFilter)
+	}
+
+	return result
+}
+
+function buildRowForTeacherGroup(
+	teacher: TeacherRecord,
+	group: GroupRecord,
 	days: string[],
 	sessions: TeachingSessionRecord[],
 	logins: AuditTimeRecord[],
 	logouts: AuditTimeRecord[],
 	isAverage: boolean,
 ): TeacherLessonAnalyticsRow {
-	const teacherSessions = sessions.filter(
-		(session) => session.teacherId === teacher.id,
+	const groupSessions = sessions.filter(
+		(session) =>
+			session.teacherId === teacher.id && session.groupId === group.id,
 	)
 	const teacherLogins = logins.filter((login) => login.userId === teacher.userId)
 	const teacherLogouts = logouts.filter(
@@ -156,18 +204,18 @@ function buildRowForTeacher(
 			return dayLogout ? [dayLogout.createdAt] : []
 		})
 		const startedTimes = days.flatMap((day) => {
-			const daySession = teacherSessions.find((session) =>
+			const daySession = groupSessions.find((session) =>
 				sessionMatchesDay(session, day),
 			)
 			return daySession ? [daySession.startedAt] : []
 		})
 		const endedTimes = days.flatMap((day) => {
-			const daySession = teacherSessions.find(
+			const daySession = groupSessions.find(
 				(session) => sessionMatchesDay(session, day) && session.endedAt,
 			)
 			return daySession?.endedAt ? [daySession.endedAt] : []
 		})
-		const completedSessions = teacherSessions.filter(
+		const completedSessions = groupSessions.filter(
 			(session) =>
 				session.endedAt != null &&
 				days.some((day) => sessionMatchesDay(session, day)),
@@ -176,6 +224,8 @@ function buildRowForTeacher(
 		return {
 			teacherId: teacher.id,
 			teacherName: teacher.name,
+			groupId: group.id,
+			groupName: group.name,
 			loginAt: formatTimeValue(loginTimes, true),
 			logoutAt: formatTimeValue(logoutTimes, true),
 			lessonStartedAt: formatTimeValue(startedTimes, true),
@@ -197,13 +247,15 @@ function buildRowForTeacher(
 	const day = days[0]!
 	const dayLogin = teacherLogins.find((login) => auditTimeMatchesDay(login, day))
 	const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
-	const daySession = teacherSessions.find((session) =>
+	const daySession = groupSessions.find((session) =>
 		sessionMatchesDay(session, day),
 	)
 
 	return {
 		teacherId: teacher.id,
 		teacherName: teacher.name,
+		groupId: group.id,
+		groupName: group.name,
 		loginAt: dayLogin ? formatLocalTime(dayLogin.createdAt) : null,
 		logoutAt: dayLogout ? formatLocalTime(dayLogout.createdAt) : null,
 		lessonStartedAt: daySession
@@ -230,25 +282,37 @@ function buildRowForTeacher(
 
 export function buildTeacherLessonAnalyticsRows(
 	teachers: TeacherRecord[],
+	groups: GroupRecord[],
 	sessions: TeachingSessionRecord[],
 	logins: AuditTimeRecord[],
 	logouts: AuditTimeRecord[],
 	from: string,
 	to: string,
+	groupIdFilter: string | null = null,
 ): TeacherLessonAnalyticsRow[] {
 	const days = listCalendarDays(from, to)
 	const isAverage = isCalendarRange(from, to)
 
-	return teachers.map((teacher) =>
-		buildRowForTeacher(
+	return teachers.flatMap((teacher) => {
+		const teacherGroups = getGroupsForTeacher(
 			teacher,
-			days,
+			groups,
 			sessions,
-			logins,
-			logouts,
-			isAverage,
-		),
-	)
+			groupIdFilter,
+		)
+
+		return teacherGroups.map((group) =>
+			buildRowForTeacherGroup(
+				teacher,
+				group,
+				days,
+				sessions,
+				logins,
+				logouts,
+				isAverage,
+			),
+		)
+	})
 }
 
 export function parseTeacherLessonsDateRange(

@@ -6,7 +6,11 @@ import {
 	parseTeacherLessonsDateRange,
 	type TeacherLessonAnalyticsRow,
 } from '@/features/analytics/lib/teacher-lessons-analytics'
-import { teachingSessionDate } from '@/features/journal/lib/teaching-session-queries'
+import { resolveAnalyticsGroupFilter } from '@/features/analytics/lib/analytics-query'
+import {
+	findTeachingSessionForDay,
+	teachingSessionDate,
+} from '@/features/journal/lib/teaching-session-queries'
 import { prisma } from '@/shared/lib/prisma'
 import { isSameCalendarDay } from '@/shared/lib/calendar-date'
 import { calendarDateAndTimeToDate } from '@/shared/lib/local-time'
@@ -21,6 +25,7 @@ async function fetchTeacherLessonAnalytics(
 	teacherId: string | null | undefined,
 	fromParam?: string,
 	toParam?: string,
+	groupIdParam?: string,
 ): Promise<{
 	rows: TeacherLessonAnalyticsRow[]
 	from: string
@@ -44,10 +49,28 @@ async function fetchTeacherLessonAnalytics(
 		return { rows: [], from, to, isRange }
 	}
 
+	const groups = await prisma.group.findMany({
+		where: { teacherId: { in: teacherIds } },
+		select: { id: true, teacherId: true, name: true },
+		orderBy: { name: 'asc' },
+	})
+
+	const validGroupIds = teacherId
+		? groups
+				.filter((group) => group.teacherId === teacherId)
+				.map((group) => group.id)
+		: []
+	const { filterGroupId } = resolveAnalyticsGroupFilter(
+		teacherId ?? null,
+		groupIdParam,
+		validGroupIds,
+	)
+
 	const [sessions, logins, logouts] = await Promise.all([
 		prisma.teachingSession.findMany({
 			where: {
 				teacherId: { in: teacherIds },
+				...(filterGroupId ? { groupId: filterGroupId } : {}),
 				OR: [
 					{ startedAt: { gte: start, lte: end } },
 					{ date: { gte: start, lte: end } },
@@ -56,6 +79,7 @@ async function fetchTeacherLessonAnalytics(
 			select: {
 				id: true,
 				teacherId: true,
+				groupId: true,
 				startedAt: true,
 				endedAt: true,
 				date: true,
@@ -95,6 +119,7 @@ async function fetchTeacherLessonAnalytics(
 			userId: teacher.userId,
 			name: teacher.user.name,
 		})),
+		groups,
 		sessions,
 		logins.map((login) => ({
 			id: login.id,
@@ -108,6 +133,7 @@ async function fetchTeacherLessonAnalytics(
 		})),
 		from,
 		to,
+		filterGroupId,
 	)
 
 	return { rows, from, to, isRange }
@@ -117,6 +143,7 @@ export async function getTeacherLessonAnalytics(
 	fromParam?: string,
 	toParam?: string,
 	teacherId?: string | null,
+	groupIdParam?: string,
 ): Promise<{
 	rows: TeacherLessonAnalyticsRow[]
 	from: string
@@ -124,12 +151,18 @@ export async function getTeacherLessonAnalytics(
 	isRange: boolean
 }> {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
-	return fetchTeacherLessonAnalytics(teacherId, fromParam, toParam)
+	return fetchTeacherLessonAnalytics(
+		teacherId,
+		fromParam,
+		toParam,
+		groupIdParam,
+	)
 }
 
 export async function getMyTeacherHoursAnalytics(
 	fromParam?: string,
 	toParam?: string,
+	groupIdParam?: string,
 ): Promise<{
 	rows: TeacherLessonAnalyticsRow[]
 	from: string
@@ -141,6 +174,7 @@ export async function getMyTeacherHoursAnalytics(
 		session.user.teacherId,
 		fromParam,
 		toParam,
+		groupIdParam,
 	)
 }
 
@@ -156,24 +190,12 @@ function findLastAuditEventForDay<
 	return last
 }
 
-async function findDayTeachingSession(teacherId: string, day: string) {
-	const { start, end } = getTeacherLessonsQueryBounds(day, day)
-	const sessions = await prisma.teachingSession.findMany({
-		where: {
-			teacherId,
-			OR: [
-				{ startedAt: { gte: start, lte: end } },
-				{ date: { gte: start, lte: end } },
-			],
-		},
-		select: { id: true, startedAt: true, endedAt: true, date: true },
-	})
-
-	return sessions.find(
-		(session) =>
-			isSameCalendarDay(session.date, day) ||
-			isSameCalendarDay(session.startedAt, day),
-	)
+async function findDayTeachingSession(
+	teacherId: string,
+	groupId: string,
+	day: string,
+) {
+	return findTeachingSessionForDay(teacherId, groupId, day)
 }
 
 async function findDayLoginAudit(userId: string, day: string) {
@@ -190,14 +212,6 @@ async function findDayLoginAudit(userId: string, day: string) {
 	return events.find((event) => isSameCalendarDay(event.createdAt, day))
 }
 
-async function getTeacherGroupId(teacherId: string) {
-	const group = await prisma.group.findFirst({
-		where: { teacherId },
-		select: { id: true },
-	})
-	return group?.id ?? null
-}
-
 export async function updateTeacherLessonTime(
 	input: unknown,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -208,7 +222,7 @@ export async function updateTeacherLessonTime(
 		return { ok: false, error: parsed.error.issues[0]?.message ?? 'Некорректные данные' }
 	}
 
-	const { teacherId, date, field, time } = parsed.data
+	const { teacherId, date, field, time, groupId } = parsed.data
 
 	let timestamp: Date
 	try {
@@ -268,7 +282,11 @@ export async function updateTeacherLessonTime(
 				})
 			}
 		} else {
-			const session = await findDayTeachingSession(teacherId, date)
+			if (!groupId) {
+				return { ok: false, error: 'Укажите группу' }
+			}
+
+			const session = await findDayTeachingSession(teacherId, groupId, date)
 
 			if (field === 'lessonStart') {
 				if (session) {
@@ -283,10 +301,6 @@ export async function updateTeacherLessonTime(
 						data: { startedAt: timestamp },
 					})
 				} else {
-					const groupId = await getTeacherGroupId(teacherId)
-					if (!groupId) {
-						return { ok: false, error: 'У учителя нет группы' }
-					}
 					await prisma.teachingSession.create({
 						data: {
 							teacherId,
@@ -308,11 +322,6 @@ export async function updateTeacherLessonTime(
 					data: { endedAt: timestamp },
 				})
 			} else {
-				const groupId = await getTeacherGroupId(teacherId)
-				if (!groupId) {
-					return { ok: false, error: 'У учителя нет группы' }
-				}
-
 				const dayLogin = await findDayLoginAudit(teacher.userId, date)
 				const startedAt = dayLogin?.createdAt ?? timestamp
 
@@ -352,7 +361,7 @@ export async function clearTeacherLessonTime(
 		return { ok: false, error: parsed.error.issues[0]?.message ?? 'Некорректные данные' }
 	}
 
-	const { teacherId, date, field } = parsed.data
+	const { teacherId, date, field, groupId } = parsed.data
 
 	const teacher = await prisma.teacher.findUnique({
 		where: { id: teacherId },
@@ -387,7 +396,11 @@ export async function clearTeacherLessonTime(
 
 			await prisma.auditEvent.delete({ where: { id: existing.id } })
 		} else {
-			const session = await findDayTeachingSession(teacherId, date)
+			if (!groupId) {
+				return { ok: false, error: 'Укажите группу' }
+			}
+
+			const session = await findDayTeachingSession(teacherId, groupId, date)
 			if (!session) {
 				return { ok: false, error: 'Время не задано' }
 			}

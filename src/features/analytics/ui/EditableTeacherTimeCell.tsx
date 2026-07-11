@@ -20,6 +20,7 @@ const FIELD_LABELS: Record<TeacherLessonTimeField, string> = {
 
 type EditableTeacherTimeCellProps = {
 	teacherId: string
+	groupId?: string
 	date: string
 	field: TeacherLessonTimeField
 	value: string | null
@@ -27,6 +28,7 @@ type EditableTeacherTimeCellProps = {
 
 export function EditableTeacherTimeCell({
 	teacherId,
+	groupId,
 	date,
 	field,
 	value,
@@ -39,6 +41,7 @@ export function EditableTeacherTimeCell({
 		startTransition(async () => {
 			const result = await updateTeacherLessonTime({
 				teacherId,
+				groupId,
 				date,
 				field,
 				time,
@@ -64,6 +67,7 @@ export function EditableTeacherTimeCell({
 			onOk: async () => {
 				const result = await clearTeacherLessonTime({
 					teacherId,
+					groupId,
 					date,
 					field,
 				})

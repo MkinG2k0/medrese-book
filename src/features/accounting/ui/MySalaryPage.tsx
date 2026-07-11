@@ -6,7 +6,10 @@ import { useMySalary } from '@/entities/accounting'
 import { getSalaryStatusLabel } from '@/features/accounting/lib/accounting-labels'
 import { AccountingMonthPicker } from '@/features/accounting/ui/AccountingMonthPicker'
 import type { TeacherLessonAnalyticsRow } from '@/features/analytics/lib/teacher-lessons-analytics'
-import { TeacherLessonsTable } from '@/features/analytics/ui/TeacherLessonsAnalytics'
+import {
+	TeacherLessonsGroupPicker,
+	TeacherLessonsTable,
+} from '@/features/analytics/ui/TeacherLessonsAnalytics'
 import { TeacherLessonsDateFilter } from '@/features/analytics/ui/TeacherLessonsDateFilter'
 import { formatMoney } from '@/shared/lib/money'
 import Text from '@/shared/ui/Text'
@@ -18,6 +21,8 @@ type MySalaryPageProps = {
 	hoursFrom: string
 	hoursTo: string
 	hoursIsRange: boolean
+	hoursGroups: { id: string; name: string }[]
+	selectedGroupId: string | null
 }
 
 export function MySalaryPage({
@@ -26,6 +31,8 @@ export function MySalaryPage({
 	hoursFrom,
 	hoursTo,
 	hoursIsRange,
+	hoursGroups,
+	selectedGroupId,
 }: MySalaryPageProps) {
 	const { data, isLoading } = useMySalary(month)
 	const hours = Math.floor((data?.totalMinutes ?? 0) / 60)
@@ -81,7 +88,19 @@ export function MySalaryPage({
 						</Title>
 						<Text type="secondary">Период: {hoursPeriodLabel}</Text>
 					</div>
-					<TeacherLessonsDateFilter from={hoursFrom} to={hoursTo} />
+					<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+					<TeacherLessonsGroupPicker
+						groups={hoursGroups}
+						selectedGroupId={selectedGroupId}
+						from={hoursFrom}
+						to={hoursTo}
+					/>
+					<TeacherLessonsDateFilter
+						from={hoursFrom}
+						to={hoursTo}
+						selectedGroupId={selectedGroupId}
+					/>
+				</div>
 				</div>
 
 				<TeacherLessonsTable
