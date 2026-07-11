@@ -6,14 +6,14 @@ current_phase: 13
 current_phase_name: journal
 status: executing
 stopped_at: Phase 13 context gathered
-last_updated: "2026-07-11T21:22:11.733Z"
+last_updated: "2026-07-11T21:25:28.295Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 13 execution started
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 18
   percent: 50
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 13 (journal) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-07-11 — Phase 13 execution started
 
@@ -77,6 +77,7 @@ Last activity: 2026-07-11 — Phase 13 execution started
 | Phase 10-subject-foundation P03 | 20 | 3 tasks | 8 files |
 | Phase 10-subject-foundation P04 | 25 | 3 tasks | 12 files |
 | Phase 12-progress-sessions P02 | 12min | 3 tasks | 6 files |
+| Phase 13-journal P02 | 15min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Recent decisions affecting current work:
 - [Phase 10]: Program editor UI at /admin/subjects/[subjectId]/program with modal level create
 - [Phase 12]: recalculateStudentStepIdx accepts (studentId, groupId) and writes only to GroupEnrollment per D-01/D-08
 - [Phase 12]: syncCompletionsForProgress filters adjustment sessions by groupId per SUBJ-10
+- [Phase ?]: Select disabled when teacher has only one group but still visible with single option
+- [Phase ?]: Active lesson guard uses teachingSession.isActive not deprecated status enum
 
 ### Pending Todos
 
@@ -197,6 +200,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
-Last session: 2026-07-11T21:22:11.726Z
+Last session: 2026-07-11T21:25:03.434Z
 Stopped at: Phase 13 context gathered
 Resume file: .planning/phases/13-journal/13-CONTEXT.md
