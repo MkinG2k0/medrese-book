@@ -8,6 +8,10 @@ import { PASSING_GRADE } from '@/shared/lib/step-completion'
 
 type Tx = Prisma.TransactionClient
 
+/**
+ * Синхронизирует prior credit completions при редактировании прогресса.
+ * С Phase 12 требует `groupId` — adjustment session изолирована по группе.
+ */
 export async function syncCompletionsForProgress(
 	tx: Tx,
 	studentId: string,
