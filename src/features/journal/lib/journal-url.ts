@@ -4,6 +4,7 @@ import {
 } from '@/shared/lib/calendar-date'
 
 export const JOURNAL_DATE_PARAM = 'date'
+export const JOURNAL_GROUP_PARAM = 'groupId'
 
 export function resolveJournalDate(
 	dateParam: string | null | undefined,
@@ -16,8 +17,27 @@ export function resolveJournalDate(
 	return today
 }
 
-export function buildJournalHref(pathname: string, date: string): string {
+export function resolveJournalGroupId(
+	groupIdParam: string | null | undefined,
+	allowedIds: string[],
+	fallbackGroupId: string,
+): string {
+	if (groupIdParam && allowedIds.includes(groupIdParam)) {
+		return groupIdParam
+	}
+
+	return fallbackGroupId
+}
+
+export function buildJournalHref(
+	pathname: string,
+	date: string,
+	groupId?: string,
+): string {
 	const params = new URLSearchParams()
 	params.set(JOURNAL_DATE_PARAM, date)
+	if (groupId) {
+		params.set(JOURNAL_GROUP_PARAM, groupId)
+	}
 	return `${pathname}?${params.toString()}`
 }

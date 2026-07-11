@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
 	JOURNAL_GROUP_STORAGE_KEY,
@@ -7,9 +7,25 @@ import {
 	writeJournalGroupId,
 } from '@/features/journal/lib/journal-storage'
 
+function createLocalStorageMock() {
+	const store = new Map<string, string>()
+	return {
+		getItem: (key: string) => store.get(key) ?? null,
+		setItem: (key: string, value: string) => {
+			store.set(key, value)
+		},
+		clear: () => store.clear(),
+	}
+}
+
 describe('journal-storage', () => {
+	beforeEach(() => {
+		vi.stubGlobal('localStorage', createLocalStorageMock())
+		vi.stubGlobal('window', {})
+	})
+
 	afterEach(() => {
-		localStorage.clear()
+		vi.unstubAllGlobals()
 	})
 
 	it('exports separate keys for journal and history', () => {
@@ -27,13 +43,7 @@ describe('journal-storage', () => {
 	})
 
 	it('returns null on SSR', () => {
-		const windowSpy = vi.spyOn(globalThis, 'window', 'get')
-		windowSpy.mockReturnValue(undefined as unknown as Window & typeof globalThis)
-
+		vi.unstubAllGlobals()
 		expect(readJournalGroupId(JOURNAL_GROUP_STORAGE_KEY)).toBeNull()
-
-		writeJournalGroupId(JOURNAL_GROUP_STORAGE_KEY, 'g1')
-
-		windowSpy.mockRestore()
 	})
 })
