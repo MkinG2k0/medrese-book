@@ -79,7 +79,7 @@ Plans:
 
 **Note**: Intentional deviation от «прогресс по предмету» — решение D-01 (discuss 2026-07-11). UI журнала — Phase 13.
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -93,7 +93,7 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 12-03-PLAN.md — Sessions API, step-completions, journal-actions (wave 3)
-- [ ] 12-04-PLAN.md — students API, student-admin, group enroll, compile sweep (wave 3)
+- [x] 12-04-PLAN.md — students API, student-admin, group enroll, compile sweep (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -147,7 +147,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 10. Subject Foundation | 5/5 | Complete    | 2026-07-07 |
 | 11. Groups & Enrollment | 6/6 | Complete | 2026-07-11 |
-| 12. Progress & Sessions | 3/5 | In Progress|  |
+| 12. Progress & Sessions | 4/5 | In Progress|  |
 | 13. Journal | 0/TBD | Not started | - |
 | 14. Analytics | 0/TBD | Not started | - |
 | 15. Student Portal & Extra Assignments | 0/TBD | Not started | - |
