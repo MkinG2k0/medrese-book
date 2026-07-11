@@ -4,8 +4,8 @@ milestone: v2.0
 milestone_name: Система предметов
 current_phase: 11
 status: completed
-stopped_at: Phase 11 plans verified
-last_updated: "2026-07-11T12:52:26.596Z"
+stopped_at: Phase 12 context gathered
+last_updated: "2026-07-11T20:31:38.375Z"
 last_activity: 2026-07-11
 last_activity_desc: Phase 11 marked complete
 progress:
@@ -193,6 +193,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-07-07 - Completed 10-04-PLAN: subject-scoped program editor UI
-Last session: 2026-07-07T19:00:38.886Z
-Stopped at: Phase 11 plans verified — execute 11-01
-Resume file: .planning/phases/11-groups-enrollment/11-01-PLAN.md
+Last session: 2026-07-11T20:31:38.364Z
+Stopped at: Phase 12 context gathered
+Resume file: .planning/phases/12-progress-sessions/12-CONTEXT.md
