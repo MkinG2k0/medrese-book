@@ -197,6 +197,7 @@ model Step {
   order       Int
   title       String
   content     Json
+  teacherNote Json             @default("{\"blocks\":[]}")
   description String           @default("")
   hours       Int
   completions StepCompletion[]

@@ -175,6 +175,7 @@ export async function createStep(input: unknown) {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 	const data = createStepSchema.parse(input)
 	stepContentSchema.parse(data.content)
+	if (data.teacherNote) stepContentSchema.parse(data.teacherNote)
 
 	const level = await prisma.level.findUniqueOrThrow({
 		where: { id: data.levelId },
@@ -194,6 +195,7 @@ export async function updateStep(stepId: string, input: unknown) {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 	const data = createStepSchema.partial().parse(input)
 	if (data.content) stepContentSchema.parse(data.content)
+	if (data.teacherNote) stepContentSchema.parse(data.teacherNote)
 
 	const current = await prisma.step.findUniqueOrThrow({ where: { id: stepId } })
 	const levelId = data.levelId ?? current.levelId

@@ -10,6 +10,8 @@ import { programLevelPath } from '@/features/program-admin/lib/program-paths'
 import { StepEditor } from '@/features/program-admin/ui/editor/StepEditor'
 import type { StepContent } from '@/shared/lib/validations/step'
 
+const EMPTY_TEACHER_NOTE: StepContent = { blocks: [{ type: 'text', value: '' }] }
+
 type StepFormProps = {
 	subjectId: string
 	levelId: string
@@ -19,6 +21,7 @@ type StepFormProps = {
 		title: string
 		hours: number
 		content: StepContent
+		teacherNote?: StepContent
 		description?: string
 	}
 }
@@ -34,6 +37,9 @@ export function StepForm({
 	const [content, setContent] = useState<StepContent>(
 		initial?.content ?? { blocks: [{ type: 'text', value: '' }] },
 	)
+	const [teacherNote, setTeacherNote] = useState<StepContent>(
+		initial?.teacherNote ?? EMPTY_TEACHER_NOTE,
+	)
 	const [order, setOrder] = useState(initial?.order ?? 1)
 	const [title, setTitle] = useState(initial?.title ?? '')
 	const [hours, setHours] = useState(initial?.hours ?? 1)
@@ -43,7 +49,7 @@ export function StepForm({
 
 	const handleSubmit = () => {
 		startTransition(async () => {
-			const payload = { levelId, order, title, content, description, hours }
+			const payload = { levelId, order, title, content, teacherNote, description, hours }
 			if (stepId) {
 				await updateStep(stepId, payload)
 			} else {
@@ -80,9 +86,19 @@ export function StepForm({
 				</div>
 				<Form.Item label="Содержание">
 					<StepEditor
-						key={stepId ?? 'new'}
+						key={`content-${stepId ?? 'new'}`}
 						initialContent={initial?.content}
 						onChange={setContent}
+					/>
+				</Form.Item>
+				<Form.Item
+					label="Заметка учителя"
+					extra="Методические подсказки для учителя — видны только в журнале"
+				>
+					<StepEditor
+						key={`teacher-note-${stepId ?? 'new'}`}
+						initialContent={initial?.teacherNote}
+						onChange={setTeacherNote}
 					/>
 				</Form.Item>
 				<Form.Item

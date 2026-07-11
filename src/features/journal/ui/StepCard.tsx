@@ -9,7 +9,7 @@ import { SessionExtraAssignmentCard } from "@/features/extra-assignments/ui/Sess
 
 import { getJournalStepContent } from "@/features/journal/actions/journal-actions";
 import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
-import { EMPTY_STEP_CONTENT } from "@/features/journal/lib/journal-step";
+import { EMPTY_STEP_CONTENT, hasVisibleStepContent } from "@/features/journal/lib/journal-step";
 import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 import Text from "@/shared/ui/Text";
@@ -72,10 +72,12 @@ export function StepCard({
   onExtraStateChange,
 }: StepCardProps) {
   const [content, setContent] = useState<StepContent>(step.content);
+  const [teacherNote, setTeacherNote] = useState<StepContent>(EMPTY_STEP_CONTENT);
   const [isContentLoading, setIsContentLoading] = useState(false);
 
   useEffect(() => {
     setContent(step.content);
+    setTeacherNote(EMPTY_STEP_CONTENT);
   }, [step.id, step.content]);
 
   useEffect(() => {
@@ -86,7 +88,10 @@ export function StepCard({
 
     void getJournalStepContent(step.id)
       .then((loaded) => {
-        if (!cancelled && loaded) setContent(loaded);
+        if (!cancelled && loaded) {
+          setContent(loaded.content);
+          setTeacherNote(loaded.teacherNote);
+        }
       })
       .finally(() => {
         if (!cancelled) setIsContentLoading(false);
@@ -161,6 +166,12 @@ export function StepCard({
               {step.description?.trim() && (
                 <Form.Item label="Описание для учителя" className="mb-0">
                   <Text>{step.description}</Text>
+                </Form.Item>
+              )}
+
+              {hasVisibleStepContent(teacherNote) && (
+                <Form.Item label="Заметка учителя" className="mb-0">
+                  <StepContentPreview content={teacherNote} />
                 </Form.Item>
               )}
             </Form>

@@ -132,16 +132,19 @@ export async function resumeStudentFromPause(studentId: string, groupId: string)
 
 export async function getJournalStepContent(
 	stepId: string,
-): Promise<StepContent | null> {
+): Promise<{ content: StepContent; teacherNote: StepContent } | null> {
 	await requireRole('TEACHER')
 
 	const step = await prisma.step.findUnique({
 		where: { id: stepId },
-		select: { content: true },
+		select: { content: true, teacherNote: true },
 	})
 
 	if (!step) return null
-	return step.content as StepContent
+	return {
+		content: step.content as StepContent,
+		teacherNote: step.teacherNote as StepContent,
+	}
 }
 
 export async function getNextLevelJournalSteps(

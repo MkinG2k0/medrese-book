@@ -7,6 +7,19 @@ import type { StepContent } from '@/shared/lib/validations/step'
 
 export const EMPTY_STEP_CONTENT: StepContent = { blocks: [] }
 
+export function hasVisibleStepContent(content: StepContent): boolean {
+	return content.blocks.some((block) => {
+		if (block.type === 'text' || block.type === 'arabic') {
+			return block.value.trim().length > 0
+		}
+		if (block.type === 'image') return block.url.trim().length > 0
+		if (block.type === 'list') {
+			return block.items.some((item) => item.trim().length > 0)
+		}
+		return false
+	})
+}
+
 export type JournalStepMeta = {
 	id: string
 	order: number
