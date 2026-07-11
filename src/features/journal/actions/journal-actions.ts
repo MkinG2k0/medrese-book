@@ -28,6 +28,19 @@ import type { StepContent } from '@/shared/lib/validations/step'
 
 export type { JournalStep } from '@/features/journal/lib/journal-step'
 
+export type TeacherJournalGroup = {
+	id: string
+	name: string
+	subjectId: string
+	subjectName: string
+}
+
+async function assertTeacherOwnsGroup(teacherId: string, groupId: string) {
+	return prisma.group.findUnique({
+		where: { id: groupId, teacherId },
+	})
+}
+
 async function getTeacherGroupForSession(teacherId: string) {
 	return prisma.group.findFirst({
 		where: { teacherId },
@@ -80,10 +93,30 @@ async function fetchSessionOutsideLevelSteps(
 	)
 }
 
+/** @deprecated Use getTeacherGroups() and explicit groupId — removed in 13-02/04 */
 export async function getTeacherGroup() {
 	const session = await requireRole('TEACHER')
 
 	return getTeacherGroupForSession(session.user.teacherId!)
+}
+
+export async function getTeacherGroups(): Promise<TeacherJournalGroup[]> {
+	const session = await requireRole('TEACHER')
+
+	const groups = await prisma.group.findMany({
+		where: { teacherId: session.user.teacherId! },
+		include: {
+			subject: { select: { id: true, name: true } },
+		},
+		orderBy: { name: 'asc' },
+	})
+
+	return groups.map((group) => ({
+		id: group.id,
+		name: group.name,
+		subjectId: group.subject.id,
+		subjectName: group.subject.name,
+	}))
 }
 
 export async function resumeStudentFromPause(studentId: string) {
