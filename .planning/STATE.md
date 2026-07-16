@@ -244,12 +244,13 @@ None yet.
 | 260712-3mf | Группа в таблице «Мои часы» и фильтр по группе | 2026-07-12 | — | [260712-3mf-hours-group-filter](./quick/260712-3mf-hours-group-filter/) |
 | 260716-mop | адаптируй экран Журнал под мобилку | 2026-07-16 | f016e30 | [260716-mop-journal-mobile](./quick/260716-mop-journal-mobile/) |
 | 260716-mp1 | Массовое зачисление существующих учеников в группу | 2026-07-16 | 9f7f8df | [260716-mp1-bulk-add-students-to-group](./quick/260716-mp1-bulk-add-students-to-group/) |
+| 260716-mnz | Импорт книги учителя уровня 1 в teacherNote + медиа | 2026-07-16 | 2f7ce8f | [260716-mnz-1](./quick/260716-mnz-1/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-16 - Completed quick task 260716-mp1: bulk enroll students to group
-Last session: 2026-07-16T13:28:00Z
-Stopped at: Completed 260716-mp1-PLAN.md
+Last activity: 2026-07-16 - Completed quick task 260716-mnz: импорт книги учителя уровня 1 в teacherNote
+Last session: 2026-07-16T13:37:00Z
+Stopped at: Completed quick 260716-mnz-1
 Resume file: None
 
 ## Operator Next Steps
