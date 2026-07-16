@@ -55,6 +55,20 @@ export async function resolveSwitchAccess(
 		return { allowed: true, switchOwnerId: session.user.id }
 	}
 
+	if (role === 'ACCOUNTANT') {
+		if (
+			session.user.switchOwnerId &&
+			(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
+		) {
+			return {
+				allowed: true,
+				switchOwnerId: session.user.switchOwnerId,
+			}
+		}
+
+		return { allowed: true, switchOwnerId: session.user.id }
+	}
+
 	if (role === 'TEACHER') {
 		const teacherId = session.user.teacherId
 		if (!teacherId) {
