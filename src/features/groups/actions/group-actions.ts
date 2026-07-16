@@ -3,12 +3,14 @@
 import { revalidatePath } from 'next/cache'
 
 import { getLevels } from '@/features/program-admin/actions/program-actions'
+import type { Prisma } from '@/shared/lib/db'
 import { prisma } from '@/shared/lib/prisma'
 import { getStepOffsetForLevel } from '@/shared/lib/student-progress/offsets'
 import { syncCompletionsForProgress } from '@/shared/lib/student-progress'
 import { requireRoles } from '@/shared/lib/session'
 import {
 	enrollStudentSchema,
+	enrollStudentsSchema,
 	unenrollStudentSchema,
 } from '@/shared/lib/validations/enrollment'
 import {
@@ -23,6 +25,81 @@ const enrollmentInclude = {
 	},
 	orderBy: { student: { user: { name: 'asc' as const } } },
 } as const
+
+type EnrollmentLevel = {
+	id: string
+	number: number
+	steps: { id: string; order: number }[]
+}
+
+async function createEnrollmentInTx(
+	tx: Prisma.TransactionClient,
+	params: {
+		studentId: string
+		groupId: string
+		levelId: string
+		subjectId: string
+		level: EnrollmentLevel
+		localStepIndex: number
+	},
+) {
+	const stepOffset = await getStepOffsetForLevel(
+		params.level.number,
+		params.subjectId,
+	)
+	const currentStepIdx = stepOffset + params.localStepIndex
+
+	await tx.groupEnrollment.create({
+		data: {
+			studentId: params.studentId,
+			groupId: params.groupId,
+			levelId: params.levelId,
+			currentStepIdx,
+		},
+	})
+
+	await syncCompletionsForProgress(
+		tx,
+		params.studentId,
+		params.groupId,
+		params.level.steps,
+		params.localStepIndex,
+	)
+}
+
+async function resolveEnrollmentTarget(
+	groupId: string,
+	levelId: string,
+	localStepIndex: number,
+) {
+	const group = await prisma.group.findUnique({
+		where: { id: groupId },
+		select: { subjectId: true },
+	})
+	if (!group) {
+		throw new Error('Группа не найдена')
+	}
+
+	const level = await prisma.level.findFirst({
+		where: { id: levelId, subjectId: group.subjectId },
+		include: { steps: { orderBy: { order: 'asc' } } },
+	})
+	if (!level) {
+		throw new Error('Уровень не принадлежит предмету группы')
+	}
+
+	if (localStepIndex > level.steps.length) {
+		throw new Error('Шаг выходит за пределы уровня')
+	}
+
+	return { group, level, localStepIndex }
+}
+
+function revalidateEnrollmentPaths(groupId: string) {
+	revalidatePath(`/groups/${groupId}`)
+	revalidatePath('/groups')
+	revalidatePath('/journal')
+}
 
 export async function getGroups() {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
@@ -125,26 +202,11 @@ export async function enrollStudent(groupId: string, input: unknown) {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 	const data = enrollStudentSchema.parse(input)
 
-	const group = await prisma.group.findUnique({
-		where: { id: groupId },
-		select: { subjectId: true },
-	})
-	if (!group) {
-		throw new Error('Группа не найдена')
-	}
-
-	const level = await prisma.level.findFirst({
-		where: { id: data.levelId, subjectId: group.subjectId },
-		include: { steps: { orderBy: { order: 'asc' } } },
-	})
-	if (!level) {
-		throw new Error('Уровень не принадлежит предмету группы')
-	}
-
-	const localStepIndex = data.localStepIndex ?? 0
-	if (localStepIndex > level.steps.length) {
-		throw new Error('Шаг выходит за пределы уровня')
-	}
+	const { group, level, localStepIndex } = await resolveEnrollmentTarget(
+		groupId,
+		data.levelId,
+		data.localStepIndex ?? 0,
+	)
 
 	const existing = await prisma.groupEnrollment.findUnique({
 		where: {
@@ -158,31 +220,57 @@ export async function enrollStudent(groupId: string, input: unknown) {
 		throw new Error('Ученик уже зачислен в эту группу')
 	}
 
-	const stepOffset = await getStepOffsetForLevel(level.number, group.subjectId)
-	const currentStepIdx = stepOffset + localStepIndex
-
 	await prisma.$transaction(async (tx) => {
-		await tx.groupEnrollment.create({
-			data: {
-				studentId: data.studentId,
-				groupId,
-				levelId: data.levelId,
-				currentStepIdx,
-			},
-		})
-
-		await syncCompletionsForProgress(
-			tx,
-			data.studentId,
+		await createEnrollmentInTx(tx, {
+			studentId: data.studentId,
 			groupId,
-			level.steps,
+			levelId: data.levelId,
+			subjectId: group.subjectId,
+			level,
 			localStepIndex,
-		)
+		})
 	})
 
-	revalidatePath(`/groups/${groupId}`)
-	revalidatePath('/groups')
-	revalidatePath('/journal')
+	revalidateEnrollmentPaths(groupId)
+}
+
+export async function enrollStudents(groupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = enrollStudentsSchema.parse(input)
+
+	const { group, level, localStepIndex } = await resolveEnrollmentTarget(
+		groupId,
+		data.levelId,
+		data.localStepIndex ?? 0,
+	)
+
+	const duplicates = await prisma.groupEnrollment.findMany({
+		where: {
+			groupId,
+			studentId: { in: data.studentIds },
+		},
+		select: { studentId: true },
+	})
+	if (duplicates.length > 0) {
+		throw new Error(
+			'Один или несколько учеников уже зачислены в эту группу',
+		)
+	}
+
+	await prisma.$transaction(async (tx) => {
+		for (const studentId of data.studentIds) {
+			await createEnrollmentInTx(tx, {
+				studentId,
+				groupId,
+				levelId: data.levelId,
+				subjectId: group.subjectId,
+				level,
+				localStepIndex,
+			})
+		}
+	})
+
+	revalidateEnrollmentPaths(groupId)
 }
 
 export async function unenrollStudent(groupId: string, input: unknown) {
@@ -198,9 +286,7 @@ export async function unenrollStudent(groupId: string, input: unknown) {
 		},
 	})
 
-	revalidatePath(`/groups/${groupId}`)
-	revalidatePath('/groups')
-	revalidatePath('/journal')
+	revalidateEnrollmentPaths(groupId)
 }
 
 export async function searchStudentsForEnroll(groupId: string, query?: string) {

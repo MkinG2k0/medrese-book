@@ -358,6 +358,97 @@ describe('group-actions', () => {
 		})
 	})
 
+	describe('enrollStudents', () => {
+		it('creates enrollments for two students in one transaction', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue({
+				id: 'level-1',
+				number: 1,
+				steps: [{ id: 'step-1', order: 1 }],
+			})
+			groupEnrollmentFindManyMock.mockResolvedValue([])
+			getStepOffsetForLevelMock.mockResolvedValue(0)
+			transactionMock.mockImplementation(async (fn) => {
+				const tx = {
+					groupEnrollment: { create: groupEnrollmentCreateMock },
+				}
+				return fn(tx)
+			})
+
+			const { enrollStudents } = await import('./group-actions')
+			await enrollStudents('group-1', {
+				studentIds: ['student-1', 'student-2'],
+				levelId: 'level-1',
+				localStepIndex: 0,
+			})
+
+			expect(groupEnrollmentFindManyMock).toHaveBeenCalledWith({
+				where: {
+					groupId: 'group-1',
+					studentId: { in: ['student-1', 'student-2'] },
+				},
+				select: { studentId: true },
+			})
+			expect(groupEnrollmentCreateMock).toHaveBeenCalledTimes(2)
+			expect(groupEnrollmentCreateMock).toHaveBeenCalledWith({
+				data: {
+					studentId: 'student-1',
+					groupId: 'group-1',
+					levelId: 'level-1',
+					currentStepIdx: 0,
+				},
+			})
+			expect(groupEnrollmentCreateMock).toHaveBeenCalledWith({
+				data: {
+					studentId: 'student-2',
+					groupId: 'group-1',
+					levelId: 'level-1',
+					currentStepIdx: 0,
+				},
+			})
+			expect(syncCompletionsForProgressMock).toHaveBeenCalledTimes(2)
+			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-1')
+			expect(revalidatePathMock).toHaveBeenCalledWith('/groups')
+			expect(revalidatePathMock).toHaveBeenCalledWith('/journal')
+		})
+
+		it('rejects when any student is already enrolled and does not create', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue({
+				id: 'level-1',
+				number: 1,
+				steps: [{ id: 'step-1', order: 1 }],
+			})
+			groupEnrollmentFindManyMock.mockResolvedValue([
+				{ studentId: 'student-2' },
+			])
+
+			const { enrollStudents } = await import('./group-actions')
+			await expect(
+				enrollStudents('group-1', {
+					studentIds: ['student-1', 'student-2'],
+					levelId: 'level-1',
+				}),
+			).rejects.toThrow('Один или несколько учеников уже зачислены в эту группу')
+			expect(groupEnrollmentCreateMock).not.toHaveBeenCalled()
+			expect(transactionMock).not.toHaveBeenCalled()
+		})
+
+		it('throws when level.subjectId does not match group subject', async () => {
+			groupFindUniqueMock.mockResolvedValue({ subjectId: 'subject-1' })
+			levelFindFirstMock.mockResolvedValue(null)
+
+			const { enrollStudents } = await import('./group-actions')
+			await expect(
+				enrollStudents('group-1', {
+					studentIds: ['student-1', 'student-2'],
+					levelId: 'level-wrong',
+				}),
+			).rejects.toThrow('Уровень не принадлежит предмету группы')
+			expect(groupEnrollmentCreateMock).not.toHaveBeenCalled()
+		})
+	})
+
 	describe('unenrollStudent', () => {
 		it('deletes enrollment by composite key', async () => {
 			groupEnrollmentDeleteMock.mockResolvedValue({ id: 'enrollment-1' })
