@@ -245,7 +245,7 @@ export function GroupStudentsTable({
           {headerControls}
           {canManageEnrollment && groupId && subjectId && (
             <Button type="primary" onClick={() => setEnrollOpen(true)}>
-              Добавить ученика
+              Добавить учеников
             </Button>
           )}
         </div>

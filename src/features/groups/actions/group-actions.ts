@@ -307,7 +307,7 @@ export async function searchStudentsForEnroll(groupId: string, query?: string) {
 		},
 		include: { user: true },
 		orderBy: { user: { name: 'asc' } },
-		take: 50,
+		take: 200,
 	})
 
 	return students.map((student) => ({

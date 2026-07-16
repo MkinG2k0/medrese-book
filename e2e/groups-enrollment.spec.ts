@@ -155,18 +155,18 @@ test.describe("Группы: зачисление учеников", () => {
     await page.goto("/groups");
     await page.getByRole("link", { name: TEST_USERS.group1, exact: true }).click();
     await expect(
-      page.getByRole("button", { name: "Добавить ученика" }),
+      page.getByRole("button", { name: "Добавить учеников" }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Добавить ученика" }).click();
-    const dialog = page.getByRole("dialog", { name: "Зачислить ученика" });
+    await page.getByRole("button", { name: "Добавить учеников" }).click();
+    const dialog = page.getByRole("dialog", { name: "Зачислить учеников" });
     await expect(dialog).toBeVisible();
 
     await pickAntdSelectOption(
       page,
       dialog
         .locator(".ant-form-item")
-        .filter({ hasText: "Ученик" })
+        .filter({ hasText: "Ученики" })
         .getByRole("combobox"),
       TEST_USERS.studentKhalid,
     );
@@ -187,19 +187,77 @@ test.describe("Группы: зачисление учеников", () => {
     ).toBeVisible();
   });
 
+  test("зачисляет нескольких учеников одним действием", async ({ page }) => {
+    const groupName = `Группа bulk ${Date.now()}`;
+
+    await page.goto("/groups");
+    await page.getByRole("button", { name: "Создать группу" }).click();
+    const createDialog = page.getByRole("dialog", { name: "Создать группу" });
+    await pickAntdSelectOption(
+      page,
+      createDialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Предмет" })
+        .getByRole("combobox"),
+      "Коран",
+    );
+    await createDialog.getByLabel("Название").fill(groupName);
+    await pickAntdSelectOption(
+      page,
+      createDialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Учитель" })
+        .getByRole("combobox"),
+      TEST_USERS.teacher1Name,
+    );
+    await createDialog.getByRole("button", { name: "Создать группу" }).click();
+    await expect(createDialog).toBeHidden();
+
+    await page.getByRole("link", { name: groupName, exact: true }).click();
+    await page.getByRole("button", { name: "Добавить учеников" }).click();
+    const dialog = page.getByRole("dialog", { name: "Зачислить учеников" });
+    await expect(dialog).toBeVisible();
+
+    const studentsCombobox = dialog
+      .locator(".ant-form-item")
+      .filter({ hasText: "Ученики" })
+      .getByRole("combobox");
+
+    await pickAntdSelectOption(page, studentsCombobox, TEST_USERS.studentKhalid);
+    await pickAntdSelectOption(page, studentsCombobox, TEST_USERS.studentZayd);
+
+    await pickAntdSelectOption(
+      page,
+      dialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Уровень" })
+        .getByRole("combobox"),
+      "1й уровень",
+    );
+
+    await dialog.getByRole("button", { name: "Зачислить" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentKhalid, exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentZayd, exact: true }),
+    ).toBeVisible();
+  });
+
   test("зачисляет ученика во вторую группу с независимым уровнем", async ({
     page,
   }) => {
     await page.goto("/groups");
     await page.getByRole("link", { name: TEST_USERS.group2, exact: true }).click();
 
-    await page.getByRole("button", { name: "Добавить ученика" }).click();
-    const dialog = page.getByRole("dialog", { name: "Зачислить ученика" });
+    await page.getByRole("button", { name: "Добавить учеников" }).click();
+    const dialog = page.getByRole("dialog", { name: "Зачислить учеников" });
     await pickAntdSelectOption(
       page,
       dialog
         .locator(".ant-form-item")
-        .filter({ hasText: "Ученик" })
+        .filter({ hasText: "Ученики" })
         .getByRole("combobox"),
       TEST_USERS.studentAli,
     );

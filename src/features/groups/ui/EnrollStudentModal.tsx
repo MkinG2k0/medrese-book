@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import {
-	enrollStudent,
+	enrollStudents,
 	searchStudentsForEnroll,
 } from '@/features/groups/actions/group-actions'
 import type { LevelOption } from '@/features/user-admin/lib/map-users-to-details'
@@ -39,7 +39,7 @@ export function EnrollStudentModal({
 	const router = useRouter()
 	const [isPending, startTransition] = useTransition()
 	const [form] = Form.useForm<{
-		studentId: string
+		studentIds: string[]
 		levelId: string
 		localStepIndex: number
 	}>()
@@ -99,14 +99,19 @@ export function EnrollStudentModal({
 	}
 
 	const handleFinish = (values: {
-		studentId: string
+		studentIds: string[]
 		levelId: string
 		localStepIndex: number
 	}) => {
 		startTransition(async () => {
 			try {
-				await enrollStudent(groupId, values)
-				message.success('Ученик зачислен')
+				await enrollStudents(groupId, values)
+				const count = values.studentIds.length
+				message.success(
+					count === 1
+						? 'Ученик зачислен'
+						: `Зачислено учеников: ${count}`,
+				)
 				form.resetFields()
 				onClose()
 				router.refresh()
@@ -114,7 +119,7 @@ export function EnrollStudentModal({
 				message.error(
 					err instanceof Error
 						? err.message
-						: 'Не удалось зачислить ученика',
+						: 'Не удалось зачислить учеников',
 				)
 			}
 		})
@@ -122,7 +127,7 @@ export function EnrollStudentModal({
 
 	return (
 		<Modal
-			title="Зачислить ученика"
+			title="Зачислить учеников"
 			open={open}
 			onCancel={onClose}
 			onOk={() => form.submit()}
@@ -135,16 +140,24 @@ export function EnrollStudentModal({
 				form={form}
 				layout="vertical"
 				onFinish={handleFinish}
-				initialValues={{ localStepIndex: 0 }}
+				initialValues={{ studentIds: [], localStepIndex: 0 }}
 			>
 				<Form.Item
-					name="studentId"
-					label="Ученик"
-					rules={[{ required: true, message: 'Выберите ученика' }]}
+					name="studentIds"
+					label="Ученики"
+					rules={[
+						{
+							required: true,
+							type: 'array',
+							min: 1,
+							message: 'Выберите хотя бы одного ученика',
+						},
+					]}
 				>
 					<Select
+						mode="multiple"
 						showSearch
-						placeholder="Выберите ученика"
+						placeholder="Выберите учеников"
 						loading={loadingStudents}
 						filterOption={false}
 						onSearch={handleSearch}
