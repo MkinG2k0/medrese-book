@@ -78,6 +78,7 @@ async function createLevelWithSteps(
         order: step.order,
         title: step.title,
         content: buildContent(step),
+        teacherNote: step.teacherNote ?? { blocks: [] },
         hours: step.hours,
       },
     });
@@ -118,11 +119,13 @@ async function upsertLevelWithSteps(
         order: step.order,
         title: step.title,
         content: buildContent(step),
+        teacherNote: step.teacherNote ?? { blocks: [] },
         hours: step.hours,
       },
       update: {
         title: step.title,
         content: buildContent(step),
+        teacherNote: step.teacherNote ?? { blocks: [] },
         hours: step.hours,
       },
     });

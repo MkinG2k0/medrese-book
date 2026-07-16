@@ -1,5 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+
+export type StepContentBlocks = {
+  blocks: Array<
+    | { type: "text"; value: string }
+    | { type: "arabic"; value: string; size?: "md" | "lg" | "xl" }
+    | { type: "image"; url: string; caption?: string | null }
+    | { type: "list"; items: string[] }
+  >;
+};
 
 export type StepDef = {
   order: number;
@@ -11,12 +20,32 @@ export type StepDef = {
   globalLesson?: number;
   wird?: string;
   rules?: string;
+  /** Методичка учителя (книга учителя); student content остаётся из buildContent */
+  teacherNote?: StepContentBlocks;
 };
 
 const DATA_DIR = join(process.cwd(), "prisma/data");
+const LEVEL1_TEACHER_NOTES_FILE = "level1-teacher-notes.json";
 
 function loadJson<T>(fileName: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, fileName), "utf8")) as T;
+}
+
+type TeacherNoteRow = {
+  order: number;
+  teacherNote: StepContentBlocks;
+};
+
+/** Загружает teacherNote из level1-teacher-notes.json; null если файла нет. */
+export function loadLevel1TeacherNotes(): Map<number, StepContentBlocks> | null {
+  const path = join(DATA_DIR, LEVEL1_TEACHER_NOTES_FILE);
+  if (!existsSync(path)) return null;
+  const rows = loadJson<TeacherNoteRow[]>(LEVEL1_TEACHER_NOTES_FILE);
+  const map = new Map<number, StepContentBlocks>();
+  for (const row of rows) {
+    map.set(row.order, row.teacherNote);
+  }
+  return map;
 }
 
 export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
@@ -24,7 +53,13 @@ export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
 }
 
 export function loadAllLevel1Steps(): StepDef[] {
-  return ([1, 2, 3] as const).flatMap((page) => loadLevel1PageSteps(page));
+  const steps = ([1, 2, 3] as const).flatMap((page) => loadLevel1PageSteps(page));
+  const notes = loadLevel1TeacherNotes();
+  if (!notes) return steps;
+  return steps.map((step) => {
+    const teacherNote = notes.get(step.order);
+    return teacherNote ? { ...step, teacherNote } : step;
+  });
 }
 
 export function loadLevel2Steps(): StepDef[] {
