@@ -128,18 +128,18 @@ export function StudentList({ groups, defaultGroupId }: StudentListProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Title level={3}>Журнал на сегодня</Title>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           <Select
             value={groupId || undefined}
             options={groupOptions}
             onChange={handleGroupChange}
             disabled={groups.length <= 1}
-            className="min-w-[220px]"
+            className="w-full sm:min-w-[220px]"
             aria-label="Группа"
           />
-          <div className="flex items-center gap-1">
+          <div className="flex w-full items-center gap-1 sm:w-auto">
             <Button
               icon={<LeftOutlined />}
               aria-label="Предыдущий день"
@@ -149,6 +149,7 @@ export function StudentList({ groups, defaultGroupId }: StudentListProps) {
               groupId={groupId}
               value={dateFilter}
               onChange={setDateFilter}
+              className="min-w-0 flex-1 sm:flex-none sm:w-auto"
             />
             <Button
               icon={<RightOutlined />}

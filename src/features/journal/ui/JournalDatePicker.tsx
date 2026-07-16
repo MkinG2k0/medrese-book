@@ -12,6 +12,7 @@ type JournalDatePickerProps = {
   groupId: string;
   value: string;
   onChange: (date: string) => void;
+  className?: string;
 };
 
 function getPickerPanelRange(panelDate: Dayjs) {
@@ -27,6 +28,7 @@ export function JournalDatePicker({
   groupId,
   value,
   onChange,
+  className,
 }: JournalDatePickerProps) {
   const selectedDate = dayjs(value);
   const [panelDate, setPanelDate] = useState(() => selectedDate);
@@ -53,6 +55,7 @@ export function JournalDatePicker({
     <DatePicker
       value={selectedDate}
       pickerValue={panelDate}
+      className={className}
       disabledDate={(current) =>
         current != null &&
         isJournalFutureDayBlocked(current.format("YYYY-MM-DD"))

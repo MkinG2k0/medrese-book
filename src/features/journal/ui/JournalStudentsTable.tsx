@@ -170,6 +170,7 @@ export function JournalStudentsTable({
                   title: <RiskSignalsColumnTitle />,
                   key: "riskFlags",
                   width: 140,
+                  responsive: ["md" as const],
                   render: (_: unknown, record: JournalStudentRow) =>
                     record.riskFlags && record.riskFlags.length > 0 ? (
                       <JournalRiskBadge
@@ -199,11 +200,13 @@ export function JournalStudentsTable({
             title: "Пройдено сегодня",
             dataIndex: "todayStepsCompleted",
             key: "todayStepsCompleted",
+            responsive: ["md" as const],
             render: (count: number | undefined) => count ?? 0,
           },
           {
             title: "Оценки",
             key: "grades",
+            responsive: ["md" as const],
             render: (_, record) =>
               record.todayGrades?.length
                 ? record.todayGrades.join(", ")
