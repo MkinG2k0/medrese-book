@@ -63,7 +63,7 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 
 	const role = session.user.role as UserRole
 
-	if (role === 'SUPER_ADMIN' || role === 'MANAGER') {
+	if (role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ACCOUNTANT') {
 		return getPrivilegedSwitchableUsers()
 	}
 
