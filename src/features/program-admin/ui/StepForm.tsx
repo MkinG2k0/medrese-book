@@ -55,8 +55,7 @@ export function StepForm({
 			} else {
 				await createStep(payload)
 			}
-			router.push(cancelHref)
-			router.refresh()
+			router.replace(cancelHref)
 		})
 	}
 
@@ -117,7 +116,7 @@ export function StepForm({
 						{stepId ? 'Сохранить' : 'Создать шаг'}
 					</Button>
 					<Link href={cancelHref}>
-						<Button>Отмена</Button>
+						<Button>К шагам уровня</Button>
 					</Link>
 				</div>
 			</Form>

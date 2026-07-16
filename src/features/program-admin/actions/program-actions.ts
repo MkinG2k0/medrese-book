@@ -166,9 +166,32 @@ export async function deleteLevel(subjectId: string, levelId: string) {
 	revalidatePath('/admin/subjects')
 }
 
-export async function getStep(stepId: string) {
+export async function getStep(subjectId: string, levelId: string, stepId: string) {
 	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
-	return prisma.step.findUnique({ where: { id: stepId } })
+	return prisma.step.findFirst({
+		where: {
+			id: stepId,
+			levelId,
+			level: {
+				subjectId,
+			},
+		},
+		include: {
+			level: {
+				select: {
+					id: true,
+					number: true,
+					title: true,
+					subject: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+			},
+		},
+	})
 }
 
 export async function createStep(input: unknown) {

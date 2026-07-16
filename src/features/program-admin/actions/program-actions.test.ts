@@ -10,6 +10,7 @@ const levelUpdateMock = vi.fn()
 const levelDeleteMock = vi.fn()
 const subjectFindUniqueMock = vi.fn()
 const groupEnrollmentCountMock = vi.fn()
+const stepFindFirstMock = vi.fn()
 const stepFindUniqueMock = vi.fn()
 const stepFindUniqueOrThrowMock = vi.fn()
 const stepCreateMock = vi.fn()
@@ -53,6 +54,7 @@ vi.mock('@/shared/lib/prisma', () => ({
 			count: (...args: unknown[]) => groupEnrollmentCountMock(...args),
 		},
 		step: {
+			findFirst: (...args: unknown[]) => stepFindFirstMock(...args),
 			findUnique: (...args: unknown[]) => stepFindUniqueMock(...args),
 			findUniqueOrThrow: (...args: unknown[]) =>
 				stepFindUniqueOrThrowMock(...args),
@@ -117,6 +119,57 @@ describe('program-actions', () => {
 			const result = await getLevelSteps('sub-a', 'lvl-1')
 
 			expect(result?.steps).toHaveLength(1)
+		})
+	})
+
+	describe('getStep', () => {
+		it('returns step only within matching subject and level scope', async () => {
+			stepFindFirstMock.mockResolvedValue({
+				id: 'step-1',
+				title: 'Состояние буквы',
+				levelId: 'lvl-1',
+				level: {
+					id: 'lvl-1',
+					number: 1,
+					title: 'Уровень 1',
+					subject: {
+						id: 'sub-a',
+						name: 'Нурония',
+					},
+				},
+			})
+
+			const { getStep } = await import('./program-actions')
+			const result = await getStep('sub-a', 'lvl-1', 'step-1')
+
+			expect(stepFindFirstMock).toHaveBeenCalledWith({
+				where: { id: 'step-1', levelId: 'lvl-1', level: { subjectId: 'sub-a' } },
+				include: {
+					level: {
+						select: {
+							id: true,
+							number: true,
+							title: true,
+							subject: {
+								select: {
+									id: true,
+									name: true,
+								},
+							},
+						},
+					},
+				},
+			})
+			expect(result?.level.subject.name).toBe('Нурония')
+		})
+
+		it('returns null when step does not belong to subject or level from route', async () => {
+			stepFindFirstMock.mockResolvedValue(null)
+
+			const { getStep } = await import('./program-actions')
+			const result = await getStep('sub-a', 'lvl-other', 'step-1')
+
+			expect(result).toBeNull()
 		})
 	})
 
