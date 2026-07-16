@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-16 - Completed quick task 260716-mp1: массовое добавление учеников в группу
+Last activity: 2026-07-16 - Completed quick task 260716-mzj: UserSwitcher для бухгалтера
 
 ## Performance Metrics
 
@@ -179,6 +179,7 @@ Recent decisions affecting current work:
 - [Phase 15]: Subject scope допзаданий через Step.level.subjectId без миграции schema
 - [Phase 15]: getExtraAssignmentSubjects role-scoped — teacher только предметы своих групп
 - [Phase 15]: groupId navigation — URL param > primary enrollment; localStorage при клике с карточки (D-07/D-08)
+- [Quick 260716-mzj]: ACCOUNTANT — privileged actor в switch; isPrivilegedSwitchOwner без ACCOUNTANT
 
 ### Pending Todos
 
@@ -245,12 +246,13 @@ None yet.
 | 260716-mop | адаптируй экран Журнал под мобилку | 2026-07-16 | f016e30 | [260716-mop-journal-mobile](./quick/260716-mop-journal-mobile/) |
 | 260716-mp1 | Массовое зачисление существующих учеников в группу | 2026-07-16 | 9f7f8df | [260716-mp1-bulk-add-students-to-group](./quick/260716-mp1-bulk-add-students-to-group/) |
 | 260716-mnz | Импорт книги учителя уровня 1 в teacherNote + медиа | 2026-07-16 | 2f7ce8f | [260716-mnz-1](./quick/260716-mnz-1/) |
+| 260716-mzj | UserSwitcher для роли ACCOUNTANT (privileged switch) | 2026-07-16 | 6df62e6 | [260716-mzj-accountant-role-select](./quick/260716-mzj-accountant-role-select/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-16 - Completed quick task 260716-mnz: импорт книги учителя уровня 1 в teacherNote
-Last session: 2026-07-16T13:37:00Z
-Stopped at: Completed quick 260716-mnz-1
+Last activity: 2026-07-16 - Completed quick task 260716-mzj: UserSwitcher для бухгалтера
+Last session: 2026-07-16T13:38:28Z
+Stopped at: Completed quick 260716-mzj-accountant-role-select
 Resume file: None
 
 ## Operator Next Steps
