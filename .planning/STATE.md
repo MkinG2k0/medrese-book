@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-11 — Milestone v2.0 completed and archived
+Last activity: 2026-07-16 - Completed quick task 260716-mop: адаптируй экран Журнал под мобилку
 
 ## Performance Metrics
 
@@ -242,10 +242,11 @@ None yet.
 | 260712-12i | Fix duplicate React keys in LevelStats Table (rowKey=level) | 2026-07-11 | e6fa736 | [260712-12i-fix-duplicate-react-keys-in-levelstats-t](./quick/260712-12i-fix-duplicate-react-keys-in-levelstats-t/) |
 | 260712-3dh | Заметка учителя в шагах (rich-text редактор) | 2026-07-11 | b7e7339 | [260712-3dh-step-teacher-note](./quick/260712-3dh-step-teacher-note/) |
 | 260712-3mf | Группа в таблице «Мои часы» и фильтр по группе | 2026-07-12 | — | [260712-3mf-hours-group-filter](./quick/260712-3mf-hours-group-filter/) |
+| 260716-mop | адаптируй экран Журнал под мобилку | 2026-07-16 | f016e30 | [260716-mop-journal-mobile](./quick/260716-mop-journal-mobile/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-12 - Completed quick task 260712-3mf: Группа в таблице «Мои часы» и фильтр по группе
+Last activity: 2026-07-16 - Completed quick task 260716-mop: адаптируй экран Журнал под мобилку
 Last session: 2026-07-11T23:05:29.581Z
 Stopped at: Completed 15-02-PLAN.md
 Resume file: None
