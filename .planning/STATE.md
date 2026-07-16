@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-16 - Completed quick task 260716-mop: адаптируй экран Журнал под мобилку
+Last activity: 2026-07-16 - Completed quick task 260716-mp1: массовое добавление учеников в группу
 
 ## Performance Metrics
 
@@ -243,12 +243,13 @@ None yet.
 | 260712-3dh | Заметка учителя в шагах (rich-text редактор) | 2026-07-11 | b7e7339 | [260712-3dh-step-teacher-note](./quick/260712-3dh-step-teacher-note/) |
 | 260712-3mf | Группа в таблице «Мои часы» и фильтр по группе | 2026-07-12 | — | [260712-3mf-hours-group-filter](./quick/260712-3mf-hours-group-filter/) |
 | 260716-mop | адаптируй экран Журнал под мобилку | 2026-07-16 | f016e30 | [260716-mop-journal-mobile](./quick/260716-mop-journal-mobile/) |
+| 260716-mp1 | Массовое зачисление существующих учеников в группу | 2026-07-16 | 9f7f8df | [260716-mp1-bulk-add-students-to-group](./quick/260716-mp1-bulk-add-students-to-group/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-16 - Completed quick task 260716-mop: адаптируй экран Журнал под мобилку
-Last session: 2026-07-11T23:05:29.581Z
-Stopped at: Completed 15-02-PLAN.md
+Last activity: 2026-07-16 - Completed quick task 260716-mp1: bulk enroll students to group
+Last session: 2026-07-16T13:28:00Z
+Stopped at: Completed 260716-mp1-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
