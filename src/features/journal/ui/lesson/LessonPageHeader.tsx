@@ -59,10 +59,10 @@ export function LessonPageHeader({
         <Text>Все ученики · {todayLabel}</Text>
       </Link>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
           <Avatar size={56}>{getInitials(studentName)}</Avatar>
-          <div className="flex flex-col gap-1">
+          <div className="flex min-w-0 flex-col gap-1">
             <Title level={3} className="!mb-0">
               {studentName}
             </Title>
@@ -86,8 +86,13 @@ export function LessonPageHeader({
             </Text>
           </div>
         </div>
-        <Link href={`/journal/${studentId}/history?groupId=${groupId}`}>
-          <Button type="link">История шагов</Button>
+        <Link
+          href={`/journal/${studentId}/history?groupId=${groupId}`}
+          className="w-full sm:w-auto"
+        >
+          <Button type="link" className="w-full justify-start sm:w-auto">
+            История шагов
+          </Button>
         </Link>
       </div>
 

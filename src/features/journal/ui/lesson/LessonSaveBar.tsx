@@ -15,7 +15,7 @@ export function LessonSaveBar({
 }: LessonSaveBarProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-[#2a2622] bg-[#141210] p-4 md:left-[240px]">
-      <div className="mx-auto flex w-full max-w-2xl gap-2">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
         {nextStudent && (
           <Button
             type="primary"
@@ -24,7 +24,10 @@ export function LessonSaveBar({
             onClick={onSaveAndNext}
             loading={isSaving}
           >
-            Сохранить и перейти к {nextStudent.name}
+            <span className="sm:hidden">Сохранить и далее</span>
+            <span className="hidden truncate sm:inline">
+              Сохранить и перейти к {nextStudent.name}
+            </span>
           </Button>
         )}
         <Button
