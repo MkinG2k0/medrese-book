@@ -1,5 +1,5 @@
 /**
- * One-shot: книга учителя (33 docx) → level1-teacher-notes.json + media.
+ * One-shot: книга учителя (33 docx) → level1-teacher-notes.json (поле content) + media.
  *
  * Usage:
  *   pnpm db:import:level1-teacher
@@ -35,9 +35,9 @@ type ContentBlock =
   | { type: "image"; url: string; caption?: string | null }
   | { type: "list"; items: string[] };
 
-type TeacherNoteEntry = {
+type ContentEntry = {
   order: number;
-  teacherNote: { blocks: ContentBlock[] };
+  content: { blocks: ContentBlock[] };
 };
 
 function parseSourceArg(argv: string[]): string {
@@ -316,7 +316,7 @@ async function importStep(
   order: number,
   magickAvailable: boolean,
 ): Promise<{
-  entry: TeacherNoteEntry;
+  entry: ContentEntry;
   emfSkipped: number;
   imagesSaved: number;
   imageBlocks: number;
@@ -336,7 +336,7 @@ async function importStep(
   const blocks = buildBlocks(documentXml, media.urlByRid);
 
   return {
-    entry: { order, teacherNote: { blocks } },
+    entry: { order, content: { blocks } },
     emfSkipped: media.emfSkipped,
     imagesSaved: media.imagesSaved,
     imageBlocks: blocks.filter((b) => b.type === "image").length,
@@ -375,7 +375,7 @@ async function main() {
     );
   }
 
-  const entries: TeacherNoteEntry[] = [];
+  const entries: ContentEntry[] = [];
   let totalEmfSkipped = 0;
   let totalImagesSaved = 0;
   let totalImageBlocks = 0;
@@ -391,7 +391,7 @@ async function main() {
     totalImagesSaved += result.imagesSaved;
     totalImageBlocks += result.imageBlocks;
     console.log(
-      `Step ${order}: blocks=${result.entry.teacherNote.blocks.length}, images=${result.imageBlocks}, emfSkipped=${result.emfSkipped}`,
+      `Step ${order}: blocks=${result.entry.content.blocks.length}, images=${result.imageBlocks}, emfSkipped=${result.emfSkipped}`,
     );
   }
 

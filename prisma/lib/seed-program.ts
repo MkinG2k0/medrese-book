@@ -8,8 +8,8 @@ import {
   LEVEL5_TITLE,
 } from "./program-config";
 import {
-  buildContent,
   loadAllProgramLevelSteps,
+  resolveStepContent,
   type StepDef,
 } from "./level1-import-utils";
 
@@ -77,8 +77,8 @@ async function createLevelWithSteps(
         levelId: level.id,
         order: step.order,
         title: step.title,
-        content: buildContent(step),
-        teacherNote: step.teacherNote ?? { blocks: [] },
+        content: resolveStepContent(step),
+        teacherNote: { blocks: [] },
         hours: step.hours,
       },
     });
@@ -118,14 +118,14 @@ async function upsertLevelWithSteps(
         levelId: level.id,
         order: step.order,
         title: step.title,
-        content: buildContent(step),
-        teacherNote: step.teacherNote ?? { blocks: [] },
+        content: resolveStepContent(step),
+        teacherNote: { blocks: [] },
         hours: step.hours,
       },
       update: {
         title: step.title,
-        content: buildContent(step),
-        teacherNote: step.teacherNote ?? { blocks: [] },
+        content: resolveStepContent(step),
+        teacherNote: { blocks: [] },
         hours: step.hours,
       },
     });

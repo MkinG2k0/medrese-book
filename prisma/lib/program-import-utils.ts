@@ -20,32 +20,40 @@ export type StepDef = {
   globalLesson?: number;
   wird?: string;
   rules?: string;
-  /** Методичка учителя (книга учителя); student content остаётся из buildContent */
-  teacherNote?: StepContentBlocks;
+  /** Полное содержание шага из книги учителя; если нет — buildContent(metadata) */
+  content?: StepContentBlocks;
 };
 
 const DATA_DIR = join(process.cwd(), "prisma/data");
-const LEVEL1_TEACHER_NOTES_FILE = "level1-teacher-notes.json";
+const LEVEL1_CONTENT_FILE = "level1-teacher-notes.json";
 
 function loadJson<T>(fileName: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, fileName), "utf8")) as T;
 }
 
-type TeacherNoteRow = {
+type Level1ContentRow = {
   order: number;
-  teacherNote: StepContentBlocks;
+  content?: StepContentBlocks;
+  /** @deprecated старый ключ импорта — читаем для совместимости */
+  teacherNote?: StepContentBlocks;
 };
 
-/** Загружает teacherNote из level1-teacher-notes.json; null если файла нет. */
-export function loadLevel1TeacherNotes(): Map<number, StepContentBlocks> | null {
-  const path = join(DATA_DIR, LEVEL1_TEACHER_NOTES_FILE);
+/** Загружает rich content уровня 1 из level1-teacher-notes.json; null если файла нет. */
+export function loadLevel1RichContent(): Map<number, StepContentBlocks> | null {
+  const path = join(DATA_DIR, LEVEL1_CONTENT_FILE);
   if (!existsSync(path)) return null;
-  const rows = loadJson<TeacherNoteRow[]>(LEVEL1_TEACHER_NOTES_FILE);
+  const rows = loadJson<Level1ContentRow[]>(LEVEL1_CONTENT_FILE);
   const map = new Map<number, StepContentBlocks>();
   for (const row of rows) {
-    map.set(row.order, row.teacherNote);
+    const blocks = row.content ?? row.teacherNote;
+    if (blocks) map.set(row.order, blocks);
   }
   return map;
+}
+
+/** @deprecated используйте loadLevel1RichContent */
+export function loadLevel1TeacherNotes(): Map<number, StepContentBlocks> | null {
+  return loadLevel1RichContent();
 }
 
 export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
@@ -54,12 +62,17 @@ export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
 
 export function loadAllLevel1Steps(): StepDef[] {
   const steps = ([1, 2, 3] as const).flatMap((page) => loadLevel1PageSteps(page));
-  const notes = loadLevel1TeacherNotes();
-  if (!notes) return steps;
+  const rich = loadLevel1RichContent();
+  if (!rich) return steps;
   return steps.map((step) => {
-    const teacherNote = notes.get(step.order);
-    return teacherNote ? { ...step, teacherNote } : step;
+    const content = rich.get(step.order);
+    return content ? { ...step, content } : step;
   });
+}
+
+/** content из книги учителя, иначе краткий buildContent из metadata */
+export function resolveStepContent(step: StepDef): StepContentBlocks {
+  return step.content ?? buildContent(step);
 }
 
 export function loadLevel2Steps(): StepDef[] {
