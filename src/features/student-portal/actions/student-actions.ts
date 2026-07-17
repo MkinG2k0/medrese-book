@@ -178,6 +178,7 @@ export async function getStudentLessons(groupId?: string) {
 			number: index + 1,
 			title: step.title,
 			content: step.content as StepContent,
+			pdfUrl: step.pdfUrl,
 			grade: completionsByStepId.get(step.id)?.grade ?? null,
 			isCurrent: index === localStepIdx,
 		})),

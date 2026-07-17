@@ -8,6 +8,7 @@ import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment
 import { SessionExtraAssignmentCard } from "@/features/extra-assignments/ui/SessionExtraAssignmentCard";
 
 import { getJournalStepContent } from "@/features/journal/actions/journal-actions";
+import { LessonContentView } from "@/features/program-admin/ui/LessonContentView";
 import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
 import { EMPTY_STEP_CONTENT, hasVisibleStepContent } from "@/features/journal/lib/journal-step";
 import { isStepPassed } from "@/shared/lib/step-completion";
@@ -72,15 +73,19 @@ export function StepCard({
 }: StepCardProps) {
   const [content, setContent] = useState<StepContent>(step.content);
   const [teacherNote, setTeacherNote] = useState<StepContent>(EMPTY_STEP_CONTENT);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [detailsLoaded, setDetailsLoaded] = useState(false);
   const [isContentLoading, setIsContentLoading] = useState(false);
 
   useEffect(() => {
     setContent(step.content);
     setTeacherNote(EMPTY_STEP_CONTENT);
+    setPdfUrl(null);
+    setDetailsLoaded(false);
   }, [step.id, step.content]);
 
   useEffect(() => {
-    if (!expanded || content.blocks.length > 0) return;
+    if (!expanded || detailsLoaded) return;
 
     let cancelled = false;
     setIsContentLoading(true);
@@ -90,6 +95,8 @@ export function StepCard({
         if (!cancelled && loaded) {
           setContent(loaded.content);
           setTeacherNote(loaded.teacherNote);
+          setPdfUrl(loaded.pdfUrl);
+          setDetailsLoaded(true);
         }
       })
       .finally(() => {
@@ -99,7 +106,7 @@ export function StepCard({
     return () => {
       cancelled = true;
     };
-  }, [expanded, step.id, content.blocks.length]);
+  }, [expanded, step.id, detailsLoaded]);
 
   const handleGradeChange = (grade: number) => {
     onStateChange({ ...state, grade });
@@ -158,7 +165,10 @@ export function StepCard({
                 {isContentLoading ? (
                   <Spin />
                 ) : (
-                  <StepContentPreview content={content ?? EMPTY_STEP_CONTENT} />
+                  <LessonContentView
+                    content={content ?? EMPTY_STEP_CONTENT}
+                    pdfUrl={pdfUrl}
+                  />
                 )}
               </Form.Item>
 

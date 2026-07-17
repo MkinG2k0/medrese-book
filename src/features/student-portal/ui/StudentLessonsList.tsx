@@ -2,7 +2,7 @@
 
 import { Collapse, Tag } from "antd";
 
-import { BlockRenderer } from "@/features/program-admin/ui/BlockRenderer";
+import { LessonContentView } from "@/features/program-admin/ui/LessonContentView";
 import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 
@@ -17,6 +17,7 @@ export type StudentLessonItem = {
   number: number;
   title: string;
   content: StepContent;
+  pdfUrl?: string | null;
   grade: number | null;
   isCurrent: boolean;
 };
@@ -46,7 +47,9 @@ export function StudentLessonsList({ lessons }: StudentLessonsListProps) {
             )}
           </div>
         ),
-        children: <BlockRenderer blocks={lesson.content.blocks} />,
+        children: (
+          <LessonContentView content={lesson.content} pdfUrl={lesson.pdfUrl} />
+        ),
       }))}
     />
   );

@@ -20,6 +20,13 @@ export function hasVisibleStepContent(content: StepContent): boolean {
 	})
 }
 
+export function hasLessonContent(
+	content: StepContent,
+	pdfUrl?: string | null,
+): boolean {
+	return hasVisibleStepContent(content) || Boolean(pdfUrl?.trim())
+}
+
 export type JournalStepMeta = {
 	id: string
 	order: number
