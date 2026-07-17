@@ -12,6 +12,7 @@ import {
   MenuOutlined,
   MessageOutlined,
   ReadOutlined,
+  SettingOutlined,
   TeamOutlined,
   TrophyOutlined,
   UserOutlined,
@@ -174,6 +175,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <TrophyOutlined />,
     label: "Награды",
   },
+  "/settings": {
+    key: "/settings",
+    icon: <SettingOutlined />,
+    label: "Настройки",
+  },
 };
 
 const managerMenuOrder = [
@@ -188,6 +194,7 @@ const managerMenuOrder = [
   "/admin/audit-log",
   "/news",
   "/messages",
+  "/settings",
 ] as const;
 
 const accountantMenuOrder = [
@@ -209,10 +216,11 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/analytics",
     "/news",
     "/messages",
+    "/settings",
   ],
   MANAGER: managerMenuOrder,
   SUPER_ADMIN: managerMenuOrder,
-  ACCOUNTANT: [...accountantMenuOrder, "/news", "/messages"],
+  ACCOUNTANT: [...accountantMenuOrder, "/news", "/messages", "/settings"],
   STUDENT: [
     "/student/me",
     "/student/lessons",
@@ -221,6 +229,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/student/awards",
     "/news",
     "/messages",
+    "/settings",
   ],
 };
 
@@ -273,7 +282,7 @@ function NavPanel({
         >
           <AppLogo size={collapsed ? 36 : 32} />
           {!collapsed && (
-            <span className="font-display text-lg text-[#E8E0D0]">
+            <span className="font-display text-lg text-white">
               Дневник медресе
             </span>
           )}
