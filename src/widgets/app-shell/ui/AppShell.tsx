@@ -421,7 +421,7 @@ export function AppShell({
           </Drawer>
         )}
 
-        <Layout className="flex min-h-0 flex-1 flex-col !bg-background">
+        <Layout className="flex min-h-0 min-w-0 flex-1 flex-col !bg-background">
           <Header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-3 py-2 !bg-card !leading-none md:gap-4 md:px-6">
             {isMobile && (
               <Button
@@ -454,9 +454,11 @@ export function AppShell({
 
           <PwaInstallBanner />
 
-          <Content className="mx-1 my-2 flex min-h-0 flex-1 flex-col overflow-auto rounded-lg p-3 md:mx-4 md:my-4 md:p-6">
-            {children}
-          </Content>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col p-1 md:p-4">
+            <Content className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto rounded-lg p-3 md:p-6">
+              {children}
+            </Content>
+          </div>
         </Layout>
       </Layout>
     </>

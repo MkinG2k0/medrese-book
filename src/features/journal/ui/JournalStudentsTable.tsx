@@ -129,7 +129,7 @@ export function JournalStudentsTable({
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 max-w-full overflow-x-auto">
       {blocked && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-[#12100e]/80 p-6">
           <Text type="secondary" className="max-w-md text-center">
