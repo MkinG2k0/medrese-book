@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-18 - Completed quick task 260718-2pl: PDF в содержании шага
+Last activity: 2026-07-18 - Completed quick task 260718-33u: PDF сидер уровня 1
 
 ## Performance Metrics
 
@@ -250,12 +250,13 @@ None yet.
 | 260716-fast | Книга учителя уровня 1 → content, не teacherNote | 2026-07-16 | b62c914 | — |
 | 260718-2kp | Убрать plain-text описание для учителя из формы и журнала | 2026-07-18 | 245a869 | [260718-2kp-remove-teacher-description](./quick/260718-2kp-remove-teacher-description/) |
 | 260718-2pl | PDF в содержании шага: attach/view в админке, журнале и портале | 2026-07-18 | bde6d3b | [260718-2pl-pdf-pdf](./quick/260718-2pl-pdf-pdf/) |
+| 260718-33u | Сидер уровня 1: PDF вместо блоков контента | 2026-07-18 | 86bc7b9 | [260718-33u-pdf](./quick/260718-33u-pdf/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-18 - Completed quick task 260718-2pl: Step PDF content
-Last session: 2026-07-17T23:03:00Z
-Stopped at: Completed 260718-2pl-PLAN.md
+Last activity: 2026-07-18 - Completed quick task 260718-33u: PDF seed level 1
+Last session: 2026-07-17T23:19:42Z
+Stopped at: Completed 260718-33u-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
