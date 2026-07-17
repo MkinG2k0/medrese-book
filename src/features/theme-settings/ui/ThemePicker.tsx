@@ -1,31 +1,52 @@
 "use client";
 
-import { QURAN_THEME_OPTIONS } from "../lib/constants";
-import { useThemeSettings } from "../model/theme-settings-context";
-import { cn } from "@/shared/lib/utils";
+import { Button } from "antd";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+
+import { APP_THEME_OPTIONS, type AppTheme } from "../lib/constants";
 
 export function ThemePicker() {
-  const { theme, setTheme } = useThemeSettings();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div
+        role="group"
+        aria-label="Тема оформления"
+        className="flex flex-wrap gap-2"
+      >
+        {APP_THEME_OPTIONS.map((opt) => (
+          <Button key={opt.id} disabled>
+            {opt.label}
+          </Button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div
       role="group"
       aria-label="Тема оформления"
-      className="flex flex-col gap-2"
+      className="flex flex-wrap gap-2"
     >
-      {QURAN_THEME_OPTIONS.map((opt) => {
+      {APP_THEME_OPTIONS.map((opt) => {
         const selected = theme === opt.id;
         return (
-          <button
+          <Button
             key={opt.id}
-            type="button"
+            type={selected ? "primary" : "default"}
             aria-pressed={selected}
-            onClick={() => setTheme(opt.id)}
-            className={cn("flex items-center gap-3")}
+            onClick={() => setTheme(opt.id as AppTheme)}
           >
-            <span aria-hidden />
             {opt.label}
-          </button>
+          </Button>
         );
       })}
     </div>
