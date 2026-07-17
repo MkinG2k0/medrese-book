@@ -22,7 +22,6 @@ type StepFormProps = {
 		hours: number
 		content: StepContent
 		teacherNote?: StepContent
-		description?: string
 	}
 }
 
@@ -43,13 +42,12 @@ export function StepForm({
 	const [order, setOrder] = useState(initial?.order ?? 1)
 	const [title, setTitle] = useState(initial?.title ?? '')
 	const [hours, setHours] = useState(initial?.hours ?? 1)
-	const [description, setDescription] = useState(initial?.description ?? '')
 
 	const cancelHref = programLevelPath(subjectId, levelId)
 
 	const handleSubmit = () => {
 		startTransition(async () => {
-			const payload = { levelId, order, title, content, teacherNote, description, hours }
+			const payload = { levelId, order, title, content, teacherNote, hours }
 			if (stepId) {
 				await updateStep(stepId, payload)
 			} else {
@@ -98,17 +96,6 @@ export function StepForm({
 						key={`teacher-note-${stepId ?? 'new'}`}
 						initialContent={initial?.teacherNote}
 						onChange={setTeacherNote}
-					/>
-				</Form.Item>
-				<Form.Item
-					label="Описание для учителя"
-					extra="Подсказка, что проверять в задании — видна только учителям"
-				>
-					<Input.TextArea
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Например: проверить правильность произношения букв аль-ифтиха..."
-						rows={3}
 					/>
 				</Form.Item>
 				<div className="flex gap-2">

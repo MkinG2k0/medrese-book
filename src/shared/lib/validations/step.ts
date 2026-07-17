@@ -25,7 +25,6 @@ export const createStepSchema = z.object({
 	title: z.string().min(1),
 	content: stepContentSchema,
 	teacherNote: stepContentSchema.optional().default({ blocks: [] }),
-	description: z.string().max(5000).optional().default(''),
 	hours: z.number().int().min(1),
 })
 

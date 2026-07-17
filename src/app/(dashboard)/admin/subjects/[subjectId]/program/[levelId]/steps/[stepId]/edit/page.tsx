@@ -59,7 +59,6 @@ export default async function EditSubjectStepPage({ params }: Props) {
 					hours: step.hours,
 					content: step.content as StepContent,
 					teacherNote: step.teacherNote as StepContent,
-					description: step.description,
 				}}
 			/>
 		</div>
