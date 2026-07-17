@@ -8,7 +8,7 @@ export function getAntdThemeConfig(themeId: AppTheme): ThemeConfig {
       return {
         algorithm: theme.darkAlgorithm,
         token: {
-          colorPrimary: '#f07d00',
+          colorPrimary: '#1677FF',
         },
       }
     case 'sage':
