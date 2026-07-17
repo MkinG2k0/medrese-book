@@ -1,6 +1,6 @@
 "use client";
 
-import { ConfigProvider, App, theme } from "antd";
+import { ConfigProvider, App } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -29,12 +29,8 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
     ? resolveAppTheme(resolvedTheme ?? nextTheme)
     : DEFAULT_APP_THEME;
 
-  const antdTheme = mounted
-    ? getAntdThemeConfig(themeId)
-    : getAntdThemeConfig(DEFAULT_APP_THEME);
-
   return (
-    <ConfigProvider locale={ruRU} theme={antdTheme}>
+    <ConfigProvider locale={ruRU} theme={getAntdThemeConfig(themeId)}>
       <App>{children}</App>
     </ConfigProvider>
   );
