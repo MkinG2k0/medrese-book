@@ -25,6 +25,7 @@ export const createStepSchema = z.object({
 	title: z.string().min(1),
 	content: stepContentSchema,
 	teacherNote: stepContentSchema.optional().default({ blocks: [] }),
+	pdfUrl: z.string().min(1).nullable().optional(),
 	hours: z.number().int().min(1),
 })
 

@@ -199,6 +199,7 @@ model Step {
   content     Json
   teacherNote Json             @default("{\"blocks\":[]}")
   description String           @default("")
+  pdfUrl      String?
   hours       Int
   completions StepCompletion[]
   extraAssignments       ExtraAssignment[]
