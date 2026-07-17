@@ -24,7 +24,6 @@ export type JournalStepMeta = {
 	id: string
 	order: number
 	title: string
-	description: string
 	hours: number
 	levelNumber: number
 	levelTitle: string
@@ -39,7 +38,6 @@ export function mapStepMeta(
 		id: string
 		order: number
 		title: string
-		description: string
 		hours: number
 	},
 	levelNumber: number,
@@ -49,7 +47,6 @@ export function mapStepMeta(
 		id: step.id,
 		order: step.order,
 		title: step.title,
-		description: step.description,
 		hours: step.hours,
 		levelNumber,
 		levelTitle,

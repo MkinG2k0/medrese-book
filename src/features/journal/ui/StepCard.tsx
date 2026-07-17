@@ -41,7 +41,6 @@ type StepCardProps = {
     order: number;
     title: string;
     content: StepContent;
-    description?: string;
     hours: number;
   };
   totalHours: number;
@@ -174,20 +173,6 @@ export function StepCard({
                       children: (
                         <StepContentPreview content={teacherNote} />
                       ),
-                    },
-                  ]}
-                />
-              )}
-
-              {step.description?.trim() && (
-                <Collapse
-                  className="mb-4! mt-2!"
-                  defaultActiveKey={[]}
-                  items={[
-                    {
-                      key: "teacher-description",
-                      label: "Описание для учителя",
-                      children: <Text>{step.description}</Text>,
                     },
                   ]}
                 />

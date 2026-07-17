@@ -83,7 +83,6 @@ function buildEnrollment(overrides: Record<string, unknown> = {}) {
 					id: 'step-1',
 					order: 1,
 					title: 'Шаг 1',
-					description: '',
 					hours: 1,
 				},
 			],
