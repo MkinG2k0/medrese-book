@@ -8,7 +8,7 @@ export const APP_THEME_OPTIONS: { id: AppTheme; label: string }[] = [
   { id: 'light', label: 'Светлая' },
   { id: 'dark', label: 'Тёмная' },
   { id: 'sage', label: 'Мечеть' },
-  { id: 'sepia', label: 'Стекло' },
+  { id: 'sepia', label: 'Синяя' },
 ]
 
 export function isAppTheme(value: unknown): value is AppTheme {
