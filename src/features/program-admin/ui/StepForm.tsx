@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Form, Input, InputNumber } from 'antd'
+import { App, Button, Form, Input, InputNumber, Upload } from 'antd'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -22,6 +22,17 @@ type StepFormProps = {
 		hours: number
 		content: StepContent
 		teacherNote?: StepContent
+		pdfUrl?: string | null
+	}
+}
+
+function pdfFileName(url: string): string {
+	try {
+		const path = url.split('?')[0] ?? url
+		const name = path.split('/').pop()
+		return name && name.length > 0 ? decodeURIComponent(name) : 'документ.pdf'
+	} catch {
+		return 'документ.pdf'
 	}
 }
 
@@ -32,22 +43,52 @@ export function StepForm({
 	initial,
 }: StepFormProps) {
 	const router = useRouter()
+	const { message } = App.useApp()
 	const [isPending, startTransition] = useTransition()
+	const [uploading, setUploading] = useState(false)
 	const [content, setContent] = useState<StepContent>(
 		initial?.content ?? { blocks: [{ type: 'text', value: '' }] },
 	)
 	const [teacherNote, setTeacherNote] = useState<StepContent>(
 		initial?.teacherNote ?? EMPTY_TEACHER_NOTE,
 	)
+	const [pdfUrl, setPdfUrl] = useState<string | null>(initial?.pdfUrl ?? null)
 	const [order, setOrder] = useState(initial?.order ?? 1)
 	const [title, setTitle] = useState(initial?.title ?? '')
 	const [hours, setHours] = useState(initial?.hours ?? 1)
 
 	const cancelHref = programLevelPath(subjectId, levelId)
 
+	const uploadPdf = async (file: File) => {
+		setUploading(true)
+		try {
+			const formData = new FormData()
+			formData.append('file', file)
+			const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+			const json = await res.json()
+			if (json.data?.url) {
+				setPdfUrl(json.data.url as string)
+			} else {
+				message.error(json.error ?? 'Не удалось загрузить PDF')
+			}
+		} catch {
+			message.error('Не удалось загрузить PDF')
+		} finally {
+			setUploading(false)
+		}
+	}
+
 	const handleSubmit = () => {
 		startTransition(async () => {
-			const payload = { levelId, order, title, content, teacherNote, hours }
+			const payload = {
+				levelId,
+				order,
+				title,
+				content,
+				teacherNote,
+				hours,
+				pdfUrl,
+			}
 			if (stepId) {
 				await updateStep(stepId, payload)
 			} else {
@@ -82,11 +123,55 @@ export function StepForm({
 					</Form.Item>
 				</div>
 				<Form.Item label="Содержание">
-					<StepEditor
-						key={`content-${stepId ?? 'new'}`}
-						initialContent={initial?.content}
-						onChange={setContent}
-					/>
+					<div className="flex flex-col gap-3">
+						<div className="flex flex-wrap items-center gap-2">
+							{pdfUrl ? (
+								<>
+									<a
+										href={pdfUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="min-w-0 truncate"
+									>
+										{pdfFileName(pdfUrl)}
+									</a>
+									<Upload
+										accept="application/pdf,.pdf"
+										showUploadList={false}
+										beforeUpload={(file) => {
+											void uploadPdf(file)
+											return false
+										}}
+									>
+										<Button loading={uploading}>Заменить</Button>
+									</Upload>
+									<Button
+										danger
+										disabled={uploading}
+										onClick={() => setPdfUrl(null)}
+									>
+										Удалить
+									</Button>
+								</>
+							) : (
+								<Upload
+									accept="application/pdf,.pdf"
+									showUploadList={false}
+									beforeUpload={(file) => {
+										void uploadPdf(file)
+										return false
+									}}
+								>
+									<Button loading={uploading}>Прикрепить PDF</Button>
+								</Upload>
+							)}
+						</div>
+						<StepEditor
+							key={`content-${stepId ?? 'new'}`}
+							initialContent={initial?.content}
+							onChange={setContent}
+						/>
+					</div>
 				</Form.Item>
 				<Form.Item
 					label="Заметка учителя"
