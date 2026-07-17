@@ -79,6 +79,7 @@ async function createLevelWithSteps(
         title: step.title,
         content: resolveStepContent(step),
         teacherNote: { blocks: [] },
+        pdfUrl: step.pdfUrl ?? null,
         hours: step.hours,
       },
     });
@@ -120,12 +121,14 @@ async function upsertLevelWithSteps(
         title: step.title,
         content: resolveStepContent(step),
         teacherNote: { blocks: [] },
+        pdfUrl: step.pdfUrl ?? null,
         hours: step.hours,
       },
       update: {
         title: step.title,
         content: resolveStepContent(step),
         teacherNote: { blocks: [] },
+        pdfUrl: step.pdfUrl ?? null,
         hours: step.hours,
       },
     });

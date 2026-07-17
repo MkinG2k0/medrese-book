@@ -20,40 +20,26 @@ export type StepDef = {
   globalLesson?: number;
   wird?: string;
   rules?: string;
-  /** Полное содержание шага из книги учителя; если нет — buildContent(metadata) */
+  pdfUrl?: string | null;
   content?: StepContentBlocks;
 };
 
 const DATA_DIR = join(process.cwd(), "prisma/data");
-const LEVEL1_CONTENT_FILE = "level1-teacher-notes.json";
+const LEVEL1_UPLOADS_DIR = join(
+  process.cwd(),
+  "public/uploads/program/level1",
+);
 
 function loadJson<T>(fileName: string): T {
   return JSON.parse(readFileSync(join(DATA_DIR, fileName), "utf8")) as T;
 }
 
-type Level1ContentRow = {
-  order: number;
-  content?: StepContentBlocks;
-  /** @deprecated старый ключ импорта — читаем для совместимости */
-  teacherNote?: StepContentBlocks;
-};
-
-/** Загружает rich content уровня 1 из level1-teacher-notes.json; null если файла нет. */
-export function loadLevel1RichContent(): Map<number, StepContentBlocks> | null {
-  const path = join(DATA_DIR, LEVEL1_CONTENT_FILE);
-  if (!existsSync(path)) return null;
-  const rows = loadJson<Level1ContentRow[]>(LEVEL1_CONTENT_FILE);
-  const map = new Map<number, StepContentBlocks>();
-  for (const row of rows) {
-    const blocks = row.content ?? row.teacherNote;
-    if (blocks) map.set(row.order, blocks);
+function resolveLevel1PdfUrl(order: number): string | null {
+  const pdfPath = join(LEVEL1_UPLOADS_DIR, `step-${order}`, "lesson.pdf");
+  if (!existsSync(pdfPath)) {
+    return null;
   }
-  return map;
-}
-
-/** @deprecated используйте loadLevel1RichContent */
-export function loadLevel1TeacherNotes(): Map<number, StepContentBlocks> | null {
-  return loadLevel1RichContent();
+  return `/uploads/program/level1/step-${order}/lesson.pdf`;
 }
 
 export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
@@ -61,18 +47,20 @@ export function loadLevel1PageSteps(page: 1 | 2 | 3): StepDef[] {
 }
 
 export function loadAllLevel1Steps(): StepDef[] {
-  const steps = ([1, 2, 3] as const).flatMap((page) => loadLevel1PageSteps(page));
-  const rich = loadLevel1RichContent();
-  if (!rich) return steps;
-  return steps.map((step) => {
-    const content = rich.get(step.order);
-    return content ? { ...step, content } : step;
-  });
+  return ([1, 2, 3] as const)
+    .flatMap((page) => loadLevel1PageSteps(page))
+    .map((step) => ({
+      ...step,
+      content: { blocks: [] },
+      pdfUrl: resolveLevel1PdfUrl(step.order),
+    }));
 }
 
-/** content из книги учителя, иначе краткий buildContent из metadata */
 export function resolveStepContent(step: StepDef): StepContentBlocks {
-  return step.content ?? buildContent(step);
+  if (step.content !== undefined) {
+    return step.content;
+  }
+  return buildContent(step);
 }
 
 export function loadLevel2Steps(): StepDef[] {
