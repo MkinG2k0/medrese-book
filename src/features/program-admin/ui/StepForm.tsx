@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react'
 import { createStep, updateStep } from '@/features/program-admin/actions/program-actions'
 import { programLevelPath } from '@/features/program-admin/lib/program-paths'
 import { StepEditor } from '@/features/program-admin/ui/editor/StepEditor'
+import { StepPdfViewer } from '@/features/program-admin/ui/StepPdfViewer'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 const EMPTY_TEACHER_NOTE: StepContent = { blocks: [{ type: 'text', value: '' }] }
@@ -166,6 +167,9 @@ export function StepForm({
 								</Upload>
 							)}
 						</div>
+						{pdfUrl?.trim() ? (
+							<StepPdfViewer key={pdfUrl} url={pdfUrl} />
+						) : null}
 						<StepEditor
 							key={`content-${stepId ?? 'new'}`}
 							initialContent={initial?.content}
