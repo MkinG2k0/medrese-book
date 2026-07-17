@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-18 - Completed quick task 260718-33u: PDF сидер уровня 1
+Last activity: 2026-07-18 - Completed quick task 260718-3fl: PDF viewer в редакторе шага
 
 ## Performance Metrics
 
@@ -180,6 +180,7 @@ Recent decisions affecting current work:
 - [Phase 15]: getExtraAssignmentSubjects role-scoped — teacher только предметы своих групп
 - [Phase 15]: groupId navigation — URL param > primary enrollment; localStorage при клике с карточки (D-07/D-08)
 - [Quick 260716-mzj]: ACCOUNTANT — privileged actor в switch; isPrivilegedSwitchOwner без ACCOUNTANT
+- [Quick 260718-3fl]: StepForm reuse StepPdfViewer при pdfUrl; key={pdfUrl} для remount после replace
 
 ### Pending Todos
 
@@ -252,12 +253,13 @@ None yet.
 | 260718-2pl | PDF в содержании шага: attach/view в админке, журнале и портале | 2026-07-18 | bde6d3b | [260718-2pl-pdf-pdf](./quick/260718-2pl-pdf-pdf/) |
 | 260718-33u | Сидер уровня 1: PDF вместо блоков контента | 2026-07-18 | 86bc7b9 | [260718-33u-pdf](./quick/260718-33u-pdf/) |
 | 260718-3bp | Смена тем приложения: 4 темы, страница /settings, дефолт светлая | 2026-07-18 | 9088465 | [260718-3bp-4-2](./quick/260718-3bp-4-2/) |
+| 260718-3fl | PDF viewer в редакторе шага (StepForm) | 2026-07-18 | 7b2c3be | [260718-3fl-pdf](./quick/260718-3fl-pdf/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-18 - Completed quick task 260718-3bp: смена тем приложения
-Last session: 2026-07-17T23:30:00Z
-Stopped at: Completed 260718-3bp-PLAN.md
+Last activity: 2026-07-18 - Completed quick task 260718-3fl: PDF viewer in StepForm
+Last session: 2026-07-17T23:30:42Z
+Stopped at: Completed 260718-3fl-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
