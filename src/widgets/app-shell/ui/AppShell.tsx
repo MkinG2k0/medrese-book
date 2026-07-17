@@ -282,7 +282,7 @@ function NavPanel({
         >
           <AppLogo size={collapsed ? 36 : 32} />
           {!collapsed && (
-            <span className="font-display text-lg text-white">
+            <span className="font-display text-lg text-sidebar-foreground">
               Дневник медресе
             </span>
           )}
@@ -397,7 +397,7 @@ export function AppShell({
             onCollapse={setCollapsed}
             trigger={null}
             width={240}
-            className="!h-full !bg-[#12100e]"
+            className="!h-full !bg-sidebar"
           >
             {navPanel}
           </Sider>
@@ -412,16 +412,17 @@ export function AppShell({
             open={drawerOpen}
             size={280}
             styles={{
-              body: { padding: 0, background: "#12100e" },
+              body: { padding: 0 },
               header: { display: "none" },
             }}
+            classNames={{ body: "!bg-sidebar" }}
           >
             {navPanel}
           </Drawer>
         )}
 
-        <Layout className="flex min-h-0 flex-1 flex-col">
-          <Header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 !bg-[#161412] !leading-none md:gap-4 md:px-6">
+        <Layout className="flex min-h-0 flex-1 flex-col !bg-background">
+          <Header className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-3 py-2 !bg-card !leading-none md:gap-4 md:px-6">
             {isMobile && (
               <Button
                 type="text"

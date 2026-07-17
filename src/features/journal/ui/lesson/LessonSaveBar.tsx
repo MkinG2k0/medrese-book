@@ -14,7 +14,7 @@ export function LessonSaveBar({
   onSaveAndNext,
 }: LessonSaveBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-[#2a2622] bg-[#141210] p-4 md:left-[240px]">
+    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-border bg-card p-4 md:left-[240px]">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
         {nextStudent && (
           <Button

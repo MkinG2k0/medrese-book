@@ -62,7 +62,7 @@ export default function RootLayout({
       className={`${mulish.variable} ${cormorant.variable} ${amiri.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="font-body h-full min-h-screen bg-[#0D1117] text-[#E8E0D0] antialiased">
+      <body className="font-body h-full min-h-screen bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -24,7 +24,7 @@ export function NotificationBell() {
       trigger={["click"]}
       placement="bottomRight"
       popupRender={() => (
-        <div className="flex w-[360px] flex-col rounded-lg border border-white/10 bg-[#1a1816] shadow-lg">
+        <div className="flex w-[360px] flex-col rounded-lg border border-border bg-popover shadow-lg">
           <NotificationList onClose={() => setOpen(false)} />
           <PushSubscribePrompt />
         </div>
@@ -32,7 +32,7 @@ export function NotificationBell() {
     >
       <button
         type="button"
-        className="flex items-center justify-center rounded-md p-2 transition-colors hover:bg-white/5"
+        className="flex items-center justify-center rounded-md p-2 transition-colors hover:bg-muted"
         aria-label="Уведомления"
       >
         <Badge

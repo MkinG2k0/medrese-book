@@ -108,14 +108,14 @@ export function LessonTimerBar({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-[#2a2622] bg-[#1a1714] p-4">
+      <div className="rounded-lg border border-border bg-card p-4">
         <PageLoader size="sm" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-[#2a2622] bg-[#1a1714] p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <Text strong className="block">
           {statusTitle}
