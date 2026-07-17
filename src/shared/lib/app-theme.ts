@@ -1,6 +1,6 @@
 export type AppTheme = 'light' | 'dark' | 'sage'
 
-export const DEFAULT_APP_THEME: AppTheme = 'light'
+export const DEFAULT_APP_THEME: AppTheme = 'dark'
 
 export const APP_THEME_IDS: AppTheme[] = ['light', 'dark', 'sage']
 
