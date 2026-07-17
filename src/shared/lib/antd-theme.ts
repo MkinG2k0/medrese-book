@@ -22,39 +22,13 @@ export function getAntdThemeConfig(themeId: AppTheme): ThemeConfig {
           colorBorder: '#C5D1C4',
         },
       }
-    case 'sepia':
-      return {
-        algorithm: theme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#1677FF',
-          colorBgBase: '#F5F8FF',
-          colorBgContainer: '#FFFFFF',
-          colorBgLayout: '#EEF3FF',
-          colorText: 'rgba(0, 0, 0, 0.88)',
-          colorBorder: '#D6E4FF',
-          borderRadius: 8,
-        },
-        components: {
-          Layout: {
-            bodyBg: '#EEF3FF',
-            footerBg: '#EEF3FF',
-            headerBg: '#FFFFFF',
-            headerColor: 'rgba(0, 0, 0, 0.88)',
-            siderBg: '#FFFFFF',
-            triggerBg: '#F0F5FF',
-            triggerColor: 'rgba(0, 0, 0, 0.88)',
-          },
-          Menu: {
-            activeBarBorderWidth: 0,
-            itemBg: 'transparent',
-            subMenuItemBg: 'transparent',
-          },
-        },
-      }
     case 'light':
     default:
       return {
         algorithm: theme.defaultAlgorithm,
+        token: {
+          colorPrimary: '#1677FF',
+        },
         components: {
           Layout: {
             bodyBg: '#f5f8ff',

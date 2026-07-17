@@ -8,17 +8,11 @@ import { useEffect, useState } from "react";
 import { getAntdThemeConfig } from "@/shared/lib/antd-theme";
 import {
   DEFAULT_APP_THEME,
-  isAppTheme,
-  type AppTheme,
+  resolveAppTheme,
 } from "@/shared/lib/app-theme";
 
-function resolveAppTheme(value: string | undefined): AppTheme {
-  if (isAppTheme(value)) return value;
-  return DEFAULT_APP_THEME;
-}
-
 export function AntdProvider({ children }: { children: React.ReactNode }) {
-  const { theme: nextTheme, resolvedTheme } = useTheme();
+  const { theme: nextTheme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -29,8 +23,21 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
     ? resolveAppTheme(resolvedTheme ?? nextTheme)
     : DEFAULT_APP_THEME;
 
+  // Сброс устаревших id (sepia/blue) в localStorage → light
+  useEffect(() => {
+    if (!mounted) return;
+    const raw = nextTheme ?? resolvedTheme;
+    if (raw === "sepia" || raw === "blue") {
+      setTheme("light");
+    }
+  }, [mounted, nextTheme, resolvedTheme, setTheme]);
+
   return (
-    <ConfigProvider locale={ruRU} theme={getAntdThemeConfig(themeId)}>
+    <ConfigProvider
+      key={themeId}
+      locale={ruRU}
+      theme={getAntdThemeConfig(themeId)}
+    >
       <App>{children}</App>
     </ConfigProvider>
   );

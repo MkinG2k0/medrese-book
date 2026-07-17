@@ -179,40 +179,6 @@
   --sidebar-ring: oklch(0.52 0.08 150);
 }
 
-.sepia {
-  --background: #eef3ff;
-  --foreground: rgba(0, 0, 0, 0.88);
-  --card: #ffffff;
-  --card-foreground: rgba(0, 0, 0, 0.88);
-  --popover: #ffffff;
-  --popover-foreground: rgba(0, 0, 0, 0.88);
-  --primary: #1677ff;
-  --primary-foreground: #ffffff;
-  --secondary: #f0f5ff;
-  --secondary-foreground: rgba(0, 0, 0, 0.88);
-  --muted: #f0f5ff;
-  --muted-foreground: rgba(0, 0, 0, 0.45);
-  --accent: #f0f5ff;
-  --accent-foreground: rgba(0, 0, 0, 0.88);
-  --destructive: #ef4444;
-  --border: #d6e4ff;
-  --input: #d6e4ff;
-  --ring: #1677ff;
-  --chart-1: #1677ff;
-  --chart-2: #6366f1;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #64748b;
-  --sidebar: #ffffff;
-  --sidebar-foreground: rgba(0, 0, 0, 0.88);
-  --sidebar-primary: #1677ff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f5ff;
-  --sidebar-accent-foreground: rgba(0, 0, 0, 0.88);
-  --sidebar-border: #d6e4ff;
-  --sidebar-ring: #1677ff;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
