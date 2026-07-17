@@ -31,10 +31,7 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
 
   const antdTheme = mounted
     ? getAntdThemeConfig(themeId)
-    : {
-        algorithm: theme.defaultAlgorithm,
-        token: { colorPrimary: "#f07d00" },
-      };
+    : getAntdThemeConfig(DEFAULT_APP_THEME);
 
   return (
     <ConfigProvider locale={ruRU} theme={antdTheme}>
