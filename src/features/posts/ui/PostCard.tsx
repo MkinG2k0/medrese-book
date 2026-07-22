@@ -1,7 +1,7 @@
 'use client'
 
 import { EditOutlined, DeleteOutlined, LikeFilled, LikeOutlined } from '@ant-design/icons'
-import { App, Button, Card } from 'antd'
+import { App, Button, Card, Tag } from 'antd'
 
 import type { PostDto } from '@/entities/post'
 import { useDeletePost, useTogglePostLike } from '@/entities/post'
@@ -46,7 +46,10 @@ export function PostCard({ post, canManage = false, onEdit }: PostCardProps) {
 			<div className="flex flex-col gap-4">
 				<div className="flex items-start justify-between gap-4">
 					<div className="flex flex-col gap-1">
-						<Title level={4}>{post.title}</Title>
+						<div className="flex flex-wrap items-center gap-2">
+							<Title level={4}>{post.title}</Title>
+							{post.type === 'SYSTEM' && <Tag>Системная</Tag>}
+						</div>
 						<Text type="secondary">
 							{post.author.name} · {formatDate(post.publishedAt)}
 						</Text>

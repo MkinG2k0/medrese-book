@@ -1,7 +1,7 @@
 'use client'
 
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons'
-import { App, Button, Form, Input, Modal, Upload } from 'antd'
+import { App, Button, Form, Input, Modal, Radio, Upload } from 'antd'
 import type { UploadFile } from 'antd/es/upload/interface'
 import { useSession } from 'next-auth/react'
 import { useMemo, useState } from 'react'
@@ -56,6 +56,7 @@ export function NewsFeedPage() {
 	const [modalOpen, setModalOpen] = useState(false)
 	const [editingPost, setEditingPost] = useState<PostDto | null>(null)
 	const [title, setTitle] = useState('')
+	const [postType, setPostType] = useState<CreatePostInput['type']>('GENERAL')
 	const [body, setBody] = useState<CreatePostInput['body']>(getEmptyPostBody())
 	const [mediaFiles, setMediaFiles] = useState<MediaUploadItem[]>([])
 	const [uploading, setUploading] = useState(false)
@@ -68,6 +69,7 @@ export function NewsFeedPage() {
 	const resetForm = () => {
 		setEditingPost(null)
 		setTitle('')
+		setPostType('GENERAL')
 		setBody(getEmptyPostBody())
 		setMediaFiles([])
 	}
@@ -80,6 +82,7 @@ export function NewsFeedPage() {
 	const openEditModal = (post: PostDto) => {
 		setEditingPost(post)
 		setTitle(post.title)
+		setPostType(post.type)
 		setBody(post.body as CreatePostInput['body'])
 		setMediaFiles(mediaToUploadFiles(post.media))
 		setModalOpen(true)
@@ -134,7 +137,7 @@ export function NewsFeedPage() {
 		setUploading(true)
 		try {
 			const media = await collectMedia()
-			const payload = { title: trimmedTitle, body, media, type: 'GENERAL' as const }
+			const payload = { title: trimmedTitle, body, media, type: postType }
 
 			if (isEditing && editingPost) {
 				await updateMutation.mutateAsync({ id: editingPost.id, ...payload })
@@ -210,6 +213,16 @@ export function NewsFeedPage() {
 								onChange={(event) => setTitle(event.target.value)}
 								maxLength={200}
 								placeholder="Заголовок новости"
+							/>
+						</Form.Item>
+						<Form.Item label="Тип поста" required>
+							<Radio.Group
+								value={postType}
+								onChange={(event) => setPostType(event.target.value)}
+								options={[
+									{ label: 'Обычная', value: 'GENERAL' },
+									{ label: 'Системная', value: 'SYSTEM' },
+								]}
 							/>
 						</Form.Item>
 						<Form.Item label="Описание" required>
