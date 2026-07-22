@@ -347,12 +347,11 @@ export function AppShell({
       }));
   }, [session.user.role]);
 
-  const selectedKey =
-    menuItems
-      .filter(
-        (item) => pathname === item.key || pathname.startsWith(`${item.key}/`),
-      )
-      .sort((a, b) => b.key.length - a.key.length)[0]?.key ?? menuItems[0]?.key;
+  const selectedKey = menuItems
+    .filter(
+      (item) => pathname === item.key || pathname.startsWith(`${item.key}/`),
+    )
+    .sort((a, b) => b.key.length - a.key.length)[0]?.key;
 
   const handleNavigate = (key: string) => {
     router.push(key);
