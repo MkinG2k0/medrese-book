@@ -12,7 +12,9 @@ completed: 2026-07-22
 
 1. `9d10772` — feat(260722-kjq): MessageMedia schema and messaging photo API
 2. `a71b5db` — feat(260722-kjq): ChatPanel photo attach and bubble gallery
-3. (pending) e2e + PDF MIME fix for manager uploads
+3. `b5a10af` — fix(260722-kjq): разрешить PDF в uploads для менеджеров
+4. `9074f2f` — test(260722-kjq): e2e photo attach in messenger
+5. `bdb3d5d` — docs(260722-kjq): summary and design
 
 ## What shipped
 

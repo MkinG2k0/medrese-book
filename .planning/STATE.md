@@ -259,7 +259,7 @@ None yet.
 | 260722-fast | Запретить оценку урока в журнале на будущие даты | 2026-07-22 | 2ee73fa | — |
 | 260722-fast | Подтверждение «Вы уверены?» перед завершением урока | 2026-07-22 | 0956004 | — |
 | 260722-fast | Не открывать клавиатуру на DatePicker на планшетах | 2026-07-22 | 8ad460d | — |
-| 260722-kjq | Прикрепление фото в сообщениях (до 5, photo-only) | 2026-07-22 | a71b5db | [260722-kjq-messagemedia-5-photo-only-upload-teacher](./quick/260722-kjq-messagemedia-5-photo-only-upload-teacher/) |
+| 260722-kjq | Прикрепление фото в сообщениях (до 5, photo-only) | 2026-07-22 | 9074f2f | [260722-kjq-messagemedia-5-photo-only-upload-teacher](./quick/260722-kjq-messagemedia-5-photo-only-upload-teacher/) |
 
 ## Session Continuity
 
