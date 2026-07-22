@@ -12,7 +12,7 @@ export function LessonPage(props: LessonPageProps) {
   const currentStepNumber = lesson.currentStepIdx + 1;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 pb-24">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 pb-24">
       <LessonPageHeader
         studentId={lesson.studentId}
         studentName={lesson.studentName}

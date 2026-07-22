@@ -266,6 +266,7 @@ type NavPanelProps = {
   session: AppShellProps["session"];
   substitutionTargetUserIds: string[];
   onSignOut: () => void;
+  onToggleCollapse?: (next: boolean) => void;
 };
 
 function NavPanel({
@@ -278,22 +279,22 @@ function NavPanel({
   session,
   substitutionTargetUserIds,
   onSignOut,
+  onToggleCollapse,
 }: NavPanelProps) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 shrink-0 items-center justify-center px-4">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 no-underline"
-          onClick={onClose}
-        >
-          <AppLogo size={collapsed ? 36 : 32} />
-          {!collapsed && (
-            <span className="font-display text-lg text-sidebar-foreground">
-              Дневник медресе
-            </span>
-          )}
-        </Link>
+      <div className="flex h-16 w-full shrink-0 items-center">
+        {onToggleCollapse && (
+          <div className="flex w-20 shrink-0 items-center justify-center">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
+              onClick={() => onToggleCollapse(!collapsed)}
+              className="!inline-flex !h-10 !w-10 !min-w-10 !items-center !justify-center !p-0"
+            />
+          </div>
+        )}
       </div>
       <Menu
         mode="inline"
@@ -398,6 +399,7 @@ export function AppShell({
       session={session}
       substitutionTargetUserIds={substitutionTargetUserIds}
       onSignOut={handleSignOut}
+      onToggleCollapse={isMobile ? undefined : handleCollapse}
     />
   );
 
@@ -447,17 +449,6 @@ export function AppShell({
                 icon={<MenuOutlined />}
                 aria-label="Открыть меню"
                 onClick={() => setDrawerOpen(true)}
-                className="shrink-0"
-              />
-            )}
-            {!isMobile && (
-              <Button
-                type="text"
-                icon={
-                  collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
-                }
-                aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
-                onClick={() => handleCollapse(!collapsed)}
                 className="shrink-0"
               />
             )}
