@@ -134,7 +134,7 @@ export function NewsFeedPage() {
 		setUploading(true)
 		try {
 			const media = await collectMedia()
-			const payload = { title: trimmedTitle, body, media }
+			const payload = { title: trimmedTitle, body, media, type: 'GENERAL' as const }
 
 			if (isEditing && editingPost) {
 				await updateMutation.mutateAsync({ id: editingPost.id, ...payload })

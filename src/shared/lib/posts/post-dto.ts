@@ -1,4 +1,4 @@
-import type { PostMediaType, Prisma } from '@/shared/lib/prisma'
+import type { PostMediaType, PostType, Prisma } from '@/shared/lib/prisma'
 
 export type PostMediaDto = {
 	id: string
@@ -16,6 +16,7 @@ export type PostDto = {
 	id: string
 	title: string
 	body: Prisma.JsonValue
+	type: PostType
 	author: PostAuthorDto
 	publishedAt: string
 	updatedAt: string
@@ -29,6 +30,7 @@ export function toPostDto(
 		id: string
 		title: string
 		body: Prisma.JsonValue
+		type: PostType
 		publishedAt: Date
 		updatedAt: Date
 		author: { id: string; name: string }
@@ -47,6 +49,7 @@ export function toPostDto(
 		id: post.id,
 		title: post.title,
 		body: post.body,
+		type: post.type,
 		author: post.author,
 		publishedAt: post.publishedAt.toISOString(),
 		updatedAt: post.updatedAt.toISOString(),
@@ -65,6 +68,7 @@ export const postListSelect = {
 	id: true,
 	title: true,
 	body: true,
+	type: true,
 	publishedAt: true,
 	updatedAt: true,
 	author: { select: { id: true, name: true } },

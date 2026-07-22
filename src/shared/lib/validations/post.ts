@@ -21,6 +21,7 @@ export const createPostSchema = z.object({
 	body: z
 		.object({ type: z.string() })
 		.passthrough(),
+	type: z.enum(['GENERAL', 'SYSTEM']).default('GENERAL'),
 	media: z.array(postMediaSchema).max(20, 'Не более 20 медиафайлов').default([]),
 })
 
