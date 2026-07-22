@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - fast: подтверждение перед завершением урока
+Last activity: 2026-07-22 - fast: inputReadOnly на DatePicker
 
 ## Performance Metrics
 
@@ -258,10 +258,11 @@ None yet.
 | 260722-jxy | сменить шкалу оценок с 1 3 5 на 3 4 5 | 2026-07-22 | 9864065 | [260722-jxy-1-3-5-3-4-5](./quick/260722-jxy-1-3-5-3-4-5/) |
 | 260722-fast | Запретить оценку урока в журнале на будущие даты | 2026-07-22 | 2ee73fa | — |
 | 260722-fast | Подтверждение «Вы уверены?» перед завершением урока | 2026-07-22 | 0956004 | — |
+| 260722-fast | Не открывать клавиатуру на DatePicker на планшетах | 2026-07-22 | 8ad460d | — |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - fast: подтверждение перед завершением урока
+Last activity: 2026-07-22 - fast: inputReadOnly на DatePicker
 Last session: 2026-07-17T23:30:42Z
 Stopped at: Completed 260718-3fl-PLAN.md
 Resume file: None
