@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - Completed quick task 260722-wsi: collapsible sidebar
+Last activity: 2026-07-22 - Completed quick task 260722-x84: teacher edit level/step
 
 ## Performance Metrics
 
@@ -182,6 +182,7 @@ Recent decisions affecting current work:
 - [Quick 260716-mzj]: ACCOUNTANT — privileged actor в switch; isPrivilegedSwitchOwner без ACCOUNTANT
 - [Quick 260718-3fl]: StepForm reuse StepPdfViewer при pdfUrl; key={pdfUrl} для remount после replace
 - [Quick 260722-lca]: PostType GENERAL|SYSTEM; STUDENT filtered from SYSTEM list/get/like and SYSTEM POST_PUBLISHED
+- [Quick 260722-x84]: Teacher my-group modal edits level+step via updateStudentProgress; no contact example placeholders
 
 ### Pending Todos
 
@@ -265,15 +266,17 @@ None yet.
 | 260722-fast | Разрешить оценку урока на будущие даты через NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES | 2026-07-22 | — | — |
 | 260722-wka | Баг учителя: «Моя зарплата» редиректит на журнал / страницу ученика | 2026-07-22 | da2b381 | [260722-wka-teacher-salary-nav-bug](./quick/260722-wka-teacher-salary-nav-bug/) |
 | 260722-wsi | Сворачиваемый левый сайдбар с persist в localStorage | 2026-07-22 | dd55efa | [260722-wsi-collapsible-sidebar](./quick/260722-wsi-collapsible-sidebar/) |
+| 260722-x84 | Учитель: редактирование уровня и шага в модалке «Моя группа» | 2026-07-22 | e3699f0 | [260722-x84-teacher-edit-level-step](./quick/260722-x84-teacher-edit-level-step/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - Completed quick task 260722-wsi: collapsible sidebar
-Last session: 2026-07-22T20:45:00Z
-Stopped at: Completed 260722-wsi-PLAN.md
+Last activity: 2026-07-22 - Completed quick task 260722-x84: teacher edit level/step
+Last session: 2026-07-22T21:13:00Z
+Stopped at: Completed 260722-x84-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
 - Start the next milestone with `/gsd-new-milestone`
 - Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
+- Smoke: учитель на `/my-group` → ученик → сменить уровень/шаг → Сохранить
