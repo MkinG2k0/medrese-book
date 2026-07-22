@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { isStepPassed } from '@/shared/lib/step-completion'
+
 const findEnrollmentInGroupMock = vi.fn()
 const stepCompletionFindManyMock = vi.fn()
 const levelFindFirstMock = vi.fn()
@@ -76,7 +78,7 @@ describe('recalculateStudentStepIdx', () => {
 			makeEnrollment({ currentStepIdx: 10 }),
 		)
 		stepCompletionFindManyMock.mockResolvedValue([
-			{ stepId: 'step-1', grade: 1 },
+			{ stepId: 'step-1', grade: 3 },
 		])
 
 		const { recalculateStudentStepIdx } = await import('./recalculate')
@@ -102,8 +104,8 @@ describe('recalculateStudentStepIdx', () => {
 			}),
 		)
 		stepCompletionFindManyMock.mockResolvedValue([
-			{ stepId: 'step-1', grade: 1 },
-			{ stepId: 'step-2', grade: 2 },
+			{ stepId: 'step-1', grade: 3 },
+			{ stepId: 'step-2', grade: 3 },
 		])
 		levelFindFirstMock.mockResolvedValue({ id: 'level-2', number: 2 })
 
@@ -132,5 +134,13 @@ describe('recalculateStudentStepIdx', () => {
 		expect(stepCompletionFindManyMock).not.toHaveBeenCalled()
 		expect(groupEnrollmentUpdateMock).not.toHaveBeenCalled()
 		expect(studentUpdateMock).not.toHaveBeenCalled()
+	})
+})
+
+describe('isStepPassed — шкала 3/4/5', () => {
+	it('считает 3 минимальным проходом', () => {
+		expect(isStepPassed(null)).toBe(false)
+		expect(isStepPassed(2)).toBe(false)
+		expect(isStepPassed(3)).toBe(true)
 	})
 })
