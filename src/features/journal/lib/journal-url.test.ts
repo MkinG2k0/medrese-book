@@ -15,8 +15,15 @@ describe('resolveJournalDate', () => {
 		expect(resolveJournalDate('2026-07-04', '2026-07-05')).toBe('2026-07-04')
 	})
 
-	it('falls back to today for future param', () => {
+	it('falls back to today for future param by default', () => {
+		delete process.env.NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES
 		expect(resolveJournalDate('2026-07-06', '2026-07-05')).toBe('2026-07-05')
+	})
+
+	it('allows future date param when NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES=true', () => {
+		process.env.NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES = 'true'
+		expect(resolveJournalDate('2026-07-06', '2026-07-05')).toBe('2026-07-06')
+		delete process.env.NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES
 	})
 
 	it('falls back to today for invalid param', () => {

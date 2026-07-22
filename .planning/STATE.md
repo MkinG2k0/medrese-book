@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - fast: inputReadOnly на DatePicker
+Last activity: 2026-07-22 - fast: разрешить оценку на будущие дни
 
 ## Performance Metrics
 
@@ -262,10 +262,11 @@ None yet.
 | 260722-fast | Не открывать клавиатуру на DatePicker на планшетах | 2026-07-22 | 8ad460d | — |
 | 260722-kjq | Прикрепление фото в сообщениях (до 5, photo-only) | 2026-07-22 | 9074f2f | [260722-kjq-messagemedia-5-photo-only-upload-teacher](./quick/260722-kjq-messagemedia-5-photo-only-upload-teacher/) |
 | 260722-lca | Системные новости (PostType GENERAL/SYSTEM) — выбор типа при создании | 2026-07-22 | eb3057d | [260722-lca-system-news-post-type](./quick/260722-lca-system-news-post-type/) |
+| 260722-fast | Разрешить оценку урока на будущие даты через NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES | 2026-07-22 | — | — |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - quick: system news post type
+Last activity: 2026-07-22 - fast: разрешить оценку на будущие дни
 Last session: 2026-07-22T12:40:00Z
 Stopped at: Completed 260722-lca-PLAN.md
 Resume file: None

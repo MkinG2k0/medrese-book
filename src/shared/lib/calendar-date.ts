@@ -23,15 +23,21 @@ export function isFutureCalendarDay(
   return calendarDay > today;
 }
 
-/** @temporary Оставить false в проде — true временно разрешает выбор будущих дней в журнале. */
-export const TEMP_ALLOW_FUTURE_JOURNAL_DATES = false;
+/**
+ * Временно разрешает выбор/оценку будущих дней в журнале.
+ * Env: `NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES=true` (в проде обычно не задавать).
+ */
+export function allowFutureJournalDates(): boolean {
+  const value = process.env.NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES;
+  return value === "true" || value === "1";
+}
 
 /** Блокирует ли день для навигации в журнале (с учётом временного флага). */
 export function isJournalFutureDayBlocked(
   calendarDay: string,
   today: string = getLocalDateString(),
 ): boolean {
-  if (TEMP_ALLOW_FUTURE_JOURNAL_DATES) return false;
+  if (allowFutureJournalDates()) return false;
   return isFutureCalendarDay(calendarDay, today);
 }
 

@@ -48,7 +48,7 @@
 | `getCalendarDayQueryRange(dateStr)` | Широкий UTC-интервал ±24ч от полудня для выборки сессий из БД |
 | `toSessionDate(dateStr)` | Дата сессии в БД: `${dateStr}T12:00:00.000Z` |
 | `isJournalFutureDayBlocked(dateStr)` | Блокировка навигации в будущие дни |
-| `TEMP_ALLOW_FUTURE_JOURNAL_DATES` | **Временный флаг `true`** — будущие дни **не блокируются** (убрать перед продом) |
+| `NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES` | Env `true`/`1` — будущие дни **не блокируются** (временно; на проде не задавать) |
 
 ### 3.2. Глобальное состояние даты — `dateFilter`
 
@@ -478,7 +478,7 @@ flowchart TB
 | 260704-31y | PASSING_GRADE=1; сохранение без оценок OK; toggle снимает оценку |
 | 260705-q01 | Доп. задания: шаблон + instance; оценка на Save; cross-step; gradedAt для дня оценки |
 | 260705-q01 fix | API instances: fetch all + filter; mode active/history; pending переносится, completed — только дни назначения/оценки |
-| temp | `TEMP_ALLOW_FUTURE_JOURNAL_DATES=true` — будущие дни доступны (убрать перед продом) |
+| temp | `NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES=true` — будущие дни доступны (на проде не включать) |
 
 ---
 
