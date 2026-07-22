@@ -13,6 +13,7 @@ import {
   MenuOutlined,
   MenuUnfoldOutlined,
   MessageOutlined,
+  QuestionCircleOutlined,
   ReadOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -182,6 +183,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <TrophyOutlined />,
     label: "Награды",
   },
+  "/help": {
+    key: "/help",
+    icon: <QuestionCircleOutlined />,
+    label: "Справка",
+  },
   "/settings": {
     key: "/settings",
     icon: <SettingOutlined />,
@@ -201,6 +207,7 @@ const managerMenuOrder = [
   "/admin/audit-log",
   "/news",
   "/messages",
+  "/help",
   "/settings",
 ] as const;
 
@@ -223,6 +230,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/analytics",
     "/news",
     "/messages",
+    "/help",
     "/settings",
   ],
   MANAGER: managerMenuOrder,

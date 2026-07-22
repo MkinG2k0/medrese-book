@@ -65,6 +65,24 @@ describe('matchRoleRouteAccess', () => {
 		})
 	})
 
+	describe('help route', () => {
+		it('TEACHER на /help → allow', () => {
+			expect(matchRoleRouteAccess('/help', 'TEACHER')).toBe('allow')
+		})
+
+		it('MANAGER на /help → allow', () => {
+			expect(matchRoleRouteAccess('/help', 'MANAGER')).toBe('allow')
+		})
+
+		it('STUDENT на /help → deny', () => {
+			expect(matchRoleRouteAccess('/help', 'STUDENT')).toBe('deny')
+		})
+
+		it('/help без роли → login', () => {
+			expect(matchRoleRouteAccess('/help', undefined)).toBe('login')
+		})
+	})
+
 	describe('session and unmatched', () => {
 		it('защищённый префикс без роли → login', () => {
 			expect(matchRoleRouteAccess('/accounting/my-salary', undefined)).toBe(
