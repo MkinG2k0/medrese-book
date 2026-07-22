@@ -219,7 +219,11 @@ export function ExpensesPage() {
 
 	const formFields = (
 		<div className="flex flex-col gap-4">
-			<DatePicker value={date} onChange={(value) => value && setDate(value)} />
+			<DatePicker
+				value={date}
+				inputReadOnly
+				onChange={(value) => value && setDate(value)}
+			/>
 			<MoneyInput valueKopecks={amountKopecks} onChangeKopecks={setAmountKopecks} />
 			<Select
 				value={method}

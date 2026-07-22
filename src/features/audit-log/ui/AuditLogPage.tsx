@@ -193,6 +193,7 @@ export function AuditLogPage() {
 					value={dateRange}
 					onChange={handleDateRangeChange}
 					format="DD.MM.YYYY"
+					inputReadOnly
 					placeholder={['С', 'По']}
 				/>
 				<Button onClick={resetFilters}>Сбросить</Button>

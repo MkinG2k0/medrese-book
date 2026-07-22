@@ -50,8 +50,16 @@ export function OperationsLedgerPage() {
 		<div className="flex flex-col gap-6">
 			<Title level={3}>Журнал операций</Title>
 			<div className="flex flex-wrap gap-3">
-				<DatePicker value={from} onChange={(value) => value && setFrom(value)} />
-				<DatePicker value={to} onChange={(value) => value && setTo(value)} />
+				<DatePicker
+					value={from}
+					inputReadOnly
+					onChange={(value) => value && setFrom(value)}
+				/>
+				<DatePicker
+					value={to}
+					inputReadOnly
+					onChange={(value) => value && setTo(value)}
+				/>
 				<Select
 					value={type}
 					onChange={setType}

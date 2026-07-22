@@ -28,6 +28,7 @@ export function AnalyticsMonthPicker({
 		<DatePicker
 			picker="month"
 			value={dayjs(month)}
+			inputReadOnly
 			onChange={(value) => {
 				if (!value) return
 				const teacher = searchParams.get('teacher') ?? selectedTeacher

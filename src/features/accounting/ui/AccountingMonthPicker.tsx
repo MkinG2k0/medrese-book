@@ -17,6 +17,7 @@ export function AccountingMonthPicker({ month }: AccountingMonthPickerProps) {
 		<DatePicker
 			picker="month"
 			value={dayjs(`${month}-01`)}
+			inputReadOnly
 			onChange={(value) => {
 				if (!value) return
 				const params = new URLSearchParams(searchParams.toString())

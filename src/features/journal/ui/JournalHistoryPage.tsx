@@ -90,6 +90,7 @@ export function JournalHistoryPage({
               setDateFilter(value ? value.format("YYYY-MM-DD") : null)
             }
             allowClear
+            inputReadOnly
             placeholder="Все даты"
             className="w-full sm:w-auto"
           />

@@ -150,6 +150,7 @@ export function LeaveRequestsTable({
 				<RangePicker
 					value={dateRange}
 					format="DD.MM.YYYY"
+					inputReadOnly
 					onChange={(dates) => {
 						if (!dates?.[0] || !dates[1]) {
 							setDateRange(null)

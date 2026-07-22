@@ -149,6 +149,7 @@ export function CreateLeaveModal({
 								value={field.value}
 								format="DD.MM.YYYY"
 								allowClear={false}
+								inputReadOnly
 								className="w-full"
 								onChange={(dates) => {
 									if (!dates?.[0]) return

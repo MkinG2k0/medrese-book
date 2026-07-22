@@ -61,6 +61,7 @@ export function TeacherLessonsDateFilter({
 			value={[dayjs(from), dayjs(to)]}
 			format="DD.MM.YYYY"
 			allowClear={false}
+			inputReadOnly
 			disabledDate={disableFutureDate}
 			className="w-full sm:w-auto"
 			onChange={(dates) => {

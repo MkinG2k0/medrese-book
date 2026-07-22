@@ -55,6 +55,7 @@ export function JournalDatePicker({
     <DatePicker
       value={selectedDate}
       pickerValue={panelDate}
+      inputReadOnly
       className={className}
       disabledDate={(current) =>
         current != null &&
