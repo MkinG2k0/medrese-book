@@ -7,8 +7,8 @@ import { isStepPassed } from "@/shared/lib/step-completion";
 import type { StepContent } from "@/shared/lib/validations/step";
 
 const GRADE_LABELS: Record<number, string> = {
-  1: "Средне",
-  3: "Хорошо",
+  3: "Средне",
+  4: "Хорошо",
   5: "Отлично",
 };
 

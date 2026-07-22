@@ -13,8 +13,8 @@ import { formatDate } from "@/shared/lib/utils";
 import Text from "@/shared/ui/Text";
 
 const GRADE_LABEL: Record<number, string> = {
-  1: "Средне",
-  3: "Хорошо",
+  3: "Средне",
+  4: "Хорошо",
   5: "Отлично",
 };
 

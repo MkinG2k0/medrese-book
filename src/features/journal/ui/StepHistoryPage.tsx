@@ -21,14 +21,14 @@ import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
 const GRADE_OPTIONS = [
-  { label: "Средне", value: 1 },
-  { label: "Хорошо", value: 3 },
+  { label: "Средне", value: 3 },
+  { label: "Хорошо", value: 4 },
   { label: "Отлично", value: 5 },
 ] as const;
 
 const GRADE_LABEL: Record<number, string> = {
-  1: "Средне",
-  3: "Хорошо",
+  3: "Средне",
+  4: "Хорошо",
   5: "Отлично",
 };
 

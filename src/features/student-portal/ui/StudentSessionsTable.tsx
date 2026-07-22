@@ -20,8 +20,8 @@ const ATTENDANCE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 const GRADE_LABELS: Record<number, string> = {
-  1: "Средне",
-  3: "Хорошо",
+  3: "Средне",
+  4: "Хорошо",
   5: "Отлично",
 };
 

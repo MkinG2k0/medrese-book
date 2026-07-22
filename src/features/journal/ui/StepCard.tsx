@@ -17,8 +17,8 @@ import Text from "@/shared/ui/Text";
 import Title from "@/shared/ui/Title";
 
 const GRADE_OPTIONS = [
-  { label: "Средне", value: 1 },
-  { label: "Хорошо", value: 3 },
+  { label: "Средне", value: 3 },
+  { label: "Хорошо", value: 4 },
   { label: "Отлично", value: 5 },
 ] as const;
 

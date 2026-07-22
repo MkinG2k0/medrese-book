@@ -2,8 +2,8 @@ import type { AuditEventListItem } from '@/entities/audit-event/model/types'
 import { getAuditEntityTypeLabel } from '@/features/audit-log/lib/audit-labels'
 
 const GRADE_LABEL: Record<number, string> = {
-	1: 'Средне',
-	3: 'Хорошо',
+	3: 'Средне',
+	4: 'Хорошо',
 	5: 'Отлично',
 }
 
