@@ -1,10 +1,10 @@
 'use client'
 
-import { Collapse, Steps, Tabs } from 'antd'
+import { Steps, Table, Tabs } from 'antd'
 
 import { managerGuide } from '../model/manager-guide'
 import { teacherGuide } from '../model/teacher-guide'
-import type { HelpGuide as HelpGuideData } from '../model/types'
+import type { HelpFeaturePage, HelpGuide as HelpGuideData } from '../model/types'
 import { HelpScreenshot } from './HelpScreenshot'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
@@ -15,74 +15,140 @@ type HelpGuideProps = {
   role: HelpRole
 }
 
-function GuideSections({ guide }: { guide: HelpGuideData }) {
+function OverviewSection({ guide }: { guide: HelpGuideData }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <Title level={3}>Обзор</Title>
+      <Title level={4}>{guide.overview.title}</Title>
+      <Text>{guide.overview.description}</Text>
+      <Text type="secondary">
+        Начните с вкладки «Важно знать» (автовыход, уведомления, оценки). Потом
+        откройте нужный раздел меню — там картинка и простое объяснение.
+      </Text>
+    </div>
+  )
+}
+
+function FeatureSection({ feature }: { feature: HelpFeaturePage }) {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <Title level={3}>Обзор</Title>
-        <Title level={4}>{guide.overview.title}</Title>
-        <Text>{guide.overview.description}</Text>
+        <Title level={3}>{feature.title}</Title>
+        <Text>{feature.summary}</Text>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <Title level={3}>Возможности</Title>
-        <Collapse
-          items={guide.features.map((feature, index) => ({
-            key: String(index),
-            label: feature.title,
-            children: (
-              <div className="flex flex-col gap-3">
-                <Text>{feature.description}</Text>
-                {feature.screenshotSrc ? (
-                  <HelpScreenshot
-                    src={feature.screenshotSrc}
-                    caption={feature.screenshotCaption}
-                    alt={feature.screenshotCaption ?? feature.title}
-                  />
-                ) : null}
-              </div>
-            ),
-          }))}
-        />
-      </section>
-
-      <section className="flex flex-col gap-6">
-        <Title level={3}>Пошаговые инструкции</Title>
-        {guide.walkthroughs.map((walkthrough) => (
-          <div key={walkthrough.title} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Title level={4}>{walkthrough.title}</Title>
-              <Text type="secondary">{walkthrough.description}</Text>
-            </div>
-            <Steps
-              direction="vertical"
-              size="small"
-              items={walkthrough.steps.map((step) => ({
-                title: step.title,
-                description: (
-                  <div className="flex flex-col gap-2 pb-4">
-                    <Text>{step.description}</Text>
-                    {step.screenshotSrc ? (
-                      <HelpScreenshot
-                        src={step.screenshotSrc}
-                        caption={step.screenshotCaption}
-                        alt={step.screenshotCaption ?? step.title}
-                      />
-                    ) : null}
-                  </div>
-                ),
-              }))}
+      {feature.screenshots.length > 0 ? (
+        <section className="flex flex-col gap-4">
+          <Title level={4}>Скриншот</Title>
+          {feature.screenshots.map((shot) => (
+            <HelpScreenshot
+              key={shot.src}
+              src={shot.src}
+              caption={shot.caption}
+              alt={shot.caption}
             />
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      ) : null}
+
+      {feature.fields && feature.fields.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <Title level={4}>Что здесь написано</Title>
+          <Table
+            size="small"
+            pagination={false}
+            rowKey="name"
+            dataSource={feature.fields}
+            columns={[
+              {
+                title: 'На экране',
+                dataIndex: 'name',
+                key: 'name',
+                width: '22%',
+                render: (value: string) => <Text strong>{value}</Text>,
+              },
+              {
+                title: 'Простыми словами',
+                dataIndex: 'meaning',
+                key: 'meaning',
+                width: '34%',
+              },
+              {
+                title: 'Как это появляется',
+                dataIndex: 'source',
+                key: 'source',
+              },
+            ]}
+          />
+        </section>
+      ) : null}
+
+      {feature.howTo && feature.howTo.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <Title level={4}>Как пользоваться</Title>
+          <Steps
+            direction="vertical"
+            size="small"
+            items={feature.howTo.map((step) => ({
+              title: step.title,
+              description: (
+                <div className="flex flex-col gap-2 pb-4">
+                  <Text>{step.description}</Text>
+                  {step.screenshotSrc ? (
+                    <HelpScreenshot
+                      src={step.screenshotSrc}
+                      caption={step.screenshotCaption}
+                      alt={step.screenshotCaption ?? step.title}
+                    />
+                  ) : null}
+                </div>
+              ),
+            }))}
+          />
+        </section>
+      ) : null}
+
+      {feature.tips && feature.tips.length > 0 ? (
+        <section className="flex flex-col gap-2">
+          <Title level={4}>Важно знать</Title>
+          <ul className="m-0 list-disc space-y-1 pl-5">
+            {feature.tips.map((tip) => (
+              <li key={tip}>
+                <Text>{tip}</Text>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
+  )
+}
+
+function RoleGuideTabs({ guide }: { guide: HelpGuideData }) {
+  return (
+    <Tabs
+      type="card"
+      tabPlacement="top"
+      destroyOnHidden
+      items={[
+        {
+          key: 'overview',
+          label: 'Обзор',
+          children: <OverviewSection guide={guide} />,
+        },
+        ...guide.features.map((feature) => ({
+          key: feature.key,
+          label: feature.title,
+          children: <FeatureSection feature={feature} />,
+        })),
+      ]}
+    />
   )
 }
 
 export function HelpGuide({ role }: HelpGuideProps) {
   if (role === 'TEACHER') {
-    return <GuideSections guide={teacherGuide} />
+    return <RoleGuideTabs guide={teacherGuide} />
   }
 
   return (
@@ -91,13 +157,13 @@ export function HelpGuide({ role }: HelpGuideProps) {
       items={[
         {
           key: 'manager',
-          label: 'Менеджер',
-          children: <GuideSections guide={managerGuide} />,
+          label: 'Справка менеджера',
+          children: <RoleGuideTabs guide={managerGuide} />,
         },
         {
           key: 'teacher',
-          label: 'Учитель',
-          children: <GuideSections guide={teacherGuide} />,
+          label: 'Справка учителя',
+          children: <RoleGuideTabs guide={teacherGuide} />,
         },
       ]}
     />

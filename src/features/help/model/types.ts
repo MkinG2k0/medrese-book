@@ -1,21 +1,31 @@
-export type HelpStep = {
+export type HelpScreenshotRef = {
+  src: string
+  caption: string
+}
+
+/** Поле на экране: что значит и откуда берётся */
+export type HelpFieldNote = {
+  name: string
+  meaning: string
+  source: string
+}
+
+export type HelpHowToStep = {
   title: string
   description: string
   screenshotSrc?: string
   screenshotCaption?: string
 }
 
-export type HelpWalkthrough = {
+/** Одна вкладка справки — одна фича */
+export type HelpFeaturePage = {
+  key: string
   title: string
-  description: string
-  steps: HelpStep[]
-}
-
-export type HelpFeature = {
-  title: string
-  description: string
-  screenshotSrc?: string
-  screenshotCaption?: string
+  summary: string
+  screenshots: HelpScreenshotRef[]
+  fields?: HelpFieldNote[]
+  howTo?: HelpHowToStep[]
+  tips?: string[]
 }
 
 export type HelpGuide = {
@@ -23,6 +33,5 @@ export type HelpGuide = {
     title: string
     description: string
   }
-  features: HelpFeature[]
-  walkthroughs: HelpWalkthrough[]
+  features: HelpFeaturePage[]
 }
