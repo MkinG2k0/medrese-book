@@ -1,14 +1,24 @@
 'use client'
 
-import { ArrowLeftOutlined, SendOutlined } from '@ant-design/icons'
-import { Button, Input, Spin } from 'antd'
+import { ArrowLeftOutlined, PaperClipOutlined, SendOutlined } from '@ant-design/icons'
+import { App, Button, Input, Spin } from 'antd'
 import { useSession } from 'next-auth/react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { ConversationSummary } from '@/entities/conversation'
 import { useMessages, useSendMessage } from '@/entities/conversation'
 import { ContactRoleBadge } from '@/features/messaging/ui/ContactRoleBadge'
+import { MessageMediaGrid } from '@/features/messaging/ui/MessageMediaGrid'
 import Text from '@/shared/ui/Text'
+
+const MAX_ATTACHMENTS = 5
+const ACCEPT_IMAGES = 'image/jpeg,image/png,image/webp'
+
+type DraftAttachment = {
+	id: string
+	url: string
+	previewUrl: string
+}
 
 type ChatPanelProps = {
 	conversation: ConversationSummary | null
@@ -16,26 +26,110 @@ type ChatPanelProps = {
 }
 
 export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
+	const { message } = App.useApp()
 	const { data: session } = useSession()
 	const currentUserId = session?.user?.id
 	const readOnly = conversation ? !conversation.isOwn : false
 	const { data: messages = [], isLoading } = useMessages(conversation?.id ?? null)
 	const sendMessage = useSendMessage(conversation?.id ?? null)
 	const [draft, setDraft] = useState('')
+	const [attachments, setAttachments] = useState<DraftAttachment[]>([])
+	const [uploading, setUploading] = useState(false)
 	const bottomRef = useRef<HTMLDivElement>(null)
+	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
 		bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [messages])
 
+	useEffect(() => {
+		setDraft('')
+		setAttachments((prev) => {
+			prev.forEach((item) => URL.revokeObjectURL(item.previewUrl))
+			return []
+		})
+	}, [conversation?.id])
+
+	const canSend =
+		(draft.trim().length > 0 || attachments.length > 0) &&
+		!uploading &&
+		!sendMessage.isPending
+
+	const handlePickFiles = async (fileList: FileList | null) => {
+		if (!fileList || fileList.length === 0) return
+
+		const remaining = MAX_ATTACHMENTS - attachments.length
+		if (remaining <= 0) {
+			message.warning('Можно прикрепить не более 5 фото')
+			return
+		}
+
+		const selected = Array.from(fileList).slice(0, remaining)
+		setUploading(true)
+		try {
+			const uploaded: DraftAttachment[] = []
+			for (const file of selected) {
+				if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+					message.error('Допустимы только jpeg, png или webp')
+					continue
+				}
+				const formData = new FormData()
+				formData.append('file', file)
+				const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+				const json = await res.json()
+				if (json.error) throw new Error(json.error)
+				const url = json.data?.url as string
+				uploaded.push({
+					id: `${Date.now()}-${file.name}`,
+					url,
+					previewUrl: URL.createObjectURL(file),
+				})
+			}
+			if (uploaded.length > 0) {
+				setAttachments((prev) => [...prev, ...uploaded].slice(0, MAX_ATTACHMENTS))
+			}
+		} catch (err) {
+			message.error(
+				err instanceof Error ? err.message : 'Не удалось загрузить фото',
+			)
+		} finally {
+			setUploading(false)
+			if (fileInputRef.current) fileInputRef.current.value = ''
+		}
+	}
+
+	const removeAttachment = (id: string) => {
+		setAttachments((prev) => {
+			const target = prev.find((item) => item.id === id)
+			if (target) URL.revokeObjectURL(target.previewUrl)
+			return prev.filter((item) => item.id !== id)
+		})
+	}
+
 	const handleSend = async () => {
 		const text = draft.trim()
-		if (!text || !conversation || readOnly) return
+		const imageUrls = attachments.map((item) => item.url)
+		if ((!text && imageUrls.length === 0) || !conversation || readOnly || uploading) {
+			return
+		}
+
+		const previousDraft = draft
+		const previousAttachments = attachments
 		setDraft('')
+		setAttachments([])
+
 		try {
-			await sendMessage.mutateAsync(text)
+			await sendMessage.mutateAsync({ body: text, imageUrls })
+			previousAttachments.forEach((item) => URL.revokeObjectURL(item.previewUrl))
 		} catch {
-			setDraft(text)
+			setDraft(previousDraft)
+			setAttachments(
+				previousAttachments.map((item) => ({
+					...item,
+					previewUrl: item.url,
+				})),
+			)
+			message.error('Не удалось отправить сообщение')
 		}
 	}
 
@@ -93,6 +187,7 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 					<div className="flex min-h-full flex-col justify-end gap-3">
 						{messages.map((msg) => {
 							const isOwn = msg.senderId === currentUserId
+							const media = msg.media ?? []
 							return (
 								<div
 									key={msg.id}
@@ -103,9 +198,12 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 											isOwn ? 'bg-[#3d3428]' : 'bg-[#1e1b18]'
 										}`}
 									>
-										<Text className="whitespace-pre-wrap break-words">
-											{msg.body}
-										</Text>
+										<MessageMediaGrid media={media} />
+										{msg.body.trim().length > 0 && (
+											<Text className="whitespace-pre-wrap break-words">
+												{msg.body}
+											</Text>
+										)}
 										<Text type="secondary" className="mt-1 block text-xs">
 											{new Date(msg.createdAt).toLocaleString('ru-RU', {
 												day: '2-digit',
@@ -125,7 +223,44 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 
 			{!readOnly && (
 				<div className="shrink-0 border-t border-[#2a2622] p-4">
+					{attachments.length > 0 && (
+						<div className="mb-2 flex flex-wrap gap-2">
+							{attachments.map((item) => (
+								<div key={item.id} className="relative">
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img
+										src={item.previewUrl}
+										alt="Превью"
+										className="h-16 w-16 rounded object-cover"
+									/>
+									<Button
+										type="text"
+										size="small"
+										aria-label="Удалить фото"
+										className="absolute -right-1 -top-1"
+										onClick={() => removeAttachment(item.id)}
+									>
+										×
+									</Button>
+								</div>
+							))}
+						</div>
+					)}
 					<div className="flex gap-2">
+						<input
+							ref={fileInputRef}
+							type="file"
+							accept={ACCEPT_IMAGES}
+							multiple
+							className="hidden"
+							onChange={(e) => void handlePickFiles(e.target.files)}
+						/>
+						<Button
+							icon={<PaperClipOutlined />}
+							aria-label="Прикрепить фото"
+							onClick={() => fileInputRef.current?.click()}
+							disabled={uploading || sendMessage.isPending || attachments.length >= MAX_ATTACHMENTS}
+						/>
 						<Input.TextArea
 							value={draft}
 							onChange={(e) => setDraft(e.target.value)}
@@ -137,14 +272,15 @@ export function ChatPanel({ conversation, onBack }: ChatPanelProps) {
 									void handleSend()
 								}
 							}}
-							disabled={sendMessage.isPending}
+							disabled={sendMessage.isPending || uploading}
 						/>
 						<Button
 							type="primary"
 							icon={<SendOutlined />}
+							aria-label="Отправить"
 							onClick={() => void handleSend()}
-							loading={sendMessage.isPending}
-							disabled={!draft.trim()}
+							loading={sendMessage.isPending || uploading}
+							disabled={!canSend}
 						/>
 					</div>
 				</div>

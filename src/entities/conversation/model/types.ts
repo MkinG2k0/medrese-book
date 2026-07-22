@@ -28,4 +28,9 @@ export type ChatMessage = {
 	body: string
 	senderId: string
 	createdAt: string
+	media: {
+		id: string
+		url: string
+		sortOrder: number
+	}[]
 }

@@ -25,11 +25,14 @@ export function useSendMessage(conversationId: string | null) {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: async (body: string) => {
+		mutationFn: async (input: { body: string; imageUrls?: string[] }) => {
 			const res = await fetch(`/api/conversations/${conversationId}/messages`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ body }),
+				body: JSON.stringify({
+					body: input.body,
+					imageUrls: input.imageUrls ?? [],
+				}),
 			})
 			const json = await res.json()
 			if (json.error) throw new Error(json.error)
