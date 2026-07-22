@@ -267,16 +267,17 @@ None yet.
 | 260722-wka | Баг учителя: «Моя зарплата» редиректит на журнал / страницу ученика | 2026-07-22 | da2b381 | [260722-wka-teacher-salary-nav-bug](./quick/260722-wka-teacher-salary-nav-bug/) |
 | 260722-wsi | Сворачиваемый левый сайдбар с persist в localStorage | 2026-07-22 | dd55efa | [260722-wsi-collapsible-sidebar](./quick/260722-wsi-collapsible-sidebar/) |
 | 260722-x84 | Учитель: редактирование уровня и шага в модалке «Моя группа» | 2026-07-22 | e3699f0 | [260722-x84-teacher-edit-level-step](./quick/260722-x84-teacher-edit-level-step/) |
+| 260723-2dd | Страница справки `/help`: инструкция и фичи для менеджера и учителя | 2026-07-23 | 3af4e93 | [260723-2dd-system-help-guide](./quick/260723-2dd-system-help-guide/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - Completed quick task 260722-x84: teacher edit level/step
-Last session: 2026-07-22T21:13:00Z
-Stopped at: Completed 260722-x84-PLAN.md
+Last activity: 2026-07-23 - Completed quick task 260723-2dd: system help guide page
+Last session: 2026-07-22T22:50:00Z
+Stopped at: Completed 260723-2dd-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
 - Start the next milestone with `/gsd-new-milestone`
 - Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
-- Smoke: учитель на `/my-group` → ученик → сменить уровень/шаг → Сохранить
+- Smoke: учитель/менеджер → «Справка» в меню → `/help` → обзор, фичи, пошаговые инструкции
