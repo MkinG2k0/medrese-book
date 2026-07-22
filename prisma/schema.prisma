@@ -539,15 +539,26 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation   Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  sender         User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
   body           String
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime       @default(now())
+  media          MessageMedia[]
 
   @@index([conversationId, createdAt])
+}
+
+model MessageMedia {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int     @default(0)
+
+  @@index([messageId, sortOrder])
 }
 
 model Post {

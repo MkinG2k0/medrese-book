@@ -11,18 +11,41 @@ import { sendMessageSchema } from '@/shared/lib/validations/message'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+type MessageMediaDto = {
+	id: string
+	url: string
+	sortOrder: number
+}
+
 function toMessageDto(message: {
 	id: string
 	body: string
 	senderId: string
 	createdAt: Date
+	media?: MessageMediaDto[]
 }) {
 	return {
 		id: message.id,
 		body: message.body,
 		senderId: message.senderId,
 		createdAt: message.createdAt.toISOString(),
+		media: (message.media ?? []).map((item) => ({
+			id: item.id,
+			url: item.url,
+			sortOrder: item.sortOrder,
+		})),
 	}
+}
+
+const messageSelect = {
+	id: true,
+	body: true,
+	senderId: true,
+	createdAt: true,
+	media: {
+		orderBy: { sortOrder: 'asc' as const },
+		select: { id: true, url: true, sortOrder: true },
+	},
 }
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -42,7 +65,7 @@ export async function GET(_request: Request, context: RouteContext) {
 		const messages = await prisma.message.findMany({
 			where: { conversationId: id },
 			orderBy: { createdAt: 'asc' },
-			select: { id: true, body: true, senderId: true, createdAt: true },
+			select: messageSelect,
 		})
 
 		return success(messages.map(toMessageDto))
@@ -86,14 +109,22 @@ export async function POST(request: Request, context: RouteContext) {
 				? conversation.participant2Id
 				: conversation.participant1Id
 
+		const imageUrls = parsed.data.imageUrls
+
 		const result = await prisma.$transaction(async (tx) => {
 			const createdMessage = await tx.message.create({
 				data: {
 					conversationId: id,
 					senderId: session.user.id,
 					body: parsed.data.body,
+					media: {
+						create: imageUrls.map((url, index) => ({
+							url,
+							sortOrder: index,
+						})),
+					},
 				},
-				select: { id: true, body: true, senderId: true, createdAt: true },
+				select: messageSelect,
 			})
 			await tx.conversation.update({
 				where: { id },
@@ -112,6 +143,7 @@ export async function POST(request: Request, context: RouteContext) {
 						senderId: session.user.id,
 						recipientId,
 						body: parsed.data.body,
+						imageCount: imageUrls.length,
 					},
 				},
 				tx,

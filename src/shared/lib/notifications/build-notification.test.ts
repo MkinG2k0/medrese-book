@@ -190,4 +190,42 @@ describe('buildNotificationsForEvent', () => {
 
 		expect(notifications[0]?.body).toBe(`Иван: ${'а'.repeat(119)}…`)
 	})
+
+	it('MESSAGE_RECEIVED photo-only uses «Фото» when imageCount is 1', async () => {
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('MESSAGE_RECEIVED', {
+				conversationId: 'conv-1',
+				recipientId: 'recipient-1',
+				body: '',
+				imageCount: 1,
+			}),
+			{
+				managerUserIds: [],
+				recipientUserId: 'recipient-1',
+				senderName: 'Учитель Ахмад',
+				conversationId: 'conv-1',
+			},
+		)
+
+		expect(notifications[0]?.body).toBe('Учитель Ахмад: Фото')
+	})
+
+	it('MESSAGE_RECEIVED photo-only uses «N фото» when imageCount > 1', async () => {
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('MESSAGE_RECEIVED', {
+				conversationId: 'conv-1',
+				recipientId: 'recipient-1',
+				body: '   ',
+				imageCount: 3,
+			}),
+			{
+				managerUserIds: [],
+				recipientUserId: 'recipient-1',
+				senderName: 'Ученик Али',
+				conversationId: 'conv-1',
+			},
+		)
+
+		expect(notifications[0]?.body).toBe('Ученик Али: 3 фото')
+	})
 })

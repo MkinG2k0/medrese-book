@@ -1,3 +1,5 @@
+import { formatMessagePreview } from '@/shared/lib/messaging/message-preview'
+
 type MessageContact = { id: string; name: string; role: string }
 
 type Participant = MessageContact
@@ -8,7 +10,12 @@ export const conversationInclude = {
 	messages: {
 		orderBy: { createdAt: 'desc' as const },
 		take: 1,
-		select: { body: true, createdAt: true, senderId: true },
+		select: {
+			body: true,
+			createdAt: true,
+			senderId: true,
+			_count: { select: { media: true } },
+		},
 	},
 }
 
@@ -19,19 +26,31 @@ type ConversationRow = {
 	updatedAt: Date
 	participant1: Participant
 	participant2: Participant
-	messages: { body: string; createdAt: Date; senderId: string }[]
+	messages: {
+		body: string
+		createdAt: Date
+		senderId: string
+		_count: { media: number }
+	}[]
 }
 
 function lastMessageDto(
 	last: ConversationRow['messages'][0] | undefined,
 ) {
-	return last
-		? {
-				body: last.body,
-				createdAt: last.createdAt.toISOString(),
-				senderId: last.senderId,
-			}
-		: null
+	if (!last) return null
+
+	const mediaCount = last._count.media
+	const body = formatMessagePreview({
+		body: last.body,
+		mediaCount,
+		variant: 'list',
+	})
+
+	return {
+		body,
+		createdAt: last.createdAt.toISOString(),
+		senderId: last.senderId,
+	}
 }
 
 export function toOwnConversationSummary(

@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 
+import { formatMessagePreview } from '@/shared/lib/messaging/message-preview'
 import type { NotificationType } from '@/shared/lib/prisma'
 
 import type { DomainEvent, DomainEventAction } from '../domain-events/types'
@@ -57,6 +58,7 @@ type MessagePayload = {
 	recipientId?: string
 	body?: string
 	conversationId?: string
+	imageCount?: number
 }
 
 export function formatLeaveDateRange(startDate: string, endDate: string): string {
@@ -177,6 +179,15 @@ export async function buildNotificationsForEvent(
 			const senderName = context.senderName ?? 'Собеседник'
 			const bodyText =
 				typeof messagePayload.body === 'string' ? messagePayload.body : ''
+			const imageCount =
+				typeof messagePayload.imageCount === 'number'
+					? messagePayload.imageCount
+					: 0
+			const preview = formatMessagePreview({
+				body: bodyText,
+				mediaCount: imageCount,
+				variant: 'notify',
+			})
 			const conversationId =
 				context.conversationId ??
 				(typeof messagePayload.conversationId === 'string'
@@ -191,7 +202,7 @@ export async function buildNotificationsForEvent(
 					userId: recipientUserId,
 					type: 'MESSAGE_RECEIVED',
 					title: 'Новое сообщение',
-					body: `${senderName}: ${truncateMessagePreview(bodyText)}`,
+					body: `${senderName}: ${truncateMessagePreview(preview)}`,
 					link,
 					payload: event.payload,
 				},
