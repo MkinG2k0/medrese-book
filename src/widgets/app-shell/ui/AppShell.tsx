@@ -9,7 +9,9 @@ import {
   FileTextOutlined,
   HistoryOutlined,
   LogoutOutlined,
+  MenuFoldOutlined,
   MenuOutlined,
+  MenuUnfoldOutlined,
   MessageOutlined,
   ReadOutlined,
   SettingOutlined,
@@ -20,7 +22,7 @@ import {
 import { Button, Drawer, Layout, Menu } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions";
 import { getDisplayRoleLabel } from "@/features/auth/lib/role-labels";
@@ -35,6 +37,11 @@ import type { UserRole } from "@/entities/user";
 import { useIsMobile } from "@/shared/lib/use-breakpoint";
 import { AppLogo } from "@/shared/ui/AppLogo";
 import Text from "@/shared/ui/Text";
+
+import {
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from "../lib/sidebar-storage";
 
 const { Header, Sider, Content } = Layout;
 
@@ -334,6 +341,18 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  useEffect(() => {
+    const stored = readSidebarCollapsed();
+    if (stored !== null) {
+      setCollapsed(stored);
+    }
+  }, []);
+
+  const handleCollapse = (next: boolean) => {
+    setCollapsed(next);
+    writeSidebarCollapsed(next);
+  };
+
   const menuItems = useMemo(() => {
     const role = session.user.role;
     if (!role) return [];
@@ -393,7 +412,7 @@ export function AppShell({
           <Sider
             collapsible
             collapsed={collapsed}
-            onCollapse={setCollapsed}
+            onCollapse={handleCollapse}
             trigger={null}
             width={240}
             className="!h-full !bg-sidebar"
@@ -428,6 +447,17 @@ export function AppShell({
                 icon={<MenuOutlined />}
                 aria-label="Открыть меню"
                 onClick={() => setDrawerOpen(true)}
+                className="shrink-0"
+              />
+            )}
+            {!isMobile && (
+              <Button
+                type="text"
+                icon={
+                  collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                }
+                aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
+                onClick={() => handleCollapse(!collapsed)}
                 className="shrink-0"
               />
             )}
