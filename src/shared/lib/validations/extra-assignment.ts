@@ -26,7 +26,7 @@ export const assignExtraAssignmentSchema = z.object({
 })
 
 export const gradeExtraAssignmentSchema = z.object({
-	grade: z.union([z.literal(1), z.literal(3), z.literal(5)]),
+	grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
 	note: z.string().nullable().optional(),
 })
 

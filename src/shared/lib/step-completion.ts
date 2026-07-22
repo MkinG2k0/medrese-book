@@ -1,4 +1,4 @@
-export const PASSING_GRADE = 1;
+export const PASSING_GRADE = 3;
 
 export function isStepPassed(grade: number | null | undefined): boolean {
   return grade != null && grade >= PASSING_GRADE;

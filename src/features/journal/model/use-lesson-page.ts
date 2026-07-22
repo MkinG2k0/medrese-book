@@ -687,7 +687,7 @@ export function useLessonPage(props: LessonPageProps) {
         tasks.push(
           gradeExtraAssignment.mutateAsync({
             id: instanceId,
-            grade: localGrade as 1 | 3 | 5,
+            grade: localGrade as 3 | 4 | 5,
             note: localNote,
           }),
         );

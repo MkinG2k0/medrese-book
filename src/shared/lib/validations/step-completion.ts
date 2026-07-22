@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const updateStepCompletionSchema = z.object({
-  grade: z.number().int().min(1).max(5),
+  grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
   note: z.string().optional().nullable(),
 });
 
