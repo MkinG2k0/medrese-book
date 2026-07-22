@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - Completed quick task 260722-jxy: сменить шкалу оценок с 1 3 5 на 3 4 5
+Last activity: 2026-07-22 - fast: запретить оценку урока в журнале на будущие даты
 
 ## Performance Metrics
 
@@ -256,10 +256,11 @@ None yet.
 | 260718-3fl | PDF viewer в редакторе шага (StepForm) | 2026-07-18 | 7b2c3be | [260718-3fl-pdf](./quick/260718-3fl-pdf/) |
 | 260718-fast | Заменить сепию на frosted glass blue | 2026-07-18 | 9381229 | — |
 | 260722-jxy | сменить шкалу оценок с 1 3 5 на 3 4 5 | 2026-07-22 | 9864065 | [260722-jxy-1-3-5-3-4-5](./quick/260722-jxy-1-3-5-3-4-5/) |
+| 260722-fast | Запретить оценку урока в журнале на будущие даты | 2026-07-22 | 2ee73fa | — |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - Completed quick task 260722-jxy: сменить шкалу оценок с 1 3 5 на 3 4 5
+Last activity: 2026-07-22 - fast: запретить оценку урока в журнале на будущие даты
 Last session: 2026-07-17T23:30:42Z
 Stopped at: Completed 260718-3fl-PLAN.md
 Resume file: None
