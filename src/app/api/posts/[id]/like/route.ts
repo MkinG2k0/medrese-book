@@ -1,6 +1,7 @@
 import { error, serverError, success } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { postListSelect, toPostDto } from '@/shared/lib/posts/post-dto'
+import { assertPostVisibleToRole } from '@/shared/lib/posts/post-visibility'
 import { prisma } from '@/shared/lib/prisma'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -17,9 +18,11 @@ export async function POST(_request: Request, context: RouteContext) {
 	try {
 		const post = await prisma.post.findUnique({
 			where: { id },
-			select: { id: true },
+			select: { id: true, type: true },
 		})
-		if (!post) return error('Публикация не найдена', 404)
+		if (!post || !assertPostVisibleToRole(post.type, session.user.role)) {
+			return error('Публикация не найдена', 404)
+		}
 
 		const existing = await prisma.postLike.findUnique({
 			where: {

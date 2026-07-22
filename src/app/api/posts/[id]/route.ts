@@ -1,6 +1,7 @@
 import { error, serverError, success } from '@/shared/api'
 import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { postListSelect, toPostDto } from '@/shared/lib/posts/post-dto'
+import { assertPostVisibleToRole } from '@/shared/lib/posts/post-visibility'
 import type { Prisma } from '@/shared/lib/prisma'
 import { prisma } from '@/shared/lib/prisma'
 import { updatePostSchema } from '@/shared/lib/validations/post'
@@ -41,6 +42,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 				data: {
 					title: parsed.data.title,
 					body: parsed.data.body as Prisma.InputJsonValue,
+					type: parsed.data.type,
 					media: {
 						create: parsed.data.media.map((item, index) => ({
 							type: item.type,
@@ -108,7 +110,9 @@ export async function GET(_request: Request, context: RouteContext) {
 			where: { id },
 			select: postListSelect,
 		})
-		if (!post) return error('Публикация не найдена', 404)
+		if (!post || !assertPostVisibleToRole(post.type, session.user.role)) {
+			return error('Публикация не найдена', 404)
+		}
 
 		const liked = await prisma.postLike.findUnique({
 			where: {

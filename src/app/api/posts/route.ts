@@ -3,6 +3,7 @@ import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { postListSelect, toPostDto } from '@/shared/lib/posts/post-dto'
+import { postVisibilityWhere } from '@/shared/lib/posts/post-visibility'
 import type { Prisma } from '@/shared/lib/prisma'
 import { prisma } from '@/shared/lib/prisma'
 import { createPostSchema } from '@/shared/lib/validations/post'
@@ -17,6 +18,7 @@ export async function GET() {
 
 	try {
 		const posts = await prisma.post.findMany({
+			where: postVisibilityWhere(session.user.role),
 			orderBy: { publishedAt: 'desc' },
 			select: postListSelect,
 		})
@@ -62,6 +64,7 @@ export async function POST(request: Request) {
 				data: {
 					title: parsed.data.title,
 					body: parsed.data.body as Prisma.InputJsonValue,
+					type: parsed.data.type,
 					authorId: session.user.id,
 					media: {
 						create: parsed.data.media.map((item, index) => ({
@@ -89,6 +92,7 @@ export async function POST(request: Request) {
 						postId: post.id,
 						title: post.title,
 						authorId: session.user.id,
+						type: post.type,
 					},
 				},
 				tx,

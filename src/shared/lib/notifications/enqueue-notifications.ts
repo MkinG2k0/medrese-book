@@ -97,10 +97,19 @@ async function resolveBuildContext(
 		const postPayload = event.payload as {
 			title?: string
 			authorId?: string
+			type?: string
 		}
 
+		const usersWhere =
+			postPayload.type === 'SYSTEM'
+				? { role: { not: 'STUDENT' as const } }
+				: undefined
+
 		const [users, author] = await Promise.all([
-			client.user.findMany({ select: { id: true } }),
+			client.user.findMany({
+				where: usersWhere,
+				select: { id: true },
+			}),
 			postPayload.authorId
 				? client.user.findUnique({
 						where: { id: postPayload.authorId },
