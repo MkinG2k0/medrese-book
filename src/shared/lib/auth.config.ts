@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 
 import type { UserRole } from '@/entities/user'
 import { getDefaultRedirect } from '@/shared/lib/get-default-redirect'
+import { matchRoleRouteAccess } from '@/shared/lib/match-role-route'
 
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET
 
@@ -70,36 +71,12 @@ export const authConfig: NextAuthConfig = {
 				return redirectTo(request, '/login')
 			}
 
-			const roleRoutes: Record<string, UserRole[]> = {
-				'/admin': ['SUPER_ADMIN', 'MANAGER'],
-				'/admin/leave-calendar': ['SUPER_ADMIN', 'MANAGER'],
-				'/calendar': ['TEACHER'],
-				'/journal': ['TEACHER'],
-				'/extra-assignments': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
-				'/my-group': ['TEACHER'],
-				'/groups': ['MANAGER', 'SUPER_ADMIN'],
-				'/analytics/teachers': ['MANAGER', 'SUPER_ADMIN'],
-				'/analytics/my-hours': ['TEACHER'],
-				'/analytics': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
-				'/accounting': ['ACCOUNTANT'],
-				'/accounting/my-salary': ['TEACHER'],
-				'/student': ['STUDENT'],
-				'/messages': ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT'],
+			const decision = matchRoleRouteAccess(pathname, session?.user?.role)
+			if (decision === 'login') {
+				return redirectTo(request, '/login')
 			}
-
-			const sortedRoutes = Object.entries(roleRoutes).sort(
-				([a], [b]) => b.length - a.length,
-			)
-
-			for (const [prefix, roles] of sortedRoutes) {
-				if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
-					if (!session?.user) {
-						return redirectTo(request, '/login')
-					}
-					if (!roles.includes(session.user.role)) {
-						return redirectTo(request, getDefaultRedirect(session.user.role))
-					}
-				}
+			if (decision === 'deny' && session?.user) {
+				return redirectTo(request, getDefaultRedirect(session.user.role))
 			}
 
 			return true
