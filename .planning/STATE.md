@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - fast: разрешить оценку на будущие дни
+Last activity: 2026-07-22 - Completed quick task 260722-wka: баг учителя «Моя зарплата»
 
 ## Performance Metrics
 
@@ -263,12 +263,13 @@ None yet.
 | 260722-kjq | Прикрепление фото в сообщениях (до 5, photo-only) | 2026-07-22 | 9074f2f | [260722-kjq-messagemedia-5-photo-only-upload-teacher](./quick/260722-kjq-messagemedia-5-photo-only-upload-teacher/) |
 | 260722-lca | Системные новости (PostType GENERAL/SYSTEM) — выбор типа при создании | 2026-07-22 | eb3057d | [260722-lca-system-news-post-type](./quick/260722-lca-system-news-post-type/) |
 | 260722-fast | Разрешить оценку урока на будущие даты через NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES | 2026-07-22 | — | — |
+| 260722-wka | Баг учителя: «Моя зарплата» редиректит на журнал / страницу ученика | 2026-07-22 | da2b381 | [260722-wka-teacher-salary-nav-bug](./quick/260722-wka-teacher-salary-nav-bug/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - fast: разрешить оценку на будущие дни
-Last session: 2026-07-22T12:40:00Z
-Stopped at: Completed 260722-lca-PLAN.md
+Last activity: 2026-07-22 - Completed quick task 260722-wka: баг учителя «Моя зарплата»
+Last session: 2026-07-22T20:35:00Z
+Stopped at: Completed 260722-wka-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
