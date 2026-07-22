@@ -266,6 +266,7 @@ export function GroupStudentsTable({
         user={selectedUser}
         groups={groups}
         levels={levels}
+        groupId={groupId}
         onClose={() => setSelectedUser(null)}
         canResetCode={canResetCode}
         readOnly={readOnly}

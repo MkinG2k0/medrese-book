@@ -124,6 +124,7 @@ export const updateStudentUserFormSchema = z.object({
 	phone: z.string().optional(),
 	guardianName: z.string().optional(),
 	guardianPhone: z.string().optional(),
+	levelId: z.string().optional(),
 	localStepIndex: z.number().int().min(0),
 	status: z.enum(STUDENT_STATUS_VALUES),
 })

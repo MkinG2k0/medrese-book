@@ -71,6 +71,7 @@ type UserDetailModalProps = {
   user: UserDetail | null;
   groups: { id: string; name: string }[];
   levels: LevelOption[];
+  groupId?: string;
   onClose: () => void;
   canResetCode: boolean;
   readOnly?: boolean;
