@@ -7,6 +7,7 @@ import {
 import {
   getCalendarDayQueryRange,
   getLocalDateString,
+  isFutureCalendarDay,
   isSameCalendarDay,
   toSessionDate,
 } from "@/shared/lib/calendar-date";
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
   if (!enrollment) return error("Ученик не зачислен в группу");
 
   const calendarDay = getLocalDateString(new Date(date));
+  if (isFutureCalendarDay(calendarDay)) {
+    return error("Нельзя оценивать урок на будущую дату");
+  }
   const dayRange = getCalendarDayQueryRange(calendarDay);
   const existingSessions = await prisma.session.findMany({
     where: {

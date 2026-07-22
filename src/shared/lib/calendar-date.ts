@@ -23,8 +23,8 @@ export function isFutureCalendarDay(
   return calendarDay > today;
 }
 
-/** @temporary Вернуть false перед продом — разрешает выбор будущих дней в журнале. */
-export const TEMP_ALLOW_FUTURE_JOURNAL_DATES = true;
+/** @temporary Оставить false в проде — true временно разрешает выбор будущих дней в журнале. */
+export const TEMP_ALLOW_FUTURE_JOURNAL_DATES = false;
 
 /** Блокирует ли день для навигации в журнале (с учётом временного флага). */
 export function isJournalFutureDayBlocked(

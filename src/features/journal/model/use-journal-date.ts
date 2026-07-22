@@ -16,7 +16,10 @@ import {
 	writeJournalGroupId,
 } from '@/features/journal/lib/journal-storage'
 import { useJournalStore } from '@/features/journal/model/journal-store'
-import { getLocalDateString } from '@/shared/lib/calendar-date'
+import {
+	getLocalDateString,
+	isJournalFutureDayBlocked,
+} from '@/shared/lib/calendar-date'
 
 type UseJournalDateOptions = {
 	allowedGroupIds?: string[]
@@ -48,7 +51,14 @@ export function useJournalDate(options: UseJournalDateOptions = {}) {
 	)
 
 	useEffect(() => {
-		if (!searchParams.get(JOURNAL_DATE_PARAM)) {
+		const rawDate = searchParams.get(JOURNAL_DATE_PARAM)
+		if (!rawDate) {
+			const params = new URLSearchParams(searchParams.toString())
+			params.set(JOURNAL_DATE_PARAM, getLocalDateString())
+			router.replace(`${pathname}?${params.toString()}`)
+			return
+		}
+		if (isJournalFutureDayBlocked(rawDate)) {
 			const params = new URLSearchParams(searchParams.toString())
 			params.set(JOURNAL_DATE_PARAM, getLocalDateString())
 			router.replace(`${pathname}?${params.toString()}`)
@@ -75,6 +85,7 @@ export function useJournalDate(options: UseJournalDateOptions = {}) {
 
 	const setDateFilter = useCallback(
 		(date: string) => {
+			if (isJournalFutureDayBlocked(date)) return
 			setStoreDate(date)
 			const params = new URLSearchParams(searchParams.toString())
 			params.set(JOURNAL_DATE_PARAM, date)

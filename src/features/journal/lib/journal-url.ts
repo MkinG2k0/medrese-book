@@ -1,5 +1,6 @@
 import {
 	getLocalDateString,
+	isJournalFutureDayBlocked,
 	isValidCalendarDate,
 } from '@/shared/lib/calendar-date'
 
@@ -10,7 +11,11 @@ export function resolveJournalDate(
 	dateParam: string | null | undefined,
 	today: string = getLocalDateString(),
 ): string {
-	if (dateParam && isValidCalendarDate(dateParam)) {
+	if (
+		dateParam &&
+		isValidCalendarDate(dateParam) &&
+		!isJournalFutureDayBlocked(dateParam, today)
+	) {
 		return dateParam
 	}
 

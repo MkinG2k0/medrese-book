@@ -11,6 +11,14 @@ describe('resolveJournalDate', () => {
 		expect(resolveJournalDate('2026-07-05', '2026-07-05')).toBe('2026-07-05')
 	})
 
+	it('returns past date param', () => {
+		expect(resolveJournalDate('2026-07-04', '2026-07-05')).toBe('2026-07-04')
+	})
+
+	it('falls back to today for future param', () => {
+		expect(resolveJournalDate('2026-07-06', '2026-07-05')).toBe('2026-07-05')
+	})
+
 	it('falls back to today for invalid param', () => {
 		expect(resolveJournalDate('invalid', '2026-07-05')).toBe('2026-07-05')
 		expect(resolveJournalDate(null, '2026-07-05')).toBe('2026-07-05')
