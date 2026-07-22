@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - fast: запретить оценку урока в журнале на будущие даты
+Last activity: 2026-07-22 - fast: подтверждение перед завершением урока
 
 ## Performance Metrics
 
