@@ -67,7 +67,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 		)
 	}
 
-	const allTeachers = await getAnalyticsTeachers()
+	const isTeacher = session.user.role === 'TEACHER'
+	const allTeachers = isTeacher ? [] : await getAnalyticsTeachers()
 	const validTeacherIds = new Set(allTeachers.map((teacher) => teacher.id))
 	const { filterTeacherId, selectedTeacher } = resolveAnalyticsTeacherFilter(
 		session.user.role,
@@ -106,19 +107,21 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 				<Title level={3} className="!mb-0">
 					Аналитика
 				</Title>
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+				<div className="flex flex-wrap flex-col gap-2 sm:flex-row sm:items-center">
 					<AnalyticsSubjectPicker
 						subjects={subjects}
 						selectedSubjectId={selectedSubjectId}
 						month={monthValue}
 						selectedTeacher={selectedTeacher}
 					/>
-					<AnalyticsTeacherPicker
-						teachers={allTeachers}
-						selectedTeacher={selectedTeacher}
-						month={monthValue}
-						selectedSubjectId={selectedSubjectId}
-					/>
+					{!isTeacher && (
+						<AnalyticsTeacherPicker
+							teachers={allTeachers}
+							selectedTeacher={selectedTeacher}
+							month={monthValue}
+							selectedSubjectId={selectedSubjectId}
+						/>
+					)}
 					<AnalyticsGroupPicker
 						groups={teacherGroups}
 						selectedTeacher={selectedTeacher}

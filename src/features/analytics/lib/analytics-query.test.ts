@@ -7,6 +7,7 @@ import {
 	buildAnalyticsSearchParams,
 	resolveAnalyticsGroupFilter,
 	resolveAnalyticsSubjectFilter,
+	resolveAnalyticsTeacherFilter,
 } from '@/features/analytics/lib/analytics-query'
 import { DEFAULT_QURAN_SUBJECT_ID } from '@/shared/lib/subject-constants'
 
@@ -130,5 +131,66 @@ describe('resolveAnalyticsGroupFilter', () => {
 describe('ALL_TEACHERS', () => {
 	it('is stable sentinel value', () => {
 		expect(ALL_TEACHERS).toBe('all')
+	})
+})
+
+describe('resolveAnalyticsTeacherFilter', () => {
+	const sessionTeacherId = 'teacher-self'
+	const validTeacherIds = new Set(['teacher-self', 'teacher-other'])
+
+	it('locks TEACHER to session teacher even when teacher=all', () => {
+		expect(
+			resolveAnalyticsTeacherFilter(
+				'TEACHER',
+				sessionTeacherId,
+				ALL_TEACHERS,
+				validTeacherIds,
+			),
+		).toEqual({
+			filterTeacherId: sessionTeacherId,
+			selectedTeacher: sessionTeacherId,
+		})
+	})
+
+	it('locks TEACHER to session teacher when another teacher id is passed', () => {
+		expect(
+			resolveAnalyticsTeacherFilter(
+				'TEACHER',
+				sessionTeacherId,
+				'teacher-other',
+				validTeacherIds,
+			),
+		).toEqual({
+			filterTeacherId: sessionTeacherId,
+			selectedTeacher: sessionTeacherId,
+		})
+	})
+
+	it('allows MANAGER to select all teachers', () => {
+		expect(
+			resolveAnalyticsTeacherFilter(
+				'MANAGER',
+				null,
+				ALL_TEACHERS,
+				validTeacherIds,
+			),
+		).toEqual({
+			filterTeacherId: null,
+			selectedTeacher: ALL_TEACHERS,
+		})
+	})
+
+	it('allows MANAGER to select a specific teacher', () => {
+		expect(
+			resolveAnalyticsTeacherFilter(
+				'MANAGER',
+				null,
+				'teacher-other',
+				validTeacherIds,
+			),
+		).toEqual({
+			filterTeacherId: 'teacher-other',
+			selectedTeacher: 'teacher-other',
+		})
 	})
 })

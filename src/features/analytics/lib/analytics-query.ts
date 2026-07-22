@@ -51,6 +51,13 @@ export function resolveAnalyticsTeacherFilter(
 	teacherParam?: string,
 	validTeacherIds?: Set<string>,
 ): { filterTeacherId: string | null; selectedTeacher: string } {
+	if (role === 'TEACHER' && sessionTeacherId) {
+		return {
+			filterTeacherId: sessionTeacherId,
+			selectedTeacher: sessionTeacherId,
+		}
+	}
+
 	if (teacherParam === ALL_TEACHERS) {
 		return { filterTeacherId: null, selectedTeacher: ALL_TEACHERS }
 	}
@@ -58,13 +65,6 @@ export function resolveAnalyticsTeacherFilter(
 	if (teacherParam) {
 		if (!validTeacherIds || validTeacherIds.has(teacherParam)) {
 			return { filterTeacherId: teacherParam, selectedTeacher: teacherParam }
-		}
-	}
-
-	if (role === 'TEACHER' && sessionTeacherId) {
-		return {
-			filterTeacherId: sessionTeacherId,
-			selectedTeacher: sessionTeacherId,
 		}
 	}
 
