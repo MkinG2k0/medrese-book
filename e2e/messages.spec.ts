@@ -30,6 +30,25 @@ test.describe("Сообщения", () => {
     await expect(page.getByText(message)).toBeVisible();
   });
 
+  test("учитель отправляет фото ученику", async ({ page }) => {
+    await loginAs(page, TEST_CODES.teacher1);
+    await openMessages(page);
+    await startChatWith(page, `${TEST_USERS.studentAli} Ученик`);
+    await expect(page.getByText(TEST_USERS.studentAli).first()).toBeVisible();
+
+    await expect(
+      page.getByRole("button", { name: "Прикрепить фото" }),
+    ).toBeVisible();
+    const fileInput = page.locator('input[type="file"][accept*="image/jpeg"]');
+    await fileInput.setInputFiles("e2e/fixtures/chat-photo.png");
+
+    await expect(page.getByAltText("Превью")).toBeVisible({ timeout: 15000 });
+    await page.getByRole("button", { name: "Отправить" }).click();
+    await expect(
+      page.locator(".ant-image img, img[alt='Фото']").first(),
+    ).toBeVisible({ timeout: 15000 });
+  });
+
   test("ученик видит диалог с учителем и пишет менеджеру", async ({ page }) => {
     const reply = `E2E student reply ${Date.now()}`;
     await loginAs(page, TEST_CODES.studentAli);
