@@ -181,6 +181,7 @@ Recent decisions affecting current work:
 - [Phase 15]: groupId navigation — URL param > primary enrollment; localStorage при клике с карточки (D-07/D-08)
 - [Quick 260716-mzj]: ACCOUNTANT — privileged actor в switch; isPrivilegedSwitchOwner без ACCOUNTANT
 - [Quick 260718-3fl]: StepForm reuse StepPdfViewer при pdfUrl; key={pdfUrl} для remount после replace
+- [Quick 260722-lca]: PostType GENERAL|SYSTEM; STUDENT filtered from SYSTEM list/get/like and SYSTEM POST_PUBLISHED
 
 ### Pending Todos
 
@@ -260,12 +261,13 @@ None yet.
 | 260722-fast | Подтверждение «Вы уверены?» перед завершением урока | 2026-07-22 | 0956004 | — |
 | 260722-fast | Не открывать клавиатуру на DatePicker на планшетах | 2026-07-22 | 8ad460d | — |
 | 260722-kjq | Прикрепление фото в сообщениях (до 5, photo-only) | 2026-07-22 | 9074f2f | [260722-kjq-messagemedia-5-photo-only-upload-teacher](./quick/260722-kjq-messagemedia-5-photo-only-upload-teacher/) |
+| 260722-lca | Системные новости (PostType GENERAL/SYSTEM) — выбор типа при создании | 2026-07-22 | eb3057d | [260722-lca-system-news-post-type](./quick/260722-lca-system-news-post-type/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-22 - quick: message photo attachments
-Last session: 2026-07-22T12:37:01.991Z
-Stopped at: Completed 260718-3fl-PLAN.md
+Last activity: 2026-07-22 - quick: system news post type
+Last session: 2026-07-22T12:40:00Z
+Stopped at: Completed 260722-lca-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
