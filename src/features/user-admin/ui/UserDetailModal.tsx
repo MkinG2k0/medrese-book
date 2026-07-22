@@ -171,7 +171,7 @@ function StudentEditFields({
         control={control}
         render={({ field }) => (
           <Form.Item label="Телефон">
-            <Input {...field} placeholder="89676123456" disabled={readOnly} />
+            <Input {...field} disabled={readOnly} />
           </Form.Item>
         )}
       />
@@ -183,7 +183,6 @@ function StudentEditFields({
           <Form.Item label="Имя опекуна">
             <Input
               {...field}
-              placeholder="Ибрагимов Камал Ахмедович"
               disabled={readOnly}
             />
           </Form.Item>
@@ -195,7 +194,7 @@ function StudentEditFields({
         control={control}
         render={({ field }) => (
           <Form.Item label="Телефон опекуна">
-            <Input {...field} placeholder="89676123456" disabled={readOnly} />
+            <Input {...field} disabled={readOnly} />
           </Form.Item>
         )}
       />
@@ -530,7 +529,7 @@ export function UserDetailModal({
                   control={staffForm.control}
                   render={({ field }) => (
                     <Form.Item label="Телефон">
-                      <Input {...field} placeholder="89676123456" disabled={readOnly} />
+                      <Input {...field} disabled={readOnly} />
                     </Form.Item>
                   )}
                 />
