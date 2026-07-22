@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import Text from "@/shared/ui/Text";
 
-import { hasPushSubscription } from "../lib/push-subscription-status";
 import { usePushSubscribe } from "../model/use-push-subscribe";
 
 const DISMISSED_KEY = "push-prompt-dismissed";
@@ -29,16 +28,11 @@ export function PushSubscribePrompt() {
       return;
     }
 
-    void (async () => {
-      if (Notification.permission === "default") {
-        setVisible(true);
-        return;
-      }
-
-      if (Notification.permission === "granted" && !(await hasPushSubscription())) {
-        setVisible(true);
-      }
-    })();
+    // Спрашиваем только пока разрешение ещё не выдано.
+    // Если уже granted — silent re-subscribe через usePushAutoSubscribe.
+    if (Notification.permission === "default") {
+      setVisible(true);
+    }
   }, []);
 
   const handleDismiss = useCallback(() => {
@@ -48,7 +42,7 @@ export function PushSubscribePrompt() {
 
   const handleSubscribe = useCallback(async () => {
     const ok = await subscribe();
-    if (ok) {
+    if (ok || (typeof Notification !== "undefined" && Notification.permission === "granted")) {
       setVisible(false);
       return;
     }

@@ -30,20 +30,17 @@ export function PwaInstallBanner() {
     if (typeof Notification === "undefined") return;
 
     void (async () => {
-      if (Notification.permission === "denied") {
-        setPushReady(false);
+      // Спрашиваем только пока браузер ещё не решил (default).
+      // При granted/denied баннер не показываем — подписку делает usePushAutoSubscribe.
+      if (Notification.permission !== "default") {
         setShowPushCta(false);
+        setPushReady(
+          Notification.permission === "granted" && (await hasPushSubscription()),
+        );
         return;
       }
 
-      const subscribed = await hasPushSubscription();
-      setPushReady(subscribed);
-
-      if (subscribed) {
-        setShowPushCta(false);
-        return;
-      }
-
+      setPushReady(false);
       setShowPushCta(true);
     })();
   }, [inPwa]);
@@ -59,8 +56,9 @@ export function PwaInstallBanner() {
 
   const handleSubscribe = useCallback(async () => {
     const ok = await subscribe();
-    if (ok) {
-      setPushReady(true);
+    // После выдачи разрешения больше не спрашиваем (подписку догонит auto-subscribe).
+    if (ok || Notification.permission === "granted") {
+      setPushReady(ok);
       setShowPushCta(false);
     }
   }, [subscribe]);
