@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { updateStudentStatus } from "@/features/student-admin/actions/student-admin-actions";
+import {
+  updateStudentProgress,
+  updateStudentStatus,
+} from "@/features/student-admin/actions/student-admin-actions";
 import { deleteUser, updateUser } from "@/features/user-admin/actions/user-actions";
 import { formatDate } from "@/shared/lib/utils";
 import {
@@ -95,6 +98,7 @@ function getStudentDefaultValues(user: UserDetail): UpdateStudentUserFormInput {
     phone: user.student?.phone ?? "",
     guardianName: user.student?.guardianName ?? "",
     guardianPhone: user.student?.guardianPhone ?? "",
+    levelId: user.student?.levelId ?? "",
     localStepIndex: user.student?.localStepIndex ?? 0,
     status: user.student?.status ?? "ACTIVE",
   };
@@ -122,6 +126,7 @@ function StudentEditFields({
   enrollmentGroups,
   readOnly = false,
   canEditStatus = false,
+  canEditProgress = false,
 }: {
   control: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["control"];
   setValue: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["setValue"];
@@ -134,8 +139,12 @@ function StudentEditFields({
   }[];
   readOnly?: boolean;
   canEditStatus?: boolean;
+  canEditProgress?: boolean;
 }) {
-  const levelId = enrollmentGroups?.[0]?.levelId;
+  const watchedLevelId = useWatch({ control, name: "levelId" });
+  const levelId = canEditProgress
+    ? watchedLevelId
+    : enrollmentGroups?.[0]?.levelId;
   const localStepIndex = useWatch({ control, name: "localStepIndex" });
   const selectedLevel = levels.find((level) => level.id === levelId);
 
@@ -204,9 +213,35 @@ function StudentEditFields({
         />
       </Form.Item>
 
-      <Form.Item label="Уровень">
-        <Input disabled value={enrollmentGroups?.[0]?.levelTitle ?? "—"} />
-      </Form.Item>
+      {canEditProgress ? (
+        <Controller
+          name="levelId"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Form.Item
+              label="Уровень"
+              validateStatus={fieldState.error ? "error" : ""}
+              help={fieldState.error?.message}
+            >
+              <Select
+                {...field}
+                onChange={(value) => {
+                  field.onChange(value);
+                  setValue("localStepIndex", 0);
+                }}
+                options={levels.map((level) => ({
+                  value: level.id,
+                  label: `Уровень ${level.number}: ${level.title}`,
+                }))}
+              />
+            </Form.Item>
+          )}
+        />
+      ) : (
+        <Form.Item label="Уровень">
+          <Input disabled value={enrollmentGroups?.[0]?.levelTitle ?? "—"} />
+        </Form.Item>
+      )}
 
       <Controller
         name="localStepIndex"
@@ -220,7 +255,7 @@ function StudentEditFields({
             <Select
               {...field}
               options={stepOptions}
-              disabled={readOnly || !selectedLevel}
+              disabled={(readOnly && !canEditProgress) || !selectedLevel}
             />
           </Form.Item>
         )}
@@ -256,6 +291,7 @@ export function UserDetailModal({
   user,
   groups,
   levels,
+  groupId,
   onClose,
   canResetCode,
   readOnly = false,
@@ -267,8 +303,8 @@ export function UserDetailModal({
   const { modal, message } = App.useApp();
   const [isPending, startTransition] = useTransition();
   const isStudent = user?.role === "STUDENT" && !!user.student;
-  const statusOnlyMode = readOnly && canEditStatus && isStudent;
-  const showSaveButton = !readOnly || statusOnlyMode;
+  const canEditProgress = readOnly && canEditStatus && isStudent;
+  const showSaveButton = !readOnly || canEditProgress;
 
   const studentForm = useForm<UpdateStudentUserFormInput>({
     resolver: zodResolver(updateStudentUserFormSchema),
@@ -319,21 +355,38 @@ export function UserDetailModal({
     });
   };
 
-  const handleStatusOnlySubmit = () => {
+  const handleProgressAndStatusSubmit = (values: UpdateStudentUserFormInput) => {
     if (!user?.student) return;
 
+    const resolvedGroupId = groupId ?? user.student.groupId;
+    if (!resolvedGroupId || !values.levelId) {
+      message.error("Не указаны группа или уровень");
+      return;
+    }
+
     startTransition(async () => {
-      await updateStudentStatus(user.student!.id, {
-        status: studentForm.getValues("status"),
-      });
-      router.refresh();
-      onClose();
+      try {
+        await updateStudentProgress(user.student!.id, {
+          groupId: resolvedGroupId,
+          levelId: values.levelId,
+          localStepIndex: values.localStepIndex,
+        });
+        await updateStudentStatus(user.student!.id, {
+          status: values.status,
+        });
+        router.refresh();
+        onClose();
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : "Ошибка сохранения",
+        );
+      }
     });
   };
 
   const handleSave = () => {
-    if (statusOnlyMode) {
-      handleStatusOnlySubmit();
+    if (canEditProgress) {
+      studentForm.handleSubmit(handleProgressAndStatusSubmit)();
       return;
     }
 
@@ -451,6 +504,7 @@ export function UserDetailModal({
                   enrollmentGroups={user.student?.enrollmentGroups}
                   readOnly={readOnly}
                   canEditStatus={canEditStatus}
+                  canEditProgress={canEditProgress}
                 />
               </Form>
             </form>
