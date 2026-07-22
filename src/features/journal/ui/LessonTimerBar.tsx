@@ -57,7 +57,7 @@ export function LessonTimerBar({
   groupId,
   date,
 }: LessonTimerBarProps) {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const today = getLocalDateString();
   const isToday = date === today;
   const isPast = date < today;
@@ -96,7 +96,7 @@ export function LessonTimerBar({
     }
   };
 
-  const handleEnd = async () => {
+  const endLesson = async () => {
     if (!session?.id) return;
     try {
       await endMutation.mutateAsync(session.id);
@@ -104,6 +104,18 @@ export function LessonTimerBar({
     } catch {
       message.error("Не удалось завершить урок. Попробуйте ещё раз.");
     }
+  };
+
+  const handleEnd = () => {
+    if (!session?.id) return;
+    modal.confirm({
+      title: "Закончить урок?",
+      content: "Вы уверены, что хотите завершить урок?",
+      okText: "Закончить",
+      okType: "danger",
+      cancelText: "Отмена",
+      onOk: () => endLesson(),
+    });
   };
 
   if (isLoading) {
@@ -141,7 +153,7 @@ export function LessonTimerBar({
           danger
           icon={<StopOutlined />}
           loading={endMutation.isPending}
-          onClick={() => void handleEnd()}
+          onClick={handleEnd}
         >
           Закончить урок
         </Button>
