@@ -13,11 +13,12 @@ const CHAT_IMAGE_TYPES = new Set([
 function isAllowedMime(role: string, contentType: string): boolean {
 	if (CHAT_IMAGE_TYPES.has(contentType)) return true
 
-	if (
-		(role === 'MANAGER' || role === 'SUPER_ADMIN') &&
-		contentType.startsWith('video/')
-	) {
-		return true
+	if (role === 'MANAGER' || role === 'SUPER_ADMIN') {
+		if (contentType.startsWith('video/')) return true
+		if (contentType === 'application/pdf') return true
+		// Редактор шагов/постов может отдавать image/* без точного subtype
+		if (contentType.startsWith('image/')) return true
+		return false
 	}
 
 	return false
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 	if (!isAllowedMime(session.user.role, contentType)) {
 		return error(
 			session.user.role === 'MANAGER' || session.user.role === 'SUPER_ADMIN'
-				? 'Допустимы изображения jpeg/png/webp или видео'
+				? 'Допустимы изображения, видео или PDF'
 				: 'Допустимы только изображения jpeg, png или webp',
 		)
 	}
