@@ -1,3 +1,4 @@
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Amiri, Cormorant_Garamond, Mulish } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 
@@ -63,7 +64,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-body h-full min-h-screen bg-background text-foreground antialiased">
-        <Providers>{children}</Providers>
+        <AntdRegistry>
+          <Providers>{children}</Providers>
+        </AntdRegistry>
       </body>
     </html>
   );
