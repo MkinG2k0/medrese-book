@@ -1,58 +1,58 @@
-# Task 2 Report: Zod-валидация session
+# Task 2 Report: Модалка — черновик + maskClosable
 
-**Status:** DONE  
-**Date:** 2026-07-30  
-**Branch:** feat/excused-absence-reason  
-**Commits:** none (per plan constraints)
+## Статус
 
-## Summary
+Выполнено. Изменения оставлены незакоммиченными.
 
-Расширена `createSessionSchema` полями `absenceExcused` / `absenceReason` с transform: при не-ABSENT оба сбрасываются, при ABSENT пустая причина нормализуется в `null`. TDD: 3 новых теста → FAIL → реализация → 5/5 PASS.
+## Реализация
 
-## Changes
+### `ExtraAssignmentCatalogPage.tsx`
 
-### 1. `src/shared/lib/validations/session.ts`
+- Подключён `clearExtraAssignmentDraft`.
+- В `ExtraAssignmentFormModal` передаётся обязательный `subjectId={selectedSubjectId}`.
+- После успешного создания черновик текущего пользователя и предмета очищается.
+- При редактировании черновик создания не очищается.
+- При ошибке создания/обновления черновик не очищается, модалка остаётся открытой.
 
-- Добавлены `absenceExcused: z.boolean().optional().default(false)` и `absenceReason: z.string().optional().nullable()`
-- `.transform()`: при `attendance !== 'ABSENT'` → `absenceExcused: false`, `absenceReason: null`
-- При `ABSENT`: trim `absenceReason`, пустая строка → `null`; `absenceExcused ?? false`
+### `ExtraAssignmentFormModal.tsx`
 
-**Produces:** `CreateSessionInput` с `absenceExcused: boolean`, `absenceReason: string | null` после parse.
+- Добавлен обязательный prop `subjectId`.
+- Подключены API Task 1: чтение, запись и очистка черновика.
+- При открытии режима создания восстанавливается черновик текущего пользователя и предмета либо пустое состояние.
+- При открытии режима редактирования используются только серверные данные задания.
+- Изменения create-формы записываются в `localStorage` с debounce 300 мс.
+- Первичная инициализация формы не перезаписывает сохранённый черновик устаревшим состоянием.
+- `Modal.onCancel` (крестик/Escape) выполняет мягкое закрытие с сохранением черновика.
+- Footer-кнопка «Отмена» очищает create-черновик и закрывает модалку.
+- Установлен `maskClosable={false}`.
+- `StepEditor` перемонтируется с восстановленным/серверным содержимым через `editorKey`.
 
-### 2. `src/shared/lib/validations/session.test.ts`
+## Проверки
 
-Добавлены 3 теста из брифа:
-- ABSENT с `absenceExcused` + `absenceReason` — принимается
-- PRESENT с лишними absence-полями — сбрасываются
-- ABSENT с пробельной причиной — `absenceReason: null`
+- `pnpm exec tsc --noEmit -p tsconfig.json` — PASS, exit code 0.
+- `pnpm exec vitest run src/features/extra-assignments/lib/extra-assignment-draft.test.ts` — PASS: 1 файл, 8 тестов.
+- IDE diagnostics по затронутым файлам: ошибок нет; показаны только 7 существующих рекомендаций Tailwind о сокращённой записи `min-w-*`.
+- Проверен единственный call site `ExtraAssignmentFormModal`: обязательный `subjectId` передан.
 
-## Commands run
+## Ручная проверка
 
-| Command | Result |
-|---------|--------|
-| `pnpm test:unit src/shared/lib/validations/session.test.ts` (до реализации) | 3 failed, 2 passed — ожидаемо |
-| `pnpm test:unit src/shared/lib/validations/session.test.ts` (после) | 5 passed |
+Dev-сервер доступен, но переход на `/extra-assignments` перенаправляет на `/login`. Без авторизованной сессии UI-сценарии из brief выполнить не удалось. Вручную в браузере подтверждён только корректный запуск приложения и auth-redirect.
 
-## Self-review
+## Самопроверка
 
-- [x] Только `session.ts` + `session.test.ts` (без prisma/API/UI)
-- [x] Transform соответствует брифу
-- [x] LATE также сбрасывает absence-поля (`!== 'ABSENT'`) — не покрыто тестом, но согласовано с дизайном
-- [x] Линтер без замечаний
-- [x] Коммит не создан
+- Ответственность за очистку соответствует locked decisions: footer «Отмена» — модалка; успешное создание — каталог; крестик/Escape и failed save — без очистки.
+- `maskClosable={false}` блокирует закрытие кликом по затемнению как в create, так и edit.
+- Изменения ограничены двумя указанными production-файлами и этим отчётом; файлы Task 1 не изменялись.
+- Коммиты не создавались.
 
-## Concerns
+## Замечания
 
-1. **LATE не покрыт отдельным тестом** — поведение идентично PRESENT (сброс), можно добавить в Task 3+ при необходимости.
-2. **API route** (`src/app/api/sessions/route.ts`) уже использует `createSessionSchema` — новые поля попадут в parsed data, но запись в Prisma пока не реализована (следующие задачи).
+- Поведенческие UI-тесты для модалки в brief не предусмотрены; автоматическая проверка ограничена typecheck и unit-тестами Task 1.
+- Полная ручная проверка требует авторизованной сессии с доступом к каталогу дополнительных заданий.
 
-## Files touched
+## Исправление по итоговому ревью
 
-| File | Action |
-|------|--------|
-| `src/shared/lib/validations/session.ts` | Modified |
-| `src/shared/lib/validations/session.test.ts` | Modified |
-
-## Next steps
-
-- Task 3+: API persist `absenceExcused`/`absenceReason`, journal UI, attendance-risk.
+- `handleDismissKeepDraft` теперь синхронно записывает актуальные `title`, `levelId`, `stepId` и `content` перед мягким закрытием через крестик/Escape, поэтому последние изменения не теряются до срабатывания debounce.
+- Debounce-запись при вводе сохранена без изменений.
+- Очистка черновика по footer-кнопке «Отмена» и после успешного создания не изменена.
+- `pnpm exec vitest run src/features/extra-assignments/lib/extra-assignment-draft.test.ts` — PASS: 1 файл, 8/8 тестов.

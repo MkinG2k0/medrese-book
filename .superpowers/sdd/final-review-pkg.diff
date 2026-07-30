@@ -1,922 +1,375 @@
-﻿# Final branch review package
-MERGE_BASE: dc52d526fdfa68c660a92f3a0dce0de54f281080
-HEAD: WORKING_TREE (no commits — feature work uncommitted on feat/excused-absence-reason)
+﻿# Final review package - extra assignment create draft
+MERGE_BASE: 07c1e18d4ea797abd1edcc3b68ec7d371d318ee3
+HEAD: working tree (no commits)
 
 ## Status
- M prisma/schema.prisma  M src/app/api/sessions/route.ts  M src/entities/session/api/use-sessions.ts  M src/entities/student-metrics/model/types.ts  M src/features/analytics/ui/AtRiskStudentsTable.tsx  M src/features/journal/actions/journal-actions.ts  M src/features/journal/lib/get-student-session.ts  M src/features/journal/model/use-lesson-page.ts  M src/features/journal/ui/AttendanceButtons.tsx  M src/features/journal/ui/LessonPage.tsx  M src/features/journal/ui/lesson/LessonStepsSection.tsx  M src/shared/lib/analytics-queries/at-risk-students.test.ts  M src/shared/lib/analytics-queries/at-risk-students.ts  M src/shared/lib/analytics-queries/level-stats.ts  M src/shared/lib/analytics-queries/top-students.test.ts  M src/shared/lib/analytics-queries/top-students.ts  M src/shared/lib/student-metrics/attendance-risk.test.ts  M src/shared/lib/student-metrics/attendance-risk.ts  M src/shared/lib/student-metrics/index.ts  M src/shared/lib/student-metrics/load-student-metrics.ts  M src/shared/lib/student-metrics/types.ts  M src/shared/lib/validations/session.test.ts  M src/shared/lib/validations/session.ts ?? .superpowers/ ?? docs/superpowers/plans/ ?? docs/superpowers/specs/2026-07-30-excused-absence-reason-design.md ?? e2e/excused-absence.spec.ts ?? prisma/migrations/20260730193040_session_absence_excused/
+ A src/features/extra-assignments/lib/extra-assignment-draft.test.ts
+ A src/features/extra-assignments/lib/extra-assignment-draft.ts
+ M src/features/extra-assignments/ui/ExtraAssignmentCatalogPage.tsx
+ M src/features/extra-assignments/ui/ExtraAssignmentFormModal.tsx
+?? docs/superpowers/plans/2026-07-30-extra-assignment-create-draft.md
+?? docs/superpowers/specs/2026-07-30-extra-assignment-create-draft-design.md
 
-## Diffstat (tracked)
- prisma/schema.prisma                               |  6 +-  src/app/api/sessions/route.ts                      | 15 +++-  src/entities/session/api/use-sessions.ts           |  4 +  src/entities/student-metrics/model/types.ts        |  1 +  src/features/analytics/ui/AtRiskStudentsTable.tsx  | 14 +++-  src/features/journal/actions/journal-actions.ts    |  2 +  src/features/journal/lib/get-student-session.ts    |  6 ++  src/features/journal/model/use-lesson-page.ts      | 24 ++++++  src/features/journal/ui/AttendanceButtons.tsx      | 52 ++++++++++--  src/features/journal/ui/LessonPage.tsx             |  2 +  .../journal/ui/lesson/LessonStepsSection.tsx       |  7 ++  .../lib/analytics-queries/at-risk-students.test.ts |  1 +  .../lib/analytics-queries/at-risk-students.ts      |  1 +  src/shared/lib/analytics-queries/level-stats.ts    |  5 +-  .../lib/analytics-queries/top-students.test.ts     |  6 +-  src/shared/lib/analytics-queries/top-students.ts   |  5 +-  .../lib/student-metrics/attendance-risk.test.ts    | 95 +++++++++++++++++++++-  src/shared/lib/student-metrics/attendance-risk.ts  | 28 ++++++-  src/shared/lib/student-metrics/index.ts            |  1 +  .../lib/student-metrics/load-student-metrics.ts    |  8 ++  src/shared/lib/student-metrics/types.ts            |  1 +  src/shared/lib/validations/session.test.ts         | 50 ++++++++++++  src/shared/lib/validations/session.ts              | 52 ++++++++----  23 files changed, 345 insertions(+), 41 deletions(-)
+## Diff (feature files)
 
-## Full diff (tracked source, exclude docs/superpowers noise optional)
-diff --git a/prisma/schema.prisma b/prisma/schema.prisma
-index 1af13d8..103e00c 100644
---- a/prisma/schema.prisma
-+++ b/prisma/schema.prisma
-@@ -222,8 +222,10 @@ model Session {
-   date          DateTime
-   attendance    Attendance
-   lateMinutes   Int?
--  note          String?
--  isAdjustment  Boolean          @default(false)
-+  note             String?
-+  absenceExcused   Boolean          @default(false)
-+  absenceReason    String?
-+  isAdjustment     Boolean          @default(false)
-   completions   StepCompletion[]
-   extraAssignments StudentExtraAssignment[]
-   createdAt     DateTime         @default(now())
-diff --git a/src/app/api/sessions/route.ts b/src/app/api/sessions/route.ts
-index f3102bb..d39fb89 100644
---- a/src/app/api/sessions/route.ts
-+++ b/src/app/api/sessions/route.ts
-@@ -23,8 +23,17 @@ export async function POST(request: Request) {
-   const parsed = createSessionSchema.safeParse(body);
-   if (!parsed.success) return error(parsed.error.message);
- 
--  const { studentId, groupId, date, attendance, lateMinutes, note, completions } =
--    parsed.data;
-+  const {
-+    studentId,
-+    groupId,
-+    date,
-+    attendance,
-+    lateMinutes,
-+    note,
-+    absenceExcused,
-+    absenceReason,
-+    completions,
-+  } = parsed.data;
- 
-   const authResult = await authorizeApiRequest({
-     allowedRoles: ["TEACHER"],
-@@ -58,6 +67,8 @@ export async function POST(request: Request) {
-     attendance,
-     lateMinutes: attendance === "LATE" ? lateMinutes : null,
-     note,
-+    absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
-+    absenceReason: attendance === "ABSENT" ? absenceReason : null,
-   };
- 
-   const savedSession = await prisma.$transaction(async (tx) => {
-diff --git a/src/entities/session/api/use-sessions.ts b/src/entities/session/api/use-sessions.ts
-index 747cf03..c9ffd73 100644
---- a/src/entities/session/api/use-sessions.ts
-+++ b/src/entities/session/api/use-sessions.ts
-@@ -11,6 +11,8 @@ type CreateSessionPayload = {
- 	attendance: Attendance
- 	lateMinutes?: number | null
- 	note?: string | null
-+	absenceExcused?: boolean
-+	absenceReason?: string | null
- 	completions: { stepId: string; grade: number; note?: string | null }[]
- }
- 
-@@ -21,6 +23,8 @@ export type StudentSession = {
- 	attendance: Attendance
- 	lateMinutes: number | null
- 	note: string | null
-+	absenceExcused: boolean
-+	absenceReason: string | null
- 	completions: {
- 		stepId: string
- 		grade: number
-diff --git a/src/entities/student-metrics/model/types.ts b/src/entities/student-metrics/model/types.ts
-index 0dadc6f..bbbcb92 100644
---- a/src/entities/student-metrics/model/types.ts
-+++ b/src/entities/student-metrics/model/types.ts
-@@ -16,6 +16,7 @@ export type AtRiskStudentApiRow = {
- 	levelTitle: string
- 	riskFlags: RiskFlag[]
- 	absencesInMonth: number
-+	excusedAbsencesInMonth: number
- 	actualMinutes: number
- 	budgetMinutes: number
- }
-diff --git a/src/features/analytics/ui/AtRiskStudentsTable.tsx b/src/features/analytics/ui/AtRiskStudentsTable.tsx
-index 27418f4..50dd7a3 100644
---- a/src/features/analytics/ui/AtRiskStudentsTable.tsx
-+++ b/src/features/analytics/ui/AtRiskStudentsTable.tsx
-@@ -1,6 +1,6 @@
- "use client";
- 
--import { Table } from "antd";
-+import { Table, Tag } from "antd";
- import { useMemo, useState } from "react";
- 
- import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
-@@ -65,8 +65,18 @@ export function AtRiskStudentsTable({
-       },
-       {
-         title: "╨Я╤А╨╛╨┐╤Г╤Б╨║╨╕",
--        dataIndex: "absencesInMonth",
-         key: "absences",
-+        render: (_: unknown, record: AtRiskStudentRow) => {
-+          const unexcused = record.absencesInMonth;
-+          const excused = record.excusedAbsencesInMonth;
-+          if (unexcused === 0 && excused === 0) return "0";
-+          return (
-+            <div className="flex flex-wrap gap-1">
-+              {unexcused > 0 && <Tag color="red">{unexcused}</Tag>}
-+              {excused > 0 && <Tag color="gold">{excused}</Tag>}
-+            </div>
-+          );
-+        },
-       },
-       {
-         title: "╨Т╤А╨╡╨╝╤П",
-diff --git a/src/features/journal/actions/journal-actions.ts b/src/features/journal/actions/journal-actions.ts
-index 2573d75..4943251 100644
---- a/src/features/journal/actions/journal-actions.ts
-+++ b/src/features/journal/actions/journal-actions.ts
-@@ -243,6 +243,8 @@ export async function getStudentLesson(
- 							attendance: true,
- 							lateMinutes: true,
- 							note: true,
-+							absenceExcused: true,
-+							absenceReason: true,
- 							completions: {
- 								select: { stepId: true, grade: true, note: true },
- 							},
-diff --git a/src/features/journal/lib/get-student-session.ts b/src/features/journal/lib/get-student-session.ts
-index ef4af44..39fc1a1 100644
---- a/src/features/journal/lib/get-student-session.ts
-+++ b/src/features/journal/lib/get-student-session.ts
-@@ -12,6 +12,8 @@ export type DaySessionRecord = {
- 	attendance: Attendance
- 	lateMinutes: number | null
- 	note: string | null
-+	absenceExcused: boolean
-+	absenceReason: string | null
- 	completions: { stepId: string; grade: number; note: string | null }[]
- }
- 
-@@ -34,6 +36,8 @@ export async function findStudentSessionForDay(
- 			attendance: true,
- 			lateMinutes: true,
- 			note: true,
-+			absenceExcused: true,
-+			absenceReason: true,
- 			completions: {
- 				select: { stepId: true, grade: true, note: true },
- 			},
-@@ -55,6 +59,8 @@ export function serializeDaySession(session: DaySessionRecord) {
- 		attendance: session.attendance,
- 		lateMinutes: session.lateMinutes,
- 		note: session.note,
-+		absenceExcused: session.absenceExcused,
-+		absenceReason: session.absenceReason,
- 		completions: session.completions,
- 	}
- }
-diff --git a/src/features/journal/model/use-lesson-page.ts b/src/features/journal/model/use-lesson-page.ts
-index aeba0d4..6b9aaac 100644
---- a/src/features/journal/model/use-lesson-page.ts
-+++ b/src/features/journal/model/use-lesson-page.ts
-@@ -348,6 +348,8 @@ export function useLessonPage(props: LessonPageProps) {
- 
-   const [attendance, setAttendance] = useState<Attendance>("PRESENT");
-   const [lateMinutes, setLateMinutes] = useState(5);
-+  const [absenceExcused, setAbsenceExcused] = useState(false);
-+  const [absenceReason, setAbsenceReason] = useState("");
-   const [visibleCount, setVisibleCount] = useState(
-     isProgramComplete
-       ? lessonSteps.length
-@@ -414,6 +416,8 @@ export function useLessonPage(props: LessonPageProps) {
-     if (existingSession) {
-       setAttendance(existingSession.attendance);
-       setLateMinutes(existingSession.lateMinutes ?? 5);
-+      setAbsenceExcused(existingSession.absenceExcused ?? false);
-+      setAbsenceReason(existingSession.absenceReason ?? "");
-       initSessionCompletions(
-         sessionDataKey,
-         buildInitialStepStates(
-@@ -425,6 +429,8 @@ export function useLessonPage(props: LessonPageProps) {
-     } else {
-       setAttendance("PRESENT");
-       setLateMinutes(5);
-+      setAbsenceExcused(false);
-+      setAbsenceReason("");
-       initSessionCompletions(
-         sessionDataKey,
-         buildInitialStepStates(
-@@ -540,9 +546,19 @@ export function useLessonPage(props: LessonPageProps) {
-   const handleAttendanceChange = (
-     value: Attendance,
-     minutes?: number,
-+    absence?: { excused: boolean; reason: string },
-   ) => {
-     setAttendance(value);
-     if (minutes !== undefined) setLateMinutes(minutes);
-+    if (value !== "ABSENT") {
-+      setAbsenceExcused(false);
-+      setAbsenceReason("");
-+      return;
-+    }
-+    if (absence) {
-+      setAbsenceExcused(absence.excused);
-+      setAbsenceReason(absence.reason);
-+    }
-   };
- 
-   const handleClearSessionCompletions = () => {
-@@ -619,6 +635,9 @@ export function useLessonPage(props: LessonPageProps) {
-         date: toSessionDate(dateFilter).toISOString(),
-         attendance,
-         lateMinutes: attendance === "LATE" ? lateMinutes : null,
-+        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
-+        absenceReason:
-+          attendance === "ABSENT" ? absenceReason.trim() || null : null,
-         note: null,
-         completions: [],
-       });
-@@ -727,6 +746,9 @@ export function useLessonPage(props: LessonPageProps) {
-         date: toSessionDate(dateFilter).toISOString(),
-         attendance,
-         lateMinutes: attendance === "LATE" ? lateMinutes : null,
-+        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
-+        absenceReason:
-+          attendance === "ABSENT" ? absenceReason.trim() || null : null,
-         note: null,
-         completions,
-       });
-@@ -783,6 +805,8 @@ export function useLessonPage(props: LessonPageProps) {
-     hasNoSteps,
-     attendance,
-     lateMinutes,
-+    absenceExcused,
-+    absenceReason,
-     visibleSteps,
-     lessonSteps,
-     expandedIds: effectiveExpandedIds,
-diff --git a/src/features/journal/ui/AttendanceButtons.tsx b/src/features/journal/ui/AttendanceButtons.tsx
-index 5dde5c5..cbc06f5 100644
---- a/src/features/journal/ui/AttendanceButtons.tsx
-+++ b/src/features/journal/ui/AttendanceButtons.tsx
-@@ -5,7 +5,7 @@ import {
- 	ClockCircleOutlined,
- 	CloseOutlined,
- } from '@ant-design/icons'
--import { App, Flex, InputNumber, Radio, Space } from 'antd'
-+import { App, Checkbox, Input, InputNumber, Radio, Space } from 'antd'
- 
- import { useJournalStore } from '@/features/journal/model/journal-store'
- 
-@@ -14,7 +14,13 @@ type Attendance = 'PRESENT' | 'LATE' | 'ABSENT'
- type AttendanceButtonsProps = {
- 	value: Attendance
- 	lateMinutes: number
--	onChange: (attendance: Attendance, lateMinutes?: number) => void
-+	absenceExcused: boolean
-+	absenceReason: string
-+	onChange: (
-+		attendance: Attendance,
-+		lateMinutes?: number,
-+		absence?: { excused: boolean; reason: string },
-+	) => void
- 	disabled?: boolean
- 	gradedStepCount: number
- 	onClearCompletions: () => void
-@@ -29,6 +35,8 @@ const OPTIONS: { value: Attendance; label: string; icon: React.ReactNode }[] = [
- export function AttendanceButtons({
- 	value,
- 	lateMinutes,
-+	absenceExcused,
-+	absenceReason,
- 	onChange,
- 	disabled = false,
- 	gradedStepCount,
-@@ -67,27 +75,27 @@ export function AttendanceButtons({
- 	}
- 
- 	return (
--		<Flex vertical gap={12}>
-+		<div className="flex flex-col gap-3">
- 			<Radio.Group
- 				value={value}
- 				onChange={(e) => handleAttendanceSelect(e.target.value)}
- 				className="w-full"
- 				disabled={disabled}
- 			>
--				<Flex gap={8} className="w-full">
-+				<div className="flex w-full gap-2">
- 					{OPTIONS.map((opt) => (
- 						<Radio.Button
- 							key={opt.value}
- 							value={opt.value}
- 							className="flex-1 text-center"
- 						>
--							<Flex align="center" justify="center" gap={6}>
-+							<span className="flex items-center justify-center gap-1.5">
- 								{opt.icon}
- 								{opt.label}
--							</Flex>
-+							</span>
- 						</Radio.Button>
- 					))}
--				</Flex>
-+				</div>
- 			</Radio.Group>
- 			{value === 'LATE' && (
- 				<Space.Compact block className="w-full">
-@@ -102,6 +110,34 @@ export function AttendanceButtons({
- 					<Space.Addon>╨╝╨╕╨╜</Space.Addon>
- 				</Space.Compact>
- 			)}
--		</Flex>
-+			{value === 'ABSENT' && (
-+				<div className="flex flex-col gap-2">
-+					<Checkbox
-+						checked={absenceExcused}
-+						disabled={disabled}
-+						onChange={(e) =>
-+							onChange('ABSENT', undefined, {
-+								excused: e.target.checked,
-+								reason: absenceReason,
-+							})
-+						}
-+					>
-+						╨г╨▓╨░╨╢╨╕╤В╨╡╨╗╤М╨╜╨░╤П ╨┐╤А╨╕╤З╨╕╨╜╨░
-+					</Checkbox>
-+					<Input.TextArea
-+						value={absenceReason}
-+						disabled={disabled}
-+						placeholder="╨Я╤А╨╕╤З╨╕╨╜╨░ ╨┐╤А╨╛╨┐╤Г╤Б╨║╨░ (╨╜╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨╛)"
-+						rows={2}
-+						onChange={(e) =>
-+							onChange('ABSENT', undefined, {
-+								excused: absenceExcused,
-+								reason: e.target.value,
-+							})
-+						}
-+					/>
-+				</div>
-+			)}
-+		</div>
- 	)
- }
-diff --git a/src/features/journal/ui/LessonPage.tsx b/src/features/journal/ui/LessonPage.tsx
-index 2f000f8..4ea81af 100644
---- a/src/features/journal/ui/LessonPage.tsx
-+++ b/src/features/journal/ui/LessonPage.tsx
-@@ -40,6 +40,8 @@ export function LessonPage(props: LessonPageProps) {
-         hasNoSteps={lesson.hasNoSteps}
-         attendance={lesson.attendance}
-         lateMinutes={lesson.lateMinutes}
-+        absenceExcused={lesson.absenceExcused}
-+        absenceReason={lesson.absenceReason}
-         isSessionReady={lesson.isSessionReady}
-         visibleSteps={lesson.visibleSteps}
-         expandedIds={lesson.expandedIds}
-diff --git a/src/features/journal/ui/lesson/LessonStepsSection.tsx b/src/features/journal/ui/lesson/LessonStepsSection.tsx
-index ef20f4a..27309bb 100644
---- a/src/features/journal/ui/lesson/LessonStepsSection.tsx
-+++ b/src/features/journal/ui/lesson/LessonStepsSection.tsx
-@@ -21,6 +21,8 @@ type LessonStepsSectionProps = {
-   hasNoSteps: boolean;
-   attendance: "PRESENT" | "LATE" | "ABSENT";
-   lateMinutes: number;
-+  absenceExcused: boolean;
-+  absenceReason: string;
-   isSessionReady: boolean;
-   visibleSteps: JournalStep[];
-   expandedIds: Set<string>;
-@@ -33,6 +35,7 @@ type LessonStepsSectionProps = {
-   onAttendanceChange: (
-     value: "PRESENT" | "LATE" | "ABSENT",
-     minutes?: number,
-+    absence?: { excused: boolean; reason: string },
-   ) => void;
-   onClearSessionCompletions: () => void;
-   onToggleExpand: (stepId: string) => void;
-@@ -59,6 +62,8 @@ export function LessonStepsSection({
-   hasNoSteps,
-   attendance,
-   lateMinutes,
-+  absenceExcused,
-+  absenceReason,
-   isSessionReady,
-   visibleSteps,
-   expandedIds,
-@@ -118,6 +123,8 @@ export function LessonStepsSection({
-         <AttendanceButtons
-           value={attendance}
-           lateMinutes={lateMinutes}
-+          absenceExcused={absenceExcused}
-+          absenceReason={absenceReason}
-           onChange={onAttendanceChange}
-           disabled={!isSessionReady}
-           gradedStepCount={gradedStepCount}
-diff --git a/src/shared/lib/analytics-queries/at-risk-students.test.ts b/src/shared/lib/analytics-queries/at-risk-students.test.ts
-index 4107032..8af7640 100644
---- a/src/shared/lib/analytics-queries/at-risk-students.test.ts
-+++ b/src/shared/lib/analytics-queries/at-risk-students.test.ts
-@@ -47,6 +47,7 @@ describe('getAtRiskStudents', () => {
- 			levelTitle: '╨г╤А╨╛╨▓╨╡╨╜╤М 1',
- 			riskFlags: ['ATTENDANCE'],
- 			absencesInMonth: 2,
-+			excusedAbsencesInMonth: 0,
- 			timeNorm: { actualMinutes: 30, budgetMinutes: 60 },
- 		})
- 
-diff --git a/src/shared/lib/analytics-queries/at-risk-students.ts b/src/shared/lib/analytics-queries/at-risk-students.ts
-index 8cbe811..bf047d6 100644
---- a/src/shared/lib/analytics-queries/at-risk-students.ts
-+++ b/src/shared/lib/analytics-queries/at-risk-students.ts
-@@ -62,6 +62,7 @@ export async function getAtRiskStudents(
- 			levelTitle: metrics.levelTitle,
- 			riskFlags: metrics.riskFlags,
- 			absencesInMonth: metrics.absencesInMonth,
-+			excusedAbsencesInMonth: metrics.excusedAbsencesInMonth,
- 			actualMinutes: metrics.timeNorm.actualMinutes,
- 			budgetMinutes: metrics.timeNorm.budgetMinutes,
- 		})
-diff --git a/src/shared/lib/analytics-queries/level-stats.ts b/src/shared/lib/analytics-queries/level-stats.ts
-index cf40149..5b0e8fd 100644
---- a/src/shared/lib/analytics-queries/level-stats.ts
-+++ b/src/shared/lib/analytics-queries/level-stats.ts
-@@ -10,6 +10,7 @@ import {
- type SessionWithLateness = {
- 	attendance: string
- 	lateMinutes: number | null
-+	absenceExcused: boolean
- }
- 
- function sumLateMinutes(sessions: SessionWithLateness[]): number {
-@@ -102,7 +103,9 @@ export async function getLevelStats(
- 			level: level.number,
- 			label: String(level.number),
- 			avgGrade: Math.round(avgGrade * 10) / 10,
--			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
-+			totalAbsences: allSessions.filter(
-+				(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
-+			).length,
- 			totalLateMinutes,
- 			totalHours: Math.round((totalStepHours - lateHours) * 10) / 10,
- 		}
-diff --git a/src/shared/lib/analytics-queries/top-students.test.ts b/src/shared/lib/analytics-queries/top-students.test.ts
-index 8a44acc..8c40a9e 100644
---- a/src/shared/lib/analytics-queries/top-students.test.ts
-+++ b/src/shared/lib/analytics-queries/top-students.test.ts
-@@ -52,9 +52,9 @@ describe('getTopStudents', () => {
- 					{ grade: 4 },
- 				],
- 				sessions: [
--					{ attendance: 'PRESENT', lateMinutes: null },
--					{ attendance: 'ABSENT', lateMinutes: null },
--					{ attendance: 'LATE', lateMinutes: 10 },
-+					{ attendance: 'PRESENT', lateMinutes: null, absenceExcused: false },
-+					{ attendance: 'ABSENT', lateMinutes: null, absenceExcused: false },
-+					{ attendance: 'LATE', lateMinutes: 10, absenceExcused: false },
- 				],
- 			},
- 		])
-diff --git a/src/shared/lib/analytics-queries/top-students.ts b/src/shared/lib/analytics-queries/top-students.ts
-index 2ee2a92..88e8246 100644
---- a/src/shared/lib/analytics-queries/top-students.ts
-+++ b/src/shared/lib/analytics-queries/top-students.ts
-@@ -10,6 +10,7 @@ import {
- type SessionWithLateness = {
- 	attendance: string
- 	lateMinutes: number | null
-+	absenceExcused: boolean
- }
- 
- function countAttendedSessions(sessions: { attendance: string }[]): number {
-@@ -94,7 +95,9 @@ export async function getTopStudents(
- 				student: { id: student.id, name: student.user.name },
- 				stepsCompleted: student.completions.length,
- 				avgGrade: Math.round(avgGrade * 10) / 10,
--				absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
-+				absences: student.sessions.filter(
-+					(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
-+				).length,
- 				lateMinutes: sumLateMinutes(student.sessions),
- 				attendedSessions: countAttendedSessions(student.sessions),
- 			}
-diff --git a/src/shared/lib/student-metrics/attendance-risk.test.ts b/src/shared/lib/student-metrics/attendance-risk.test.ts
-index e076259..f52e76f 100644
---- a/src/shared/lib/student-metrics/attendance-risk.test.ts
-+++ b/src/shared/lib/student-metrics/attendance-risk.test.ts
-@@ -1,7 +1,11 @@
- import { describe, expect, it } from 'vitest'
- 
- import { AT_RISK_CONFIG } from './at-risk-config'
--import { evaluateAttendanceRisk } from './attendance-risk'
+diff --git a/src/features/extra-assignments/lib/extra-assignment-draft.test.ts b/src/features/extra-assignments/lib/extra-assignment-draft.test.ts
+new file mode 100644
+index 0000000..3d8b360
+--- /dev/null
++++ b/src/features/extra-assignments/lib/extra-assignment-draft.test.ts
+@@ -0,0 +1,82 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
++
 +import {
-+	countStudentAbsencesInMonth,
-+	countStudentExcusedAbsencesInMonth,
-+	evaluateAttendanceRisk,
-+} from './attendance-risk'
- 
- describe('evaluateAttendanceRisk', () => {
- 	const monthRange = {
-@@ -117,4 +121,93 @@ describe('evaluateAttendanceRisk', () => {
- 
- 		expect(result).toBe(false)
- 	})
++	clearExtraAssignmentDraft,
++	draftStorageKey,
++	readExtraAssignmentDraft,
++	writeExtraAssignmentDraft,
++} from '@/features/extra-assignments/lib/extra-assignment-draft'
 +
-+	it('╨╜╨╡ ╤Б╤З╨╕╤В╨░╨╡╤В ╤Г╨▓╨░╨╢╨╕╤В╨╡╨╗╤М╨╜╤Л╨╡ ╨┐╤А╨╛╨┐╤Г╤Б╨║╨╕ ╨▓ ╨┐╨╛╤А╨╛╨│╨╡ ╤А╨╕╤Б╨║╨░', () => {
-+		const result = evaluateAttendanceRisk({
-+			sessions: [
-+				{
-+					date: new Date('2026-01-01T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: true,
-+				},
-+				{
-+					date: new Date('2026-01-05T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: true,
-+				},
-+				{
-+					date: new Date('2026-01-10T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: true,
-+				},
-+			],
-+			monthRange,
-+			config: AT_RISK_CONFIG,
-+		})
-+
-+		expect(result).toBe(false)
-+	})
-+
-+	it('╨┐╤А╨╡╤А╤Л╨▓╨░╨╡╤В streak ╤Г╨▓╨░╨╢╨╕╤В╨╡╨╗╤М╨╜╤Л╨╝ ╨┐╤А╨╛╨┐╤Г╤Б╨║╨╛╨╝', () => {
-+		const result = evaluateAttendanceRisk({
-+			sessions: [
-+				{
-+					date: new Date('2026-01-01T10:00:00.000Z'),
-+					attendance: 'PRESENT',
-+					isAdjustment: false,
-+				},
-+				{
-+					date: new Date('2026-01-02T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: true,
-+				},
-+				{
-+					date: new Date('2026-01-03T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: false,
-+				},
-+				{
-+					date: new Date('2026-01-04T10:00:00.000Z'),
-+					attendance: 'ABSENT',
-+					isAdjustment: false,
-+					absenceExcused: false,
-+				},
-+			],
-+			monthRange,
-+			config: AT_RISK_CONFIG,
-+		})
-+
-+		expect(result).toBe(false)
-+	})
-+
-+	it('╤А╨░╨╖╨┤╨╡╨╗╤П╨╡╤В ╤Б╤З╤С╤В╤З╨╕╨║╨╕ ╨╜╨╡╤Г╨▓╨░╨╢. ╨╕ ╤Г╨▓╨░╨╢.', () => {
-+		const sessions = [
-+			{
-+				date: new Date('2026-01-01T10:00:00.000Z'),
-+				attendance: 'ABSENT',
-+				isAdjustment: false,
-+				absenceExcused: false,
-+			},
-+			{
-+				date: new Date('2026-01-02T10:00:00.000Z'),
-+				attendance: 'ABSENT',
-+				isAdjustment: false,
-+				absenceExcused: true,
-+			},
-+			{
-+				date: new Date('2026-01-03T10:00:00.000Z'),
-+				attendance: 'ABSENT',
-+				isAdjustment: false,
-+				absenceExcused: true,
-+			},
-+		]
-+
-+		expect(countStudentAbsencesInMonth(sessions, monthRange)).toBe(1)
-+		expect(countStudentExcusedAbsencesInMonth(sessions, monthRange)).toBe(2)
-+	})
- })
-diff --git a/src/shared/lib/student-metrics/attendance-risk.ts b/src/shared/lib/student-metrics/attendance-risk.ts
-index fba7dc5..80ff824 100644
---- a/src/shared/lib/student-metrics/attendance-risk.ts
-+++ b/src/shared/lib/student-metrics/attendance-risk.ts
-@@ -6,6 +6,7 @@ type SessionInput = {
- 	date: Date
- 	attendance: string
- 	isAdjustment: boolean
-+	absenceExcused?: boolean
- }
- 
- export type EvaluateAttendanceRiskInput = {
-@@ -21,10 +22,19 @@ function isInDateRange(date: Date, range: { gte: Date; lte: Date }): boolean {
- 	return date >= range.gte && date <= range.lte
- }
- 
--function isCountableAbsentSession(session: SessionInput): boolean {
-+function isUnexcusedAbsent(session: SessionInput): boolean {
- 	return (
- 		session.isAdjustment === countableSessionWhere.isAdjustment &&
--		session.attendance === 'ABSENT'
-+		session.attendance === 'ABSENT' &&
-+		!session.absenceExcused
-+	)
++function createLocalStorageMock() {
++	const store = new Map<string, string>()
++	return {
++		getItem: (key: string) => store.get(key) ?? null,
++		setItem: (key: string, value: string) => {
++			store.set(key, value)
++		},
++		removeItem: (key: string) => {
++			store.delete(key)
++		},
++		clear: () => store.clear(),
++	}
 +}
 +
-+function isExcusedAbsent(session: SessionInput): boolean {
-+	return (
-+		session.isAdjustment === countableSessionWhere.isAdjustment &&
-+		session.attendance === 'ABSENT' &&
-+		Boolean(session.absenceExcused)
- 	)
- }
- 
-@@ -34,7 +44,7 @@ function countAbsencesInMonth(
- ): number {
- 	return sessions.filter(
- 		(session) =>
--			isCountableAbsentSession(session) &&
-+			isUnexcusedAbsent(session) &&
- 			isInDateRange(session.date, monthRange),
- 	).length
- }
-@@ -51,7 +61,7 @@ function maxConsecutiveAbsences(sessions: SessionInput[]): number {
- 	let currentStreak = 0
- 
- 	for (const session of sortedCountableSessions) {
--		if (session.attendance === 'ABSENT') {
-+		if (isUnexcusedAbsent(session)) {
- 			currentStreak += 1
- 			maxStreak = Math.max(maxStreak, currentStreak)
- 			continue
-@@ -85,3 +95,13 @@ export function countStudentAbsencesInMonth(
- ): number {
- 	return countAbsencesInMonth(sessions, monthRange)
- }
-+
-+export function countStudentExcusedAbsencesInMonth(
-+	sessions: SessionInput[],
-+	monthRange: { gte: Date; lte: Date },
-+): number {
-+	return sessions.filter(
-+		(session) =>
-+			isExcusedAbsent(session) && isInDateRange(session.date, monthRange),
-+	).length
++const sampleDraft = {
++	title: '╨Я╨╛╨▓╤В╨╛╤А ╤Б╤Г╤А╤Л',
++	levelId: 'lvl1',
++	stepId: 'step1',
++	content: { blocks: [{ type: 'text' as const, value: '╤В╨╡╨║╤Б╤В' }] },
 +}
-diff --git a/src/shared/lib/student-metrics/index.ts b/src/shared/lib/student-metrics/index.ts
-index 88bca28..3eacc10 100644
---- a/src/shared/lib/student-metrics/index.ts
-+++ b/src/shared/lib/student-metrics/index.ts
-@@ -1,6 +1,7 @@
- export { AT_RISK_CONFIG, type AtRiskConfig } from './at-risk-config'
- export {
- 	countStudentAbsencesInMonth,
-+	countStudentExcusedAbsencesInMonth,
- 	evaluateAttendanceRisk,
- 	type EvaluateAttendanceRiskInput,
- } from './attendance-risk'
-diff --git a/src/shared/lib/student-metrics/load-student-metrics.ts b/src/shared/lib/student-metrics/load-student-metrics.ts
-index c7e395f..106cd9a 100644
---- a/src/shared/lib/student-metrics/load-student-metrics.ts
-+++ b/src/shared/lib/student-metrics/load-student-metrics.ts
-@@ -12,6 +12,7 @@ import {
- 
- import {
- 	countStudentAbsencesInMonth,
-+	countStudentExcusedAbsencesInMonth,
- 	evaluateAttendanceRisk,
- } from './attendance-risk'
- import {
-@@ -68,6 +69,7 @@ async function loadStudentRecord(studentId: string, scope: StudentMetricsScope)
- 					date: true,
- 					attendance: true,
- 					isAdjustment: true,
-+					absenceExcused: true,
- 					groupId: true,
- 				},
- 			},
-@@ -168,6 +170,7 @@ export type StudentMetricsBundle = {
- 	riskFlags: RiskFlag[]
- 	timeNorm: TimeNormResult
- 	absencesInMonth: number
-+	excusedAbsencesInMonth: number
- 	teacherName: string
- 	levelTitle: string
- }
-@@ -238,6 +241,10 @@ async function computeMetricsForEnrollment(
- 		student.sessions,
- 		monthRange,
- 	)
-+	const excusedAbsencesInMonth = countStudentExcusedAbsencesInMonth(
-+		student.sessions,
-+		monthRange,
-+	)
- 
- 	const riskFlags = buildStudentRiskFlags({
- 		studentId: student.id,
-@@ -254,6 +261,7 @@ async function computeMetricsForEnrollment(
- 		riskFlags,
- 		timeNorm,
- 		absencesInMonth,
-+		excusedAbsencesInMonth,
- 		teacherName: enrollment.group.teacher.user.name,
- 		levelTitle: enrollment.level.title,
- 	}
-diff --git a/src/shared/lib/student-metrics/types.ts b/src/shared/lib/student-metrics/types.ts
-index 1e02ece..c185077 100644
---- a/src/shared/lib/student-metrics/types.ts
-+++ b/src/shared/lib/student-metrics/types.ts
-@@ -20,6 +20,7 @@ export type AtRiskStudentRow = {
- 	levelTitle: string
- 	riskFlags: RiskFlag[]
- 	absencesInMonth: number
-+	excusedAbsencesInMonth: number
- 	actualMinutes: number
- 	budgetMinutes: number
- }
-diff --git a/src/shared/lib/validations/session.test.ts b/src/shared/lib/validations/session.test.ts
-index 5d4244d..a48abe3 100644
---- a/src/shared/lib/validations/session.test.ts
-+++ b/src/shared/lib/validations/session.test.ts
-@@ -32,4 +32,54 @@ describe('createSessionSchema', () => {
- 			expect(result.data.groupId).toBe('group-1')
- 		}
- 	})
 +
-+	it('╨┐╤А╨╕╨╜╨╕╨╝╨░╨╡╤В ABSENT ╤Б absenceExcused ╨╕ absenceReason', () => {
-+		const result = createSessionSchema.safeParse({
-+			studentId: 'student-1',
-+			groupId: 'group-1',
-+			date: '2026-07-11',
-+			attendance: 'ABSENT',
-+			absenceExcused: true,
-+			absenceReason: '╨С╨╛╨╗╨╡╨╖╨╜╤М',
-+			completions: [],
-+		})
-+		expect(result.success).toBe(true)
-+		if (result.success) {
-+			expect(result.data.absenceExcused).toBe(true)
-+			expect(result.data.absenceReason).toBe('╨С╨╛╨╗╨╡╨╖╨╜╤М')
-+		}
++describe('extra-assignment-draft', () => {
++	beforeEach(() => {
++		vi.stubGlobal('localStorage', createLocalStorageMock())
++		vi.stubGlobal('window', {})
 +	})
 +
-+	it('╨┐╤А╨╕ PRESENT ╤Б╨▒╤А╨░╤Б╤Л╨▓╨░╨╡╤В absenceExcused ╨╕ absenceReason', () => {
-+		const result = createSessionSchema.safeParse({
-+			studentId: 'student-1',
-+			groupId: 'group-1',
-+			date: '2026-07-11',
-+			attendance: 'PRESENT',
-+			absenceExcused: true,
-+			absenceReason: '╨╜╨╡ ╨┤╨╛╨╗╨╢╨╜╨╛ ╤Б╨╛╤Е╤А╨░╨╜╨╕╤В╤М╤Б╤П',
-+			completions: [],
-+		})
-+		expect(result.success).toBe(true)
-+		if (result.success) {
-+			expect(result.data.absenceExcused).toBe(false)
-+			expect(result.data.absenceReason).toBeNull()
-+		}
++	afterEach(() => {
++		vi.unstubAllGlobals()
 +	})
 +
-+	it('╨┐╤Г╤Б╤В╤Г╤О ╨┐╤А╨╕╤З╨╕╨╜╤Г ╨╜╨╛╤А╨╝╨░╨╗╨╕╨╖╤Г╨╡╤В ╨▓ null', () => {
-+		const result = createSessionSchema.safeParse({
-+			studentId: 'student-1',
-+			groupId: 'group-1',
-+			date: '2026-07-11',
-+			attendance: 'ABSENT',
-+			absenceExcused: false,
-+			absenceReason: '   ',
-+			completions: [],
-+		})
-+		expect(result.success).toBe(true)
-+		if (result.success) {
-+			expect(result.data.absenceReason).toBeNull()
-+		}
++	it('builds storage key from user and subject', () => {
++		expect(draftStorageKey('u1', 's1')).toBe('extra-assignment-draft:u1:s1')
 +	})
- })
-diff --git a/src/shared/lib/validations/session.ts b/src/shared/lib/validations/session.ts
-index 34e2270..452bbef 100644
---- a/src/shared/lib/validations/session.ts
-+++ b/src/shared/lib/validations/session.ts
-@@ -1,21 +1,39 @@
- import { z } from 'zod'
- 
--export const createSessionSchema = z.object({
--	studentId: z.string(),
--	groupId: z.string().min(1, 'groupId ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╨╡╨╜'),
--	date: z.string().datetime().or(z.string().date()),
--	attendance: z.enum(['PRESENT', 'LATE', 'ABSENT']),
--	lateMinutes: z.number().int().min(0).optional().nullable(),
--	note: z.string().optional().nullable(),
--	completions: z
--		.array(
--			z.object({
--				stepId: z.string(),
--				grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
--				note: z.string().optional().nullable(),
--			}),
--		)
--		.default([]),
--})
-+export const createSessionSchema = z
-+	.object({
-+		studentId: z.string(),
-+		groupId: z.string().min(1, 'groupId ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╨╡╨╜'),
-+		date: z.string().datetime().or(z.string().date()),
-+		attendance: z.enum(['PRESENT', 'LATE', 'ABSENT']),
-+		lateMinutes: z.number().int().min(0).optional().nullable(),
-+		note: z.string().optional().nullable(),
-+		absenceExcused: z.boolean().optional().default(false),
-+		absenceReason: z.string().optional().nullable(),
-+		completions: z
-+			.array(
-+				z.object({
-+					stepId: z.string(),
-+					grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
-+					note: z.string().optional().nullable(),
-+				}),
-+			)
-+			.default([]),
++
++	it('reads and writes draft', () => {
++		writeExtraAssignmentDraft('u1', 's1', sampleDraft)
++		expect(readExtraAssignmentDraft('u1', 's1')).toEqual(sampleDraft)
 +	})
-+	.transform((data) => {
-+		if (data.attendance !== 'ABSENT') {
-+			return {
-+				...data,
-+				absenceExcused: false,
-+				absenceReason: null,
-+			}
-+		}
-+		const reason = data.absenceReason?.trim() || null
++
++	it('returns null when key is missing', () => {
++		expect(readExtraAssignmentDraft('u1', 's1')).toBeNull()
++	})
++
++	it('isolates drafts by subject', () => {
++		writeExtraAssignmentDraft('u1', 's1', sampleDraft)
++		expect(readExtraAssignmentDraft('u1', 's2')).toBeNull()
++	})
++
++	it('clears draft', () => {
++		writeExtraAssignmentDraft('u1', 's1', sampleDraft)
++		clearExtraAssignmentDraft('u1', 's1')
++		expect(readExtraAssignmentDraft('u1', 's1')).toBeNull()
++	})
++
++	it('returns null on invalid JSON', () => {
++		localStorage.setItem(draftStorageKey('u1', 's1'), '{not-json')
++		expect(readExtraAssignmentDraft('u1', 's1')).toBeNull()
++	})
++
++	it('returns null on invalid shape', () => {
++		localStorage.setItem(
++			draftStorageKey('u1', 's1'),
++			JSON.stringify({ title: 1, content: null }),
++		)
++		expect(readExtraAssignmentDraft('u1', 's1')).toBeNull()
++	})
++
++	it('returns null on SSR', () => {
++		vi.unstubAllGlobals()
++		expect(readExtraAssignmentDraft('u1', 's1')).toBeNull()
++	})
++})
+diff --git a/src/features/extra-assignments/lib/extra-assignment-draft.ts b/src/features/extra-assignments/lib/extra-assignment-draft.ts
+new file mode 100644
+index 0000000..0f773c6
+--- /dev/null
++++ b/src/features/extra-assignments/lib/extra-assignment-draft.ts
+@@ -0,0 +1,77 @@
++import {
++	stepContentSchema,
++	type StepContent,
++} from '@/shared/lib/validations/step'
++
++export type ExtraAssignmentCreateDraft = {
++	title: string
++	levelId?: string
++	stepId: string | null
++	content: StepContent
++}
++
++export function draftStorageKey(userId: string, subjectId: string): string {
++	return `extra-assignment-draft:${userId}:${subjectId}`
++}
++
++function isDraft(value: unknown): value is ExtraAssignmentCreateDraft {
++	if (!value || typeof value !== 'object') return false
++	const v = value as Record<string, unknown>
++	if (typeof v.title !== 'string') return false
++	if (v.levelId !== undefined && typeof v.levelId !== 'string') return false
++	if (!(v.stepId === null || typeof v.stepId === 'string')) return false
++	const content = stepContentSchema.safeParse(v.content)
++	return content.success
++}
++
++export function readExtraAssignmentDraft(
++	userId: string,
++	subjectId: string,
++): ExtraAssignmentCreateDraft | null {
++	if (typeof window === 'undefined') return null
++	if (!userId || !subjectId) return null
++
++	try {
++		const raw = localStorage.getItem(draftStorageKey(userId, subjectId))
++		if (!raw) return null
++		const parsed: unknown = JSON.parse(raw)
++		if (!isDraft(parsed)) return null
 +		return {
-+			...data,
-+			absenceExcused: data.absenceExcused ?? false,
-+			absenceReason: reason,
++			title: parsed.title,
++			levelId: parsed.levelId,
++			stepId: parsed.stepId,
++			content: parsed.content,
 +		}
-+	})
++	} catch {
++		return null
++	}
++}
++
++export function writeExtraAssignmentDraft(
++	userId: string,
++	subjectId: string,
++	draft: ExtraAssignmentCreateDraft,
++): void {
++	if (typeof window === 'undefined') return
++	if (!userId || !subjectId) return
++
++	try {
++		localStorage.setItem(draftStorageKey(userId, subjectId), JSON.stringify(draft))
++	} catch {
++		/* ignore */
++	}
++}
++
++export function clearExtraAssignmentDraft(
++	userId: string,
++	subjectId: string,
++): void {
++	if (typeof window === 'undefined') return
++	if (!userId || !subjectId) return
++
++	try {
++		localStorage.removeItem(draftStorageKey(userId, subjectId))
++	} catch {
++		/* ignore */
++	}
++}
+diff --git a/src/features/extra-assignments/ui/ExtraAssignmentCatalogPage.tsx b/src/features/extra-assignments/ui/ExtraAssignmentCatalogPage.tsx
+index 42f1ef0..c23fb91 100644
+--- a/src/features/extra-assignments/ui/ExtraAssignmentCatalogPage.tsx
++++ b/src/features/extra-assignments/ui/ExtraAssignmentCatalogPage.tsx
+@@ -17,6 +17,7 @@ import {
+ 	type ExtraAssignmentSubjectOption,
+ 	type ProgramLevelWithSteps,
+ } from '@/features/extra-assignments/actions/extra-assignment-actions'
++import { clearExtraAssignmentDraft } from '@/features/extra-assignments/lib/extra-assignment-draft'
+ import { ExtraAssignmentFormModal } from '@/features/extra-assignments/ui/ExtraAssignmentFormModal'
+ import { formatDate } from '@/shared/lib/utils'
+ import Text from '@/shared/ui/Text'
+@@ -132,6 +133,9 @@ export function ExtraAssignmentCatalogPage({
+ 				await createMutation.mutateAsync(values)
+ 				message.success('╨Ч╨░╨┤╨░╨╜╨╕╨╡ ╤Б╨╛╨╖╨┤╨░╨╜╨╛')
+ 			}
++			if (!editing && session?.user?.id) {
++				clearExtraAssignmentDraft(session.user.id, selectedSubjectId)
++			}
+ 			setModalOpen(false)
+ 			setEditing(null)
+ 		} catch (err) {
+@@ -288,6 +292,7 @@ export function ExtraAssignmentCatalogPage({
+ 			<ExtraAssignmentFormModal
+ 				open={modalOpen}
+ 				assignment={editing}
++				subjectId={selectedSubjectId}
+ 				programLevels={programLevels}
+ 				currentUserId={currentUserId}
+ 				loading={createMutation.isPending || updateMutation.isPending}
+diff --git a/src/features/extra-assignments/ui/ExtraAssignmentFormModal.tsx b/src/features/extra-assignments/ui/ExtraAssignmentFormModal.tsx
+index 2e9097c..c99893c 100644
+--- a/src/features/extra-assignments/ui/ExtraAssignmentFormModal.tsx
++++ b/src/features/extra-assignments/ui/ExtraAssignmentFormModal.tsx
+@@ -1,10 +1,16 @@
+ 'use client'
  
- export type CreateSessionInput = z.infer<typeof createSessionSchema>
+ import { Button, Form, Input, Modal, Select } from 'antd'
+-import { useEffect, useMemo, useState } from 'react'
++import { useEffect, useMemo, useRef, useState } from 'react'
+ 
+ import type { ExtraAssignmentTemplate } from '@/entities/extra-assignment'
++import {
++	clearExtraAssignmentDraft,
++	readExtraAssignmentDraft,
++	writeExtraAssignmentDraft,
++} from '@/features/extra-assignments/lib/extra-assignment-draft'
+ import { StepEditor } from '@/features/program-admin/ui/editor/StepEditor'
++import { useDebounce } from '@/shared/lib/use-debounce'
+ import type { StepContent } from '@/shared/lib/validations/step'
+ 
+ export type ProgramLevelWithSteps = {
+@@ -17,6 +23,7 @@ export type ProgramLevelWithSteps = {
+ type ExtraAssignmentFormModalProps = {
+ 	open: boolean
+ 	assignment: ExtraAssignmentTemplate | null
++	subjectId: string
+ 	programLevels: ProgramLevelWithSteps[]
+ 	currentUserId?: string
+ 	loading?: boolean
+@@ -29,9 +36,12 @@ type ExtraAssignmentFormModalProps = {
+ 	onDelete?: () => void
+ }
+ 
++const EMPTY_CONTENT: StepContent = { blocks: [{ type: 'text', value: '' }] }
++
+ export function ExtraAssignmentFormModal({
+ 	open,
+ 	assignment,
++	subjectId,
+ 	programLevels,
+ 	currentUserId,
+ 	loading,
+@@ -42,24 +52,78 @@ export function ExtraAssignmentFormModal({
+ 	const [title, setTitle] = useState('')
+ 	const [stepId, setStepId] = useState<string | null>(null)
+ 	const [levelId, setLevelId] = useState<string | undefined>()
+-	const [content, setContent] = useState<StepContent>({
+-		blocks: [{ type: 'text', value: '' }],
+-	})
++	const [content, setContent] = useState<StepContent>(EMPTY_CONTENT)
++	const [editorKey, setEditorKey] = useState('new')
++	const skipNextDraftWrite = useRef(false)
++
++	const isCreate = !assignment
+ 
+ 	useEffect(() => {
+ 		if (!open) return
++
+ 		if (assignment) {
++			skipNextDraftWrite.current = true
+ 			setTitle(assignment.title)
+ 			setStepId(assignment.stepId)
+ 			setLevelId(assignment.step?.levelId)
+ 			setContent(assignment.content)
++			setEditorKey(assignment.id)
++			return
++		}
++
++		const draft =
++			currentUserId && subjectId
++				? readExtraAssignmentDraft(currentUserId, subjectId)
++				: null
++
++		skipNextDraftWrite.current = true
++		if (draft) {
++			setTitle(draft.title)
++			setStepId(draft.stepId)
++			setLevelId(draft.levelId)
++			setContent(draft.content)
++			setEditorKey(
++				`draft-${subjectId}-${draft.title.length}-${draft.content.blocks.length}`,
++			)
+ 		} else {
+ 			setTitle('')
+ 			setStepId(null)
+ 			setLevelId(undefined)
+-			setContent({ blocks: [{ type: 'text', value: '' }] })
++			setContent(EMPTY_CONTENT)
++			setEditorKey(`new-${subjectId}`)
++		}
++	}, [open, assignment, currentUserId, subjectId])
++
++	const draftSnapshot = useMemo(
++		() => ({ title, levelId, stepId, content }),
++		[title, levelId, stepId, content],
++	)
++	const debouncedDraft = useDebounce(draftSnapshot, 300)
++
++	useEffect(() => {
++		if (!open || !isCreate || !currentUserId || !subjectId) return
++		if (skipNextDraftWrite.current) {
++			skipNextDraftWrite.current = false
++			return
++		}
++		writeExtraAssignmentDraft(currentUserId, subjectId, {
++			title: debouncedDraft.title,
++			levelId: debouncedDraft.levelId,
++			stepId: debouncedDraft.stepId,
++			content: debouncedDraft.content,
++		})
++	}, [open, isCreate, currentUserId, subjectId, debouncedDraft])
++
++	const handleDismissKeepDraft = () => {
++		onCancel()
++	}
++
++	const handleCancelClearDraft = () => {
++		if (isCreate && currentUserId && subjectId) {
++			clearExtraAssignmentDraft(currentUserId, subjectId)
+ 		}
+-	}, [open, assignment])
++		onCancel()
++	}
+ 
+ 	const levelOptions = programLevels.map((level) => ({
+ 		value: level.id,
+@@ -85,7 +149,8 @@ export function ExtraAssignmentFormModal({
+ 		<Modal
+ 			title={assignment ? '╨а╨╡╨┤╨░╨║╤В╨╕╤А╨╛╨▓╨░╤В╤М ╨╖╨░╨┤╨░╨╜╨╕╨╡' : '╨б╨╛╨╖╨┤╨░╤В╤М ╨╖╨░╨┤╨░╨╜╨╕╨╡'}
+ 			open={open}
+-			onCancel={onCancel}
++			onCancel={handleDismissKeepDraft}
++			maskClosable={false}
+ 			footer={
+ 				<div className="flex justify-between gap-2">
+ 					<div>
+@@ -96,7 +161,7 @@ export function ExtraAssignmentFormModal({
+ 						) : null}
+ 					</div>
+ 					<div className="flex gap-2">
+-						<Button onClick={onCancel}>╨Ю╤В╨╝╨╡╨╜╨░</Button>
++						<Button onClick={handleCancelClearDraft}>╨Ю╤В╨╝╨╡╨╜╨░</Button>
+ 						<Button
+ 							type="primary"
+ 							loading={loading}
+@@ -140,8 +205,8 @@ export function ExtraAssignmentFormModal({
+ 				</div>
+ 				<Form.Item label="╨б╨╛╨┤╨╡╤А╨╢╨░╨╜╨╕╨╡">
+ 					<StepEditor
+-						key={assignment?.id ?? 'new'}
+-						initialContent={assignment?.content}
++						key={editorKey}
++						initialContent={content}
+ 						onChange={setContent}
+ 					/>
+ 				</Form.Item>
 
---- NEW FILE: prisma/migrations/20260730193040_session_absence_excused/migration.sql ---
-
-ALTER TABLE "Session" ADD COLUMN "absenceExcused" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "Session" ADD COLUMN "absenceReason" TEXT;
-
-
---- NEW FILE: e2e/excused-absence.spec.ts ---
-
-import { expect, test } from "@playwright/test";
-
-import { AUTH_STATE } from "./helpers/auth-state";
-import { clickRadioButton } from "./helpers/antd";
-import {
-  expectJournalUrlHasGroupId,
-  getJournalGroupIdFromUrl,
-  gotoJournal,
-  startLessonIfNeeded,
-} from "./helpers/journal";
-import { TEST_USERS } from "./helpers/codes";
-
-test.describe("РЈРІР°Р¶РёС‚РµР»СЊРЅС‹Р№ РїСЂРѕРїСѓСЃРє", () => {
-  test.use({ storageState: AUTH_STATE.teacher1 });
-
-  test("СЃРѕС…СЂР°РЅСЏРµС‚ Рё РїРѕРІС‚РѕСЂРЅРѕ Р·Р°РіСЂСѓР¶Р°РµС‚ РїСЂРёС‡РёРЅСѓ РїСЂРѕРїСѓСЃРєР°", async ({ page }) => {
-    const absenceReason = "Р‘РѕР»РµР·РЅСЊ";
-
-    await gotoJournal(page);
-    await expectJournalUrlHasGroupId(page);
-    await startLessonIfNeeded(page);
-
-    const groupId = await getJournalGroupIdFromUrl(page);
-    await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
-
-    await clickRadioButton(page, "РџСЂРѕРіСѓР»");
-    const excusedCheckbox = page.getByRole("checkbox", {
-      name: "РЈРІР°Р¶РёС‚РµР»СЊРЅР°СЏ РїСЂРёС‡РёРЅР°",
-    });
-    const absenceReasonField = page.getByPlaceholder(
-      "РџСЂРёС‡РёРЅР° РїСЂРѕРїСѓСЃРєР° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)",
-    );
-
-    await excusedCheckbox.check();
-    await absenceReasonField.fill(absenceReason);
-    await page.getByRole("button", { name: "РЎРѕС…СЂР°РЅРёС‚СЊ СѓСЂРѕРє" }).click();
-
-    await expect(page).toHaveURL(
-      new RegExp(`/journal\\?date=\\d{4}-\\d{2}-\\d{2}&groupId=${groupId}`),
-    );
-    await expect(page.getByText("РЈСЂРѕРє СЃРѕС…СЂР°РЅС‘РЅ")).toBeVisible();
-
-    await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
-    await expect(page.getByRole("radio", { name: "РџСЂРѕРіСѓР»" })).toBeChecked();
-    await expect(excusedCheckbox).toBeChecked();
-    await expect(absenceReasonField).toHaveValue(absenceReason);
-  });
-});
+## Docs (untracked summary only — optional)
 

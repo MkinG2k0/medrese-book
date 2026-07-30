@@ -1,82 +1,116 @@
-# Task 1 Report: Prisma — поля на Session
+# Task 1 Report: Storage-хелпер черновика
 
-**Status:** DONE_WITH_CONCERNS  
+**Branch:** `feat/extra-assignment-create-draft`  
 **Date:** 2026-07-30  
-**Branch:** feat/excused-absence-reason  
-**Commits:** none (per plan constraints)
+**Status:** DONE
 
-## Summary
+## Scope
 
-Добавлены поля `absenceExcused` и `absenceReason` в модель `Session`, создана безопасная миграция (только `ADD COLUMN`), выполнены `prisma generate` и `prisma validate`.
+Добавлены localStorage-хелперы для черновика формы создания допзадания. UI не затронут (Task 2).
 
-## Changes
+### Files created
 
-### 1. `prisma/schema.prisma` — model Session
+| File | Purpose |
+|------|---------|
+| `src/features/extra-assignments/lib/extra-assignment-draft.ts` | Тип, ключ, read/write/clear |
+| `src/features/extra-assignments/lib/extra-assignment-draft.test.ts` | Vitest unit-тесты (8 кейсов) |
 
-После `note` добавлены поля (как в брифе):
+## TDD Evidence
 
-```prisma
-  note             String?
-  absenceExcused   Boolean          @default(false)
-  absenceReason    String?
-  isAdjustment     Boolean          @default(false)
+### RED — Step 2 (failing test before implementation)
+
+**Command:**
+```bash
+pnpm exec vitest run src/features/extra-assignments/lib/extra-assignment-draft.test.ts
 ```
 
-**Produces:**
-- `Session.absenceExcused: boolean` (default `false`)
-- `Session.absenceReason: string | null`
+**Output:**
+```
+ RUN  v4.1.9 D:/Project/Main/medrese-book
 
-### 2. Migration
+ ❯ src/features/extra-assignments/lib/extra-assignment-draft.test.ts (0 test)
 
-**Path:** `prisma/migrations/20260730193040_session_absence_excused/migration.sql`
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
 
-**SQL (verbatim from brief):**
+ FAIL  src/features/extra-assignments/lib/extra-assignment-draft.test.ts
+Error: Cannot find package '@/features/extra-assignments/lib/extra-assignment-draft' imported from ...
 
-```sql
-ALTER TABLE "Session" ADD COLUMN "absenceExcused" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "Session" ADD COLUMN "absenceReason" TEXT;
+ Test Files  1 failed (1)
+      Tests  no tests
 ```
 
-Операции: только `ADD COLUMN` — без `DROP`/`DELETE`.
+**Result:** FAIL — module not found (expected).
 
-### 3. Generated client
+### GREEN — Step 4 (after implementation)
 
-`pnpm exec prisma generate` — успех.  
-Клиент в `generated/prisma/models/Session.ts` содержит `absenceExcused: boolean` и `absenceReason: string | null`.
+**Command:**
+```bash
+pnpm exec vitest run src/features/extra-assignments/lib/extra-assignment-draft.test.ts
+```
 
-## Commands run
+**Output:**
+```
+ RUN  v4.1.9 D:/Project/Main/medrese-book
 
-| Command | Result |
-|---------|--------|
-| `pnpm db:migrate -- --name session_absence_excused` | Прерван: `DATABASE_URL` → remote `138.16.154.52:5432`, зависание >2 мин |
-| `pnpm db:migrate -- --create-only --name session_absence_excused` | Прерван по той же причине; миграция `20260730193040` уже создана первым процессом |
-| `pnpm exec prisma generate` | ✔ Generated Prisma Client (7.8.0) |
-| `pnpm exec prisma validate` | ✔ The schema at prisma\schema.prisma is valid |
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Duration  233ms
+```
 
-## Self-review
+**Result:** PASS — all 8 tests green.
 
-- [x] Поля добавлены в schema после `note`, до `isAdjustment`
-- [x] `absenceExcused` с `@default(false)` → NOT NULL DEFAULT false в SQL
-- [x] `absenceReason` nullable → TEXT без NOT NULL
-- [x] Migration SQL — только ADD COLUMN
-- [x] Удалена пустая дублирующая миграция `20260730193223_session_absence_excused` (артефакт прерванного create-only)
-- [x] Коммит не создан
-- [ ] Миграция **не применена** к БД (remote DATABASE_URL; migrate dev небезопасен)
+## Implementation Summary
+
+### Exports
+
+- `ExtraAssignmentCreateDraft` — `{ title, levelId?, stepId, content: StepContent }`
+- `draftStorageKey(userId, subjectId)` → `extra-assignment-draft:{userId}:{subjectId}`
+- `readExtraAssignmentDraft(userId, subjectId)` — parse + validate via `stepContentSchema`, null on error/SSR
+- `writeExtraAssignmentDraft(userId, subjectId, draft)` — JSON.stringify to localStorage
+- `clearExtraAssignmentDraft(userId, subjectId)` — removeItem
+
+### Validation (`isDraft`)
+
+- `title` — string (required)
+- `levelId` — optional string
+- `stepId` — `string | null`
+- `content` — validated through `stepContentSchema.safeParse`
+
+### Pattern alignment
+
+Следует `src/features/journal/lib/journal-storage.ts`:
+
+- SSR guard: `typeof window === 'undefined'`
+- Empty id guard: `!userId || !subjectId`
+- try/catch around localStorage with silent fallback
+- Vitest mock: `createLocalStorageMock()` + `vi.stubGlobal('localStorage', …)` + `vi.stubGlobal('window', {})`
+
+## Test Coverage (8 cases)
+
+1. Storage key format
+2. Round-trip read/write
+3. Missing key → null
+4. Subject isolation (u1:s1 vs u1:s2)
+5. clear removes draft
+6. Invalid JSON → null
+7. Invalid shape (title: number, content: null) → null
+8. SSR (no window) → null
+
+## Self-Review
+
+| Check | Verdict |
+|-------|---------|
+| Matches brief API exactly | ✅ |
+| Uses `StepContent` / `stepContentSchema` from shared validations | ✅ |
+| No UI files modified | ✅ |
+| No commit (per global constraints) | ✅ — files unstaged |
+| ESLint on new files | ✅ — no linter errors |
+| Follows journal-storage conventions | ✅ |
 
 ## Concerns
 
-1. **DATABASE_URL указывает на удалённый Postgres** (`138.16.154.52:5432`), не локальный docker. По `.cursor/rules/prisma-migrations.mdc` использован `--create-only` (фактически — create-only через прерванный migrate dev + ручная правка SQL).
-2. **Миграция не задеплоена.** На test/staging/prod нужно: `pnpm db:migrate:deploy` после merge.
-3. Существующие строки `Session` получат `absenceExcused = false`, `absenceReason = NULL` — ожидаемое поведение.
+None.
 
-## Files touched
+## Commits
 
-| File | Action |
-|------|--------|
-| `prisma/schema.prisma` | Modified |
-| `prisma/migrations/20260730193040_session_absence_excused/migration.sql` | Created |
-| `generated/prisma/**` | Regenerated (gitignored) |
-
-## Next steps (for later tasks)
-
-- Task 2+: Zod validation, API, journal UI — могут использовать новые поля после `db:migrate:deploy`.
+None — per instructions (user did not request commit).
