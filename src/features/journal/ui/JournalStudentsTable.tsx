@@ -61,8 +61,8 @@ function GradesCell({ grades }: { grades: number[] }) {
 
   return (
     <span className="inline-flex items-center gap-2">
-      {grades.join(", ")}
       {avgTag}
+      {grades.join(", ")}
     </span>
   );
 }
