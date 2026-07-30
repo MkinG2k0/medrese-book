@@ -47,10 +47,24 @@ function AttendanceCell({
   return <Tag color={color}>{label}</Tag>;
 }
 
-function formatTodayGrades(grades: number[]): string {
+function formatAvgLabel(grades: number[]): string {
   const avg = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
-  const avgLabel = Number.isInteger(avg) ? String(avg) : avg.toFixed(1);
-  return `${grades.join(", ")} (ср. ${avgLabel})`;
+  return Number.isInteger(avg) ? String(avg) : avg.toFixed(1);
+}
+
+function GradesCell({ grades }: { grades: number[] }) {
+  const avgTag = <Tag>{formatAvgLabel(grades)}</Tag>;
+
+  if (grades.length === 1) {
+    return avgTag;
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      {grades.join(", ")}
+      {avgTag}
+    </span>
+  );
 }
 
 function StudentNameCell({
@@ -214,9 +228,11 @@ export function JournalStudentsTable({
             key: "grades",
             responsive: ["md" as const],
             render: (_, record) =>
-              record.todayGrades?.length
-                ? formatTodayGrades(record.todayGrades)
-                : "—",
+              record.todayGrades?.length ? (
+                <GradesCell grades={record.todayGrades} />
+              ) : (
+                "—"
+              ),
           },
         ]}
       />
