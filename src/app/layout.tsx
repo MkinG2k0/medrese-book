@@ -1,8 +1,10 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Amiri, Cormorant_Garamond, Mulish } from "next/font/google";
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 
 import { Providers } from "@/shared/providers";
+import { APP_THEME_COOKIE, resolveAppTheme } from "@/shared/lib/app-theme";
 import { SITE_NAME } from "@/shared/lib/site";
 
 import "./globals.css";
@@ -52,20 +54,25 @@ export const viewport: Viewport = {
   themeColor: "#0D1117",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const initialTheme = resolveAppTheme(
+    cookieStore.get(APP_THEME_COOKIE)?.value,
+  );
+
   return (
     <html
       lang="ru"
-      className={`${mulish.variable} ${cormorant.variable} ${amiri.variable} h-full`}
+      className={`${mulish.variable} ${cormorant.variable} ${amiri.variable} ${initialTheme} h-full`}
       suppressHydrationWarning
     >
       <body className="font-body h-full min-h-screen bg-background text-foreground antialiased">
         <AntdRegistry>
-          <Providers>{children}</Providers>
+          <Providers initialTheme={initialTheme}>{children}</Providers>
         </AntdRegistry>
       </body>
     </html>

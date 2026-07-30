@@ -4,6 +4,8 @@ import { Button } from "antd";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+import { persistAppThemeCookie } from "@/shared/lib/app-theme";
+
 import { APP_THEME_OPTIONS, type AppTheme } from "../lib/constants";
 
 export function ThemePicker() {
@@ -43,7 +45,11 @@ export function ThemePicker() {
             key={opt.id}
             type={selected ? "primary" : "default"}
             aria-pressed={selected}
-            onClick={() => setTheme(opt.id as AppTheme)}
+            onClick={() => {
+              const next = opt.id as AppTheme;
+              setTheme(next);
+              persistAppThemeCookie(next);
+            }}
           >
             {opt.label}
           </Button>

@@ -20,7 +20,7 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
 							return (
 								<div
 									key={index}
-									className="text-[#E8E0D0] [&_h1]:font-display [&_h1]:text-3xl [&_h2]:font-display [&_h2]:text-2xl [&_h3]:text-xl [&_strong]:font-bold [&_em]:italic"
+									className="text-foreground [&_h1]:font-display [&_h1]:text-3xl [&_h2]:font-display [&_h2]:text-2xl [&_h3]:text-xl [&_strong]:font-bold [&_em]:italic"
 									dangerouslySetInnerHTML={{ __html: block.value }}
 								/>
 							)
@@ -28,7 +28,7 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
 						return (
 							<p
 								key={index}
-								className="text-[#E8E0D0] [&_strong]:font-bold [&_em]:italic"
+								className="text-foreground [&_strong]:font-bold [&_em]:italic"
 								dangerouslySetInnerHTML={{ __html: block.value }}
 							/>
 						)
@@ -54,13 +54,15 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
 									className="rounded-lg"
 								/>
 								{block.caption && (
-									<figcaption className="text-sm text-[#8a8375]">{block.caption}</figcaption>
+									<figcaption className="text-sm text-muted-foreground">
+										{block.caption}
+									</figcaption>
 								)}
 							</figure>
 						)
 					case 'list':
 						return (
-							<ul key={index} className="list-disc pl-6 text-[#E8E0D0]">
+							<ul key={index} className="list-disc pl-6 text-foreground">
 								{block.items.map((item, i) => (
 									<li key={i}>{item}</li>
 								))}

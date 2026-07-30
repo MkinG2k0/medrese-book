@@ -3,31 +3,29 @@
 import { ConfigProvider, App } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 import { getAntdThemeConfig } from "@/shared/lib/antd-theme";
 import {
-  DEFAULT_APP_THEME,
-  isAppTheme,
+  persistAppThemeCookie,
+  resolveAppTheme,
   type AppTheme,
 } from "@/shared/lib/app-theme";
 
-function resolveTheme(value: string | undefined): AppTheme {
-  if (isAppTheme(value)) return value;
-  return DEFAULT_APP_THEME;
-}
+type AntdProviderProps = {
+  children: React.ReactNode;
+  initialTheme: AppTheme;
+};
 
-export function AntdProvider({ children }: { children: React.ReactNode }) {
+export function AntdProvider({ children, initialTheme }: AntdProviderProps) {
   const { theme: nextTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [themeId, setThemeId] = useState<AppTheme>(initialTheme);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const themeId = mounted
-    ? resolveTheme(resolvedTheme ?? nextTheme)
-    : DEFAULT_APP_THEME;
+  useLayoutEffect(() => {
+    const next = resolveAppTheme(resolvedTheme ?? nextTheme ?? initialTheme);
+    setThemeId(next);
+    persistAppThemeCookie(next);
+  }, [resolvedTheme, nextTheme, initialTheme]);
 
   return (
     <ConfigProvider locale={ruRU} theme={getAntdThemeConfig(themeId)}>

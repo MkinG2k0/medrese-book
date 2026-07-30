@@ -2,16 +2,28 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 
-import { APP_THEME_IDS, DEFAULT_APP_THEME } from "@/shared/lib/app-theme"
+import {
+  APP_THEME_COOKIE,
+  APP_THEME_IDS,
+  type AppTheme,
+} from "@/shared/lib/app-theme"
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+type ThemeProviderProps = {
+  children: React.ReactNode
+  initialTheme: AppTheme
+}
+
+export const ThemeProvider = ({
+  children,
+  initialTheme,
+}: ThemeProviderProps) => {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme={DEFAULT_APP_THEME}
+      defaultTheme={initialTheme}
       enableSystem={false}
       themes={[...APP_THEME_IDS]}
-      storageKey="app-theme"
+      storageKey={APP_THEME_COOKIE}
       disableTransitionOnChange
     >
       {children}
