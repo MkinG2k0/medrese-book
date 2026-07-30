@@ -1,0 +1,51 @@
+﻿Task 8
+
+import { expect, test } from "@playwright/test";
+
+import { AUTH_STATE } from "./helpers/auth-state";
+import { clickRadioButton } from "./helpers/antd";
+import {
+  expectJournalUrlHasGroupId,
+  getJournalGroupIdFromUrl,
+  gotoJournal,
+  startLessonIfNeeded,
+} from "./helpers/journal";
+import { TEST_USERS } from "./helpers/codes";
+
+test.describe("РЈРІР°Р¶РёС‚РµР»СЊРЅС‹Р№ РїСЂРѕРїСѓСЃРє", () => {
+  test.use({ storageState: AUTH_STATE.teacher1 });
+
+  test("СЃРѕС…СЂР°РЅСЏРµС‚ Рё РїРѕРІС‚РѕСЂРЅРѕ Р·Р°РіСЂСѓР¶Р°РµС‚ РїСЂРёС‡РёРЅСѓ РїСЂРѕРїСѓСЃРєР°", async ({ page }) => {
+    const absenceReason = "Р‘РѕР»РµР·РЅСЊ";
+
+    await gotoJournal(page);
+    await expectJournalUrlHasGroupId(page);
+    await startLessonIfNeeded(page);
+
+    const groupId = await getJournalGroupIdFromUrl(page);
+    await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
+
+    await clickRadioButton(page, "РџСЂРѕРіСѓР»");
+    const excusedCheckbox = page.getByRole("checkbox", {
+      name: "РЈРІР°Р¶РёС‚РµР»СЊРЅР°СЏ РїСЂРёС‡РёРЅР°",
+    });
+    const absenceReasonField = page.getByPlaceholder(
+      "РџСЂРёС‡РёРЅР° РїСЂРѕРїСѓСЃРєР° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)",
+    );
+
+    await excusedCheckbox.check();
+    await absenceReasonField.fill(absenceReason);
+    await page.getByRole("button", { name: "РЎРѕС…СЂР°РЅРёС‚СЊ СѓСЂРѕРє" }).click();
+
+    await expect(page).toHaveURL(
+      new RegExp(`/journal\\?date=\\d{4}-\\d{2}-\\d{2}&groupId=${groupId}`),
+    );
+    await expect(page.getByText("РЈСЂРѕРє СЃРѕС…СЂР°РЅС‘РЅ")).toBeVisible();
+
+    await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
+    await expect(page.getByRole("radio", { name: "РџСЂРѕРіСѓР»" })).toBeChecked();
+    await expect(excusedCheckbox).toBeChecked();
+    await expect(absenceReasonField).toHaveValue(absenceReason);
+  });
+});
+

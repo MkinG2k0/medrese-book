@@ -1,0 +1,88 @@
+﻿Task 5
+
+diff --git a/src/app/api/sessions/route.ts b/src/app/api/sessions/route.ts
+index f3102bb..d39fb89 100644
+--- a/src/app/api/sessions/route.ts
++++ b/src/app/api/sessions/route.ts
+@@ -23,8 +23,17 @@ export async function POST(request: Request) {
+   const parsed = createSessionSchema.safeParse(body);
+   if (!parsed.success) return error(parsed.error.message);
+ 
+-  const { studentId, groupId, date, attendance, lateMinutes, note, completions } =
+-    parsed.data;
++  const {
++    studentId,
++    groupId,
++    date,
++    attendance,
++    lateMinutes,
++    note,
++    absenceExcused,
++    absenceReason,
++    completions,
++  } = parsed.data;
+ 
+   const authResult = await authorizeApiRequest({
+     allowedRoles: ["TEACHER"],
+@@ -58,6 +67,8 @@ export async function POST(request: Request) {
+     attendance,
+     lateMinutes: attendance === "LATE" ? lateMinutes : null,
+     note,
++    absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
++    absenceReason: attendance === "ABSENT" ? absenceReason : null,
+   };
+ 
+   const savedSession = await prisma.$transaction(async (tx) => {
+diff --git a/src/entities/session/api/use-sessions.ts b/src/entities/session/api/use-sessions.ts
+index 747cf03..c9ffd73 100644
+--- a/src/entities/session/api/use-sessions.ts
++++ b/src/entities/session/api/use-sessions.ts
+@@ -11,6 +11,8 @@ type CreateSessionPayload = {
+ 	attendance: Attendance
+ 	lateMinutes?: number | null
+ 	note?: string | null
++	absenceExcused?: boolean
++	absenceReason?: string | null
+ 	completions: { stepId: string; grade: number; note?: string | null }[]
+ }
+ 
+@@ -21,6 +23,8 @@ export type StudentSession = {
+ 	attendance: Attendance
+ 	lateMinutes: number | null
+ 	note: string | null
++	absenceExcused: boolean
++	absenceReason: string | null
+ 	completions: {
+ 		stepId: string
+ 		grade: number
+diff --git a/src/features/journal/lib/get-student-session.ts b/src/features/journal/lib/get-student-session.ts
+index ef4af44..39fc1a1 100644
+--- a/src/features/journal/lib/get-student-session.ts
++++ b/src/features/journal/lib/get-student-session.ts
+@@ -12,6 +12,8 @@ export type DaySessionRecord = {
+ 	attendance: Attendance
+ 	lateMinutes: number | null
+ 	note: string | null
++	absenceExcused: boolean
++	absenceReason: string | null
+ 	completions: { stepId: string; grade: number; note: string | null }[]
+ }
+ 
+@@ -34,6 +36,8 @@ export async function findStudentSessionForDay(
+ 			attendance: true,
+ 			lateMinutes: true,
+ 			note: true,
++			absenceExcused: true,
++			absenceReason: true,
+ 			completions: {
+ 				select: { stepId: true, grade: true, note: true },
+ 			},
+@@ -55,6 +59,8 @@ export function serializeDaySession(session: DaySessionRecord) {
+ 		attendance: session.attendance,
+ 		lateMinutes: session.lateMinutes,
+ 		note: session.note,
++		absenceExcused: session.absenceExcused,
++		absenceReason: session.absenceReason,
+ 		completions: session.completions,
+ 	}
+ }

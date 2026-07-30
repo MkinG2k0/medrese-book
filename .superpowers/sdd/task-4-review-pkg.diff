@@ -1,0 +1,148 @@
+﻿Task 4 review
+
+diff --git a/src/shared/lib/analytics-queries/at-risk-students.test.ts b/src/shared/lib/analytics-queries/at-risk-students.test.ts
+index 4107032..8af7640 100644
+--- a/src/shared/lib/analytics-queries/at-risk-students.test.ts
++++ b/src/shared/lib/analytics-queries/at-risk-students.test.ts
+@@ -47,6 +47,7 @@ describe('getAtRiskStudents', () => {
+ 			levelTitle: '╨г╤А╨╛╨▓╨╡╨╜╤М 1',
+ 			riskFlags: ['ATTENDANCE'],
+ 			absencesInMonth: 2,
++			excusedAbsencesInMonth: 0,
+ 			timeNorm: { actualMinutes: 30, budgetMinutes: 60 },
+ 		})
+ 
+diff --git a/src/shared/lib/analytics-queries/at-risk-students.ts b/src/shared/lib/analytics-queries/at-risk-students.ts
+index 8cbe811..bf047d6 100644
+--- a/src/shared/lib/analytics-queries/at-risk-students.ts
++++ b/src/shared/lib/analytics-queries/at-risk-students.ts
+@@ -62,6 +62,7 @@ export async function getAtRiskStudents(
+ 			levelTitle: metrics.levelTitle,
+ 			riskFlags: metrics.riskFlags,
+ 			absencesInMonth: metrics.absencesInMonth,
++			excusedAbsencesInMonth: metrics.excusedAbsencesInMonth,
+ 			actualMinutes: metrics.timeNorm.actualMinutes,
+ 			budgetMinutes: metrics.timeNorm.budgetMinutes,
+ 		})
+diff --git a/src/shared/lib/analytics-queries/level-stats.ts b/src/shared/lib/analytics-queries/level-stats.ts
+index cf40149..5b0e8fd 100644
+--- a/src/shared/lib/analytics-queries/level-stats.ts
++++ b/src/shared/lib/analytics-queries/level-stats.ts
+@@ -10,6 +10,7 @@ import {
+ type SessionWithLateness = {
+ 	attendance: string
+ 	lateMinutes: number | null
++	absenceExcused: boolean
+ }
+ 
+ function sumLateMinutes(sessions: SessionWithLateness[]): number {
+@@ -102,7 +103,9 @@ export async function getLevelStats(
+ 			level: level.number,
+ 			label: String(level.number),
+ 			avgGrade: Math.round(avgGrade * 10) / 10,
+-			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
++			totalAbsences: allSessions.filter(
++				(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
++			).length,
+ 			totalLateMinutes,
+ 			totalHours: Math.round((totalStepHours - lateHours) * 10) / 10,
+ 		}
+diff --git a/src/shared/lib/analytics-queries/top-students.test.ts b/src/shared/lib/analytics-queries/top-students.test.ts
+index 8a44acc..8c40a9e 100644
+--- a/src/shared/lib/analytics-queries/top-students.test.ts
++++ b/src/shared/lib/analytics-queries/top-students.test.ts
+@@ -52,9 +52,9 @@ describe('getTopStudents', () => {
+ 					{ grade: 4 },
+ 				],
+ 				sessions: [
+-					{ attendance: 'PRESENT', lateMinutes: null },
+-					{ attendance: 'ABSENT', lateMinutes: null },
+-					{ attendance: 'LATE', lateMinutes: 10 },
++					{ attendance: 'PRESENT', lateMinutes: null, absenceExcused: false },
++					{ attendance: 'ABSENT', lateMinutes: null, absenceExcused: false },
++					{ attendance: 'LATE', lateMinutes: 10, absenceExcused: false },
+ 				],
+ 			},
+ 		])
+diff --git a/src/shared/lib/analytics-queries/top-students.ts b/src/shared/lib/analytics-queries/top-students.ts
+index 2ee2a92..88e8246 100644
+--- a/src/shared/lib/analytics-queries/top-students.ts
++++ b/src/shared/lib/analytics-queries/top-students.ts
+@@ -10,6 +10,7 @@ import {
+ type SessionWithLateness = {
+ 	attendance: string
+ 	lateMinutes: number | null
++	absenceExcused: boolean
+ }
+ 
+ function countAttendedSessions(sessions: { attendance: string }[]): number {
+@@ -94,7 +95,9 @@ export async function getTopStudents(
+ 				student: { id: student.id, name: student.user.name },
+ 				stepsCompleted: student.completions.length,
+ 				avgGrade: Math.round(avgGrade * 10) / 10,
+-				absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
++				absences: student.sessions.filter(
++					(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
++				).length,
+ 				lateMinutes: sumLateMinutes(student.sessions),
+ 				attendedSessions: countAttendedSessions(student.sessions),
+ 			}
+diff --git a/src/shared/lib/student-metrics/load-student-metrics.ts b/src/shared/lib/student-metrics/load-student-metrics.ts
+index c7e395f..106cd9a 100644
+--- a/src/shared/lib/student-metrics/load-student-metrics.ts
++++ b/src/shared/lib/student-metrics/load-student-metrics.ts
+@@ -12,6 +12,7 @@ import {
+ 
+ import {
+ 	countStudentAbsencesInMonth,
++	countStudentExcusedAbsencesInMonth,
+ 	evaluateAttendanceRisk,
+ } from './attendance-risk'
+ import {
+@@ -68,6 +69,7 @@ async function loadStudentRecord(studentId: string, scope: StudentMetricsScope)
+ 					date: true,
+ 					attendance: true,
+ 					isAdjustment: true,
++					absenceExcused: true,
+ 					groupId: true,
+ 				},
+ 			},
+@@ -168,6 +170,7 @@ export type StudentMetricsBundle = {
+ 	riskFlags: RiskFlag[]
+ 	timeNorm: TimeNormResult
+ 	absencesInMonth: number
++	excusedAbsencesInMonth: number
+ 	teacherName: string
+ 	levelTitle: string
+ }
+@@ -238,6 +241,10 @@ async function computeMetricsForEnrollment(
+ 		student.sessions,
+ 		monthRange,
+ 	)
++	const excusedAbsencesInMonth = countStudentExcusedAbsencesInMonth(
++		student.sessions,
++		monthRange,
++	)
+ 
+ 	const riskFlags = buildStudentRiskFlags({
+ 		studentId: student.id,
+@@ -254,6 +261,7 @@ async function computeMetricsForEnrollment(
+ 		riskFlags,
+ 		timeNorm,
+ 		absencesInMonth,
++		excusedAbsencesInMonth,
+ 		teacherName: enrollment.group.teacher.user.name,
+ 		levelTitle: enrollment.level.title,
+ 	}
+diff --git a/src/shared/lib/student-metrics/types.ts b/src/shared/lib/student-metrics/types.ts
+index 1e02ece..c185077 100644
+--- a/src/shared/lib/student-metrics/types.ts
++++ b/src/shared/lib/student-metrics/types.ts
+@@ -20,6 +20,7 @@ export type AtRiskStudentRow = {
+ 	levelTitle: string
+ 	riskFlags: RiskFlag[]
+ 	absencesInMonth: number
++	excusedAbsencesInMonth: number
+ 	actualMinutes: number
+ 	budgetMinutes: number
+ }

@@ -1,0 +1,191 @@
+﻿Review package Task 3
+
+diff --git a/src/shared/lib/student-metrics/attendance-risk.test.ts b/src/shared/lib/student-metrics/attendance-risk.test.ts
+index e076259..f52e76f 100644
+--- a/src/shared/lib/student-metrics/attendance-risk.test.ts
++++ b/src/shared/lib/student-metrics/attendance-risk.test.ts
+@@ -1,7 +1,11 @@
+ import { describe, expect, it } from 'vitest'
+ 
+ import { AT_RISK_CONFIG } from './at-risk-config'
+-import { evaluateAttendanceRisk } from './attendance-risk'
++import {
++	countStudentAbsencesInMonth,
++	countStudentExcusedAbsencesInMonth,
++	evaluateAttendanceRisk,
++} from './attendance-risk'
+ 
+ describe('evaluateAttendanceRisk', () => {
+ 	const monthRange = {
+@@ -117,4 +121,93 @@ describe('evaluateAttendanceRisk', () => {
+ 
+ 		expect(result).toBe(false)
+ 	})
++
++	it('╨╜╨╡ ╤Б╤З╨╕╤В╨░╨╡╤В ╤Г╨▓╨░╨╢╨╕╤В╨╡╨╗╤М╨╜╤Л╨╡ ╨┐╤А╨╛╨┐╤Г╤Б╨║╨╕ ╨▓ ╨┐╨╛╤А╨╛╨│╨╡ ╤А╨╕╤Б╨║╨░', () => {
++		const result = evaluateAttendanceRisk({
++			sessions: [
++				{
++					date: new Date('2026-01-01T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: true,
++				},
++				{
++					date: new Date('2026-01-05T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: true,
++				},
++				{
++					date: new Date('2026-01-10T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: true,
++				},
++			],
++			monthRange,
++			config: AT_RISK_CONFIG,
++		})
++
++		expect(result).toBe(false)
++	})
++
++	it('╨┐╤А╨╡╤А╤Л╨▓╨░╨╡╤В streak ╤Г╨▓╨░╨╢╨╕╤В╨╡╨╗╤М╨╜╤Л╨╝ ╨┐╤А╨╛╨┐╤Г╤Б╨║╨╛╨╝', () => {
++		const result = evaluateAttendanceRisk({
++			sessions: [
++				{
++					date: new Date('2026-01-01T10:00:00.000Z'),
++					attendance: 'PRESENT',
++					isAdjustment: false,
++				},
++				{
++					date: new Date('2026-01-02T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: true,
++				},
++				{
++					date: new Date('2026-01-03T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: false,
++				},
++				{
++					date: new Date('2026-01-04T10:00:00.000Z'),
++					attendance: 'ABSENT',
++					isAdjustment: false,
++					absenceExcused: false,
++				},
++			],
++			monthRange,
++			config: AT_RISK_CONFIG,
++		})
++
++		expect(result).toBe(false)
++	})
++
++	it('╤А╨░╨╖╨┤╨╡╨╗╤П╨╡╤В ╤Б╤З╤С╤В╤З╨╕╨║╨╕ ╨╜╨╡╤Г╨▓╨░╨╢. ╨╕ ╤Г╨▓╨░╨╢.', () => {
++		const sessions = [
++			{
++				date: new Date('2026-01-01T10:00:00.000Z'),
++				attendance: 'ABSENT',
++				isAdjustment: false,
++				absenceExcused: false,
++			},
++			{
++				date: new Date('2026-01-02T10:00:00.000Z'),
++				attendance: 'ABSENT',
++				isAdjustment: false,
++				absenceExcused: true,
++			},
++			{
++				date: new Date('2026-01-03T10:00:00.000Z'),
++				attendance: 'ABSENT',
++				isAdjustment: false,
++				absenceExcused: true,
++			},
++		]
++
++		expect(countStudentAbsencesInMonth(sessions, monthRange)).toBe(1)
++		expect(countStudentExcusedAbsencesInMonth(sessions, monthRange)).toBe(2)
++	})
+ })
+diff --git a/src/shared/lib/student-metrics/attendance-risk.ts b/src/shared/lib/student-metrics/attendance-risk.ts
+index fba7dc5..80ff824 100644
+--- a/src/shared/lib/student-metrics/attendance-risk.ts
++++ b/src/shared/lib/student-metrics/attendance-risk.ts
+@@ -6,6 +6,7 @@ type SessionInput = {
+ 	date: Date
+ 	attendance: string
+ 	isAdjustment: boolean
++	absenceExcused?: boolean
+ }
+ 
+ export type EvaluateAttendanceRiskInput = {
+@@ -21,10 +22,19 @@ function isInDateRange(date: Date, range: { gte: Date; lte: Date }): boolean {
+ 	return date >= range.gte && date <= range.lte
+ }
+ 
+-function isCountableAbsentSession(session: SessionInput): boolean {
++function isUnexcusedAbsent(session: SessionInput): boolean {
+ 	return (
+ 		session.isAdjustment === countableSessionWhere.isAdjustment &&
+-		session.attendance === 'ABSENT'
++		session.attendance === 'ABSENT' &&
++		!session.absenceExcused
++	)
++}
++
++function isExcusedAbsent(session: SessionInput): boolean {
++	return (
++		session.isAdjustment === countableSessionWhere.isAdjustment &&
++		session.attendance === 'ABSENT' &&
++		Boolean(session.absenceExcused)
+ 	)
+ }
+ 
+@@ -34,7 +44,7 @@ function countAbsencesInMonth(
+ ): number {
+ 	return sessions.filter(
+ 		(session) =>
+-			isCountableAbsentSession(session) &&
++			isUnexcusedAbsent(session) &&
+ 			isInDateRange(session.date, monthRange),
+ 	).length
+ }
+@@ -51,7 +61,7 @@ function maxConsecutiveAbsences(sessions: SessionInput[]): number {
+ 	let currentStreak = 0
+ 
+ 	for (const session of sortedCountableSessions) {
+-		if (session.attendance === 'ABSENT') {
++		if (isUnexcusedAbsent(session)) {
+ 			currentStreak += 1
+ 			maxStreak = Math.max(maxStreak, currentStreak)
+ 			continue
+@@ -85,3 +95,13 @@ export function countStudentAbsencesInMonth(
+ ): number {
+ 	return countAbsencesInMonth(sessions, monthRange)
+ }
++
++export function countStudentExcusedAbsencesInMonth(
++	sessions: SessionInput[],
++	monthRange: { gte: Date; lte: Date },
++): number {
++	return sessions.filter(
++		(session) =>
++			isExcusedAbsent(session) && isInDateRange(session.date, monthRange),
++	).length
++}
+diff --git a/src/shared/lib/student-metrics/index.ts b/src/shared/lib/student-metrics/index.ts
+index 88bca28..3eacc10 100644
+--- a/src/shared/lib/student-metrics/index.ts
++++ b/src/shared/lib/student-metrics/index.ts
+@@ -1,6 +1,7 @@
+ export { AT_RISK_CONFIG, type AtRiskConfig } from './at-risk-config'
+ export {
+ 	countStudentAbsencesInMonth,
++	countStudentExcusedAbsencesInMonth,
+ 	evaluateAttendanceRisk,
+ 	type EvaluateAttendanceRiskInput,
+ } from './attendance-risk'

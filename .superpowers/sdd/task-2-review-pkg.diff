@@ -1,0 +1,125 @@
+﻿# Review package Task 2
+Base: WORKING_TREE before task 2 conceptually (only session validation files)
+Head: WORKING_TREE
+
+## Diff
+diff --git a/src/shared/lib/validations/session.test.ts b/src/shared/lib/validations/session.test.ts
+index 5d4244d..a48abe3 100644
+--- a/src/shared/lib/validations/session.test.ts
++++ b/src/shared/lib/validations/session.test.ts
+@@ -32,4 +32,54 @@ describe('createSessionSchema', () => {
+ 			expect(result.data.groupId).toBe('group-1')
+ 		}
+ 	})
++
++	it('╨┐╤А╨╕╨╜╨╕╨╝╨░╨╡╤В ABSENT ╤Б absenceExcused ╨╕ absenceReason', () => {
++		const result = createSessionSchema.safeParse({
++			studentId: 'student-1',
++			groupId: 'group-1',
++			date: '2026-07-11',
++			attendance: 'ABSENT',
++			absenceExcused: true,
++			absenceReason: '╨С╨╛╨╗╨╡╨╖╨╜╤М',
++			completions: [],
++		})
++		expect(result.success).toBe(true)
++		if (result.success) {
++			expect(result.data.absenceExcused).toBe(true)
++			expect(result.data.absenceReason).toBe('╨С╨╛╨╗╨╡╨╖╨╜╤М')
++		}
++	})
++
++	it('╨┐╤А╨╕ PRESENT ╤Б╨▒╤А╨░╤Б╤Л╨▓╨░╨╡╤В absenceExcused ╨╕ absenceReason', () => {
++		const result = createSessionSchema.safeParse({
++			studentId: 'student-1',
++			groupId: 'group-1',
++			date: '2026-07-11',
++			attendance: 'PRESENT',
++			absenceExcused: true,
++			absenceReason: '╨╜╨╡ ╨┤╨╛╨╗╨╢╨╜╨╛ ╤Б╨╛╤Е╤А╨░╨╜╨╕╤В╤М╤Б╤П',
++			completions: [],
++		})
++		expect(result.success).toBe(true)
++		if (result.success) {
++			expect(result.data.absenceExcused).toBe(false)
++			expect(result.data.absenceReason).toBeNull()
++		}
++	})
++
++	it('╨┐╤Г╤Б╤В╤Г╤О ╨┐╤А╨╕╤З╨╕╨╜╤Г ╨╜╨╛╤А╨╝╨░╨╗╨╕╨╖╤Г╨╡╤В ╨▓ null', () => {
++		const result = createSessionSchema.safeParse({
++			studentId: 'student-1',
++			groupId: 'group-1',
++			date: '2026-07-11',
++			attendance: 'ABSENT',
++			absenceExcused: false,
++			absenceReason: '   ',
++			completions: [],
++		})
++		expect(result.success).toBe(true)
++		if (result.success) {
++			expect(result.data.absenceReason).toBeNull()
++		}
++	})
+ })
+diff --git a/src/shared/lib/validations/session.ts b/src/shared/lib/validations/session.ts
+index 34e2270..452bbef 100644
+--- a/src/shared/lib/validations/session.ts
++++ b/src/shared/lib/validations/session.ts
+@@ -1,21 +1,39 @@
+ import { z } from 'zod'
+ 
+-export const createSessionSchema = z.object({
+-	studentId: z.string(),
+-	groupId: z.string().min(1, 'groupId ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╨╡╨╜'),
+-	date: z.string().datetime().or(z.string().date()),
+-	attendance: z.enum(['PRESENT', 'LATE', 'ABSENT']),
+-	lateMinutes: z.number().int().min(0).optional().nullable(),
+-	note: z.string().optional().nullable(),
+-	completions: z
+-		.array(
+-			z.object({
+-				stepId: z.string(),
+-				grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
+-				note: z.string().optional().nullable(),
+-			}),
+-		)
+-		.default([]),
+-})
++export const createSessionSchema = z
++	.object({
++		studentId: z.string(),
++		groupId: z.string().min(1, 'groupId ╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╨╡╨╜'),
++		date: z.string().datetime().or(z.string().date()),
++		attendance: z.enum(['PRESENT', 'LATE', 'ABSENT']),
++		lateMinutes: z.number().int().min(0).optional().nullable(),
++		note: z.string().optional().nullable(),
++		absenceExcused: z.boolean().optional().default(false),
++		absenceReason: z.string().optional().nullable(),
++		completions: z
++			.array(
++				z.object({
++					stepId: z.string(),
++					grade: z.union([z.literal(3), z.literal(4), z.literal(5)]),
++					note: z.string().optional().nullable(),
++				}),
++			)
++			.default([]),
++	})
++	.transform((data) => {
++		if (data.attendance !== 'ABSENT') {
++			return {
++				...data,
++				absenceExcused: false,
++				absenceReason: null,
++			}
++		}
++		const reason = data.absenceReason?.trim() || null
++		return {
++			...data,
++			absenceExcused: data.absenceExcused ?? false,
++			absenceReason: reason,
++		}
++	})
+ 
+ export type CreateSessionInput = z.infer<typeof createSessionSchema>

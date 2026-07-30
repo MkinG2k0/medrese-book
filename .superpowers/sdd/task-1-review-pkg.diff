@@ -1,0 +1,36 @@
+﻿# Review package Task 1
+Base: dc52d526fdfa68c660a92f3a0dce0de54f281080
+Head: WORKING_TREE (no commits per plan constraints)
+
+## Changed files
+ M prisma/schema.prisma
+?? .superpowers/
+?? docs/superpowers/plans/
+?? docs/superpowers/specs/2026-07-30-excused-absence-reason-design.md
+?? prisma/migrations/20260730193040_session_absence_excused/
+
+## Diff
+
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 1af13d8..103e00c 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -222,8 +222,10 @@ model Session {
+   date          DateTime
+   attendance    Attendance
+   lateMinutes   Int?
+-  note          String?
+-  isAdjustment  Boolean          @default(false)
++  note             String?
++  absenceExcused   Boolean          @default(false)
++  absenceReason    String?
++  isAdjustment     Boolean          @default(false)
+   completions   StepCompletion[]
+   extraAssignments StudentExtraAssignment[]
+   createdAt     DateTime         @default(now())
+
+--- NEW FILE: prisma/migrations/20260730193040_session_absence_excused/migration.sql ---
+
+ALTER TABLE "Session" ADD COLUMN "absenceExcused" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Session" ADD COLUMN "absenceReason" TEXT;
+

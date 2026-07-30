@@ -44,7 +44,7 @@ function ConversationItems({
   }
 
   return (
-    <ul className="m-0 list-none divide-y divide-[#2a2622] overflow-y-auto p-0">
+    <ul className="m-0 list-none divide-y divide-border overflow-y-auto p-0">
       {items.map((item) => {
         const role = getRole?.(item) ?? null;
         const isSelected = selectedId === item.id;
@@ -53,8 +53,8 @@ function ConversationItems({
           <li key={item.id}>
             <button
               type="button"
-              className={`flex w-full cursor-pointer border-0 px-4 py-3 text-left transition-colors hover:bg-[#1e1b18] ${
-                isSelected ? "bg-[#1e1b18]" : "bg-transparent"
+              className={`flex w-full cursor-pointer border-0 bg-transparent px-4 py-3 text-left transition-colors hover:bg-muted ${
+                isSelected ? "bg-muted" : ""
               }`}
               onClick={() => onSelect(item.id)}
             >
@@ -116,8 +116,8 @@ export function ConversationList({
   const hasAny = mine.length > 0 || teacherChats.length > 0;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col border-r border-[#2a2622]">
-      <div className="border-b border-[#2a2622] p-4">
+    <div className="flex h-full min-h-0 w-full flex-col border-r border-border">
+      <div className="border-b border-border p-4">
         <Text strong className="mb-3 block">
           Сообщения
         </Text>
@@ -150,7 +150,7 @@ export function ConversationList({
         </div>
       ) : !hasAny ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-          <MessageOutlined className="text-2xl text-[#8a8375]" />
+          <MessageOutlined className="text-2xl text-muted-foreground" />
           <Text type="secondary">Нет диалогов. Начните новый чат.</Text>
         </div>
       ) : (

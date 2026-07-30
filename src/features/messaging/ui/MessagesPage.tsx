@@ -56,7 +56,7 @@ export function MessagesPage() {
   const showChat = !isMobile || !!selectedId;
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-[#2a2622] bg-[#161412]">
+    <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card">
       {showList && (
         <div
           className={`flex h-full min-h-0 shrink-0 ${isMobile ? "w-full" : "md:w-[20rem]"}`}
