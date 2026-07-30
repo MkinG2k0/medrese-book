@@ -47,6 +47,12 @@ function AttendanceCell({
   return <Tag color={color}>{label}</Tag>;
 }
 
+function formatTodayGrades(grades: number[]): string {
+  const avg = grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
+  const avgLabel = Number.isInteger(avg) ? String(avg) : avg.toFixed(1);
+  return `${grades.join(", ")} (ср. ${avgLabel})`;
+}
+
 function StudentNameCell({
   name,
   status,
@@ -209,7 +215,7 @@ export function JournalStudentsTable({
             responsive: ["md" as const],
             render: (_, record) =>
               record.todayGrades?.length
-                ? record.todayGrades.join(", ")
+                ? formatTodayGrades(record.todayGrades)
                 : "—",
           },
         ]}
