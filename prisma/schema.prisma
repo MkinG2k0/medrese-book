@@ -222,8 +222,10 @@ model Session {
   date          DateTime
   attendance    Attendance
   lateMinutes   Int?
-  note          String?
-  isAdjustment  Boolean          @default(false)
+  note             String?
+  absenceExcused   Boolean          @default(false)
+  absenceReason    String?
+  isAdjustment     Boolean          @default(false)
   completions   StepCompletion[]
   extraAssignments StudentExtraAssignment[]
   createdAt     DateTime         @default(now())

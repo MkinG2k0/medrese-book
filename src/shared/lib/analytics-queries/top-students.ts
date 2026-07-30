@@ -10,6 +10,7 @@ import {
 type SessionWithLateness = {
 	attendance: string
 	lateMinutes: number | null
+	absenceExcused: boolean
 }
 
 function countAttendedSessions(sessions: { attendance: string }[]): number {
@@ -94,7 +95,9 @@ export async function getTopStudents(
 				student: { id: student.id, name: student.user.name },
 				stepsCompleted: student.completions.length,
 				avgGrade: Math.round(avgGrade * 10) / 10,
-				absences: student.sessions.filter((s) => s.attendance === 'ABSENT').length,
+				absences: student.sessions.filter(
+					(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
+				).length,
 				lateMinutes: sumLateMinutes(student.sessions),
 				attendedSessions: countAttendedSessions(student.sessions),
 			}

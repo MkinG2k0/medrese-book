@@ -348,6 +348,8 @@ export function useLessonPage(props: LessonPageProps) {
 
   const [attendance, setAttendance] = useState<Attendance>("PRESENT");
   const [lateMinutes, setLateMinutes] = useState(5);
+  const [absenceExcused, setAbsenceExcused] = useState(false);
+  const [absenceReason, setAbsenceReason] = useState("");
   const [visibleCount, setVisibleCount] = useState(
     isProgramComplete
       ? lessonSteps.length
@@ -414,6 +416,8 @@ export function useLessonPage(props: LessonPageProps) {
     if (existingSession) {
       setAttendance(existingSession.attendance);
       setLateMinutes(existingSession.lateMinutes ?? 5);
+      setAbsenceExcused(existingSession.absenceExcused ?? false);
+      setAbsenceReason(existingSession.absenceReason ?? "");
       initSessionCompletions(
         sessionDataKey,
         buildInitialStepStates(
@@ -425,6 +429,8 @@ export function useLessonPage(props: LessonPageProps) {
     } else {
       setAttendance("PRESENT");
       setLateMinutes(5);
+      setAbsenceExcused(false);
+      setAbsenceReason("");
       initSessionCompletions(
         sessionDataKey,
         buildInitialStepStates(
@@ -540,9 +546,19 @@ export function useLessonPage(props: LessonPageProps) {
   const handleAttendanceChange = (
     value: Attendance,
     minutes?: number,
+    absence?: { excused: boolean; reason: string },
   ) => {
     setAttendance(value);
     if (minutes !== undefined) setLateMinutes(minutes);
+    if (value !== "ABSENT") {
+      setAbsenceExcused(false);
+      setAbsenceReason("");
+      return;
+    }
+    if (absence) {
+      setAbsenceExcused(absence.excused);
+      setAbsenceReason(absence.reason);
+    }
   };
 
   const handleClearSessionCompletions = () => {
@@ -619,6 +635,9 @@ export function useLessonPage(props: LessonPageProps) {
         date: toSessionDate(dateFilter).toISOString(),
         attendance,
         lateMinutes: attendance === "LATE" ? lateMinutes : null,
+        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
+        absenceReason:
+          attendance === "ABSENT" ? absenceReason.trim() || null : null,
         note: null,
         completions: [],
       });
@@ -727,6 +746,9 @@ export function useLessonPage(props: LessonPageProps) {
         date: toSessionDate(dateFilter).toISOString(),
         attendance,
         lateMinutes: attendance === "LATE" ? lateMinutes : null,
+        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
+        absenceReason:
+          attendance === "ABSENT" ? absenceReason.trim() || null : null,
         note: null,
         completions,
       });
@@ -783,6 +805,8 @@ export function useLessonPage(props: LessonPageProps) {
     hasNoSteps,
     attendance,
     lateMinutes,
+    absenceExcused,
+    absenceReason,
     visibleSteps,
     lessonSteps,
     expandedIds: effectiveExpandedIds,

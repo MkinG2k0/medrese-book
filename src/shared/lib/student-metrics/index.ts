@@ -1,6 +1,7 @@
 export { AT_RISK_CONFIG, type AtRiskConfig } from './at-risk-config'
 export {
 	countStudentAbsencesInMonth,
+	countStudentExcusedAbsencesInMonth,
 	evaluateAttendanceRisk,
 	type EvaluateAttendanceRiskInput,
 } from './attendance-risk'

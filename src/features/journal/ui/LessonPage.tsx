@@ -40,6 +40,8 @@ export function LessonPage(props: LessonPageProps) {
         hasNoSteps={lesson.hasNoSteps}
         attendance={lesson.attendance}
         lateMinutes={lesson.lateMinutes}
+        absenceExcused={lesson.absenceExcused}
+        absenceReason={lesson.absenceReason}
         isSessionReady={lesson.isSessionReady}
         visibleSteps={lesson.visibleSteps}
         expandedIds={lesson.expandedIds}

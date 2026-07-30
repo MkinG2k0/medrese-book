@@ -11,6 +11,8 @@ type CreateSessionPayload = {
 	attendance: Attendance
 	lateMinutes?: number | null
 	note?: string | null
+	absenceExcused?: boolean
+	absenceReason?: string | null
 	completions: { stepId: string; grade: number; note?: string | null }[]
 }
 
@@ -21,6 +23,8 @@ export type StudentSession = {
 	attendance: Attendance
 	lateMinutes: number | null
 	note: string | null
+	absenceExcused: boolean
+	absenceReason: string | null
 	completions: {
 		stepId: string
 		grade: number

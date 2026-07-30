@@ -12,6 +12,8 @@ export type DaySessionRecord = {
 	attendance: Attendance
 	lateMinutes: number | null
 	note: string | null
+	absenceExcused: boolean
+	absenceReason: string | null
 	completions: { stepId: string; grade: number; note: string | null }[]
 }
 
@@ -34,6 +36,8 @@ export async function findStudentSessionForDay(
 			attendance: true,
 			lateMinutes: true,
 			note: true,
+			absenceExcused: true,
+			absenceReason: true,
 			completions: {
 				select: { stepId: true, grade: true, note: true },
 			},
@@ -55,6 +59,8 @@ export function serializeDaySession(session: DaySessionRecord) {
 		attendance: session.attendance,
 		lateMinutes: session.lateMinutes,
 		note: session.note,
+		absenceExcused: session.absenceExcused,
+		absenceReason: session.absenceReason,
 		completions: session.completions,
 	}
 }

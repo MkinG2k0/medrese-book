@@ -52,9 +52,9 @@ describe('getTopStudents', () => {
 					{ grade: 4 },
 				],
 				sessions: [
-					{ attendance: 'PRESENT', lateMinutes: null },
-					{ attendance: 'ABSENT', lateMinutes: null },
-					{ attendance: 'LATE', lateMinutes: 10 },
+					{ attendance: 'PRESENT', lateMinutes: null, absenceExcused: false },
+					{ attendance: 'ABSENT', lateMinutes: null, absenceExcused: false },
+					{ attendance: 'LATE', lateMinutes: 10, absenceExcused: false },
 				],
 			},
 		])

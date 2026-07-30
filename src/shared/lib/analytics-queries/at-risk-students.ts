@@ -62,6 +62,7 @@ export async function getAtRiskStudents(
 			levelTitle: metrics.levelTitle,
 			riskFlags: metrics.riskFlags,
 			absencesInMonth: metrics.absencesInMonth,
+			excusedAbsencesInMonth: metrics.excusedAbsencesInMonth,
 			actualMinutes: metrics.timeNorm.actualMinutes,
 			budgetMinutes: metrics.timeNorm.budgetMinutes,
 		})

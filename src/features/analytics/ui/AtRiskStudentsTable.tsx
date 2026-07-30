@@ -1,6 +1,6 @@
 "use client";
 
-import { Table } from "antd";
+import { Table, Tag } from "antd";
 import { useMemo, useState } from "react";
 
 import { JournalRiskBadge } from "@/features/journal/ui/JournalRiskBadge";
@@ -65,8 +65,18 @@ export function AtRiskStudentsTable({
       },
       {
         title: "Пропуски",
-        dataIndex: "absencesInMonth",
         key: "absences",
+        render: (_: unknown, record: AtRiskStudentRow) => {
+          const unexcused = record.absencesInMonth;
+          const excused = record.excusedAbsencesInMonth;
+          if (unexcused === 0 && excused === 0) return "0";
+          return (
+            <div className="flex flex-wrap gap-1">
+              {unexcused > 0 && <Tag color="red">{unexcused}</Tag>}
+              {excused > 0 && <Tag color="gold">{excused}</Tag>}
+            </div>
+          );
+        },
       },
       {
         title: "Время",

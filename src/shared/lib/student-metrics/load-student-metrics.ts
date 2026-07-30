@@ -12,6 +12,7 @@ import {
 
 import {
 	countStudentAbsencesInMonth,
+	countStudentExcusedAbsencesInMonth,
 	evaluateAttendanceRisk,
 } from './attendance-risk'
 import {
@@ -68,6 +69,7 @@ async function loadStudentRecord(studentId: string, scope: StudentMetricsScope) 
 					date: true,
 					attendance: true,
 					isAdjustment: true,
+					absenceExcused: true,
 					groupId: true,
 				},
 			},
@@ -168,6 +170,7 @@ export type StudentMetricsBundle = {
 	riskFlags: RiskFlag[]
 	timeNorm: TimeNormResult
 	absencesInMonth: number
+	excusedAbsencesInMonth: number
 	teacherName: string
 	levelTitle: string
 }
@@ -238,6 +241,10 @@ async function computeMetricsForEnrollment(
 		student.sessions,
 		monthRange,
 	)
+	const excusedAbsencesInMonth = countStudentExcusedAbsencesInMonth(
+		student.sessions,
+		monthRange,
+	)
 
 	const riskFlags = buildStudentRiskFlags({
 		studentId: student.id,
@@ -254,6 +261,7 @@ async function computeMetricsForEnrollment(
 		riskFlags,
 		timeNorm,
 		absencesInMonth,
+		excusedAbsencesInMonth,
 		teacherName: enrollment.group.teacher.user.name,
 		levelTitle: enrollment.level.title,
 	}

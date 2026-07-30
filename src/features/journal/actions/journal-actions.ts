@@ -243,6 +243,8 @@ export async function getStudentLesson(
 							attendance: true,
 							lateMinutes: true,
 							note: true,
+							absenceExcused: true,
+							absenceReason: true,
 							completions: {
 								select: { stepId: true, grade: true, note: true },
 							},

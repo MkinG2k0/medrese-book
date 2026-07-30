@@ -21,6 +21,8 @@ type LessonStepsSectionProps = {
   hasNoSteps: boolean;
   attendance: "PRESENT" | "LATE" | "ABSENT";
   lateMinutes: number;
+  absenceExcused: boolean;
+  absenceReason: string;
   isSessionReady: boolean;
   visibleSteps: JournalStep[];
   expandedIds: Set<string>;
@@ -33,6 +35,7 @@ type LessonStepsSectionProps = {
   onAttendanceChange: (
     value: "PRESENT" | "LATE" | "ABSENT",
     minutes?: number,
+    absence?: { excused: boolean; reason: string },
   ) => void;
   onClearSessionCompletions: () => void;
   onToggleExpand: (stepId: string) => void;
@@ -59,6 +62,8 @@ export function LessonStepsSection({
   hasNoSteps,
   attendance,
   lateMinutes,
+  absenceExcused,
+  absenceReason,
   isSessionReady,
   visibleSteps,
   expandedIds,
@@ -118,6 +123,8 @@ export function LessonStepsSection({
         <AttendanceButtons
           value={attendance}
           lateMinutes={lateMinutes}
+          absenceExcused={absenceExcused}
+          absenceReason={absenceReason}
           onChange={onAttendanceChange}
           disabled={!isSessionReady}
           gradedStepCount={gradedStepCount}

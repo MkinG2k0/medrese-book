@@ -47,6 +47,7 @@ describe('getAtRiskStudents', () => {
 			levelTitle: 'Уровень 1',
 			riskFlags: ['ATTENDANCE'],
 			absencesInMonth: 2,
+			excusedAbsencesInMonth: 0,
 			timeNorm: { actualMinutes: 30, budgetMinutes: 60 },
 		})
 

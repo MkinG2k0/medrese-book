@@ -16,6 +16,7 @@ export type AtRiskStudentApiRow = {
 	levelTitle: string
 	riskFlags: RiskFlag[]
 	absencesInMonth: number
+	excusedAbsencesInMonth: number
 	actualMinutes: number
 	budgetMinutes: number
 }

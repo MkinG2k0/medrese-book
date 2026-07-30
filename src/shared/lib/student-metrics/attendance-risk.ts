@@ -6,6 +6,7 @@ type SessionInput = {
 	date: Date
 	attendance: string
 	isAdjustment: boolean
+	absenceExcused?: boolean
 }
 
 export type EvaluateAttendanceRiskInput = {
@@ -21,10 +22,19 @@ function isInDateRange(date: Date, range: { gte: Date; lte: Date }): boolean {
 	return date >= range.gte && date <= range.lte
 }
 
-function isCountableAbsentSession(session: SessionInput): boolean {
+function isUnexcusedAbsent(session: SessionInput): boolean {
 	return (
 		session.isAdjustment === countableSessionWhere.isAdjustment &&
-		session.attendance === 'ABSENT'
+		session.attendance === 'ABSENT' &&
+		!session.absenceExcused
+	)
+}
+
+function isExcusedAbsent(session: SessionInput): boolean {
+	return (
+		session.isAdjustment === countableSessionWhere.isAdjustment &&
+		session.attendance === 'ABSENT' &&
+		Boolean(session.absenceExcused)
 	)
 }
 
@@ -34,7 +44,7 @@ function countAbsencesInMonth(
 ): number {
 	return sessions.filter(
 		(session) =>
-			isCountableAbsentSession(session) &&
+			isUnexcusedAbsent(session) &&
 			isInDateRange(session.date, monthRange),
 	).length
 }
@@ -51,7 +61,7 @@ function maxConsecutiveAbsences(sessions: SessionInput[]): number {
 	let currentStreak = 0
 
 	for (const session of sortedCountableSessions) {
-		if (session.attendance === 'ABSENT') {
+		if (isUnexcusedAbsent(session)) {
 			currentStreak += 1
 			maxStreak = Math.max(maxStreak, currentStreak)
 			continue
@@ -84,4 +94,14 @@ export function countStudentAbsencesInMonth(
 	monthRange: { gte: Date; lte: Date },
 ): number {
 	return countAbsencesInMonth(sessions, monthRange)
+}
+
+export function countStudentExcusedAbsencesInMonth(
+	sessions: SessionInput[],
+	monthRange: { gte: Date; lte: Date },
+): number {
+	return sessions.filter(
+		(session) =>
+			isExcusedAbsent(session) && isInDateRange(session.date, monthRange),
+	).length
 }

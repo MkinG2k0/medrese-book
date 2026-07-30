@@ -23,8 +23,17 @@ export async function POST(request: Request) {
   const parsed = createSessionSchema.safeParse(body);
   if (!parsed.success) return error(parsed.error.message);
 
-  const { studentId, groupId, date, attendance, lateMinutes, note, completions } =
-    parsed.data;
+  const {
+    studentId,
+    groupId,
+    date,
+    attendance,
+    lateMinutes,
+    note,
+    absenceExcused,
+    absenceReason,
+    completions,
+  } = parsed.data;
 
   const authResult = await authorizeApiRequest({
     allowedRoles: ["TEACHER"],
@@ -58,6 +67,8 @@ export async function POST(request: Request) {
     attendance,
     lateMinutes: attendance === "LATE" ? lateMinutes : null,
     note,
+    absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
+    absenceReason: attendance === "ABSENT" ? absenceReason : null,
   };
 
   const savedSession = await prisma.$transaction(async (tx) => {

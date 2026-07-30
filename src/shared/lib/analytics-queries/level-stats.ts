@@ -10,6 +10,7 @@ import {
 type SessionWithLateness = {
 	attendance: string
 	lateMinutes: number | null
+	absenceExcused: boolean
 }
 
 function sumLateMinutes(sessions: SessionWithLateness[]): number {
@@ -102,7 +103,9 @@ export async function getLevelStats(
 			level: level.number,
 			label: String(level.number),
 			avgGrade: Math.round(avgGrade * 10) / 10,
-			totalAbsences: allSessions.filter((s) => s.attendance === 'ABSENT').length,
+			totalAbsences: allSessions.filter(
+				(s) => s.attendance === 'ABSENT' && !s.absenceExcused,
+			).length,
 			totalLateMinutes,
 			totalHours: Math.round((totalStepHours - lateHours) * 10) / 10,
 		}
