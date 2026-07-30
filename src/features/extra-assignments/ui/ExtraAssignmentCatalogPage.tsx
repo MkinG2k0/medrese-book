@@ -17,6 +17,7 @@ import {
 	type ExtraAssignmentSubjectOption,
 	type ProgramLevelWithSteps,
 } from '@/features/extra-assignments/actions/extra-assignment-actions'
+import { clearExtraAssignmentDraft } from '@/features/extra-assignments/lib/extra-assignment-draft'
 import { ExtraAssignmentFormModal } from '@/features/extra-assignments/ui/ExtraAssignmentFormModal'
 import { formatDate } from '@/shared/lib/utils'
 import Text from '@/shared/ui/Text'
@@ -131,6 +132,9 @@ export function ExtraAssignmentCatalogPage({
 			} else {
 				await createMutation.mutateAsync(values)
 				message.success('Задание создано')
+			}
+			if (!editing && session?.user?.id) {
+				clearExtraAssignmentDraft(session.user.id, selectedSubjectId)
 			}
 			setModalOpen(false)
 			setEditing(null)
@@ -288,6 +292,7 @@ export function ExtraAssignmentCatalogPage({
 			<ExtraAssignmentFormModal
 				open={modalOpen}
 				assignment={editing}
+				subjectId={selectedSubjectId}
 				programLevels={programLevels}
 				currentUserId={currentUserId}
 				loading={createMutation.isPending || updateMutation.isPending}

@@ -1,10 +1,16 @@
 'use client'
 
 import { Button, Form, Input, Modal, Select } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ExtraAssignmentTemplate } from '@/entities/extra-assignment'
+import {
+	clearExtraAssignmentDraft,
+	readExtraAssignmentDraft,
+	writeExtraAssignmentDraft,
+} from '@/features/extra-assignments/lib/extra-assignment-draft'
 import { StepEditor } from '@/features/program-admin/ui/editor/StepEditor'
+import { useDebounce } from '@/shared/lib/use-debounce'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export type ProgramLevelWithSteps = {
@@ -17,6 +23,7 @@ export type ProgramLevelWithSteps = {
 type ExtraAssignmentFormModalProps = {
 	open: boolean
 	assignment: ExtraAssignmentTemplate | null
+	subjectId: string
 	programLevels: ProgramLevelWithSteps[]
 	currentUserId?: string
 	loading?: boolean
@@ -29,9 +36,12 @@ type ExtraAssignmentFormModalProps = {
 	onDelete?: () => void
 }
 
+const EMPTY_CONTENT: StepContent = { blocks: [{ type: 'text', value: '' }] }
+
 export function ExtraAssignmentFormModal({
 	open,
 	assignment,
+	subjectId,
 	programLevels,
 	currentUserId,
 	loading,
@@ -42,24 +52,86 @@ export function ExtraAssignmentFormModal({
 	const [title, setTitle] = useState('')
 	const [stepId, setStepId] = useState<string | null>(null)
 	const [levelId, setLevelId] = useState<string | undefined>()
-	const [content, setContent] = useState<StepContent>({
-		blocks: [{ type: 'text', value: '' }],
-	})
+	const [content, setContent] = useState<StepContent>(EMPTY_CONTENT)
+	const [editorKey, setEditorKey] = useState('new')
+	const skipNextDraftWrite = useRef(false)
+
+	const isCreate = !assignment
 
 	useEffect(() => {
 		if (!open) return
+
 		if (assignment) {
+			skipNextDraftWrite.current = true
 			setTitle(assignment.title)
 			setStepId(assignment.stepId)
 			setLevelId(assignment.step?.levelId)
 			setContent(assignment.content)
+			setEditorKey(assignment.id)
+			return
+		}
+
+		const draft =
+			currentUserId && subjectId
+				? readExtraAssignmentDraft(currentUserId, subjectId)
+				: null
+
+		skipNextDraftWrite.current = true
+		if (draft) {
+			setTitle(draft.title)
+			setStepId(draft.stepId)
+			setLevelId(draft.levelId)
+			setContent(draft.content)
+			setEditorKey(
+				`draft-${subjectId}-${draft.title.length}-${draft.content.blocks.length}`,
+			)
 		} else {
 			setTitle('')
 			setStepId(null)
 			setLevelId(undefined)
-			setContent({ blocks: [{ type: 'text', value: '' }] })
+			setContent(EMPTY_CONTENT)
+			setEditorKey(`new-${subjectId}`)
 		}
-	}, [open, assignment])
+	}, [open, assignment, currentUserId, subjectId])
+
+	const draftSnapshot = useMemo(
+		() => ({ title, levelId, stepId, content }),
+		[title, levelId, stepId, content],
+	)
+	const debouncedDraft = useDebounce(draftSnapshot, 300)
+
+	useEffect(() => {
+		if (!open || !isCreate || !currentUserId || !subjectId) return
+		if (skipNextDraftWrite.current) {
+			skipNextDraftWrite.current = false
+			return
+		}
+		writeExtraAssignmentDraft(currentUserId, subjectId, {
+			title: debouncedDraft.title,
+			levelId: debouncedDraft.levelId,
+			stepId: debouncedDraft.stepId,
+			content: debouncedDraft.content,
+		})
+	}, [open, isCreate, currentUserId, subjectId, debouncedDraft])
+
+	const handleDismissKeepDraft = () => {
+		if (isCreate && currentUserId && subjectId) {
+			writeExtraAssignmentDraft(currentUserId, subjectId, {
+				title,
+				levelId,
+				stepId,
+				content,
+			})
+		}
+		onCancel()
+	}
+
+	const handleCancelClearDraft = () => {
+		if (isCreate && currentUserId && subjectId) {
+			clearExtraAssignmentDraft(currentUserId, subjectId)
+		}
+		onCancel()
+	}
 
 	const levelOptions = programLevels.map((level) => ({
 		value: level.id,
@@ -85,7 +157,8 @@ export function ExtraAssignmentFormModal({
 		<Modal
 			title={assignment ? 'Редактировать задание' : 'Создать задание'}
 			open={open}
-			onCancel={onCancel}
+			onCancel={handleDismissKeepDraft}
+			maskClosable={false}
 			footer={
 				<div className="flex justify-between gap-2">
 					<div>
@@ -96,7 +169,7 @@ export function ExtraAssignmentFormModal({
 						) : null}
 					</div>
 					<div className="flex gap-2">
-						<Button onClick={onCancel}>Отмена</Button>
+						<Button onClick={handleCancelClearDraft}>Отмена</Button>
 						<Button
 							type="primary"
 							loading={loading}
@@ -140,8 +213,8 @@ export function ExtraAssignmentFormModal({
 				</div>
 				<Form.Item label="Содержание">
 					<StepEditor
-						key={assignment?.id ?? 'new'}
-						initialContent={assignment?.content}
+						key={editorKey}
+						initialContent={content}
 						onChange={setContent}
 					/>
 				</Form.Item>
