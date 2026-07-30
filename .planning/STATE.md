@@ -268,10 +268,11 @@ None yet.
 | 260722-wsi | Сворачиваемый левый сайдбар с persist в localStorage | 2026-07-22 | dd55efa | [260722-wsi-collapsible-sidebar](./quick/260722-wsi-collapsible-sidebar/) |
 | 260722-x84 | Учитель: редактирование уровня и шага в модалке «Моя группа» | 2026-07-22 | e3699f0 | [260722-x84-teacher-edit-level-step](./quick/260722-x84-teacher-edit-level-step/) |
 | 260723-2dd | Страница справки `/help`: инструкция и фичи для менеджера и учителя | 2026-07-23 | 3af4e93 | [260723-2dd-system-help-guide](./quick/260723-2dd-system-help-guide/) |
+| 260730-tvy | рядом с оценками за урок выводить среднее арифметическое | 2026-07-30 | d855f21 | — |
 
 ## Session Continuity
 
-Last activity: 2026-07-23 - Completed quick task 260723-2dd: system help guide page
+Last activity: 2026-07-30 - Completed fast task: среднее рядом с оценками за урок
 Last session: 2026-07-22T22:50:00Z
 Stopped at: Completed 260723-2dd-PLAN.md
 Resume file: None
