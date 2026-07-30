@@ -230,6 +230,8 @@ export function StepCard({
               )}
               {!readOnly && onGiveExtraAssignment ? (
                 <Button
+                  color="orange"
+                  variant="outlined"
                   icon={<PlusOutlined />}
                   onClick={(e) => {
                     e.stopPropagation();

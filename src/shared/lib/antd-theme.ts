@@ -27,14 +27,16 @@ export function getAntdThemeConfig(themeId: AppTheme): ThemeConfig {
       return {
         algorithm: theme.defaultAlgorithm,
         token: {
-          colorPrimary: '#5B7C99',
+          colorPrimary: '#1677FF',
           colorBgBase: '#E8EAED',
           colorBgContainer: '#F4F5F7',
           colorBgLayout: '#E8EAED',
           colorText: 'rgba(0, 0, 0, 0.72)',
           colorTextSecondary: 'rgba(0, 0, 0, 0.5)',
           colorBorder: '#D5D8DC',
-          colorLink: '#5B7C99',
+          colorLink: '#CC6600',
+          colorLinkHover: '#994D00',
+          colorLinkActive: '#994D00',
         },
         components: {
           Layout: {
@@ -50,12 +52,12 @@ export function getAntdThemeConfig(themeId: AppTheme): ThemeConfig {
             activeBarBorderWidth: 0,
             itemBg: 'transparent',
             subMenuItemBg: 'transparent',
-            itemSelectedBg: '#E0E6EC',
-            itemSelectedColor: '#3D556B',
+            itemSelectedBg: '#E6F4FF',
+            itemSelectedColor: '#0958D9',
           },
           Progress: {
             circleTextColor: 'rgba(0, 0, 0, 0.72)',
-            defaultColor: '#5B7C99',
+            defaultColor: '#1677FF',
             remainingColor: 'rgba(0, 0, 0, 0.06)',
           },
         },

@@ -47,7 +47,10 @@ export function SessionExtraAssignmentCard({
 	}
 
 	return (
-		<Card size="small" className="border-dashed">
+		<Card
+			size="small"
+			className="border-dashed !border-[#b7d4c0] !bg-[#eaf5ee] dark:!border-[#434343] dark:!bg-[#2a2a2a]"
+		>
 			<div className="flex flex-col gap-3">
 				<div className="flex flex-col gap-1">
 					<Title level={5} className="!mb-0">

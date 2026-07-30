@@ -1,5 +1,7 @@
 'use client'
 
+import { Typography } from 'antd'
+
 type StepPdfViewerProps = {
 	url: string
 }
@@ -43,9 +45,9 @@ export function StepPdfViewer({ url }: StepPdfViewerProps) {
 				title="PDF"
 				className="h-[min(80vh,900px)] w-full rounded border-0 bg-[#1a1816]"
 			/>
-			<a href={url} target="_blank" rel="noopener noreferrer">
+			<Typography.Link href={url} target="_blank" rel="noopener noreferrer">
 				Открыть PDF
-			</a>
+			</Typography.Link>
 		</div>
 	)
 }
