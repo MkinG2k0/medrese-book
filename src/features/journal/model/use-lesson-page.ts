@@ -28,6 +28,7 @@ import {
   buildSessionDataKey,
   mapSessionStepsOutsideLevel,
 } from "@/features/journal/lib/lesson-session-steps";
+import { buildDraftSessionCompletions } from "@/features/journal/lib/build-draft-session-completions";
 import { buildInitialStepStates, buildInitialExtraGradeStates } from "@/features/journal/lib/lesson-step-states";
 import { shouldShowOnlyCompletedLessonSteps } from "@/features/journal/lib/lesson-view-mode";
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
@@ -639,7 +640,12 @@ export function useLessonPage(props: LessonPageProps) {
         absenceReason:
           attendance === "ABSENT" ? absenceReason.trim() || null : null,
         note: null,
-        completions: [],
+        // Keep draft grades when creating a session for «Дать доп. задание».
+        completions: buildDraftSessionCompletions(
+          attendance,
+          visibleSteps,
+          resolvedStepStates,
+        ),
       });
       return session.id;
     } catch (err) {
@@ -728,16 +734,11 @@ export function useLessonPage(props: LessonPageProps) {
   };
 
   const saveSession = async () => {
-    const completions =
-      attendance === "ABSENT"
-        ? []
-        : visibleSteps
-            .filter((step) => resolvedStepStates[step.id]?.grade !== null)
-            .map((step) => ({
-              stepId: step.id,
-              grade: resolvedStepStates[step.id]!.grade!,
-              note: resolvedStepStates[step.id]!.note || null,
-            }));
+    const completions = buildDraftSessionCompletions(
+      attendance,
+      visibleSteps,
+      resolvedStepStates,
+    );
 
     try {
       await createSession.mutateAsync({
