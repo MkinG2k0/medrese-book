@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-07-22 - Completed quick task 260722-x84: teacher edit level/step
+Last activity: 2026-09-16 - Completed quick task 260916-v0w: kassa payments UX
 
 ## Performance Metrics
 
@@ -269,16 +269,17 @@ None yet.
 | 260722-x84 | Учитель: редактирование уровня и шага в модалке «Моя группа» | 2026-07-22 | e3699f0 | [260722-x84-teacher-edit-level-step](./quick/260722-x84-teacher-edit-level-step/) |
 | 260723-2dd | Страница справки `/help`: инструкция и фичи для менеджера и учителя | 2026-07-23 | 3af4e93 | [260723-2dd-system-help-guide](./quick/260723-2dd-system-help-guide/) |
 | 260730-tvy | рядом с оценками за урок выводить среднее арифметическое | 2026-07-30 | d855f21 | — |
+| 260916-v0w | Касса платежей: быстрый ввод, массовая оплата, история/сторно, Excel | 2026-09-16 | — | [260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg](./quick/260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg/) |
 
 ## Session Continuity
 
-Last activity: 2026-07-30 - Completed fast task: среднее рядом с оценками за урок
-Last session: 2026-07-22T22:50:00Z
-Stopped at: Completed 260723-2dd-PLAN.md
+Last activity: 2026-09-16 - Completed quick task 260916-v0w: kassa payments UX
+Last session: 2026-09-16T19:25:00Z
+Stopped at: Completed 260916-v0w PLAN/SUMMARY
 Resume file: None
 
 ## Operator Next Steps
 
 - Start the next milestone with `/gsd-new-milestone`
 - Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
-- Smoke: учитель/менеджер → «Справка» в меню → `/help` → обзор, фичи, пошаговые инструкции
+- Smoke: бухгалтер → Платежи → Тариф/Долг/инлайн/массовая/История/Excel

@@ -30,6 +30,21 @@ export const createTuitionPaymentSchema = z.object({
 	comment: z.string().trim().optional(),
 })
 
+export const createTuitionPaymentsBatchSchema = z.object({
+	date: dateSchema,
+	method: paymentMethodSchema,
+	comment: z.string().trim().optional(),
+	items: z
+		.array(
+			z.object({
+				studentId: z.string().min(1),
+				amountKopecks: positiveKopecksSchema,
+			}),
+		)
+		.min(1, 'Выберите хотя бы одного ученика')
+		.max(100, 'Не больше 100 платежей за раз'),
+})
+
 export const reverseFinancialRecordSchema = z.object({
 	comment: z.string().trim().min(1, 'Комментарий обязателен для сторно'),
 })
@@ -96,6 +111,9 @@ export const exportQuerySchema = z.object({
 })
 
 export type CreateTuitionPaymentInput = z.infer<typeof createTuitionPaymentSchema>
+export type CreateTuitionPaymentsBatchInput = z.infer<
+	typeof createTuitionPaymentsBatchSchema
+>
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>
 export type CreateDonationInput = z.infer<typeof createDonationSchema>
 export type CreateSalaryPayoutInput = z.infer<typeof createSalaryPayoutSchema>

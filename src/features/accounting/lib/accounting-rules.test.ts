@@ -5,6 +5,11 @@ import {
 	computeStudentBalanceKopecks,
 	resolveStudentPaymentStatus,
 } from './compute-student-balance'
+import {
+	debtKopecks,
+	remainingToMonthChargeKopecks,
+	suggestPaymentAmountKopecks,
+} from './payment-suggestions'
 import { reversalAmount, validateReversalTarget } from './create-reversal'
 import { LESSON_ANOMALY_MINUTES, isSessionAnomaly } from './teacher-hours'
 
@@ -29,6 +34,43 @@ describe('resolveStudentPaymentStatus', () => {
 		expect(
 			resolveStudentPaymentStatus(50_000, 200_000, 200_000),
 		).toEqual({ kind: 'advance', advanceKopecks: 50_000 })
+	})
+})
+
+describe('payment suggestions', () => {
+	const base = {
+		studentId: 's1',
+		studentName: 'Али',
+		groupName: 'Группа',
+		tuitionRateKopecks: 200_000,
+		discountReason: null,
+		monthPaidKopecks: 50_000,
+		monthChargeKopecks: 200_000,
+		balanceKopecks: -150_000,
+		status: { kind: 'partial' as const, debtKopecks: 150_000 },
+	}
+
+	it('computes remaining to month charge', () => {
+		expect(remainingToMonthChargeKopecks(base)).toBe(150_000)
+	})
+
+	it('computes debt from negative balance', () => {
+		expect(debtKopecks(base)).toBe(150_000)
+		expect(debtKopecks({ ...base, balanceKopecks: 10_000 })).toBe(0)
+	})
+
+	it('prefers remaining over debt for prefill', () => {
+		expect(suggestPaymentAmountKopecks(base)).toBe(150_000)
+	})
+
+	it('falls back to debt when month is fully paid', () => {
+		expect(
+			suggestPaymentAmountKopecks({
+				...base,
+				monthPaidKopecks: 200_000,
+				balanceKopecks: -100_000,
+			}),
+		).toBe(100_000)
 	})
 })
 

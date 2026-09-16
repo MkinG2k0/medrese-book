@@ -56,6 +56,61 @@ export async function createTuitionPayment(input: {
 	})
 }
 
+export async function createTuitionPaymentsBatch(input: {
+	date: string
+	method: PaymentMethod
+	comment?: string
+	actorId: string
+	items: Array<{ studentId: string; amountKopecks: number }>
+}) {
+	const date = parseOperationDate(input.date)
+	await assertMonthOpenForDate(date)
+
+	const studentIds = [...new Set(input.items.map((item) => item.studentId))]
+	const students = await prisma.student.findMany({
+		where: { id: { in: studentIds }, status: 'ACTIVE' },
+		select: { id: true },
+	})
+	if (students.length !== studentIds.length) {
+		throw new Error('Один или несколько учеников не найдены или неактивны')
+	}
+
+	return prisma.$transaction(async (tx) => {
+		const created = []
+		for (const item of input.items) {
+			const payment = await tx.tuitionPayment.create({
+				data: {
+					studentId: item.studentId,
+					date,
+					amount: item.amountKopecks,
+					method: input.method,
+					comment: input.comment,
+					createdById: input.actorId,
+				},
+			})
+
+			await dispatchDomainEvent(
+				{
+					actorId: input.actorId,
+					action: 'TUITION_PAYMENT_CREATED',
+					entityType: 'TuitionPayment',
+					entityId: payment.id,
+					payload: {
+						studentId: item.studentId,
+						amount: item.amountKopecks,
+						method: input.method,
+						batch: true,
+					},
+				},
+				tx,
+			)
+
+			created.push(payment)
+		}
+		return created
+	})
+}
+
 export async function reverseTuitionPayment(
 	paymentId: string,
 	comment: string,
