@@ -269,7 +269,7 @@ None yet.
 | 260722-x84 | Учитель: редактирование уровня и шага в модалке «Моя группа» | 2026-07-22 | e3699f0 | [260722-x84-teacher-edit-level-step](./quick/260722-x84-teacher-edit-level-step/) |
 | 260723-2dd | Страница справки `/help`: инструкция и фичи для менеджера и учителя | 2026-07-23 | 3af4e93 | [260723-2dd-system-help-guide](./quick/260723-2dd-system-help-guide/) |
 | 260730-tvy | рядом с оценками за урок выводить среднее арифметическое | 2026-07-30 | d855f21 | — |
-| 260916-v0w | Касса платежей: быстрый ввод, массовая оплата, история/сторно, Excel | 2026-09-16 | — | [260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg](./quick/260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg/) |
+| 260916-v0w | Касса платежей: быстрый ввод, массовая оплата, история/сторно, Excel | 2026-09-16 | aa4004a | [260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg](./quick/260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg/) |
 
 ## Session Continuity
 
