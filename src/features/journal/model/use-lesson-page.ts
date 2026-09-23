@@ -8,6 +8,11 @@ import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
+import {
+  useDeleteSessionExtraAssignment,
+  useSessionExtraAssignments,
+} from "@/entities/extra-assignment";
+import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
 import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
 import {
   getNextLevelJournalSteps,
@@ -46,15 +51,19 @@ import {
 
 type Attendance = "PRESENT" | "LATE" | "ABSENT";
 
+const EMPTY_EXTRA_INSTANCES: SessionExtraAssignmentInstance[] = [];
+
 function filterStepsForDayHistory<
   T extends { id: string; order: number; levelNumber?: number },
 >(
   stepPool: T[],
   sessionCompletions: { stepId: string }[] | undefined,
+  extraInstances: { displayStepId: string }[],
 ): T[] {
-  const stepIds = new Set(
-    sessionCompletions?.map((completion) => completion.stepId) ?? [],
-  );
+  const stepIds = new Set([
+    ...(sessionCompletions?.map((completion) => completion.stepId) ?? []),
+    ...extraInstances.map((instance) => instance.displayStepId),
+  ]);
 
   if (stepIds.size === 0) return [];
 
@@ -71,64 +80,105 @@ function getMaxStepIndex<T extends { id: string }>(
   );
 }
 
+function applyPendingExtraUiState(
+  effectiveLessonSteps: JournalStep[],
+  visibleCount: number,
+  expandedIds: Set<string>,
+  pendingExtraStepIds: Set<string>,
+): { visibleCount: number; expandedIds: Set<string> } {
+  if (pendingExtraStepIds.size === 0) {
+    return { visibleCount, expandedIds };
+  }
+
+  const maxPendingIndex = getMaxStepIndex(
+    effectiveLessonSteps,
+    pendingExtraStepIds,
+  );
+  const nextVisibleCount =
+    maxPendingIndex >= 0
+      ? Math.max(visibleCount, maxPendingIndex + 1)
+      : visibleCount;
+
+  const nextExpandedIds = new Set(expandedIds);
+  for (const stepId of pendingExtraStepIds) {
+    if (effectiveLessonSteps.some((step) => step.id === stepId)) {
+      nextExpandedIds.add(stepId);
+    }
+  }
+
+  return { visibleCount: nextVisibleCount, expandedIds: nextExpandedIds };
+}
+
 function resolveInitialUiState(
   effectiveLessonSteps: JournalStep[],
   isProgramComplete: boolean,
   existingSession: ReturnType<typeof useStudentSession>["data"],
   showOnlyCompleted: boolean,
+  pendingExtraStepIds: Set<string> = new Set(),
 ) {
+  let result: { visibleCount: number; expandedIds: Set<string> };
+
   if (existingSession) {
     const gradedStepIds = new Set(
       existingSession.completions.map((c) => c.stepId),
     );
 
     if (showOnlyCompleted) {
-      return {
+      result = {
         visibleCount: effectiveLessonSteps.length,
         expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
       };
+    } else {
+      const maxGradedIndex = getMaxStepIndex(effectiveLessonSteps, gradedStepIds);
+
+      if (maxGradedIndex >= 0 && !isProgramComplete) {
+        result = {
+          visibleCount: Math.min(
+            Math.max(INITIAL_VISIBLE_STEPS, maxGradedIndex + 1),
+            effectiveLessonSteps.length,
+          ),
+          expandedIds: new Set([effectiveLessonSteps[maxGradedIndex]!.id]),
+        };
+      } else if (isProgramComplete) {
+        result = {
+          visibleCount: effectiveLessonSteps.length,
+          expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
+        };
+      } else {
+        result = {
+          visibleCount: Math.min(
+            INITIAL_VISIBLE_STEPS,
+            effectiveLessonSteps.length,
+          ),
+          expandedIds: effectiveLessonSteps[0]
+            ? new Set([effectiveLessonSteps[0].id])
+            : new Set<string>(),
+        };
+      }
     }
-
-    const maxGradedIndex = getMaxStepIndex(effectiveLessonSteps, gradedStepIds);
-
-    if (maxGradedIndex >= 0 && !isProgramComplete) {
-      return {
-        visibleCount: Math.min(
-          Math.max(INITIAL_VISIBLE_STEPS, maxGradedIndex + 1),
-          effectiveLessonSteps.length,
-        ),
-        expandedIds: new Set([effectiveLessonSteps[maxGradedIndex]!.id]),
-      };
-    }
-
-    if (isProgramComplete) {
-      return {
-        visibleCount: effectiveLessonSteps.length,
-        expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
-      };
-    }
-
-    return {
-      visibleCount: Math.min(
-        INITIAL_VISIBLE_STEPS,
-        effectiveLessonSteps.length,
-      ),
-      expandedIds: effectiveLessonSteps[0]
-        ? new Set([effectiveLessonSteps[0].id])
-        : new Set<string>(),
+  } else {
+    result = {
+      visibleCount: isProgramComplete
+        ? effectiveLessonSteps.length
+        : Math.min(INITIAL_VISIBLE_STEPS, effectiveLessonSteps.length),
+      expandedIds: isProgramComplete
+        ? new Set(effectiveLessonSteps.map((step) => step.id))
+        : effectiveLessonSteps[0]
+          ? new Set([effectiveLessonSteps[0].id])
+          : new Set<string>(),
     };
   }
 
-  return {
-    visibleCount: isProgramComplete
-      ? effectiveLessonSteps.length
-      : Math.min(INITIAL_VISIBLE_STEPS, effectiveLessonSteps.length),
-    expandedIds: isProgramComplete
-      ? new Set(effectiveLessonSteps.map((step) => step.id))
-      : effectiveLessonSteps[0]
-        ? new Set([effectiveLessonSteps[0].id])
-        : new Set<string>(),
-  };
+  if (!showOnlyCompleted) {
+    return applyPendingExtraUiState(
+      effectiveLessonSteps,
+      result.visibleCount,
+      result.expandedIds,
+      pendingExtraStepIds,
+    );
+  }
+
+  return result;
 }
 
 export function useLessonPage(props: LessonPageProps) {
@@ -180,6 +230,21 @@ export function useLessonPage(props: LessonPageProps) {
     });
   const createSession = useCreateSession();
 
+  const { data: extraInstancesData, refetch: refetchExtraInstances } =
+    useSessionExtraAssignments(studentId, dateFilter, {
+      mode: showOnlyCompleted ? 'history' : 'active',
+    });
+  const extraInstances = extraInstancesData ?? EMPTY_EXTRA_INSTANCES;
+  const deleteExtraAssignment = useDeleteSessionExtraAssignment(studentId);
+  const [deletingExtraId, setDeletingExtraId] = useState<string | null>(null);
+
+  const [assignModalStepId, setAssignModalStepId] = useState<string | null>(
+    null,
+  );
+  const [assignModalStepLabel, setAssignModalStepLabel] = useState<
+    string | null
+  >(null);
+
   const isProgramComplete = useMemo(
     () => checkProgramComplete(allSteps, stepCompletions),
     [allSteps, stepCompletions],
@@ -221,6 +286,26 @@ export function useLessonPage(props: LessonPageProps) {
     [nextLevelLoadedCount, nextLevelSteps],
   );
 
+  const pendingExtraStepIds = useMemo(
+    () =>
+      new Set(
+        showOnlyCompleted
+          ? []
+          : extraInstances
+              .filter((instance) => instance.completion === null)
+              .map((instance) => instance.displayStepId),
+      ),
+    [extraInstances, showOnlyCompleted],
+  );
+
+  const extraLinkedSteps = useMemo(() => {
+    if (extraInstances.length === 0) return [];
+    const stepIds = new Set(
+      extraInstances.map((instance) => instance.displayStepId),
+    );
+    return allSteps.filter((step) => stepIds.has(step.id));
+  }, [allSteps, extraInstances]);
+
   const lessonSteps = useMemo(() => {
     if (isProgramComplete) return allSteps;
 
@@ -229,13 +314,20 @@ export function useLessonPage(props: LessonPageProps) {
       steps,
       existingSession?.completions ?? [],
       sessionStepsOutsideLevel,
-      loadedNextLevelSteps,
+      [...loadedNextLevelSteps, ...extraLinkedSteps],
     );
 
     if (showOnlyCompleted) {
       return filterStepsForDayHistory(
-        built,
+        buildLessonSteps(
+          allSteps,
+          steps,
+          existingSession?.completions ?? [],
+          sessionStepsOutsideLevel,
+          [...loadedNextLevelSteps, ...extraLinkedSteps],
+        ),
         existingSession?.completions,
+        extraInstances,
       );
     }
 
@@ -246,6 +338,8 @@ export function useLessonPage(props: LessonPageProps) {
     existingSession,
     isProgramComplete,
     loadedNextLevelSteps,
+    extraLinkedSteps,
+    extraInstances,
     sessionStepsOutsideLevel,
     showOnlyCompleted,
   ]);
@@ -293,16 +387,23 @@ export function useLessonPage(props: LessonPageProps) {
               steps,
               existingSession?.completions ?? [],
               sessionStepsOutsideLevel,
-              nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+              [
+                ...nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+                ...extraLinkedSteps,
+              ],
             ),
             existingSession?.completions,
+            extraInstances,
           )
         : buildLessonSteps(
             allSteps,
             steps,
             existingSession?.completions ?? [],
             sessionStepsOutsideLevel,
-            nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+            [
+              ...nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
+              ...extraLinkedSteps,
+            ],
           );
 
     if (existingSession) {
@@ -339,6 +440,7 @@ export function useLessonPage(props: LessonPageProps) {
         isProgramComplete,
         existingSession,
         showOnlyCompleted,
+        pendingExtraStepIds,
       );
     setVisibleCount(nextVisibleCount);
     setExpandedIds(nextExpandedIds);
@@ -358,15 +460,20 @@ export function useLessonPage(props: LessonPageProps) {
     stepCompletions,
     showOnlyCompleted,
     initSessionCompletions,
+    extraLinkedSteps,
+    extraInstances,
+    pendingExtraStepIds,
   ]);
 
   const historyStepIds = useMemo(() => {
-    const stepIds = new Set<string>();
+    const stepIds = new Set(
+      extraInstances.map((instance) => instance.displayStepId),
+    );
     for (const completion of existingSession?.completions ?? []) {
       stepIds.add(completion.stepId);
     }
     return stepIds;
-  }, [existingSession]);
+  }, [extraInstances, existingSession]);
 
   const requiredVisibleCount = useMemo(() => {
     if (showOnlyCompleted || historyStepIds.size === 0) return 0;
@@ -511,6 +618,63 @@ export function useLessonPage(props: LessonPageProps) {
     }
   };
 
+  const ensureSession = async (): Promise<string | null> => {
+    if (existingSession?.id) return existingSession.id;
+
+    try {
+      const session = await createSession.mutateAsync({
+        studentId,
+        groupId,
+        date: toSessionDate(dateFilter).toISOString(),
+        attendance,
+        lateMinutes: attendance === "LATE" ? lateMinutes : null,
+        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
+        absenceReason:
+          attendance === "ABSENT" ? absenceReason.trim() || null : null,
+        note: null,
+        // Не сохраняем черновые оценки шагов — иначе progress может сдвинуться
+        // ещё до явного «Сохранить урок» (редкий +1 шаг при доп. задании).
+        completions: [],
+      });
+      return session.id;
+    } catch (err) {
+      message.error(
+        err instanceof Error ? err.message : "Не удалось создать занятие",
+      );
+      return null;
+    }
+  };
+
+  const handleOpenAssignModal = (stepId: string, stepLabel: string) => {
+    setAssignModalStepId(stepId);
+    setAssignModalStepLabel(stepLabel);
+  };
+
+  const handleCloseAssignModal = () => {
+    setAssignModalStepId(null);
+    setAssignModalStepLabel(null);
+  };
+
+  const handleExtraAssigned = () => {
+    void refetchExtraInstances();
+    handleCloseAssignModal();
+  };
+
+  const handleDeleteExtraAssignment = async (instanceId: string) => {
+    setDeletingExtraId(instanceId);
+    try {
+      await deleteExtraAssignment.mutateAsync(instanceId);
+      message.success("Доп. задание снято");
+      await refetchExtraInstances();
+    } catch (err) {
+      message.error(
+        err instanceof Error ? err.message : "Не удалось удалить доп. задание",
+      );
+    } finally {
+      setDeletingExtraId(null);
+    }
+  };
+
   const saveSession = async () => {
     const completions = buildDraftSessionCompletions(
       attendance,
@@ -584,7 +748,7 @@ export function useLessonPage(props: LessonPageProps) {
     canLoadNextLevel,
     cumulativeHoursByAllSteps,
     isSessionReady,
-    isSaving: createSession.isPending,
+    isSaving: createSession.isPending || deleteExtraAssignment.isPending,
     gradedStepCount,
     getStepTotalHours,
     handleAttendanceChange,
@@ -598,6 +762,15 @@ export function useLessonPage(props: LessonPageProps) {
     isLoadingNextLevel,
     sessionId: existingSession?.id ?? null,
     sessionDate: dateFilter,
+    extraInstances,
+    assignModalStepId,
+    assignModalStepLabel,
+    handleOpenAssignModal,
+    handleCloseAssignModal,
+    ensureSession,
+    handleExtraAssigned,
+    deletingExtraId,
+    handleDeleteExtraAssignment,
   };
 }
 

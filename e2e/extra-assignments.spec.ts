@@ -79,7 +79,7 @@ test.describe("Доп. задания", () => {
       );
     });
 
-    test("в журнале нет кнопки «Дать доп. задание»", async ({ page }) => {
+    test("назначает и удаляет на уроке", async ({ page }) => {
       await page.goto("/journal");
       await startLessonIfNeeded(page);
       await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
@@ -90,9 +90,26 @@ test.describe("Доп. задания", () => {
         .first();
       await stepCard.click();
 
-      await expect(
-        page.getByRole("button", { name: "Дать доп. задание" }),
-      ).toHaveCount(0);
+      await stepCard
+        .getByRole("button", { name: "Дать доп. задание" })
+        .click();
+
+      const assignDialog = page.getByRole("dialog", { name: "Дать доп. задание" });
+      await expect(assignDialog).toBeVisible();
+
+      const targetRow = assignDialog.getByRole("row", { name: uniqueTitle });
+      await targetRow.getByRole("button", { name: "Назначить" }).click();
+
+      await expect(stepCard.getByText(uniqueTitle)).toBeVisible();
+      await expect(stepCard.getByText("Оценка доп. задания")).toHaveCount(0);
+
+      const extraCard = stepCard
+        .locator(".ant-card")
+        .filter({ hasText: uniqueTitle });
+      await extraCard.getByRole("button", { name: "Удалить доп. задание" }).click();
+      await page.getByRole("button", { name: "Удалить" }).click();
+
+      await expect(stepCard.getByText(uniqueTitle)).toHaveCount(0);
     });
   });
 });

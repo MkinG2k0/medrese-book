@@ -123,6 +123,29 @@ export function useAssignExtraAssignment(studentId: string, date: string) {
 	})
 }
 
+export function useDeleteSessionExtraAssignment(studentId: string) {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: async (id: string) => {
+			const res = await fetch(`/api/extra-assignments/instances/${id}`, {
+				method: 'DELETE',
+			})
+			const json = await res.json()
+			if (json.error) throw new Error(json.error)
+			return json.data
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['session-extra-assignments', studentId],
+			})
+			queryClient.invalidateQueries({
+				queryKey: ['extra-assignment-history', studentId],
+			})
+		},
+	})
+}
+
 export function useGradeExtraAssignment(studentId: string, date: string) {
 	const queryClient = useQueryClient()
 

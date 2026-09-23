@@ -12,6 +12,7 @@ export {
 	useClearExtraAssignmentGrade,
 	useCreateExtraAssignment,
 	useDeleteExtraAssignment,
+	useDeleteSessionExtraAssignment,
 	useExtraAssignments,
 	useGradeExtraAssignment,
 	useStudentExtraAssignmentHistory,
