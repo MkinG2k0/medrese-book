@@ -8,12 +8,6 @@ import {
   useCreateSession,
   useStudentSession,
 } from "@/entities/session/api/use-sessions";
-import {
-  useClearExtraAssignmentGrade,
-  useGradeExtraAssignment,
-  useSessionExtraAssignments,
-} from "@/entities/extra-assignment";
-import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
 import { useTeachingSession } from "@/entities/teaching-session/api/use-teaching-session";
 import {
   getNextLevelJournalSteps,
@@ -29,10 +23,13 @@ import {
   mapSessionStepsOutsideLevel,
 } from "@/features/journal/lib/lesson-session-steps";
 import { buildDraftSessionCompletions } from "@/features/journal/lib/build-draft-session-completions";
-import { buildInitialStepStates, buildInitialExtraGradeStates } from "@/features/journal/lib/lesson-step-states";
+import { buildInitialStepStates } from "@/features/journal/lib/lesson-step-states";
 import { shouldShowOnlyCompletedLessonSteps } from "@/features/journal/lib/lesson-view-mode";
 import type { LessonPageProps } from "@/features/journal/lib/lesson-types";
-import { useJournalStore, selectExtraAssignmentGrades, selectSessionStepStates } from "@/features/journal/model/journal-store";
+import {
+  useJournalStore,
+  selectSessionStepStates,
+} from "@/features/journal/model/journal-store";
 import { useJournalDate } from "@/features/journal/model/use-journal-date";
 import {
   EMPTY_STEP_GRADE_STATE,
@@ -49,19 +46,15 @@ import {
 
 type Attendance = "PRESENT" | "LATE" | "ABSENT";
 
-const EMPTY_EXTRA_INSTANCES: SessionExtraAssignmentInstance[] = [];
-
 function filterStepsForDayHistory<
   T extends { id: string; order: number; levelNumber?: number },
 >(
   stepPool: T[],
   sessionCompletions: { stepId: string }[] | undefined,
-  extraInstances: { displayStepId: string }[],
 ): T[] {
-  const stepIds = new Set([
-    ...(sessionCompletions?.map((completion) => completion.stepId) ?? []),
-    ...extraInstances.map((instance) => instance.displayStepId),
-  ]);
+  const stepIds = new Set(
+    sessionCompletions?.map((completion) => completion.stepId) ?? [],
+  );
 
   if (stepIds.size === 0) return [];
 
@@ -78,105 +71,64 @@ function getMaxStepIndex<T extends { id: string }>(
   );
 }
 
-function applyPendingExtraUiState(
-  effectiveLessonSteps: JournalStep[],
-  visibleCount: number,
-  expandedIds: Set<string>,
-  pendingExtraStepIds: Set<string>,
-): { visibleCount: number; expandedIds: Set<string> } {
-  if (pendingExtraStepIds.size === 0) {
-    return { visibleCount, expandedIds };
-  }
-
-  const maxPendingIndex = getMaxStepIndex(
-    effectiveLessonSteps,
-    pendingExtraStepIds,
-  );
-  const nextVisibleCount =
-    maxPendingIndex >= 0
-      ? Math.max(visibleCount, maxPendingIndex + 1)
-      : visibleCount;
-
-  const nextExpandedIds = new Set(expandedIds);
-  for (const stepId of pendingExtraStepIds) {
-    if (effectiveLessonSteps.some((step) => step.id === stepId)) {
-      nextExpandedIds.add(stepId);
-    }
-  }
-
-  return { visibleCount: nextVisibleCount, expandedIds: nextExpandedIds };
-}
-
 function resolveInitialUiState(
   effectiveLessonSteps: JournalStep[],
   isProgramComplete: boolean,
   existingSession: ReturnType<typeof useStudentSession>["data"],
   showOnlyCompleted: boolean,
-  pendingExtraStepIds: Set<string> = new Set(),
 ) {
-  let result: { visibleCount: number; expandedIds: Set<string> };
-
   if (existingSession) {
     const gradedStepIds = new Set(
       existingSession.completions.map((c) => c.stepId),
     );
 
     if (showOnlyCompleted) {
-      result = {
+      return {
         visibleCount: effectiveLessonSteps.length,
         expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
       };
-    } else {
-      const maxGradedIndex = getMaxStepIndex(effectiveLessonSteps, gradedStepIds);
-
-      if (maxGradedIndex >= 0 && !isProgramComplete) {
-        result = {
-          visibleCount: Math.min(
-            Math.max(INITIAL_VISIBLE_STEPS, maxGradedIndex + 1),
-            effectiveLessonSteps.length,
-          ),
-          expandedIds: new Set([effectiveLessonSteps[maxGradedIndex]!.id]),
-        };
-      } else if (isProgramComplete) {
-        result = {
-          visibleCount: effectiveLessonSteps.length,
-          expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
-        };
-      } else {
-        result = {
-          visibleCount: Math.min(
-            INITIAL_VISIBLE_STEPS,
-            effectiveLessonSteps.length,
-          ),
-          expandedIds: effectiveLessonSteps[0]
-            ? new Set([effectiveLessonSteps[0].id])
-            : new Set<string>(),
-        };
-      }
     }
-  } else {
-    result = {
-      visibleCount: isProgramComplete
-        ? effectiveLessonSteps.length
-        : Math.min(INITIAL_VISIBLE_STEPS, effectiveLessonSteps.length),
-      expandedIds: isProgramComplete
-        ? new Set(effectiveLessonSteps.map((step) => step.id))
-        : effectiveLessonSteps[0]
-          ? new Set([effectiveLessonSteps[0].id])
-          : new Set<string>(),
+
+    const maxGradedIndex = getMaxStepIndex(effectiveLessonSteps, gradedStepIds);
+
+    if (maxGradedIndex >= 0 && !isProgramComplete) {
+      return {
+        visibleCount: Math.min(
+          Math.max(INITIAL_VISIBLE_STEPS, maxGradedIndex + 1),
+          effectiveLessonSteps.length,
+        ),
+        expandedIds: new Set([effectiveLessonSteps[maxGradedIndex]!.id]),
+      };
+    }
+
+    if (isProgramComplete) {
+      return {
+        visibleCount: effectiveLessonSteps.length,
+        expandedIds: new Set(effectiveLessonSteps.map((step) => step.id)),
+      };
+    }
+
+    return {
+      visibleCount: Math.min(
+        INITIAL_VISIBLE_STEPS,
+        effectiveLessonSteps.length,
+      ),
+      expandedIds: effectiveLessonSteps[0]
+        ? new Set([effectiveLessonSteps[0].id])
+        : new Set<string>(),
     };
   }
 
-  if (!showOnlyCompleted) {
-    return applyPendingExtraUiState(
-      effectiveLessonSteps,
-      result.visibleCount,
-      result.expandedIds,
-      pendingExtraStepIds,
-    );
-  }
-
-  return result;
+  return {
+    visibleCount: isProgramComplete
+      ? effectiveLessonSteps.length
+      : Math.min(INITIAL_VISIBLE_STEPS, effectiveLessonSteps.length),
+    expandedIds: isProgramComplete
+      ? new Set(effectiveLessonSteps.map((step) => step.id))
+      : effectiveLessonSteps[0]
+        ? new Set([effectiveLessonSteps[0].id])
+        : new Set<string>(),
+  };
 }
 
 export function useLessonPage(props: LessonPageProps) {
@@ -213,8 +165,7 @@ export function useLessonPage(props: LessonPageProps) {
     allowedGroupIds: [groupId],
     defaultGroupId: groupId,
   });
-  const { initSessionCompletions, setSessionStepState, setExtraAssignmentGrade } =
-    useJournalStore();
+  const { initSessionCompletions, setSessionStepState } = useJournalStore();
 
   const { data: teachingSession } = useTeachingSession(groupId, dateFilter);
   const showOnlyCompleted = shouldShowOnlyCompletedLessonSteps(
@@ -228,21 +179,6 @@ export function useLessonPage(props: LessonPageProps) {
       seededDate: sessionDate,
     });
   const createSession = useCreateSession();
-
-  const { data: extraInstancesData, refetch: refetchExtraInstances } =
-    useSessionExtraAssignments(studentId, dateFilter, {
-      mode: showOnlyCompleted ? 'history' : 'active',
-    });
-  const extraInstances = extraInstancesData ?? EMPTY_EXTRA_INSTANCES;
-  const gradeExtraAssignment = useGradeExtraAssignment(studentId, dateFilter);
-  const clearExtraGrade = useClearExtraAssignmentGrade(studentId, dateFilter);
-
-  const [assignModalStepId, setAssignModalStepId] = useState<string | null>(
-    null,
-  );
-  const [assignModalStepLabel, setAssignModalStepLabel] = useState<
-    string | null
-  >(null);
 
   const isProgramComplete = useMemo(
     () => checkProgramComplete(allSteps, stepCompletions),
@@ -265,10 +201,6 @@ export function useLessonPage(props: LessonPageProps) {
     selectSessionStepStates(sessionDataKey),
   );
 
-  const extraAssignmentGrades = useJournalStore(
-    selectExtraAssignmentGrades(sessionDataKey),
-  );
-
   const sessionNextLevelLoadedCount = useMemo(() => {
     const sessionStepIds = new Set(
       existingSession?.completions.map((completion) => completion.stepId) ??
@@ -289,26 +221,6 @@ export function useLessonPage(props: LessonPageProps) {
     [nextLevelLoadedCount, nextLevelSteps],
   );
 
-  const pendingExtraStepIds = useMemo(
-    () =>
-      new Set(
-        showOnlyCompleted
-          ? []
-          : extraInstances
-              .filter((instance) => instance.completion === null)
-              .map((instance) => instance.displayStepId),
-      ),
-    [extraInstances, showOnlyCompleted],
-  );
-
-  const extraLinkedSteps = useMemo(() => {
-    if (extraInstances.length === 0) return [];
-    const stepIds = new Set(
-      extraInstances.map((instance) => instance.displayStepId),
-    );
-    return allSteps.filter((step) => stepIds.has(step.id));
-  }, [allSteps, extraInstances]);
-
   const lessonSteps = useMemo(() => {
     if (isProgramComplete) return allSteps;
 
@@ -317,20 +229,13 @@ export function useLessonPage(props: LessonPageProps) {
       steps,
       existingSession?.completions ?? [],
       sessionStepsOutsideLevel,
-      [...loadedNextLevelSteps, ...extraLinkedSteps],
+      loadedNextLevelSteps,
     );
 
     if (showOnlyCompleted) {
       return filterStepsForDayHistory(
-        buildLessonSteps(
-          allSteps,
-          steps,
-          existingSession?.completions ?? [],
-          sessionStepsOutsideLevel,
-          [...loadedNextLevelSteps, ...extraLinkedSteps],
-        ),
+        built,
         existingSession?.completions,
-        extraInstances,
       );
     }
 
@@ -341,8 +246,6 @@ export function useLessonPage(props: LessonPageProps) {
     existingSession,
     isProgramComplete,
     loadedNextLevelSteps,
-    extraLinkedSteps,
-    extraInstances,
     sessionStepsOutsideLevel,
     showOnlyCompleted,
   ]);
@@ -378,11 +281,6 @@ export function useLessonPage(props: LessonPageProps) {
     sessionStepStates,
   ]);
 
-  const resolvedExtraGradeStates = useMemo(() => {
-    const baseline = buildInitialExtraGradeStates(extraInstances);
-    return { ...baseline, ...extraAssignmentGrades };
-  }, [extraInstances, extraAssignmentGrades]);
-
   useEffect(() => {
     if (isSessionLoading || loadedSessionKey === uiInitKey) return;
 
@@ -395,23 +293,16 @@ export function useLessonPage(props: LessonPageProps) {
               steps,
               existingSession?.completions ?? [],
               sessionStepsOutsideLevel,
-              [
-                ...nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
-                ...extraLinkedSteps,
-              ],
+              nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
             ),
             existingSession?.completions,
-            extraInstances,
           )
         : buildLessonSteps(
             allSteps,
             steps,
             existingSession?.completions ?? [],
             sessionStepsOutsideLevel,
-            [
-              ...nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
-              ...extraLinkedSteps,
-            ],
+            nextLevelSteps.slice(0, sessionNextLevelLoadedCount),
           );
 
     if (existingSession) {
@@ -448,7 +339,6 @@ export function useLessonPage(props: LessonPageProps) {
         isProgramComplete,
         existingSession,
         showOnlyCompleted,
-        pendingExtraStepIds,
       );
     setVisibleCount(nextVisibleCount);
     setExpandedIds(nextExpandedIds);
@@ -468,20 +358,15 @@ export function useLessonPage(props: LessonPageProps) {
     stepCompletions,
     showOnlyCompleted,
     initSessionCompletions,
-    extraLinkedSteps,
-    extraInstances,
-    pendingExtraStepIds,
   ]);
 
   const historyStepIds = useMemo(() => {
-    const stepIds = new Set(
-      extraInstances.map((instance) => instance.displayStepId),
-    );
+    const stepIds = new Set<string>();
     for (const completion of existingSession?.completions ?? []) {
       stepIds.add(completion.stepId);
     }
     return stepIds;
-  }, [extraInstances, existingSession]);
+  }, [existingSession]);
 
   const requiredVisibleCount = useMemo(() => {
     if (showOnlyCompleted || historyStepIds.size === 0) return 0;
@@ -626,113 +511,6 @@ export function useLessonPage(props: LessonPageProps) {
     }
   };
 
-  const ensureSession = async (): Promise<string | null> => {
-    if (existingSession?.id) return existingSession.id;
-
-    try {
-      const session = await createSession.mutateAsync({
-        studentId,
-        groupId,
-        date: toSessionDate(dateFilter).toISOString(),
-        attendance,
-        lateMinutes: attendance === "LATE" ? lateMinutes : null,
-        absenceExcused: attendance === "ABSENT" ? absenceExcused : false,
-        absenceReason:
-          attendance === "ABSENT" ? absenceReason.trim() || null : null,
-        note: null,
-        // Keep draft grades when creating a session for «Дать доп. задание».
-        completions: buildDraftSessionCompletions(
-          attendance,
-          visibleSteps,
-          resolvedStepStates,
-        ),
-      });
-      return session.id;
-    } catch (err) {
-      message.error(
-        err instanceof Error ? err.message : "Не удалось создать занятие",
-      );
-      return null;
-    }
-  };
-
-  const handleOpenAssignModal = (stepId: string, stepLabel: string) => {
-    setAssignModalStepId(stepId);
-    setAssignModalStepLabel(stepLabel);
-  };
-
-  const handleCloseAssignModal = () => {
-    setAssignModalStepId(null);
-    setAssignModalStepLabel(null);
-  };
-
-  const handleExtraAssigned = () => {
-    void refetchExtraInstances();
-    handleCloseAssignModal();
-  };
-
-  const updateExtraAssignmentState = (
-    instanceId: string,
-    state: StepGradeState,
-  ) => {
-    setExtraAssignmentGrade(sessionDataKey, instanceId, state);
-  };
-
-  const saveExtraGrades = async () => {
-    const instanceById = new Map(
-      extraInstances.map((instance) => [instance.id, instance]),
-    );
-    const instanceIds = new Set([
-      ...extraInstances.map((instance) => instance.id),
-      ...Object.keys(extraAssignmentGrades),
-    ]);
-    const tasks: Promise<unknown>[] = [];
-
-    for (const instanceId of instanceIds) {
-      const instance = instanceById.get(instanceId);
-      const local = resolvedExtraGradeStates[instanceId];
-      if (!local) continue;
-
-      const serverGrade = instance?.completion?.grade ?? null;
-      const serverNote = instance?.completion?.note ?? "";
-      const localGrade = local.grade;
-      const localNote = local.note || null;
-
-      if (localGrade === null) {
-        if (serverGrade !== null) {
-          tasks.push(clearExtraGrade.mutateAsync(instanceId));
-        }
-        continue;
-      }
-
-      if (
-        localGrade !== serverGrade ||
-        localNote !== (serverNote || null)
-      ) {
-        tasks.push(
-          gradeExtraAssignment.mutateAsync({
-            id: instanceId,
-            grade: localGrade as 3 | 4 | 5,
-            note: localNote,
-          }),
-        );
-      }
-    }
-
-    if (tasks.length === 0) return true;
-
-    try {
-      await Promise.all(tasks);
-      await refetchExtraInstances();
-      return true;
-    } catch (err) {
-      message.error(
-        err instanceof Error ? err.message : "Ошибка сохранения доп. заданий",
-      );
-      return false;
-    }
-  };
-
   const saveSession = async () => {
     const completions = buildDraftSessionCompletions(
       attendance,
@@ -753,16 +531,6 @@ export function useLessonPage(props: LessonPageProps) {
         note: null,
         completions,
       });
-
-      if (attendance !== "ABSENT") {
-        const hasExtraWork =
-          extraInstances.length > 0 ||
-          Object.keys(extraAssignmentGrades).length > 0;
-        if (hasExtraWork) {
-          const extraSaved = await saveExtraGrades();
-          if (!extraSaved) return false;
-        }
-      }
 
       return true;
     } catch (err) {
@@ -816,10 +584,7 @@ export function useLessonPage(props: LessonPageProps) {
     canLoadNextLevel,
     cumulativeHoursByAllSteps,
     isSessionReady,
-    isSaving:
-      createSession.isPending ||
-      gradeExtraAssignment.isPending ||
-      clearExtraGrade.isPending,
+    isSaving: createSession.isPending,
     gradedStepCount,
     getStepTotalHours,
     handleAttendanceChange,
@@ -833,15 +598,6 @@ export function useLessonPage(props: LessonPageProps) {
     isLoadingNextLevel,
     sessionId: existingSession?.id ?? null,
     sessionDate: dateFilter,
-    extraInstances,
-    resolvedExtraGradeStates,
-    assignModalStepId,
-    assignModalStepLabel,
-    handleOpenAssignModal,
-    handleCloseAssignModal,
-    ensureSession,
-    handleExtraAssigned,
-    updateExtraAssignmentState,
   };
 }
 

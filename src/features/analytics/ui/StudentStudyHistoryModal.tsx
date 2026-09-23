@@ -160,15 +160,6 @@ export function StudentStudyHistoryModal({
                     key: "title",
                   },
                   {
-                    title: "Оценка",
-                    key: "grade",
-                    render: (_, record) =>
-                      record.completion
-                        ? (GRADE_LABEL[record.completion.grade] ??
-                          record.completion.grade)
-                        : "—",
-                  },
-                  {
                     title: "Автор",
                     key: "author",
                     render: (_, record) => record.template.author.name,

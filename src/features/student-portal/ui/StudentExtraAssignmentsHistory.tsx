@@ -8,12 +8,6 @@ import type { ExtraAssignmentHistoryRow } from "@/entities/extra-assignment/mode
 import { formatDate } from "@/shared/lib/utils";
 import Title from "@/shared/ui/Title";
 
-const GRADE_LABELS: Record<number, string> = {
-  3: "Средне",
-  4: "Хорошо",
-  5: "Отлично",
-};
-
 function groupBySubject(rows: ExtraAssignmentHistoryRow[]) {
   const groups = new Map<
     string,
@@ -85,15 +79,6 @@ export function StudentExtraAssignmentsHistory() {
                 title: "Автор",
                 key: "author",
                 render: (_, record) => record.template.author.name,
-              },
-              {
-                title: "Оценка",
-                key: "grade",
-                render: (_, record) =>
-                  record.completion
-                    ? (GRADE_LABELS[record.completion.grade] ??
-                      record.completion.grade)
-                    : "—",
               },
             ]}
           />

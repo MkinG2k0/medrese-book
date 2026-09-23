@@ -12,11 +12,6 @@ export const selectSessionStepStates =
 	(state: JournalStore): SessionCompletions =>
 		state.sessionCompletions[sessionKey] ?? EMPTY_SESSION_COMPLETIONS
 
-export const selectExtraAssignmentGrades =
-	(sessionKey: string) =>
-	(state: JournalStore): SessionCompletions =>
-		state.extraAssignmentGrades[sessionKey] ?? EMPTY_SESSION_COMPLETIONS
-
 type JournalStore = {
 	selectedStudentId: string | null
 	setSelectedStudentId: (id: string | null) => void
@@ -32,12 +27,6 @@ type JournalStore = {
 		state: StepGradeState,
 	) => void
 	clearSessionCompletions: (sessionKey: string) => void
-	extraAssignmentGrades: Record<string, SessionCompletions>
-	setExtraAssignmentGrade: (
-		sessionKey: string,
-		instanceId: string,
-		state: StepGradeState,
-	) => void
 }
 
 export const useJournalStore = create<JournalStore>((set) => ({
@@ -70,18 +59,6 @@ export const useJournalStore = create<JournalStore>((set) => ({
 			sessionCompletions: {
 				...store.sessionCompletions,
 				[sessionKey]: EMPTY_SESSION_COMPLETIONS,
-			},
-		})),
-	extraAssignmentGrades: {},
-	setExtraAssignmentGrade: (sessionKey, instanceId, state) =>
-		set((store) => ({
-			extraAssignmentGrades: {
-				...store.extraAssignmentGrades,
-				[sessionKey]: {
-					...(store.extraAssignmentGrades[sessionKey] ??
-						EMPTY_SESSION_COMPLETIONS),
-					[instanceId]: state,
-				},
 			},
 		})),
 }))

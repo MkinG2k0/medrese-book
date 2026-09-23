@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-import { clickRadioButton } from "./helpers/antd";
 import { AUTH_STATE } from "./helpers/auth-state";
 import { TEST_USERS } from "./helpers/codes";
 import { startLessonIfNeeded } from "./helpers/journal";
@@ -80,7 +79,7 @@ test.describe("Доп. задания", () => {
       );
     });
 
-    test("назначает и оценивает на уроке", async ({ page }) => {
+    test("в журнале нет кнопки «Дать доп. задание»", async ({ page }) => {
       await page.goto("/journal");
       await startLessonIfNeeded(page);
       await page.getByRole("link", { name: TEST_USERS.studentAli }).click();
@@ -91,20 +90,9 @@ test.describe("Доп. задания", () => {
         .first();
       await stepCard.click();
 
-      await stepCard
-        .getByRole("button", { name: "Дать доп. задание" })
-        .click();
-
-      const assignDialog = page.getByRole("dialog", { name: "Дать доп. задание" });
-      await expect(assignDialog).toBeVisible();
-
-      const targetRow = assignDialog.getByRole("row", { name: uniqueTitle });
-      await targetRow.getByRole("button", { name: "Назначить" }).click();
-
-      await expect(stepCard.getByText(uniqueTitle)).toBeVisible();
-
-      await clickRadioButton(stepCard, "Хорошо");
-      await expect(stepCard.getByRole("radio", { name: "Хорошо" })).toBeChecked();
+      await expect(
+        page.getByRole("button", { name: "Дать доп. задание" }),
+      ).toHaveCount(0);
     });
   });
 });
