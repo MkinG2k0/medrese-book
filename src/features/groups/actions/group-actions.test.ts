@@ -467,6 +467,131 @@ describe('group-actions', () => {
 		})
 	})
 
+	describe('transferStudent', () => {
+		it('moves enrollment to another group of the same subject', async () => {
+			groupFindUniqueMock
+				.mockResolvedValueOnce({ id: 'group-1', subjectId: 'subject-1' })
+				.mockResolvedValueOnce({ id: 'group-2', subjectId: 'subject-1' })
+			groupEnrollmentFindUniqueMock
+				.mockResolvedValueOnce({
+					id: 'enrollment-1',
+					levelId: 'level-1',
+					currentStepIdx: 7,
+				})
+				.mockResolvedValueOnce(null)
+
+			const deleteInTx = vi.fn()
+			const createInTx = vi.fn()
+			transactionMock.mockImplementation(async (fn) => {
+				return fn({
+					groupEnrollment: {
+						delete: deleteInTx,
+						create: createInTx,
+					},
+				})
+			})
+
+			const { transferStudent } = await import('./group-actions')
+			await transferStudent('group-1', {
+				studentId: 'student-1',
+				toGroupId: 'group-2',
+			})
+
+			expect(deleteInTx).toHaveBeenCalledWith({
+				where: { id: 'enrollment-1' },
+			})
+			expect(createInTx).toHaveBeenCalledWith({
+				data: {
+					studentId: 'student-1',
+					groupId: 'group-2',
+					levelId: 'level-1',
+					currentStepIdx: 7,
+				},
+			})
+			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-1')
+			expect(revalidatePathMock).toHaveBeenCalledWith('/groups/group-2')
+		})
+
+		it('rejects transfer across different subjects', async () => {
+			groupFindUniqueMock
+				.mockResolvedValueOnce({ id: 'group-1', subjectId: 'subject-1' })
+				.mockResolvedValueOnce({ id: 'group-2', subjectId: 'subject-2' })
+			groupEnrollmentFindUniqueMock
+				.mockResolvedValueOnce({
+					id: 'enrollment-1',
+					levelId: 'level-1',
+					currentStepIdx: 0,
+				})
+				.mockResolvedValueOnce(null)
+
+			const { transferStudent } = await import('./group-actions')
+			await expect(
+				transferStudent('group-1', {
+					studentId: 'student-1',
+					toGroupId: 'group-2',
+				}),
+			).rejects.toThrow(
+				'Перенос возможен только между группами одного предмета',
+			)
+			expect(transactionMock).not.toHaveBeenCalled()
+		})
+
+		it('rejects when already enrolled in target group', async () => {
+			groupFindUniqueMock
+				.mockResolvedValueOnce({ id: 'group-1', subjectId: 'subject-1' })
+				.mockResolvedValueOnce({ id: 'group-2', subjectId: 'subject-1' })
+			groupEnrollmentFindUniqueMock
+				.mockResolvedValueOnce({
+					id: 'enrollment-1',
+					levelId: 'level-1',
+					currentStepIdx: 0,
+				})
+				.mockResolvedValueOnce({ id: 'enrollment-2' })
+
+			const { transferStudent } = await import('./group-actions')
+			await expect(
+				transferStudent('group-1', {
+					studentId: 'student-1',
+					toGroupId: 'group-2',
+				}),
+			).rejects.toThrow('Ученик уже зачислен в целевую группу')
+			expect(transactionMock).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('listTransferTargetGroups', () => {
+		it('lists other groups of the same subject', async () => {
+			groupFindUniqueMock.mockResolvedValue({
+				id: 'group-1',
+				subjectId: 'subject-1',
+			})
+			groupFindManyMock.mockResolvedValue([
+				{
+					id: 'group-2',
+					name: 'Группа Б',
+					teacher: { user: { name: 'Учитель 2' } },
+				},
+			])
+
+			const { listTransferTargetGroups } = await import('./group-actions')
+			const result = await listTransferTargetGroups('group-1')
+
+			expect(groupFindManyMock).toHaveBeenCalledWith({
+				where: {
+					subjectId: 'subject-1',
+					id: { not: 'group-1' },
+				},
+				include: {
+					teacher: { include: { user: { select: { name: true } } } },
+				},
+				orderBy: { name: 'asc' },
+			})
+			expect(result).toEqual([
+				{ id: 'group-2', name: 'Группа Б', teacherName: 'Учитель 2' },
+			])
+		})
+	})
+
 	describe('searchStudentsForEnroll', () => {
 		it('excludes students already enrolled in the group', async () => {
 			groupEnrollmentFindManyMock.mockResolvedValue([

@@ -22,6 +22,7 @@ import {
 	getTotalProgramSteps,
 } from '@/shared/lib/student-progress'
 import { getCompletionsByStepId } from '@/shared/lib/step-completion'
+import type { StudentStatus } from '@/shared/lib/student-status'
 import type { StepContent } from '@/shared/lib/validations/step'
 
 export type StudentEnrollmentDashboardItem = {
@@ -36,6 +37,7 @@ export type StudentEnrollmentDashboardItem = {
 
 export type StudentEnrollmentDashboard = {
 	studentName: string
+	status: StudentStatus
 	enrollments: StudentEnrollmentDashboardItem[]
 }
 
@@ -93,6 +95,7 @@ export async function getStudentEnrollmentDashboard(): Promise<StudentEnrollment
 
 	return {
 		studentName: student.user.name,
+		status: student.status,
 		enrollments: enrollmentCards,
 	}
 }

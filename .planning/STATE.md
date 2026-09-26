@@ -58,7 +58,8 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 - Completed quick task 260923-vb9: доп. задания в журнале + удаление
+Last activity: 2026-09-26 - Completed quick task 260926-mwg: перенос ученика + статус на учётке
+
 
 ## Performance Metrics
 
@@ -204,6 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 260926-mwg | Перенос ученика A→B (тот же предмет) + статус пауза/архив на учётке | 2026-09-26 | pending | [260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok](./quick/260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok/) |
 | 260923-vb9 | Восстановить доп. в журнале + удаление назначенного | 2026-09-23 | 159547e | [260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba](./quick/260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba/) |
 | 260923-v2l | Убрать доп. задания из журнала, убрать оценку, fix +1 шаг | 2026-09-23 | c7191c2 | [260923-v2l-zhurnal-ubrat-dop-zadaniya-iz-zhurnala-u](./quick/260923-v2l-zhurnal-ubrat-dop-zadaniya-iz-zhurnala-u/) |
 | 260624-psw | Убрать переключение ролей кроме менеджера/админа, исключить учеников | 2026-06-24 | ee3858c | [260624-psw-restrict-user-switcher](./quick/260624-psw-restrict-user-switcher/) |
@@ -275,7 +277,8 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-09-23 - Completed quick task 260923-vb9: доп. задания в журнале + удаление
+Last activity: 2026-09-26 - Completed quick task 260926-mwg: перенос ученика + статус на учётке
+
 Last session: 2026-09-16T19:25:00Z
 Stopped at: Completed 260916-v0w PLAN/SUMMARY
 Resume file: None

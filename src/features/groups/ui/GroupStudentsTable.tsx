@@ -16,6 +16,7 @@ import {
 
 import { unenrollStudent } from "@/features/groups/actions/group-actions";
 import { EnrollStudentModal } from "@/features/groups/ui/EnrollStudentModal";
+import { TransferStudentModal } from "@/features/groups/ui/TransferStudentModal";
 import { resetUserCode } from "@/features/user-admin/actions/user-actions";
 import type { LevelOption } from "@/features/user-admin/lib/map-users-to-details";
 import {
@@ -69,6 +70,10 @@ export function GroupStudentsTable({
   const [isPending, startTransition] = useTransition();
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
   const [enrollOpen, setEnrollOpen] = useState(false);
+  const [transferTarget, setTransferTarget] = useState<{
+    studentId: string;
+    studentName: string;
+  } | null>(null);
   const [codeModal, setCodeModal] = useState<{ name: string; code: string } | null>(
     null,
   );
@@ -212,17 +217,32 @@ export function GroupStudentsTable({
                 const studentId = record.student?.id;
                 if (!studentId) return null;
                 return (
-                  <Button
-                    type="link"
-                    danger
-                    size="small"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleUnenroll(studentId, record.name);
-                    }}
-                  >
-                    Снять с группы
-                  </Button>
+                  <div className="flex flex-wrap gap-1">
+                    <Button
+                      type="link"
+                      size="small"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setTransferTarget({
+                          studentId,
+                          studentName: record.name,
+                        });
+                      }}
+                    >
+                      Перевести
+                    </Button>
+                    <Button
+                      type="link"
+                      danger
+                      size="small"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleUnenroll(studentId, record.name);
+                      }}
+                    >
+                      Снять с группы
+                    </Button>
+                  </div>
                 );
               },
             } satisfies ColumnsType<UserDetail>[number],
@@ -282,6 +302,16 @@ export function GroupStudentsTable({
           levels={levels}
           open={enrollOpen}
           onClose={() => setEnrollOpen(false)}
+        />
+      )}
+
+      {canManageEnrollment && groupId && transferTarget && (
+        <TransferStudentModal
+          open
+          fromGroupId={groupId}
+          studentId={transferTarget.studentId}
+          studentName={transferTarget.studentName}
+          onClose={() => setTransferTarget(null)}
         />
       )}
 

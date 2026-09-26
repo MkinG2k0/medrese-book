@@ -22,9 +22,15 @@ export const unenrollStudentSchema = z.object({
 	studentId: z.string().min(1),
 })
 
+export const transferStudentSchema = z.object({
+	studentId: z.string().min(1, 'Выберите ученика'),
+	toGroupId: z.string().min(1, 'Выберите группу'),
+})
+
 export type EnrollStudentInput = z.infer<typeof enrollStudentSchema>
 export type EnrollStudentsInput = z.infer<typeof enrollStudentsSchema>
 export type UnenrollStudentInput = z.infer<typeof unenrollStudentSchema>
+export type TransferStudentInput = z.infer<typeof transferStudentSchema>
 
 export function assertLevelBelongsToGroupSubject(
 	groupSubjectId: string,
