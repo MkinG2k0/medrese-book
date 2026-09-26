@@ -8,7 +8,7 @@ type RouteContext = { params: Promise<{ id: string }> }
 
 export async function POST(_request: Request, context: RouteContext) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT', 'ACCOUNTANT'],
+		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT', 'ACCOUNTANT', 'PARENT'],
 	})
 	if ('error' in authResult) return authResult.error
 

@@ -3,14 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { App, Button, Descriptions, Form, Input, Modal, Select, Tag } from "antd";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import {
   updateStudentProgress,
   updateStudentStatus,
 } from "@/features/student-admin/actions/student-admin-actions";
-import { deleteUser, updateUser } from "@/features/user-admin/actions/user-actions";
+import {
+  deleteUser,
+  searchParents,
+  updateUser,
+} from "@/features/user-admin/actions/user-actions";
 import { formatDate } from "@/shared/lib/utils";
 import {
   STUDENT_STATUS_LABELS,
@@ -31,6 +35,7 @@ const ROLE_LABELS: Record<string, string> = {
   TEACHER: "Учитель",
   STUDENT: "Ученик",
   ACCOUNTANT: "Бухгалтер",
+  PARENT: "Опекун",
 };
 
 type LevelOption = {
@@ -55,6 +60,9 @@ export type UserDetail = {
     phone?: string;
     guardianName?: string;
     guardianPhone?: string;
+    parentId?: string;
+    parentName?: string;
+    parentPhone?: string;
     currentStepIdx: number;
     levelId: string;
     levelTitle?: string;
@@ -96,6 +104,7 @@ function getStudentDefaultValues(user: UserDetail): UpdateStudentUserFormInput {
   return {
     name: user.name,
     phone: user.student?.phone ?? "",
+    parentId: user.student?.parentId ?? "",
     guardianName: user.student?.guardianName ?? "",
     guardianPhone: user.student?.guardianPhone ?? "",
     levelId: user.student?.levelId ?? "",
@@ -127,6 +136,7 @@ function StudentEditFields({
   readOnly = false,
   canEditStatus = false,
   canEditProgress = false,
+  initialParent,
 }: {
   control: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["control"];
   setValue: ReturnType<typeof useForm<UpdateStudentUserFormInput>>["setValue"];
@@ -140,13 +150,62 @@ function StudentEditFields({
   readOnly?: boolean;
   canEditStatus?: boolean;
   canEditProgress?: boolean;
+  initialParent?: { id: string; name: string; phone?: string };
 }) {
   const watchedLevelId = useWatch({ control, name: "levelId" });
   const levelId = canEditProgress
     ? watchedLevelId
     : enrollmentGroups?.[0]?.levelId;
   const localStepIndex = useWatch({ control, name: "localStepIndex" });
+  const parentId = useWatch({ control, name: "parentId" });
   const selectedLevel = levels.find((level) => level.id === levelId);
+  const parentLocked = Boolean(parentId);
+  const [parents, setParents] = useState<
+    { id: string; name: string; phone: string | null; childrenCount: number }[]
+  >(() =>
+    initialParent
+      ? [
+          {
+            id: initialParent.id,
+            name: initialParent.name,
+            phone: initialParent.phone ?? null,
+            childrenCount: 0,
+          },
+        ]
+      : [],
+  );
+  const [parentsLoading, setParentsLoading] = useState(false);
+
+  useEffect(() => {
+    if (readOnly) return;
+    let cancelled = false;
+    setParentsLoading(true);
+    searchParents()
+      .then((result) => {
+        if (cancelled) return;
+        setParents((prev) => {
+          const selected = prev.find((item) => item.id === initialParent?.id);
+          if (!selected) return result;
+          if (result.some((item) => item.id === selected.id)) return result;
+          return [selected, ...result];
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setParentsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [readOnly, initialParent?.id]);
+
+  useEffect(() => {
+    if (!parentLocked) return;
+    const selected = parents.find((parent) => parent.id === parentId);
+    if (selected) {
+      setValue("guardianName", selected.name);
+      setValue("guardianPhone", selected.phone ?? "");
+    }
+  }, [parentLocked, parentId, parents, setValue]);
 
   useEffect(() => {
     if (!selectedLevel) return;
@@ -177,14 +236,43 @@ function StudentEditFields({
       />
 
       <Controller
+        name="parentId"
+        control={control}
+        render={({ field }) => (
+          <Form.Item label="Опекун">
+            <Select
+              allowClear
+              showSearch
+              filterOption={false}
+              loading={parentsLoading}
+              disabled={readOnly}
+              placeholder="Поиск опекуна"
+              value={field.value || undefined}
+              onChange={(value) => field.onChange(value ?? "")}
+              onSearch={(query) => {
+                searchParents(query)
+                  .then(setParents)
+                  .catch(() => undefined);
+              }}
+              onClear={() => field.onChange("")}
+              options={parents.map((parent) => ({
+                value: parent.id,
+                label: `${parent.name}${parent.phone ? ` · ${parent.phone}` : ""} (${parent.childrenCount})`,
+              }))}
+              notFoundContent={
+                parentsLoading ? "Загрузка…" : "Опекуны не найдены"
+              }
+            />
+          </Form.Item>
+        )}
+      />
+
+      <Controller
         name="guardianName"
         control={control}
         render={({ field }) => (
           <Form.Item label="Имя опекуна">
-            <Input
-              {...field}
-              disabled={readOnly}
-            />
+            <Input {...field} disabled={readOnly || parentLocked} />
           </Form.Item>
         )}
       />
@@ -194,7 +282,7 @@ function StudentEditFields({
         control={control}
         render={({ field }) => (
           <Form.Item label="Телефон опекуна">
-            <Input {...field} disabled={readOnly} />
+            <Input {...field} disabled={readOnly || parentLocked} />
           </Form.Item>
         )}
       />
@@ -331,6 +419,7 @@ export function UserDetailModal({
       await updateUser(user.id, {
         name: values.name.trim(),
         phone: values.phone?.trim() || undefined,
+        parentId: values.parentId?.trim() ? values.parentId.trim() : null,
         guardianName: values.guardianName?.trim() || undefined,
         guardianPhone: values.guardianPhone?.trim() || undefined,
         localStepIndex: values.localStepIndex,
@@ -504,6 +593,15 @@ export function UserDetailModal({
                   readOnly={readOnly}
                   canEditStatus={canEditStatus}
                   canEditProgress={canEditProgress}
+                  initialParent={
+                    user.student?.parentId
+                      ? {
+                          id: user.student.parentId,
+                          name: user.student.parentName ?? "Опекун",
+                          phone: user.student.parentPhone,
+                        }
+                      : undefined
+                  }
                 />
               </Form>
             </form>

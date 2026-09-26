@@ -10,7 +10,7 @@ import { createPostSchema } from '@/shared/lib/validations/post'
 
 export async function GET() {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT', 'ACCOUNTANT'],
+		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT', 'ACCOUNTANT', 'PARENT'],
 	})
 	if ('error' in authResult) return authResult.error
 

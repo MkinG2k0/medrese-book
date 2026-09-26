@@ -26,6 +26,9 @@ export async function getUsers() {
 			teacher: { include: { groups: true } },
 			student: {
 				include: {
+					parent: {
+						select: { id: true, name: true, phone: true },
+					},
 					enrollments: {
 						include: {
 							group: true,
@@ -56,6 +59,39 @@ export async function getLevelsForStudentProfile() {
 		include: { steps: { orderBy: { order: 'asc' } } },
 		orderBy: { number: 'asc' },
 	})
+}
+
+export async function searchParents(query?: string) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+
+	const parents = await prisma.user.findMany({
+		where: {
+			role: 'PARENT',
+			...(query?.trim()
+				? {
+						OR: [
+							{ name: { contains: query.trim(), mode: 'insensitive' } },
+							{ phone: { contains: query.trim(), mode: 'insensitive' } },
+						],
+					}
+				: {}),
+		},
+		select: {
+			id: true,
+			name: true,
+			phone: true,
+			_count: { select: { children: true } },
+		},
+		orderBy: { name: 'asc' },
+		take: 50,
+	})
+
+	return parents.map((parent) => ({
+		id: parent.id,
+		name: parent.name,
+		phone: parent.phone,
+		childrenCount: parent._count.children,
+	}))
 }
 
 export async function createUsers(input: unknown) {
@@ -103,7 +139,50 @@ export async function createUsers(input: unknown) {
 		level = foundLevel
 	}
 
-	const users: { name: string; code: string }[] = []
+	if (data.parentId) {
+		const parent = await prisma.user.findFirst({
+			where: { id: data.parentId, role: 'PARENT' },
+			select: { id: true },
+		})
+		if (!parent) {
+			throw new Error('Опекун не найден')
+		}
+	}
+
+	const users: { name: string; code: string; role: string }[] = []
+
+	type ParentRef = {
+		id: string
+		name: string
+		phone: string | null
+	}
+
+	let sharedParent: ParentRef | null = null
+
+	if (data.role === 'STUDENT' && data.parentId) {
+		const parent = await prisma.user.findUniqueOrThrow({
+			where: { id: data.parentId },
+			select: { id: true, name: true, phone: true },
+		})
+		sharedParent = parent
+	} else if (
+		data.role === 'STUDENT' &&
+		(data.guardianName || data.guardianPhone)
+	) {
+		const parentCode = await generateUniqueCode()
+		const parentName = data.guardianName?.trim() || 'Опекун'
+		const parent = await prisma.user.create({
+			data: {
+				name: parentName,
+				code: parentCode,
+				role: 'PARENT',
+				phone: data.guardianPhone ?? null,
+			},
+			select: { id: true, name: true, phone: true, code: true },
+		})
+		sharedParent = parent
+		users.push({ name: parent.name, code: parent.code, role: 'PARENT' })
+	}
 
 	for (const entry of data.entries) {
 		const code = await generateUniqueCode()
@@ -116,7 +195,29 @@ export async function createUsers(input: unknown) {
 			)
 			const currentStepIdx = stepOffset + localStepIndex
 
-			const createdStudent = await prisma.$transaction(async (tx) => {
+			const created = await prisma.$transaction(async (tx) => {
+				let parentRef = sharedParent
+
+				if (!parentRef) {
+					const parentCode = await generateUniqueCode()
+					const parentName = `Опекун ${entry.name}`
+					const parent = await tx.user.create({
+						data: {
+							name: parentName,
+							code: parentCode,
+							role: 'PARENT',
+							phone: null,
+						},
+						select: { id: true, name: true, phone: true, code: true },
+					})
+					parentRef = parent
+					users.push({
+						name: parent.name,
+						code: parent.code,
+						role: 'PARENT',
+					})
+				}
+
 				const user = await tx.user.create({
 					data: {
 						name: entry.name,
@@ -126,8 +227,9 @@ export async function createUsers(input: unknown) {
 							create: {
 								fullName: entry.fullName ?? entry.name,
 								phone: entry.phone,
-								guardianName: entry.guardianName,
-								guardianPhone: entry.guardianPhone,
+								guardianName: parentRef.name,
+								guardianPhone: parentRef.phone,
+								parentId: parentRef.id,
 							},
 						},
 					},
@@ -163,6 +265,7 @@ export async function createUsers(input: unknown) {
 							currentStepIdx,
 							localStepIndex,
 							groupId: data.groupId,
+							parentId: parentRef.id,
 						},
 					},
 					tx,
@@ -171,7 +274,11 @@ export async function createUsers(input: unknown) {
 				return user
 			})
 
-			users.push({ name: createdStudent.name, code: createdStudent.code })
+			users.push({
+				name: created.name,
+				code: created.code,
+				role: 'STUDENT',
+			})
 			revalidatePath(`/groups/${data.groupId}`)
 			continue
 		}
@@ -188,12 +295,13 @@ export async function createUsers(input: unknown) {
 			},
 		})
 
-		users.push({ name: entry.name, code })
+		users.push({ name: entry.name, code, role: data.role })
 	}
 
 	revalidatePath('/admin/users')
 	revalidatePath('/groups')
 	revalidatePath('/journal')
+	revalidatePath('/parent/me')
 	return { users }
 }
 
@@ -240,6 +348,35 @@ export async function updateUser(userId: string, input: unknown) {
 		)
 		const currentStepIdx = stepOffset + data.localStepIndex
 
+		let parentPatch: {
+			parentId: string | null
+			guardianName: string | null
+			guardianPhone: string | null
+		} | null = null
+
+		if (data.parentId !== undefined) {
+			if (data.parentId === null || data.parentId === '') {
+				parentPatch = {
+					parentId: null,
+					guardianName: data.guardianName ?? null,
+					guardianPhone: data.guardianPhone ?? null,
+				}
+			} else {
+				const parent = await prisma.user.findFirst({
+					where: { id: data.parentId, role: 'PARENT' },
+					select: { id: true, name: true, phone: true },
+				})
+				if (!parent) {
+					throw new Error('Опекун не найден')
+				}
+				parentPatch = {
+					parentId: parent.id,
+					guardianName: parent.name,
+					guardianPhone: parent.phone,
+				}
+			}
+		}
+
 		const enrollments = await prisma.groupEnrollment.findMany({
 			where: { studentId: user.student.id },
 			select: { groupId: true },
@@ -264,9 +401,13 @@ export async function updateUser(userId: string, input: unknown) {
 				data: {
 					fullName: data.name,
 					phone: data.phone,
-					guardianName: data.guardianName,
-					guardianPhone: data.guardianPhone,
 					status: data.status,
+					...(parentPatch
+						? parentPatch
+						: {
+								guardianName: data.guardianName,
+								guardianPhone: data.guardianPhone,
+							}),
 				},
 			})
 
@@ -308,6 +449,7 @@ export async function updateUser(userId: string, input: unknown) {
 		revalidatePath('/student/lessons')
 		revalidatePath('/student/history')
 		revalidatePath('/student/awards')
+		revalidatePath('/parent/me')
 		return
 	}
 

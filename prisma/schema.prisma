@@ -13,6 +13,7 @@ enum Role {
   TEACHER
   STUDENT
   ACCOUNTANT
+  PARENT
 }
 
 enum PaymentMethod {
@@ -90,6 +91,7 @@ model User {
   phone                      String?
   teacher                    Teacher?
   student                    Student?
+  children                   Student[]          @relation("StudentParent")
   notifications              Notification[]
   pushSubscriptions          PushSubscription[]
   conversationsAsParticipant1 Conversation[]    @relation("ConversationParticipant1")
@@ -160,6 +162,8 @@ model Student {
   phone          String?
   guardianName   String?
   guardianPhone  String?
+  parentId       String?
+  parent         User?            @relation("StudentParent", fields: [parentId], references: [id], onDelete: SetNull)
   enrollments    GroupEnrollment[]
   status         StudentStatus    @default(ACTIVE)
   tuitionRate    Int              @default(200000)
@@ -170,6 +174,8 @@ model Student {
   tuitionCharges TuitionCharge[]
   tuitionPayments TuitionPayment[]
   extraAssignments StudentExtraAssignment[]
+
+  @@index([parentId])
 }
 
 model Subject {

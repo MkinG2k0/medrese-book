@@ -8,6 +8,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form'
 import {
 	createUsers,
 	getLevelsWithStepsForSubject,
+	searchParents,
 } from '@/features/user-admin/actions/user-actions'
 import {
 	buildCreateUsersPayload,
@@ -23,9 +24,16 @@ type LevelOption = {
 	steps: { id: string; order: number; title: string }[]
 }
 
+type ParentOption = {
+	id: string
+	name: string
+	phone: string | null
+	childrenCount: number
+}
+
 type CreateUserFormProps = {
 	groups: { id: string; name: string; subjectId: string }[]
-	onSuccess: (users: { name: string; code: string }[]) => void
+	onSuccess: (users: { name: string; code: string; role?: string }[]) => void
 }
 
 function getStepOffset(levels: LevelOption[], levelNumber: number): number {
@@ -41,6 +49,8 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const [isPending, startTransition] = useTransition()
 	const [levels, setLevels] = useState<LevelOption[]>([])
 	const [levelsLoading, setLevelsLoading] = useState(false)
+	const [parents, setParents] = useState<ParentOption[]>([])
+	const [parentsLoading, setParentsLoading] = useState(false)
 
 	const { control, handleSubmit, setValue } = useForm<CreateUserFormInput>({
 		resolver: zodResolver(createUserFormSchema),
@@ -49,6 +59,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 			role: 'STUDENT',
 			phone: '',
 			studentPhone: '',
+			parentId: undefined,
 			guardianName: '',
 			guardianPhone: '',
 			localStepIndex: 0,
@@ -60,16 +71,35 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const groupId = useWatch({ control, name: 'groupId' })
 	const levelId = useWatch({ control, name: 'levelId' })
 	const localStepIndex = useWatch({ control, name: 'localStepIndex' })
+	const parentId = useWatch({ control, name: 'parentId' })
 
 	const parsedEntries = useMemo(
 		() => parseStudentEntries(names ?? ''),
 		[names],
 	)
-	const isSingleStudent = role === 'STUDENT' && parsedEntries.length === 1
 	const isMultipleStudents = role === 'STUDENT' && parsedEntries.length > 1
+	const parentLocked = Boolean(parentId)
 
 	const selectedGroup = groups.find((group) => group.id === groupId)
 	const selectedLevel = levels.find((level) => level.id === levelId)
+
+	useEffect(() => {
+		if (role !== 'STUDENT') return
+
+		let cancelled = false
+		setParentsLoading(true)
+		searchParents()
+			.then((result) => {
+				if (!cancelled) setParents(result)
+			})
+			.finally(() => {
+				if (!cancelled) setParentsLoading(false)
+			})
+
+		return () => {
+			cancelled = true
+		}
+	}, [role])
 
 	useEffect(() => {
 		if (role !== 'STUDENT' || !selectedGroup) {
@@ -117,6 +147,12 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 		}
 	}, [selectedLevel, localStepIndex, setValue])
 
+	useEffect(() => {
+		if (!parentLocked) return
+		setValue('guardianName', '')
+		setValue('guardianPhone', '')
+	}, [parentLocked, setValue])
+
 	const stepOptions = useMemo(() => {
 		if (!selectedLevel) return []
 		const offset = getStepOffset(levels, selectedLevel.number)
@@ -125,6 +161,12 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 			label: `Шаг ${offset + index + 1}: ${step.title}`,
 		}))
 	}, [levels, selectedLevel])
+
+	const handleParentSearch = (query: string) => {
+		searchParents(query)
+			.then(setParents)
+			.catch(() => undefined)
+	}
 
 	const onSubmit = (values: CreateUserFormInput) => {
 		startTransition(async () => {
@@ -204,12 +246,46 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 						render={({ field }) => (
 							<Form.Item
 								label="Телефон ученика"
-								help={isMultipleStudents ? 'Укажите телефоны в поле ФИО' : undefined}
+								help={
+									isMultipleStudents
+										? 'Укажите телефоны в поле ФИО'
+										: undefined
+								}
 							>
 								<Input
 									{...field}
 									disabled={isMultipleStudents}
 									placeholder="89676123456"
+								/>
+							</Form.Item>
+						)}
+					/>
+
+					<Controller
+						name="parentId"
+						control={control}
+						render={({ field }) => (
+							<Form.Item
+								label="Опекун"
+								help="Выберите существующего или оставьте пустым и заполните поля ниже"
+							>
+								<Select
+									allowClear
+									showSearch
+									filterOption={false}
+									loading={parentsLoading}
+									placeholder="Поиск опекуна по имени или телефону"
+									value={field.value || undefined}
+									onChange={(value) => field.onChange(value ?? undefined)}
+									onSearch={handleParentSearch}
+									onClear={() => field.onChange(undefined)}
+									options={parents.map((parent) => ({
+										value: parent.id,
+										label: `${parent.name}${parent.phone ? ` · ${parent.phone}` : ''} (${parent.childrenCount})`,
+									}))}
+									notFoundContent={
+										parentsLoading ? 'Загрузка…' : 'Опекуны не найдены'
+									}
 								/>
 							</Form.Item>
 						)}
@@ -222,8 +298,8 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 							<Form.Item label="Имя опекуна">
 								<Input
 									{...field}
-									disabled={isMultipleStudents}
-									placeholder="Ибрагимов Камал Ахмедович"
+									disabled={parentLocked}
+									placeholder="Ибрагимова Амина"
 								/>
 							</Form.Item>
 						)}
@@ -236,7 +312,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 							<Form.Item label="Телефон опекуна">
 								<Input
 									{...field}
-									disabled={isMultipleStudents}
+									disabled={parentLocked}
 									placeholder="89676123456"
 								/>
 							</Form.Item>

@@ -22,6 +22,8 @@ type UserWithRelations = {
 		phone: string | null
 		guardianName: string | null
 		guardianPhone: string | null
+		parentId?: string | null
+		parent?: { id: string; name: string; phone: string | null } | null
 		status: StudentStatus
 		enrollments: {
 			groupId: string
@@ -100,6 +102,9 @@ export function mapUsersToDetails(
 						phone: user.student.phone ?? undefined,
 						guardianName: user.student.guardianName ?? undefined,
 						guardianPhone: user.student.guardianPhone ?? undefined,
+						parentId: user.student.parentId ?? user.student.parent?.id,
+						parentName: user.student.parent?.name,
+						parentPhone: user.student.parent?.phone ?? undefined,
 						currentStepIdx: enrollmentStepIdx,
 						levelId: primaryEnrollment?.levelId ?? '',
 						levelTitle: primaryEnrollment?.level.title,

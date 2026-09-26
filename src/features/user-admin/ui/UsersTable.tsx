@@ -4,6 +4,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Modal, Table, Tag, Typography } from "antd";
 import type { InputRef } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useMemo,
@@ -26,6 +27,7 @@ const ROLE_OPTIONS = [
   { value: "TEACHER", label: "Учитель" },
   { value: "MANAGER", label: "Менеджер" },
   { value: "ACCOUNTANT", label: "Бухгалтер" },
+  { value: "PARENT", label: "Опекун" },
 ];
 
 const ROLE_LABELS = Object.fromEntries(
@@ -35,6 +37,7 @@ const ROLE_LABELS = Object.fromEntries(
 type CreatedUser = {
   name: string;
   code: string;
+  role?: string;
 };
 
 type LevelOption = {
@@ -75,6 +78,7 @@ export function UsersTable({
   hideGroupColumn = false,
   enableRowClick = true,
 }: UsersTableProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [codeModal, setCodeModal] = useState<CreatedUser[] | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -283,6 +287,7 @@ export function UsersTable({
           onSuccess={(createdUsers) => {
             setShowCreate(false);
             setCodeModal(createdUsers);
+            router.refresh();
           }}
         />
       </Modal>
@@ -304,8 +309,19 @@ export function UsersTable({
         </Typography.Paragraph>
         <div className="flex flex-col gap-4">
           {codeModal?.map((user) => (
-            <div key={user.name} className="flex flex-col gap-1">
-              <Typography.Text strong>{user.name}</Typography.Text>
+            <div
+              key={`${user.role ?? "user"}-${user.name}-${user.code}`}
+              className="flex flex-col gap-1"
+            >
+              <Typography.Text strong>
+                {user.name}
+                {user.role ? (
+                  <Typography.Text type="secondary">
+                    {" "}
+                    · {ROLE_LABELS[user.role] ?? user.role}
+                  </Typography.Text>
+                ) : null}
+              </Typography.Text>
               <Title level={3} className="!text-center tracking-[0.5em]">
                 {user.code}
               </Title>

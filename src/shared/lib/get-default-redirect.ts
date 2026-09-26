@@ -6,6 +6,8 @@ export function getDefaultRedirect(role: UserRole): string {
 			return '/journal'
 		case 'STUDENT':
 			return '/student/me'
+		case 'PARENT':
+			return '/parent/me'
 		case 'MANAGER':
 		case 'SUPER_ADMIN':
 			return '/admin/users'

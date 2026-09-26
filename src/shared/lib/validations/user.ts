@@ -46,6 +46,7 @@ const userRoleSchema = z.enum([
 	'TEACHER',
 	'STUDENT',
 	'ACCOUNTANT',
+	'PARENT',
 ])
 
 const createUserEntrySchema = z.object({
@@ -66,6 +67,9 @@ export const createUsersSchema = z
 		groupId: z.string().optional(),
 		levelId: z.string().optional(),
 		localStepIndex: z.number().int().min(0).optional(),
+		parentId: z.string().optional(),
+		guardianName: optionalTextSchema,
+		guardianPhone: optionalPhoneSchema,
 	})
 	.refine((data) => data.role !== 'STUDENT' || !!data.groupId, {
 		message: 'Выберите группу',
@@ -78,6 +82,7 @@ export const createUserFormSchema = z
 		role: userRoleSchema,
 		phone: z.string().optional(),
 		studentPhone: z.string().optional(),
+		parentId: z.string().optional(),
 		guardianName: z.string().optional(),
 		guardianPhone: z.string().optional(),
 		groupId: z.string().optional(),
@@ -110,6 +115,7 @@ export const updateStudentUserSchema = z.object({
 	phone: optionalPhoneSchema,
 	guardianName: optionalTextSchema,
 	guardianPhone: optionalPhoneSchema,
+	parentId: z.string().nullable().optional(),
 	localStepIndex: z.number().int().min(0),
 	status: z.enum(STUDENT_STATUS_VALUES),
 })
@@ -122,6 +128,7 @@ export const updateStaffUserSchema = z.object({
 export const updateStudentUserFormSchema = z.object({
 	name: z.string().min(2, 'Имя должно быть не короче 2 символов'),
 	phone: z.string().optional(),
+	parentId: z.string().optional(),
 	guardianName: z.string().optional(),
 	guardianPhone: z.string().optional(),
 	levelId: z.string().optional(),
@@ -148,6 +155,7 @@ export function buildCreateUsersPayload(
 	const parsedEntries = parseStudentEntries(values.names)
 	const isSingleStudent =
 		values.role === 'STUDENT' && parsedEntries.length === 1
+	const parentSelected = Boolean(values.parentId?.trim())
 
 	const entries = parsedEntries.map((entry) => ({
 		name: entry.name,
@@ -158,14 +166,8 @@ export function buildCreateUsersPayload(
 					? values.studentPhone?.trim() || undefined
 					: entry.phone
 				: undefined,
-		guardianName:
-			values.role === 'STUDENT' && isSingleStudent
-				? values.guardianName?.trim() || undefined
-				: undefined,
-		guardianPhone:
-			values.role === 'STUDENT' && isSingleStudent
-				? values.guardianPhone?.trim() || undefined
-				: undefined,
+		guardianName: undefined,
+		guardianPhone: undefined,
 	}))
 
 	return {
@@ -177,5 +179,14 @@ export function buildCreateUsersPayload(
 		levelId: values.levelId,
 		localStepIndex:
 			values.role === 'STUDENT' ? values.localStepIndex : undefined,
+		parentId: values.role === 'STUDENT' ? values.parentId?.trim() || undefined : undefined,
+		guardianName:
+			values.role === 'STUDENT' && !parentSelected
+				? values.guardianName?.trim() || undefined
+				: undefined,
+		guardianPhone:
+			values.role === 'STUDENT' && !parentSelected
+				? values.guardianPhone?.trim() || undefined
+				: undefined,
 	}
 }

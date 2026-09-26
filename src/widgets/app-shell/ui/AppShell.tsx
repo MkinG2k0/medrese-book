@@ -167,6 +167,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <UserOutlined />,
     label: "Мой прогресс",
   },
+  "/parent/me": {
+    key: "/parent/me",
+    icon: <TeamOutlined />,
+    label: "Мои дети",
+  },
   "/student/lessons": {
     key: "/student/lessons",
     icon: <BookOutlined />,
@@ -250,6 +255,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/messages",
     "/settings",
   ],
+  PARENT: ["/parent/me", "/news", "/settings"],
 };
 
 type AppShellProps = {
