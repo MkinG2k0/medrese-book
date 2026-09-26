@@ -1,4 +1,4 @@
-﻿-- AlterEnum
+-- AlterEnum
 ALTER TYPE "Role" ADD VALUE 'PARENT';
 
 -- AlterTable
