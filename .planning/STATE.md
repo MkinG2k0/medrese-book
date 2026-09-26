@@ -205,7 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 260926-mwg | Перенос ученика A→B (тот же предмет) + статус пауза/архив на учётке | 2026-09-26 | pending | [260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok](./quick/260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok/) |
+| 260926-mwg | Перенос ученика A→B (тот же предмет) + статус пауза/архив на учётке | 2026-09-26 | 4359ad0 | [260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok](./quick/260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok/) |
 | 260923-vb9 | Восстановить доп. в журнале + удаление назначенного | 2026-09-23 | 159547e | [260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba](./quick/260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba/) |
 | 260923-v2l | Убрать доп. задания из журнала, убрать оценку, fix +1 шаг | 2026-09-23 | c7191c2 | [260923-v2l-zhurnal-ubrat-dop-zadaniya-iz-zhurnala-u](./quick/260923-v2l-zhurnal-ubrat-dop-zadaniya-iz-zhurnala-u/) |
 | 260624-psw | Убрать переключение ролей кроме менеджера/админа, исключить учеников | 2026-06-24 | ee3858c | [260624-psw-restrict-user-switcher](./quick/260624-psw-restrict-user-switcher/) |
