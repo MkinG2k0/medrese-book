@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-10-03 - Completed quick task 261003-pay: parent pay page + accountant payment requests
+Last activity: 2026-10-03 - Completed quick task 261003-wwx: Cron-напоминание в конце месяца в 12:00 МСК только опекуну (in-app + push)
 
 
 ## Performance Metrics
@@ -205,6 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 261003-wwx | Cron-напоминание в конце месяца в 12:00 МСК только опекуну (in-app + push) | 2026-10-03 | 11c802f | [261003-wwx-cron-napominanie-v-kontse-mesyatsa-v-12-](./quick/261003-wwx-cron-napominanie-v-kontse-mesyatsa-v-12-/) |
 | 261003-pay | Оплата детей опекуном + заявки бухгалтеру | 2026-10-03 | 7616f18 | [261003-pay-parent-tuition-payment-requests](./quick/261003-pay-parent-tuition-payment-requests/) |
 | 260926-ncd | Role.PARENT + Student.parentId + портал опекуна (волна 1) | 2026-09-26 | 91fd95e | [260926-ncd-volna-1-role-parent-parentid-na-student-](./quick/260926-ncd-volna-1-role-parent-parentid-na-student-/) |
 | 260926-mwg | Перенос ученика A→B (тот же предмет) + статус пауза/архив на учётке | 2026-09-26 | 4359ad0 | [260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok](./quick/260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok/) |
@@ -277,9 +278,15 @@ None yet.
 | 260730-tvy | рядом с оценками за урок выводить среднее арифметическое | 2026-07-30 | d855f21 | — |
 | 260916-v0w | Касса платежей: быстрый ввод, массовая оплата, история/сторно, Excel | 2026-09-16 | aa4004a | [260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg](./quick/260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg/) |
 
+### Quick Task Links
+
+| quick_id | taiga_url |
+|----------|-----------|
+| 261003-wwx | — |
+
 ## Session Continuity
 
-Last activity: 2026-10-03 - Completed quick task 261003-pay: parent pay page + accountant payment requests
+Last activity: 2026-10-03 - Completed quick task 261003-wwx: Cron-напоминание в конце месяца в 12:00 МСК только опекуну (in-app + push)
 
 Last session: 2026-09-16T19:25:00Z
 Stopped at: Completed 260916-v0w PLAN/SUMMARY
