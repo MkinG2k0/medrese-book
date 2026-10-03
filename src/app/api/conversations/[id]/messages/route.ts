@@ -7,6 +7,7 @@ import {
 } from '@/shared/lib/messaging/can-message-user'
 import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
+import { MESSAGING_ROLES } from '@/shared/lib/messaging/roles'
 import { sendMessageSchema } from '@/shared/lib/validations/message'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -50,7 +51,7 @@ const messageSelect = {
 
 export async function GET(_request: Request, context: RouteContext) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+		allowedRoles: [...MESSAGING_ROLES],
 	})
 	if ('error' in authResult) return authResult.error
 
@@ -76,7 +77,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function POST(request: Request, context: RouteContext) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+		allowedRoles: [...MESSAGING_ROLES],
 	})
 	if ('error' in authResult) return authResult.error
 

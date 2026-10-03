@@ -46,16 +46,40 @@ export async function canMessageUser(
 	const { role, teacherId, studentId } = session.user
 
 	if (role === 'MANAGER') {
-		return target.role === 'TEACHER' || target.role === 'STUDENT'
+		return (
+			target.role === 'TEACHER' ||
+			target.role === 'STUDENT' ||
+			target.role === 'ACCOUNTANT' ||
+			target.role === 'PARENT'
+		)
 	}
 
 	if (role === 'TEACHER') {
 		if (target.role === 'MANAGER') return true
 		if (target.role === 'TEACHER') return true
+		if (target.role === 'ACCOUNTANT') return true
+		if (target.role === 'PARENT') return true
 		if (target.role === 'STUDENT' && target.student) {
 			return teacherCanAccessStudent(teacherId, target.student.id)
 		}
 		return false
+	}
+
+	if (role === 'ACCOUNTANT') {
+		return (
+			target.role === 'MANAGER' ||
+			target.role === 'TEACHER' ||
+			target.role === 'ACCOUNTANT' ||
+			target.role === 'PARENT'
+		)
+	}
+
+	if (role === 'PARENT') {
+		return (
+			target.role === 'MANAGER' ||
+			target.role === 'TEACHER' ||
+			target.role === 'ACCOUNTANT'
+		)
 	}
 
 	if (role === 'STUDENT') {
@@ -77,7 +101,26 @@ export async function getMessageableContacts(session: Session) {
 
 	if (role === 'MANAGER') {
 		return prisma.user.findMany({
-			where: { role: { in: ['TEACHER', 'STUDENT'] } },
+			where: { role: { in: ['TEACHER', 'STUDENT', 'ACCOUNTANT', 'PARENT'] } },
+			select: { id: true, name: true, role: true },
+			orderBy: [{ role: 'asc' }, { name: 'asc' }],
+		})
+	}
+
+	if (role === 'ACCOUNTANT') {
+		return prisma.user.findMany({
+			where: {
+				id: { not: session.user.id },
+				role: { in: ['MANAGER', 'TEACHER', 'ACCOUNTANT', 'PARENT'] },
+			},
+			select: { id: true, name: true, role: true },
+			orderBy: [{ role: 'asc' }, { name: 'asc' }],
+		})
+	}
+
+	if (role === 'PARENT') {
+		return prisma.user.findMany({
+			where: { role: { in: ['MANAGER', 'TEACHER', 'ACCOUNTANT'] } },
 			select: { id: true, name: true, role: true },
 			orderBy: [{ role: 'asc' }, { name: 'asc' }],
 		})
@@ -88,38 +131,49 @@ export async function getMessageableContacts(session: Session) {
 			? await getGroupTeacherIdsForTeacher(teacherId)
 			: []
 
-		const [managers, teachers, students] = await Promise.all([
-			prisma.user.findMany({
-				where: { role: 'MANAGER' },
-				select: { id: true, name: true, role: true },
-				orderBy: { name: 'asc' },
-			}),
-			prisma.user.findMany({
-				where: {
-					role: 'TEACHER',
-					id: { not: session.user.id },
-				},
-				select: { id: true, name: true, role: true },
-				orderBy: { name: 'asc' },
-			}),
-			accessibleTeacherIds.length > 0
-				? prisma.user.findMany({
-						where: {
-							role: 'STUDENT',
-							student: {
-								enrollments: {
-									some: {
-										group: { teacherId: { in: accessibleTeacherIds } },
+		const [managers, teachers, accountants, parents, students] =
+			await Promise.all([
+				prisma.user.findMany({
+					where: { role: 'MANAGER' },
+					select: { id: true, name: true, role: true },
+					orderBy: { name: 'asc' },
+				}),
+				prisma.user.findMany({
+					where: {
+						role: 'TEACHER',
+						id: { not: session.user.id },
+					},
+					select: { id: true, name: true, role: true },
+					orderBy: { name: 'asc' },
+				}),
+				prisma.user.findMany({
+					where: { role: 'ACCOUNTANT' },
+					select: { id: true, name: true, role: true },
+					orderBy: { name: 'asc' },
+				}),
+				prisma.user.findMany({
+					where: { role: 'PARENT' },
+					select: { id: true, name: true, role: true },
+					orderBy: { name: 'asc' },
+				}),
+				accessibleTeacherIds.length > 0
+					? prisma.user.findMany({
+							where: {
+								role: 'STUDENT',
+								student: {
+									enrollments: {
+										some: {
+											group: { teacherId: { in: accessibleTeacherIds } },
+										},
 									},
 								},
 							},
-						},
-						select: { id: true, name: true, role: true },
-						orderBy: { name: 'asc' },
-					})
-				: Promise.resolve([]),
-		])
-		return [...managers, ...teachers, ...students]
+							select: { id: true, name: true, role: true },
+							orderBy: { name: 'asc' },
+						})
+					: Promise.resolve([]),
+			])
+		return [...managers, ...teachers, ...accountants, ...parents, ...students]
 	}
 
 	if (role === 'STUDENT' && studentId) {

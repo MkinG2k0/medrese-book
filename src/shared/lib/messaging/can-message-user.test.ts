@@ -94,6 +94,62 @@ describe('canMessageUser', () => {
 		expect(result).toBe(true)
 	})
 
+	it('опекун может писать менеджеру, учителю и бухгалтеру', async () => {
+		vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+			id: 'm1',
+			role: 'MANAGER',
+			teacher: null,
+			student: null,
+		} as never)
+		vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+			id: 't1',
+			role: 'TEACHER',
+			teacher: { id: 'teacher-1' },
+			student: null,
+		} as never)
+		vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
+			id: 'a1',
+			role: 'ACCOUNTANT',
+			teacher: null,
+			student: null,
+		} as never)
+
+		const parent = session({ id: 'p1', role: 'PARENT' })
+		await expect(canMessageUser(parent, 'm1')).resolves.toBe(true)
+		await expect(canMessageUser(parent, 't1')).resolves.toBe(true)
+		await expect(canMessageUser(parent, 'a1')).resolves.toBe(true)
+	})
+
+	it('опекун не может писать ученику', async () => {
+		vi.mocked(prisma.user.findUnique).mockResolvedValue({
+			id: 's1',
+			role: 'STUDENT',
+			teacher: null,
+			student: { id: 'student-1' },
+		} as never)
+
+		const result = await canMessageUser(
+			session({ id: 'p1', role: 'PARENT' }),
+			's1',
+		)
+		expect(result).toBe(false)
+	})
+
+	it('бухгалтер может писать менеджеру', async () => {
+		vi.mocked(prisma.user.findUnique).mockResolvedValue({
+			id: 'm1',
+			role: 'MANAGER',
+			teacher: null,
+			student: null,
+		} as never)
+
+		const result = await canMessageUser(
+			session({ id: 'a1', role: 'ACCOUNTANT' }),
+			'm1',
+		)
+		expect(result).toBe(true)
+	})
+
 	it('ученик может писать своему учителю', async () => {
 		vi.mocked(prisma.user.findUnique).mockResolvedValue({
 			id: 't1',

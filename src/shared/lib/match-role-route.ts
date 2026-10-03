@@ -1,4 +1,5 @@
 import type { UserRole } from '@/entities/user'
+import { MESSAGING_ROLES } from '@/shared/lib/messaging/roles'
 
 export type RoleRouteDecision = 'allow' | 'deny' | 'login' | 'none'
 
@@ -18,7 +19,7 @@ export const ROLE_ROUTES: Record<string, UserRole[]> = {
 	'/accounting/payment-requests': ['ACCOUNTANT'],
 	'/student': ['STUDENT'],
 	'/parent': ['PARENT'],
-	'/messages': ['TEACHER', 'MANAGER', 'SUPER_ADMIN', 'STUDENT'],
+	'/messages': [...MESSAGING_ROLES],
 	'/help': ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 }
 

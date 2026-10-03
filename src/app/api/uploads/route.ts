@@ -26,7 +26,14 @@ function isAllowedMime(role: string, contentType: string): boolean {
 
 export async function POST(request: Request) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['SUPER_ADMIN', 'MANAGER', 'TEACHER', 'STUDENT'],
+		allowedRoles: [
+			'SUPER_ADMIN',
+			'MANAGER',
+			'TEACHER',
+			'STUDENT',
+			'ACCOUNTANT',
+			'PARENT',
+		],
 	})
 	if ('error' in authResult) return authResult.error
 

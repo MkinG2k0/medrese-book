@@ -77,4 +77,12 @@ test.describe("Сообщения", () => {
     await page.goto("/dashboard");
     await expect(page.getByText("Сообщения")).toHaveCount(0);
   });
+
+  test("бухгалтер открывает сообщения", async ({ page }) => {
+    await loginAs(page, TEST_CODES.accountant);
+    await page.goto("/accounting");
+    await page.getByText("Сообщения", { exact: true }).click();
+    await expect(page).toHaveURL(/\/messages/);
+    await expect(page.getByText("Сообщения").first()).toBeVisible();
+  });
 });

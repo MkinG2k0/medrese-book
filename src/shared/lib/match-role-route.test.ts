@@ -108,4 +108,18 @@ describe('matchRoleRouteAccess', () => {
 			expect(matchRoleRouteAccess('/settings', 'TEACHER')).toBe('none')
 		})
 	})
+
+	describe('messages route', () => {
+		it('ACCOUNTANT на /messages → allow', () => {
+			expect(matchRoleRouteAccess('/messages', 'ACCOUNTANT')).toBe('allow')
+		})
+
+		it('PARENT на /messages → allow', () => {
+			expect(matchRoleRouteAccess('/messages', 'PARENT')).toBe('allow')
+		})
+
+		it('SUPER_ADMIN на /messages → deny', () => {
+			expect(matchRoleRouteAccess('/messages', 'SUPER_ADMIN')).toBe('deny')
+		})
+	})
 })

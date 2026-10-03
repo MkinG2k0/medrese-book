@@ -266,7 +266,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/messages",
     "/settings",
   ],
-  PARENT: ["/parent/me", "/parent/pay", "/news", "/settings"],
+  PARENT: ["/parent/me", "/parent/pay", "/news", "/messages", "/settings"],
 };
 
 type AppShellProps = {

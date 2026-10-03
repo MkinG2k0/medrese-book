@@ -10,13 +10,14 @@ import {
 	toOwnConversationSummary,
 } from '@/shared/lib/messaging/conversation-dto'
 import { prisma } from '@/shared/lib/prisma'
+import { MESSAGING_ROLES } from '@/shared/lib/messaging/roles'
 import { createConversationSchema } from '@/shared/lib/validations/message'
 
 const conversationListInclude = conversationInclude
 
 export async function GET() {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+		allowedRoles: [...MESSAGING_ROLES],
 	})
 	if ('error' in authResult) return authResult.error
 
@@ -76,7 +77,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['TEACHER', 'MANAGER', 'STUDENT'],
+		allowedRoles: [...MESSAGING_ROLES],
 	})
 	if ('error' in authResult) return authResult.error
 
