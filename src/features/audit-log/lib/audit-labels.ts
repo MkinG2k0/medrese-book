@@ -17,6 +17,9 @@ const ACTION_LABELS: Record<string, string> = {
 	SUBSTITUTION_ACTIVATED: 'Активировано замещение',
 	MESSAGE_RECEIVED: 'Получено сообщение',
 	POST_PUBLISHED: 'Опубликована новость',
+	TUITION_PAYMENT_REQUEST_CREATED: 'Создана заявка на оплату',
+	TUITION_PAYMENT_REQUEST_CONFIRMED: 'Заявка на оплату подтверждена',
+	TUITION_PAYMENT_REQUEST_REJECTED: 'Заявка на оплату отклонена',
 }
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -25,6 +28,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 	StepCompletion: 'Оценка шага',
 	User: 'Пользователь',
 	LeaveRequest: 'Заявка на отпуск',
+	TuitionPaymentRequest: 'Заявка на оплату',
 	Substitution: 'Замещение',
 	Conversation: 'Диалог',
 	TeachingSession: 'Урок',

@@ -93,6 +93,14 @@ async function resolveBuildContext(
 		context.absentTeacherName = absent?.user.name
 	}
 
+	if (event.action === 'TUITION_PAYMENT_REQUEST_REJECTED') {
+		const paymentPayload = event.payload as { parentId?: string }
+		context.parentUserId =
+			typeof paymentPayload.parentId === 'string'
+				? paymentPayload.parentId
+				: undefined
+	}
+
 	if (event.action === 'POST_PUBLISHED') {
 		const postPayload = event.payload as {
 			title?: string

@@ -33,6 +33,7 @@ export type NotificationBuildContext = {
 	recipientUserId?: string
 	senderName?: string
 	conversationId?: string
+	parentUserId?: string
 }
 
 const MESSAGE_PREVIEW_MAX = 120
@@ -224,6 +225,38 @@ export async function buildNotificationsForEvent(
 					link: '/news',
 					payload: event.payload,
 				}))
+		}
+
+		case 'TUITION_PAYMENT_REQUEST_REJECTED': {
+			const paymentPayload = event.payload as {
+				parentId?: string
+				reason?: string
+			}
+			const parentUserId =
+				context.parentUserId ??
+				(typeof paymentPayload.parentId === 'string'
+					? paymentPayload.parentId
+					: undefined)
+			if (!parentUserId) return []
+
+			const reason =
+				typeof paymentPayload.reason === 'string'
+					? paymentPayload.reason.trim()
+					: ''
+			const body = reason
+				? `Причина: ${reason}`
+				: 'Бухгалтер отклонил заявку на оплату'
+
+			return [
+				{
+					userId: parentUserId,
+					type: 'TUITION_PAYMENT_REQUEST_REJECTED',
+					title: 'Оплата отклонена',
+					body,
+					link: '/parent/pay',
+					payload: event.payload,
+				},
+			]
 		}
 
 		default:

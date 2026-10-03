@@ -228,4 +228,26 @@ describe('buildNotificationsForEvent', () => {
 
 		expect(notifications[0]?.body).toBe('Ученик Али: 3 фото')
 	})
+
+	it('creates TUITION_PAYMENT_REQUEST_REJECTED for parent with reason', async () => {
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('TUITION_PAYMENT_REQUEST_REJECTED', {
+				parentId: 'parent-1',
+				reason: 'Неверная сумма',
+			}),
+			{
+				managerUserIds: [],
+				parentUserId: 'parent-1',
+			},
+		)
+
+		expect(notifications).toHaveLength(1)
+		expect(notifications[0]).toMatchObject({
+			userId: 'parent-1',
+			type: 'TUITION_PAYMENT_REQUEST_REJECTED',
+			title: 'Оплата отклонена',
+			body: 'Причина: Неверная сумма',
+			link: '/parent/pay',
+		})
+	})
 })

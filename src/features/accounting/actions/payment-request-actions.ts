@@ -8,6 +8,7 @@ import {
 } from '@/features/accounting/lib/assert-month-open'
 import { toSessionDate } from '@/shared/lib/calendar-date'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
+import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRole } from '@/shared/lib/session'
 import {
@@ -190,10 +191,10 @@ export async function rejectTuitionPaymentRequest(
 	}
 
 	try {
-		await prisma.$transaction(async (tx) => {
+		const notifications = await prisma.$transaction(async (tx) => {
 			const request = await tx.tuitionPaymentRequest.findUnique({
 				where: { id: parsed.data.requestId },
-				select: { id: true, status: true },
+				select: { id: true, status: true, parentId: true },
 			})
 
 			if (!request) {
@@ -213,17 +214,22 @@ export async function rejectTuitionPaymentRequest(
 				},
 			})
 
-			await dispatchDomainEvent(
+			return dispatchDomainEvent(
 				{
 					actorId: session.user.id,
 					action: 'TUITION_PAYMENT_REQUEST_REJECTED',
 					entityType: 'TuitionPaymentRequest',
 					entityId: request.id,
-					payload: { reason: parsed.data.reason },
+					payload: {
+						parentId: request.parentId,
+						reason: parsed.data.reason,
+					},
 				},
 				tx,
 			)
 		})
+
+		void deliverNotifications(notifications)
 	} catch (error) {
 		return {
 			ok: false,
