@@ -15,6 +15,7 @@ const roles: { code: string; file: string }[] = [
   { code: TEST_CODES.teacher2, file: AUTH_STATE.teacher2 },
   { code: TEST_CODES.studentAli, file: AUTH_STATE.studentAli },
   { code: TEST_CODES.studentUsman, file: AUTH_STATE.studentUsman },
+  { code: TEST_CODES.parentAliUsman, file: AUTH_STATE.parentAliUsman },
 ];
 
 for (const { code, file } of roles) {

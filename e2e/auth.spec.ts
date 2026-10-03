@@ -17,6 +17,12 @@ test.describe("Авторизация", () => {
     await expect(page.getByRole("heading", { name: "Али" })).toBeVisible();
   });
 
+  test("успешный вход опекуна перенаправляет к детям", async ({ page }) => {
+    await loginAs(page, TEST_CODES.parentAliUsman);
+    await expect(page).toHaveURL(/\/parent\/me/);
+    await expect(page.getByRole("heading", { name: "Мои дети" })).toBeVisible();
+  });
+
   test("успешный вход менеджера перенаправляет в админку пользователей", async ({
     page,
   }) => {

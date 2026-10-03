@@ -15,6 +15,21 @@ export type StudentSeedProfile = {
   gradeMin: number;
   gradeMax: number;
   status?: StudentStatus;
+  parentCode: string;
+  tuitionRate?: number;
+  discountReason?: string;
+};
+
+export type ParentSeedProfile = {
+  name: string;
+  code: string;
+  phone: string;
+};
+
+export type SeededParent = {
+  id: string;
+  name: string;
+  phone: string | null;
 };
 
 const GUARDIAN_LAST_NAMES = [
@@ -87,34 +102,79 @@ export function createSeedContext(now = new Date()): SeedContext {
   return { now, periodStart, periodEnd, currentMonthStart };
 }
 
+export const PARENT_PROFILES: ParentSeedProfile[] = [
+  { name: "Ибрагимов Рашид", code: "500001", phone: "89685000001" },
+  { name: "Ахмедов Ахмед", code: "500002", phone: "89685000002" },
+  { name: "Мухаммадов Мухаммад", code: "500003", phone: "89685000003" },
+  { name: "Умаров Умар", code: "500004", phone: "89685000004" },
+  { name: "Хасанов Хасан", code: "500005", phone: "89685000005" },
+  { name: "Алиев Салим", code: "500006", phone: "89685000006" },
+  { name: "Саидов Камил", code: "500007", phone: "89685000007" },
+  { name: "Рахимов Карим", code: "500008", phone: "89685000008" },
+  { name: "Нуриев Ильяс", code: "500009", phone: "89685000009" },
+  { name: "Фатыхов Марат", code: "500010", phone: "89685000010" },
+];
+
+/** E2E: один опекун с двумя детьми, один с одним, один с двумя в разных группах. */
+export const E2E_PARENT_PROFILES: ParentSeedProfile[] = [
+  { name: "Ибрагимов Рашид", code: "500001", phone: "89685000001" },
+  { name: "Ахмедов Ахмед", code: "500002", phone: "89685000002" },
+  { name: "Мухаммадов Мухаммад", code: "500003", phone: "89685000003" },
+];
+
+export async function seedParentUsers(
+  prisma: PrismaClient,
+  profiles: ParentSeedProfile[],
+): Promise<Map<string, SeededParent>> {
+  const parentsByCode = new Map<string, SeededParent>();
+
+  for (const profile of profiles) {
+    const user = await prisma.user.create({
+      data: {
+        name: profile.name,
+        code: profile.code,
+        role: "PARENT",
+        phone: profile.phone,
+      },
+    });
+    parentsByCode.set(profile.code, {
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+    });
+  }
+
+  return parentsByCode;
+}
+
 export const STUDENT_PROFILES: StudentSeedProfile[] = [
   // Уровень 1 — начинающие (33 шага)
-  { name: "Муса", code: "300013", groupIndex: 0, level: 1, stepsOnLevel: 0, startMonthOffset: 5, attendance: "good", gradeMin: 3, gradeMax: 4 },
-  { name: "Фарис", code: "300010", groupIndex: 0, level: 1, stepsOnLevel: 1, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4 },
-  { name: "Билал", code: "300003", groupIndex: 0, level: 1, stepsOnLevel: 3, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4 },
-  { name: "Умар", code: "300008", groupIndex: 0, level: 1, stepsOnLevel: 6, startMonthOffset: 2, attendance: "at-risk-month", gradeMin: 3, gradeMax: 3 },
-  { name: "Айюб", code: "300022", groupIndex: 1, level: 1, stepsOnLevel: 2, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4 },
-  { name: "Зайд", code: "300005", groupIndex: 1, level: 1, stepsOnLevel: 5, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4 },
+  { name: "Муса", code: "300013", groupIndex: 0, level: 1, stepsOnLevel: 0, startMonthOffset: 5, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
+  { name: "Фарис", code: "300010", groupIndex: 0, level: 1, stepsOnLevel: 1, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
+  { name: "Билал", code: "300003", groupIndex: 0, level: 1, stepsOnLevel: 3, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
+  { name: "Умар", code: "300008", groupIndex: 0, level: 1, stepsOnLevel: 6, startMonthOffset: 2, attendance: "at-risk-month", gradeMin: 3, gradeMax: 3, parentCode: "500002" },
+  { name: "Айюб", code: "300022", groupIndex: 1, level: 1, stepsOnLevel: 2, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500002" },
+  { name: "Зайд", code: "300005", groupIndex: 1, level: 1, stepsOnLevel: 5, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500002" },
   // Уровень 2 (168 шагов)
-  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 50, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  { name: "Ясин", code: "300007", groupIndex: 0, level: 2, stepsOnLevel: 140, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 5 },
-  { name: "Салих", code: "300014", groupIndex: 0, level: 2, stepsOnLevel: 30, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, status: "PAUSE" },
-  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3 },
-  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Юсуф", code: "300016", groupIndex: 1, level: 2, stepsOnLevel: 60, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4 },
+  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 50, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500003" },
+  { name: "Ясин", code: "300007", groupIndex: 0, level: 2, stepsOnLevel: 140, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 5, parentCode: "500003" },
+  { name: "Салих", code: "300014", groupIndex: 0, level: 2, stepsOnLevel: 30, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, status: "PAUSE", parentCode: "500004", tuitionRate: 150000, discountReason: "Многодетная семья" },
+  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3, parentCode: "500005" },
+  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500005" },
+  { name: "Юсуф", code: "300016", groupIndex: 1, level: 2, stepsOnLevel: 60, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500005" },
   // Уровень 3 (159 шагов)
-  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Амир", code: "300006", groupIndex: 0, level: 3, stepsOnLevel: 140, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Иса", code: "300012", groupIndex: 0, level: 3, stepsOnLevel: 80, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 50, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4 },
-  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 30, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3 },
+  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500006" },
+  { name: "Амир", code: "300006", groupIndex: 0, level: 3, stepsOnLevel: 140, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500006" },
+  { name: "Иса", code: "300012", groupIndex: 0, level: 3, stepsOnLevel: 80, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500007" },
+  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 50, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4, parentCode: "500007" },
+  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 30, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3, parentCode: "500008", tuitionRate: 180000, discountReason: "Скидка по заявлению" },
   // Уровень 4 (158 шагов)
-  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Сулейман", code: "300018", groupIndex: 1, level: 4, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5 },
-  { name: "Лукман", code: "300019", groupIndex: 1, level: 4, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-month", gradeMin: 3, gradeMax: 4 },
+  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500009" },
+  { name: "Сулейман", code: "300018", groupIndex: 1, level: 4, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500009" },
+  { name: "Лукман", code: "300019", groupIndex: 1, level: 4, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-month", gradeMin: 3, gradeMax: 4, parentCode: "500009" },
   // Уровень 5 — джузъ (37 шагов)
-  { name: "Харун", code: "300020", groupIndex: 1, level: 5, stepsOnLevel: 20, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4 },
-  { name: "Идрис", code: "300021", groupIndex: 1, level: 5, stepsOnLevel: 10, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4 },
+  { name: "Харун", code: "300020", groupIndex: 1, level: 5, stepsOnLevel: 20, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500010" },
+  { name: "Идрис", code: "300021", groupIndex: 1, level: 5, stepsOnLevel: 10, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500010" },
 ];
 
 /** Вторник и четверг каждой недели в периоде seed (не позже сегодня). */
