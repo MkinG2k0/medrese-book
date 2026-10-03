@@ -25,6 +25,7 @@ export default async function DashboardLayout({
 		showSubstitutionRoleLabel,
 		substitutionTargetUserIds,
 		studentStatus,
+		pendingPaymentRequestCount,
 	] = await Promise.all([
 		getSwitchableUsers(),
 		getSubstitutionHeaderInfo(session),
@@ -38,6 +39,11 @@ export default async function DashboardLayout({
 					})
 					.then((row) => (row?.status as StudentStatus | undefined) ?? null)
 			: Promise.resolve(null),
+		session.user.role === 'ACCOUNTANT'
+			? prisma.tuitionPaymentRequest.count({
+					where: { status: 'PENDING' },
+				})
+			: Promise.resolve(0),
 	])
 
 	return (
@@ -48,6 +54,7 @@ export default async function DashboardLayout({
 			showSubstitutionRoleLabel={showSubstitutionRoleLabel}
 			substitutionTargetUserIds={substitutionTargetUserIds}
 			studentStatus={studentStatus}
+			pendingPaymentRequestCount={pendingPaymentRequestCount}
 		>
 			{children}
 		</AppShell>

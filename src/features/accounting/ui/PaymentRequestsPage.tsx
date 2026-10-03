@@ -1,6 +1,17 @@
 'use client'
 
-import { App, Button, DatePicker, Input, Modal, Select, Space, Table, Tag } from 'antd'
+import {
+	App,
+	Badge,
+	Button,
+	DatePicker,
+	Input,
+	Modal,
+	Select,
+	Space,
+	Table,
+	Tag,
+} from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useMemo, useState, useTransition } from 'react'
@@ -137,9 +148,14 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 		<div className="flex flex-col gap-4">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 				<div>
-					<Title level={3} className="!mb-1">
-						Заявки на оплату
-					</Title>
+					<div className="mb-1 flex items-center gap-2">
+						<Title level={3} className="!mb-0">
+							Заявки на оплату
+						</Title>
+						{requests.length > 0 ? (
+							<Badge count={requests.length} overflowCount={99} />
+						) : null}
+					</div>
 					<Text type="secondary">
 						Подтверждение создаёт платежи по всем детям заявки сразу
 					</Text>

@@ -20,7 +20,7 @@ import {
   TrophyOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Drawer, Layout, Menu, Tag } from "antd";
+import { Badge, Button, Drawer, Layout, Menu, Tag } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -284,6 +284,7 @@ type AppShellProps = {
   showSubstitutionRoleLabel: boolean;
   substitutionTargetUserIds: string[];
   studentStatus?: StudentStatus | null;
+  pendingPaymentRequestCount?: number;
 };
 
 type NavPanelProps = {
@@ -366,6 +367,7 @@ export function AppShell({
   showSubstitutionRoleLabel,
   substitutionTargetUserIds,
   studentStatus = null,
+  pendingPaymentRequestCount = 0,
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -391,12 +393,39 @@ export function AppShell({
     return MENU_ORDER_BY_ROLE[role]
       .map((key) => menuItemDefs[key])
       .filter((item): item is MenuItemDef => item != null)
-      .map((item) => ({
-        key: item.key,
-        icon: item.icon,
-        label: item.label,
-      }));
-  }, [session.user.role]);
+      .map((item) => {
+        if (
+          item.key === "/accounting/payment-requests" &&
+          pendingPaymentRequestCount > 0
+        ) {
+          const showBadgeOnIcon = collapsed && !isMobile;
+          return {
+            key: item.key,
+            icon: showBadgeOnIcon ? (
+              <Badge count={pendingPaymentRequestCount} size="small" offset={[4, -2]}>
+                {item.icon}
+              </Badge>
+            ) : (
+              item.icon
+            ),
+            label: (
+              <span className="flex w-full items-center justify-between gap-2">
+                <span>{item.label}</span>
+                {!showBadgeOnIcon ? (
+                  <Badge count={pendingPaymentRequestCount} size="small" />
+                ) : null}
+              </span>
+            ),
+          };
+        }
+
+        return {
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+        };
+      });
+  }, [collapsed, isMobile, pendingPaymentRequestCount, session.user.role]);
 
   const selectedKey = menuItems
     .filter(
