@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 
 import { formatMessagePreview } from '@/shared/lib/messaging/message-preview'
+import { formatMoney } from '@/shared/lib/money'
 import type { NotificationType } from '@/shared/lib/prisma'
 
 import type { DomainEvent, DomainEventAction } from '../domain-events/types'
@@ -37,6 +38,8 @@ export type NotificationBuildContext = {
 	parentUserIds?: string[]
 	reminderMonth?: string
 	reminderMonthLabel?: string
+	accountantUserIds?: string[]
+	parentName?: string
 }
 
 const MESSAGE_PREVIEW_MAX = 120
@@ -63,6 +66,24 @@ type MessagePayload = {
 	body?: string
 	conversationId?: string
 	imageCount?: number
+}
+
+type PaymentRequestLine = {
+	studentId?: string
+	amountKopecks?: number
+}
+
+type PaymentRequestPayload = {
+	parentId?: string
+	reason?: string
+	lines?: PaymentRequestLine[]
+}
+
+function totalPaymentRequestKopecks(lines: PaymentRequestLine[] | undefined): number {
+	if (!Array.isArray(lines)) return 0
+	return lines.reduce((sum, line) => {
+		return typeof line.amountKopecks === 'number' ? sum + line.amountKopecks : sum
+	}, 0)
 }
 
 export function formatLeaveDateRange(startDate: string, endDate: string): string {
@@ -228,6 +249,23 @@ export async function buildNotificationsForEvent(
 					link: '/news',
 					payload: event.payload,
 				}))
+		}
+
+		case 'TUITION_PAYMENT_REQUEST_CREATED': {
+			const paymentPayload = event.payload as PaymentRequestPayload
+			const parentName = context.parentName ?? 'Опекун'
+			const totalKopecks = totalPaymentRequestKopecks(paymentPayload.lines)
+			const body =
+				totalKopecks > 0 ? `${parentName}, ${formatMoney(totalKopecks)}` : parentName
+
+			return (context.accountantUserIds ?? []).map((userId) => ({
+				userId,
+				type: 'TUITION_PAYMENT_REQUEST_CREATED',
+				title: 'Новая заявка на оплату',
+				body,
+				link: '/accounting/payment-requests',
+				payload: event.payload,
+			}))
 		}
 
 		case 'TUITION_PAYMENT_REMINDER': {

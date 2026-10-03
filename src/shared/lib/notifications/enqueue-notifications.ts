@@ -93,6 +93,25 @@ async function resolveBuildContext(
 		context.absentTeacherName = absent?.user.name
 	}
 
+	if (event.action === 'TUITION_PAYMENT_REQUEST_CREATED') {
+		const paymentPayload = event.payload as { parentId?: string }
+		const [accountants, parent] = await Promise.all([
+			client.user.findMany({
+				where: { role: 'ACCOUNTANT' },
+				select: { id: true },
+			}),
+			paymentPayload.parentId
+				? client.user.findUnique({
+						where: { id: paymentPayload.parentId },
+						select: { name: true },
+					})
+				: null,
+		])
+
+		context.accountantUserIds = accountants.map((user) => user.id)
+		context.parentName = parent?.name
+	}
+
 	if (event.action === 'TUITION_PAYMENT_REMINDER') {
 		const reminderPayload = event.payload as {
 			parentIds?: unknown

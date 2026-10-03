@@ -2,6 +2,7 @@
 
 import { getLocalDateString } from '@/shared/lib/calendar-date'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
+import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRole } from '@/shared/lib/session'
 import { createTuitionPaymentRequestSchema } from '@/shared/lib/validations/accounting'
@@ -147,7 +148,7 @@ export async function submitParentPaymentRequest(
 				select: { id: true },
 			})
 
-			await dispatchDomainEvent(
+			const notifications = await dispatchDomainEvent(
 				{
 					actorId: session.user.id,
 					action: 'TUITION_PAYMENT_REQUEST_CREATED',
@@ -162,10 +163,12 @@ export async function submitParentPaymentRequest(
 				tx,
 			)
 
-			return created
+			return { created, notifications }
 		})
 
-		return { ok: true, requestId: request.id }
+		void deliverNotifications(request.notifications)
+
+		return { ok: true, requestId: request.created.id }
 	} catch (error) {
 		return {
 			ok: false,

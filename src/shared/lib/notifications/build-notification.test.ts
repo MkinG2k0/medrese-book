@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { DomainEvent } from '@/shared/lib/domain-events/types'
+import { formatMoney } from '@/shared/lib/money'
 
 import {
 	buildNotificationsForEvent,
@@ -249,6 +250,33 @@ describe('buildNotificationsForEvent', () => {
 			body: 'Причина: Неверная сумма',
 			link: '/parent/pay',
 		})
+	})
+
+	it('fans out TUITION_PAYMENT_REQUEST_CREATED to all accountants', async () => {
+		const notifications = await buildNotificationsForEvent(
+			makeEvent('TUITION_PAYMENT_REQUEST_CREATED', {
+				parentId: 'parent-1',
+				lines: [
+					{ studentId: 'student-1', amountKopecks: 150000 },
+					{ studentId: 'student-2', amountKopecks: 50000 },
+				],
+			}),
+			{
+				managerUserIds: [],
+				accountantUserIds: ['accountant-1', 'accountant-2'],
+				parentName: 'Опекун Фатима',
+			},
+		)
+
+		expect(notifications).toHaveLength(2)
+		expect(notifications[0]).toMatchObject({
+			userId: 'accountant-1',
+			type: 'TUITION_PAYMENT_REQUEST_CREATED',
+			title: 'Новая заявка на оплату',
+			body: `Опекун Фатима, ${formatMoney(200000)}`,
+			link: '/accounting/payment-requests',
+		})
+		expect(notifications[1]?.userId).toBe('accountant-2')
 	})
 
 	it('creates TUITION_PAYMENT_REMINDER only for listed parents', async () => {

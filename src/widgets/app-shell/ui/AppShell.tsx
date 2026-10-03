@@ -514,7 +514,7 @@ export function AppShell({
             )}
             <SubstitutionHeaderInfo lines={substitutionHeaderLines} />
             <div className="ml-auto flex shrink-0 items-center gap-2 md:gap-4">
-              {session.user.role !== "ACCOUNTANT" && <NotificationBell />}
+              <NotificationBell />
               <div className="max-w-[45vw] text-right sm:max-w-none">
                 <div className="flex items-center justify-end gap-2">
                   <Text className="block truncate">{session.user.name}</Text>
