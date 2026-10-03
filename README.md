@@ -171,8 +171,9 @@ docker compose up app
 | MANAGER | `100002` |
 | TEACHER | `200001`, `200002` |
 | STUDENT | `300001`–`300022` (22 ученика на уровнях 1–5) |
+| PARENT | `500001`–`500010` (семьи с 1–3 детьми) |
 
-Для e2e после `db:seed:e2e`: ученики `300001`–`300005`.
+Для e2e после `db:seed:e2e`: ученики `300001`–`300005`, опекуны `500001` (Али+Усман), `500002` (Билал), `500003` (Халид+Зайд).
 
 ## Маршруты
 
@@ -197,6 +198,7 @@ docker compose up app
 | `/admin/awards` | MANAGER, SUPER_ADMIN | Награды |
 | `/admin/leave-calendar` | MANAGER, SUPER_ADMIN | Календарь отпусков |
 | `/student/me` | STUDENT | Мой прогресс |
+| `/parent/me` | PARENT | Дети опекуна |
 | `/student/lessons` | STUDENT | Уроки |
 | `/student/history` | STUDENT | История занятий |
 | `/student/awards` | STUDENT | Награды |

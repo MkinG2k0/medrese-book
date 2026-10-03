@@ -9,6 +9,9 @@ export const TEST_CODES = {
   studentBilal: "300003",
   studentKhalid: "300004",
   studentZayd: "300005",
+  parentAliUsman: "500001",
+  parentBilal: "500002",
+  parentKhalidZayd: "500003",
 } as const;
 
 export const TEST_USERS = {
@@ -19,6 +22,9 @@ export const TEST_USERS = {
   studentBilal: "Билал",
   studentKhalid: "Халид",
   studentZayd: "Зайд",
+  parentAliUsman: "Ибрагимов Рашид",
+  parentBilal: "Ахмедов Ахмед",
+  parentKhalidZayd: "Мухаммадов Мухаммад",
   group1: "Группа Аль-Фатиха",
   group2: "Группа Ан-Нас",
   groupTeacher1Second: "Группа Аль-Ихлас",

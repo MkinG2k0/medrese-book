@@ -18,6 +18,9 @@ test.describe("Админ-панель менеджера", () => {
       page.getByRole("cell", { name: "Учитель Ахмад", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("cell", { name: "Али", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.parentAliUsman, exact: true }),
+    ).toBeVisible();
   });
 
   test("открывает карточку пользователя по клику на строку", async ({ page }) => {

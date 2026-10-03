@@ -19,6 +19,8 @@ import {
   createSeedContext,
   getCurrentStepIdx,
   getPassedStepIds,
+  PARENT_PROFILES,
+  seedParentUsers,
   seedStudentHistory,
   seedTeachingSessions,
   STUDENT_PROFILES,
@@ -71,23 +73,50 @@ async function main() {
   await prisma.subject.deleteMany();
 
   const superAdmin = await prisma.user.create({
-    data: { name: "Супер-админ", code: "100001", role: "SUPER_ADMIN" },
+    data: {
+      name: "Супер-админ",
+      code: "100001",
+      role: "SUPER_ADMIN",
+      phone: "89681000001",
+    },
   });
 
   const manager = await prisma.user.create({
-    data: { name: "Менеджер", code: "100002", role: "MANAGER" },
+    data: {
+      name: "Менеджер",
+      code: "100002",
+      role: "MANAGER",
+      phone: "89681000002",
+    },
   });
 
   const accountant = await prisma.user.create({
-    data: { name: "Бухгалтер", code: "400001", role: "ACCOUNTANT" },
+    data: {
+      name: "Бухгалтер",
+      code: "400001",
+      role: "ACCOUNTANT",
+      phone: "89684000001",
+    },
   });
 
   const teacher1User = await prisma.user.create({
-    data: { name: "Учитель Ахмад", code: "200001", role: "TEACHER" },
+    data: {
+      name: "Учитель Ахмад",
+      code: "200001",
+      role: "TEACHER",
+      phone: "89682000001",
+    },
   });
   const teacher2User = await prisma.user.create({
-    data: { name: "Учитель Ибрагим", code: "200002", role: "TEACHER" },
+    data: {
+      name: "Учитель Ибрагим",
+      code: "200002",
+      role: "TEACHER",
+      phone: "89682000002",
+    },
   });
+
+  const parentsByCode = await seedParentUsers(prisma, PARENT_PROFILES);
 
   const teacher1 = await prisma.teacher.create({
     data: { userId: teacher1User.id },
@@ -189,15 +218,22 @@ async function main() {
     });
 
     const contacts = buildStudentContactData(profile, index);
+    const parent = parentsByCode.get(profile.parentCode);
+    if (!parent) {
+      throw new Error(`Опекун ${profile.parentCode} не найден для ${profile.name}`);
+    }
 
     const student = await prisma.student.create({
       data: {
         userId: user.id,
         fullName: contacts.fullName,
         phone: contacts.phone,
-        guardianName: contacts.guardianName,
-        guardianPhone: contacts.guardianPhone,
+        guardianName: parent.name,
+        guardianPhone: parent.phone,
+        parentId: parent.id,
         status: profile.status ?? "ACTIVE",
+        tuitionRate: profile.tuitionRate ?? 200000,
+        discountReason: profile.discountReason,
       },
     });
 
@@ -284,6 +320,7 @@ async function main() {
   }
 
   const studentCodes = STUDENT_PROFILES.map((p) => p.code);
+  const parentCodes = PARENT_PROFILES.map((p) => p.code);
   const periodLabel = `${seedCtx.periodStart.toISOString().slice(0, 10)} — ${seedCtx.periodEnd.toISOString().slice(0, 10)}`;
 
   const formatSubjectSummary = (
@@ -310,6 +347,7 @@ async function main() {
   console.log(`  ACCOUNTANT: ${accountant.code}`);
   console.log(`  TEACHER 1: ${teacher1User.code}`);
   console.log(`  TEACHER 2: ${teacher2User.code}`);
+  console.log(`  PARENTS: ${parentCodes.join(", ")}`);
   console.log(`  STUDENTS: ${studentCodes.join(", ")}`);
 }
 

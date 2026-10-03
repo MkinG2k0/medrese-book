@@ -20,6 +20,18 @@ test.describe("Навигация по ролям", () => {
     });
   });
 
+  test.describe("опекун", () => {
+    test.use({ storageState: AUTH_STATE.parentAliUsman });
+
+    test("видит пункт мои дети и не видит журнал", async ({ page }) => {
+      await page.goto("/parent/me");
+      await expect(page.getByRole("menuitem", { name: "Мои дети" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Новости" })).toBeVisible();
+      await expect(page.getByRole("menuitem", { name: "Журнал" })).toHaveCount(0);
+      await expect(page.getByRole("menuitem", { name: "Пользователи" })).toHaveCount(0);
+    });
+  });
+
   test.describe("ученик", () => {
     test.use({ storageState: AUTH_STATE.studentAli });
 

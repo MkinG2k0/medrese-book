@@ -9,4 +9,5 @@ export const AUTH_STATE = {
   teacher2: path.join(AUTH_DIR, "teacher2.json"),
   studentAli: path.join(AUTH_DIR, "student-ali.json"),
   studentUsman: path.join(AUTH_DIR, "student-usman.json"),
+  parentAliUsman: path.join(AUTH_DIR, "parent-ali-usman.json"),
 } as const;

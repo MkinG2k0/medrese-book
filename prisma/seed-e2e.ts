@@ -10,7 +10,7 @@ import {
   LEVEL1_TITLE,
   LEVEL2_TITLE,
 } from "./lib/program-config";
-import { buildStudentContactData } from "./lib/seed-history";
+import { buildStudentContactData, E2E_PARENT_PROFILES, seedParentUsers } from "./lib/seed-history";
 import { buildContent, type StepDef } from "./lib/level1-import-utils";
 import { DEFAULT_QURAN_SUBJECT_ID } from "./lib/subject-constants";
 
@@ -154,22 +154,47 @@ async function main() {
   });
 
   const superAdmin = await prisma.user.create({
-    data: { name: "Супер-админ", code: "100001", role: "SUPER_ADMIN" },
+    data: {
+      name: "Супер-админ",
+      code: "100001",
+      role: "SUPER_ADMIN",
+      phone: "89681000001",
+    },
   });
 
   const manager = await prisma.user.create({
-    data: { name: "Менеджер", code: "100002", role: "MANAGER" },
+    data: {
+      name: "Менеджер",
+      code: "100002",
+      role: "MANAGER",
+      phone: "89681000002",
+    },
   });
 
   const accountant = await prisma.user.create({
-    data: { name: "Бухгалтер", code: "400001", role: "ACCOUNTANT" },
+    data: {
+      name: "Бухгалтер",
+      code: "400001",
+      role: "ACCOUNTANT",
+      phone: "89684000001",
+    },
   });
 
   const teacher1User = await prisma.user.create({
-    data: { name: "Учитель Ахмад", code: "200001", role: "TEACHER" },
+    data: {
+      name: "Учитель Ахмад",
+      code: "200001",
+      role: "TEACHER",
+      phone: "89682000001",
+    },
   });
   const teacher2User = await prisma.user.create({
-    data: { name: "Учитель Ибрагим", code: "200002", role: "TEACHER" },
+    data: {
+      name: "Учитель Ибрагим",
+      code: "200002",
+      role: "TEACHER",
+      phone: "89682000002",
+    },
   });
 
   const teacher1 = await prisma.teacher.create({
@@ -229,28 +254,40 @@ async function main() {
     },
   });
 
-  const studentNames = ["Али", "Усман", "Билал", "Халид", "Зайд"];
-  const studentCodes = ["300001", "300002", "300003", "300004", "300005"];
+  const parentsByCode = await seedParentUsers(prisma, E2E_PARENT_PROFILES);
+
+  const e2eStudents = [
+    { name: "Али", code: "300001", parentCode: "500001" },
+    { name: "Усман", code: "300002", parentCode: "500001" },
+    { name: "Билал", code: "300003", parentCode: "500002" },
+    { name: "Халид", code: "300004", parentCode: "500003" },
+    { name: "Зайд", code: "300005", parentCode: "500003" },
+  ] as const;
   const level2StepOffset = e2eSteps.length;
   const studentsByName = new Map<
     string,
     { id: string; onLevel1: boolean; currentStepIdx: number }
   >();
 
-  for (let i = 0; i < studentNames.length; i++) {
+  for (let i = 0; i < e2eStudents.length; i++) {
+    const profile = e2eStudents[i]!;
     const onLevel1 = i < 3;
     const currentStepIdx = onLevel1 ? i : level2StepOffset + (i - 3);
     const user = await prisma.user.create({
       data: {
-        name: studentNames[i]!,
-        code: studentCodes[i]!,
+        name: profile.name,
+        code: profile.code,
         role: "STUDENT",
       },
     });
     const contacts = buildStudentContactData(
-      { name: studentNames[i]!, code: studentCodes[i]! },
+      { name: profile.name, code: profile.code },
       i,
     );
+    const parent = parentsByCode.get(profile.parentCode);
+    if (!parent) {
+      throw new Error(`Опекун ${profile.parentCode} не найден для ${profile.name}`);
+    }
     const enrollmentGroupId = onLevel1 ? group1.id : group2.id;
 
     const student = await prisma.student.create({
@@ -258,8 +295,9 @@ async function main() {
         userId: user.id,
         fullName: contacts.fullName,
         phone: contacts.phone,
-        guardianName: contacts.guardianName,
-        guardianPhone: contacts.guardianPhone,
+        guardianName: parent.name,
+        guardianPhone: parent.phone,
+        parentId: parent.id,
       },
     });
 
@@ -284,7 +322,7 @@ async function main() {
       ),
     );
 
-    studentsByName.set(studentNames[i]!, {
+    studentsByName.set(profile.name, {
       id: student.id,
       onLevel1,
       currentStepIdx,
@@ -435,6 +473,9 @@ async function main() {
     });
   }
 
+  const studentCodes = e2eStudents.map((student) => student.code);
+  const parentCodes = E2E_PARENT_PROFILES.map((parent) => parent.code);
+
   console.log("E2E seed completed:");
   console.log(`  Глава 1 и 2: по ${E2E_STEPS_PER_LEVEL} шагов (без DOCX)`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
@@ -442,6 +483,7 @@ async function main() {
   console.log(`  ACCOUNTANT: ${accountant.code}`);
   console.log(`  TEACHER 1: ${teacher1User.code}`);
   console.log(`  TEACHER 2: ${teacher2User.code}`);
+  console.log(`  PARENTS: ${parentCodes.join(", ")}`);
   console.log(`  STUDENTS: ${studentCodes.join(", ")}`);
 }
 
