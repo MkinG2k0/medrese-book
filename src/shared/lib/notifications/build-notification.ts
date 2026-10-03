@@ -34,6 +34,9 @@ export type NotificationBuildContext = {
 	senderName?: string
 	conversationId?: string
 	parentUserId?: string
+	parentUserIds?: string[]
+	reminderMonth?: string
+	reminderMonthLabel?: string
 }
 
 const MESSAGE_PREVIEW_MAX = 120
@@ -225,6 +228,48 @@ export async function buildNotificationsForEvent(
 					link: '/news',
 					payload: event.payload,
 				}))
+		}
+
+		case 'TUITION_PAYMENT_REMINDER': {
+			const reminderPayload = event.payload as {
+				parentIds?: unknown
+				month?: unknown
+				monthLabel?: unknown
+			}
+			const parentUserIds =
+				context.parentUserIds ??
+				(Array.isArray(reminderPayload.parentIds)
+					? reminderPayload.parentIds.filter(
+							(id): id is string => typeof id === 'string',
+						)
+					: [])
+			if (parentUserIds.length === 0) return []
+
+			const monthLabel =
+				context.reminderMonthLabel ??
+				(typeof reminderPayload.monthLabel === 'string'
+					? reminderPayload.monthLabel
+					: '')
+			const month =
+				context.reminderMonth ??
+				(typeof reminderPayload.month === 'string'
+					? reminderPayload.month
+					: undefined)
+			const body = monthLabel
+				? `Напоминаем оплатить обучение за ${monthLabel}`
+				: 'Напоминаем оплатить обучение'
+
+			return parentUserIds.map((userId) => ({
+				userId,
+				type: 'TUITION_PAYMENT_REMINDER',
+				title: 'Оплата обучения',
+				body,
+				link: '/parent/pay',
+				payload: {
+					...event.payload,
+					month,
+				},
+			}))
 		}
 
 		case 'TUITION_PAYMENT_REQUEST_REJECTED': {

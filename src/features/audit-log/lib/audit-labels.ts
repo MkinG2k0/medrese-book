@@ -20,6 +20,7 @@ const ACTION_LABELS: Record<string, string> = {
 	TUITION_PAYMENT_REQUEST_CREATED: 'Создана заявка на оплату',
 	TUITION_PAYMENT_REQUEST_CONFIRMED: 'Заявка на оплату подтверждена',
 	TUITION_PAYMENT_REQUEST_REJECTED: 'Заявка на оплату отклонена',
+	TUITION_PAYMENT_REMINDER: 'Напоминание об оплате обучения',
 }
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -29,6 +30,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 	User: 'Пользователь',
 	LeaveRequest: 'Заявка на отпуск',
 	TuitionPaymentRequest: 'Заявка на оплату',
+	TuitionPaymentReminder: 'Напоминание об оплате',
 	Substitution: 'Замещение',
 	Conversation: 'Диалог',
 	TeachingSession: 'Урок',

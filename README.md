@@ -160,8 +160,20 @@ docker compose up app
 | `SITE_URL` | нет | Канонический URL (robots, sitemap) |
 | `VAPID_*` | для push | Ключи Web Push |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | для push в браузере | Публичный VAPID-ключ |
+| `CRON_SECRET` | для HTTP-cron | Bearer-токен `/api/internal/cron/*` (начисления, напоминание опекуну) |
 
 Для e2e — отдельный файл `.env.test` (см. `.env.test.example`), **не** коммитить.
+
+### HTTP cron (Dokploy / Coolify)
+
+Планировщик дергает endpoint с заголовком `Authorization: Bearer ${CRON_SECRET}`. В процессе приложения `node-cron` не запускается.
+
+| Задача | Метод | Когда (Europe/Moscow) | URL |
+|--------|--------|------------------------|-----|
+| Напоминание опекуну об оплате | `GET` | последний день месяца, 12:00 | `/api/internal/cron/tuition-reminders` |
+| Ежемесячные начисления | `GET` | по расписанию бухгалтерии | `/api/internal/cron/generate-charges` |
+
+12:00 МСК = 09:00 UTC. Если cron не умеет `L` (последний день), ставьте `0 9 28-31 * *` — хендлер сам пропускает дни, которые в Москве не последние. Повторный запуск в том же месяце не дублирует уведомление.
 
 ## Тестовые коды (после `pnpm db:seed`)
 

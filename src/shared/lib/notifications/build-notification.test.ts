@@ -250,4 +250,36 @@ describe('buildNotificationsForEvent', () => {
 			link: '/parent/pay',
 		})
 	})
+
+	it('creates TUITION_PAYMENT_REMINDER only for listed parents', async () => {
+		const notifications = await buildNotificationsForEvent(
+			{
+				actorId: 'system',
+				action: 'TUITION_PAYMENT_REMINDER',
+				entityType: 'TuitionPaymentReminder',
+				entityId: '2026-10',
+				payload: {
+					month: '2026-10',
+					monthLabel: 'октябрь',
+					parentIds: ['parent-1', 'parent-2'],
+				},
+			},
+			{
+				managerUserIds: [],
+				parentUserIds: ['parent-1', 'parent-2'],
+				reminderMonth: '2026-10',
+				reminderMonthLabel: 'октябрь',
+			},
+		)
+
+		expect(notifications).toHaveLength(2)
+		expect(notifications[0]).toMatchObject({
+			userId: 'parent-1',
+			type: 'TUITION_PAYMENT_REMINDER',
+			title: 'Оплата обучения',
+			body: 'Напоминаем оплатить обучение за октябрь',
+			link: '/parent/pay',
+		})
+		expect(notifications[1]?.userId).toBe('parent-2')
+	})
 })

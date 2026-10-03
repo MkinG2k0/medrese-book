@@ -93,6 +93,27 @@ async function resolveBuildContext(
 		context.absentTeacherName = absent?.user.name
 	}
 
+	if (event.action === 'TUITION_PAYMENT_REMINDER') {
+		const reminderPayload = event.payload as {
+			parentIds?: unknown
+			month?: unknown
+			monthLabel?: unknown
+		}
+		context.parentUserIds = Array.isArray(reminderPayload.parentIds)
+			? reminderPayload.parentIds.filter(
+					(id): id is string => typeof id === 'string',
+				)
+			: []
+		context.reminderMonth =
+			typeof reminderPayload.month === 'string'
+				? reminderPayload.month
+				: undefined
+		context.reminderMonthLabel =
+			typeof reminderPayload.monthLabel === 'string'
+				? reminderPayload.monthLabel
+				: undefined
+	}
+
 	if (event.action === 'TUITION_PAYMENT_REQUEST_REJECTED') {
 		const paymentPayload = event.payload as { parentId?: string }
 		context.parentUserId =
