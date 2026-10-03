@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-26 - Completed quick task 260926-ncd: Role.PARENT + parentId + parent portal stub
+Last activity: 2026-10-03 - Completed quick task 261003-pay: parent pay page + accountant payment requests
 
 
 ## Performance Metrics
@@ -205,6 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 261003-pay | Оплата детей опекуном + заявки бухгалтеру | 2026-10-03 | 7616f18 | [261003-pay-parent-tuition-payment-requests](./quick/261003-pay-parent-tuition-payment-requests/) |
 | 260926-ncd | Role.PARENT + Student.parentId + портал опекуна (волна 1) | 2026-09-26 | 91fd95e | [260926-ncd-volna-1-role-parent-parentid-na-student-](./quick/260926-ncd-volna-1-role-parent-parentid-na-student-/) |
 | 260926-mwg | Перенос ученика A→B (тот же предмет) + статус пауза/архив на учётке | 2026-09-26 | 4359ad0 | [260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok](./quick/260926-mwg-perenos-uchenika-a-b-tot-zhe-predmet-pok/) |
 | 260923-vb9 | Восстановить доп. в журнале + удаление назначенного | 2026-09-23 | 159547e | [260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba](./quick/260923-vb9-vosstanovit-dop-zadaniya-v-zhurnale-doba/) |
@@ -278,7 +279,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-09-26 - Completed quick task 260926-ncd: Role.PARENT + parentId + parent portal stub
+Last activity: 2026-10-03 - Completed quick task 261003-pay: parent pay page + accountant payment requests
 
 Last session: 2026-09-16T19:25:00Z
 Stopped at: Completed 260916-v0w PLAN/SUMMARY
