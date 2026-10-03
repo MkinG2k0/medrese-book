@@ -19,7 +19,7 @@ export type SwitchableUser = {
 
 async function getPrivilegedSwitchableUsers(): Promise<SwitchableUser[]> {
 	return prisma.user.findMany({
-		where: { role: { not: 'STUDENT' } },
+		where: { role: { notIn: ['STUDENT', 'PARENT'] } },
 		select: { id: true, name: true, role: true },
 		orderBy: [{ role: 'asc' }, { name: 'asc' }],
 	})
@@ -107,7 +107,9 @@ export async function switchUser(userId: string) {
 		select: { code: true, role: true },
 	})
 	if (!user) throw new Error('Пользователь не найден')
-	if (user.role === 'STUDENT') throw new Error('Недостаточно прав')
+	if (user.role === 'STUDENT' || user.role === 'PARENT') {
+		throw new Error('Недостаточно прав')
+	}
 
 	const switchOwnerId =
 		userId === access.switchOwnerId ? undefined : access.switchOwnerId
