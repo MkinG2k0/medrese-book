@@ -1,5 +1,6 @@
 export { AccountingDashboardPage } from './ui/AccountingDashboardPage'
 export { StudentPaymentsPage } from './ui/StudentPaymentsPage'
+export { PaymentRequestsPage } from './ui/PaymentRequestsPage'
 export { SalariesPage } from './ui/SalariesPage'
 export { ExpensesPage } from './ui/ExpensesPage'
 export { OperationsLedgerPage } from './ui/OperationsLedgerPage'

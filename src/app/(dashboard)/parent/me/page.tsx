@@ -33,7 +33,7 @@ export default async function ParentMePage() {
 							key={child.studentId}
 							name={child.name}
 							status={child.status}
-							groups={child.groups}
+							enrollments={child.enrollments}
 						/>
 					))}
 				</div>

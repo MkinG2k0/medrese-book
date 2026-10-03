@@ -22,6 +22,12 @@ enum PaymentMethod {
   TRANSFER
 }
 
+enum TuitionPaymentRequestStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
 enum ExpenseCategory {
   SUPPLIES
   UTILITIES
@@ -98,6 +104,8 @@ model User {
   conversationsAsParticipant2 Conversation[]    @relation("ConversationParticipant2")
   sentMessages               Message[]
   tuitionPaymentsCreated     TuitionPayment[]   @relation("TuitionPaymentCreatedBy")
+  tuitionPaymentRequests     TuitionPaymentRequest[] @relation("TuitionPaymentRequestParent")
+  tuitionPaymentRequestsConfirmed TuitionPaymentRequest[] @relation("TuitionPaymentRequestConfirmedBy")
   expensesCreated            Expense[]          @relation("ExpenseCreatedBy")
   donationsCreated           Donation[]         @relation("DonationCreatedBy")
   salaryPayoutsCreated       SalaryPayout[]     @relation("SalaryPayoutCreatedBy")
@@ -173,6 +181,7 @@ model Student {
   awards         Award[]
   tuitionCharges TuitionCharge[]
   tuitionPayments TuitionPayment[]
+  tuitionPaymentRequestLines TuitionPaymentRequestLine[]
   extraAssignments StudentExtraAssignment[]
 
   @@index([parentId])
@@ -351,10 +360,41 @@ model TuitionPayment {
   reversalOfId String?
   reversalOf   TuitionPayment?  @relation("TuitionPaymentReversal", fields: [reversalOfId], references: [id])
   reversals    TuitionPayment[] @relation("TuitionPaymentReversal")
+  requestLine  TuitionPaymentRequestLine?
   createdAt    DateTime      @default(now())
 
   @@index([studentId, date])
   @@index([date])
+}
+
+model TuitionPaymentRequest {
+  id            String                       @id @default(cuid())
+  parentId      String
+  parent        User                         @relation("TuitionPaymentRequestParent", fields: [parentId], references: [id], onDelete: Cascade)
+  status        TuitionPaymentRequestStatus  @default(PENDING)
+  rejectReason  String?
+  confirmedById String?
+  confirmedBy   User?                        @relation("TuitionPaymentRequestConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+  confirmedAt   DateTime?
+  createdAt     DateTime                     @default(now())
+  lines         TuitionPaymentRequestLine[]
+
+  @@index([parentId, status])
+  @@index([status, createdAt])
+}
+
+model TuitionPaymentRequestLine {
+  id         String                @id @default(cuid())
+  requestId  String
+  request    TuitionPaymentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount     Int
+  paymentId  String?               @unique
+  payment    TuitionPayment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([requestId, studentId])
+  @@index([studentId])
 }
 
 model TeacherRate {

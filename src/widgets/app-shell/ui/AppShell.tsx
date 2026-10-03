@@ -172,6 +172,16 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <TeamOutlined />,
     label: "Мои дети",
   },
+  "/parent/pay": {
+    key: "/parent/pay",
+    icon: <DollarOutlined />,
+    label: "Оплата",
+  },
+  "/accounting/payment-requests": {
+    key: "/accounting/payment-requests",
+    icon: <FileTextOutlined />,
+    label: "Заявки на оплату",
+  },
   "/student/lessons": {
     key: "/student/lessons",
     icon: <BookOutlined />,
@@ -223,6 +233,7 @@ const managerMenuOrder = [
 const accountantMenuOrder = [
   "/accounting",
   "/accounting/payments",
+  "/accounting/payment-requests",
   "/accounting/salaries",
   "/accounting/expenses",
   "/accounting/ledger",
@@ -255,7 +266,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
     "/messages",
     "/settings",
   ],
-  PARENT: ["/parent/me", "/news", "/settings"],
+  PARENT: ["/parent/me", "/parent/pay", "/news", "/settings"],
 };
 
 type AppShellProps = {

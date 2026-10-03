@@ -70,6 +70,10 @@ describe('matchRoleRouteAccess', () => {
 			expect(matchRoleRouteAccess('/parent/me', 'PARENT')).toBe('allow')
 		})
 
+		it('PARENT на /parent/pay → allow', () => {
+			expect(matchRoleRouteAccess('/parent/pay', 'PARENT')).toBe('allow')
+		})
+
 		it('STUDENT на /parent/me → deny', () => {
 			expect(matchRoleRouteAccess('/parent/me', 'STUDENT')).toBe('deny')
 		})

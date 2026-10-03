@@ -110,9 +110,41 @@ export const exportQuerySchema = z.object({
 	type: z.enum(['payments', 'salaries', 'ledger']),
 })
 
+export const createTuitionPaymentRequestSchema = z.object({
+	lines: z
+		.array(
+			z.object({
+				studentId: z.string().min(1),
+				amountKopecks: positiveKopecksSchema,
+			}),
+		)
+		.min(1, 'Выберите хотя бы одного ребёнка')
+		.max(20, 'Не больше 20 детей в одной заявке'),
+})
+
+export const confirmTuitionPaymentRequestSchema = z.object({
+	requestId: z.string().min(1),
+	date: dateSchema,
+	method: paymentMethodSchema,
+})
+
+export const rejectTuitionPaymentRequestSchema = z.object({
+	requestId: z.string().min(1),
+	reason: z.string().trim().min(1, 'Укажите причину отклонения'),
+})
+
 export type CreateTuitionPaymentInput = z.infer<typeof createTuitionPaymentSchema>
 export type CreateTuitionPaymentsBatchInput = z.infer<
 	typeof createTuitionPaymentsBatchSchema
+>
+export type CreateTuitionPaymentRequestInput = z.infer<
+	typeof createTuitionPaymentRequestSchema
+>
+export type ConfirmTuitionPaymentRequestInput = z.infer<
+	typeof confirmTuitionPaymentRequestSchema
+>
+export type RejectTuitionPaymentRequestInput = z.infer<
+	typeof rejectTuitionPaymentRequestSchema
 >
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>
 export type CreateDonationInput = z.infer<typeof createDonationSchema>
