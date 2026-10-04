@@ -18,8 +18,6 @@ ENV DATABASE_URL=$DATABASE_URL
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN mkdir -p src/shared/lib
-COPY src/shared/lib/database-url.ts ./src/shared/lib/database-url.ts
 
 RUN --mount=type=cache,id=pnpm-store-wedding,target=/root/.local/share/pnpm/store \
   pnpm install --frozen-lockfile
@@ -30,8 +28,6 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN mkdir -p src/shared/lib
-COPY src/shared/lib/database-url.ts ./src/shared/lib/database-url.ts
 COPY --from=deps /app/node_modules ./node_modules
 
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/dummy?sslmode=disable
@@ -52,8 +48,6 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN mkdir -p src/shared/lib
-COPY src/shared/lib/database-url.ts ./src/shared/lib/database-url.ts
 COPY --from=deps /app/node_modules ./node_modules
 
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/dummy?sslmode=disable
