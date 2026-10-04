@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { loginAs } from "./helpers/auth";
 import { TEST_CODES } from "./helpers/codes";
+import {
+  plantExpiredTeacherLastActiveCookie,
+  readSessionUserId,
+} from "./helpers/teacher-idle";
 
 test.describe("Авторизация", () => {
   test("успешный вход учителя перенаправляет в журнал", async ({ page }) => {
@@ -55,14 +59,19 @@ test.describe("Авторизация", () => {
 
   test("учитель разлогинивается после часа неактивности", async ({
     page,
-    context,
   }) => {
-    await context.clock.install();
     await loginAs(page, TEST_CODES.teacher1);
     await expect(page).toHaveURL(/\/journal/);
 
-    await context.clock.fastForward(60 * 60 * 1000 + 1000);
+    const userId = await readSessionUserId(page);
+    expect(userId).toBeTruthy();
+    await plantExpiredTeacherLastActiveCookie(
+      page.context(),
+      userId!,
+      page.url(),
+    );
 
+    await page.goto("/journal");
     await expect(page).toHaveURL(/\/login\?reason=idle/);
     await expect(
       page.getByText("Сессия завершена из-за неактивности"),
@@ -71,14 +80,20 @@ test.describe("Авторизация", () => {
 
   test("менеджер не разлогинивается после часа неактивности", async ({
     page,
-    context,
   }) => {
-    await context.clock.install();
     await loginAs(page, TEST_CODES.manager);
     await expect(page).toHaveURL(/\/admin\/users/);
 
-    await context.clock.fastForward(60 * 60 * 1000 + 1000);
+    const userId = await readSessionUserId(page);
+    if (userId) {
+      await plantExpiredTeacherLastActiveCookie(
+        page.context(),
+        userId,
+        page.url(),
+      );
+    }
 
+    await page.goto("/admin/users");
     await expect(page).toHaveURL(/\/admin\/users/);
     await expect(page.getByRole("heading", { name: "Пользователи" })).toBeVisible();
   });
