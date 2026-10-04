@@ -29,7 +29,6 @@ import type { SwitchableUser } from "@/features/auth/actions/switch-user-actions
 import { getDisplayRoleLabel } from "@/features/auth/lib/role-labels";
 import type { SubstitutionHeaderLine } from "@/features/auth/lib/get-substitution-header-info";
 import { signOutWithLessonCleanup } from "@/features/auth/lib/sign-out";
-import { IdleSessionGuard } from "@/features/auth/ui/IdleSessionGuard";
 import { SubstitutionHeaderInfo } from "@/features/auth/ui/SubstitutionHeaderInfo";
 import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import { NotificationBell } from "@/features/notifications";
@@ -464,12 +463,10 @@ export function AppShell({
   );
 
   return (
-    <>
-      <IdleSessionGuard role={session.user.role} userId={session.user.id} />
-      <Layout
-        className="h-screen min-h-screen"
-        style={{ minHeight: "100vh", height: "100vh" }}
-      >
+    <Layout
+      className="h-screen min-h-screen"
+      style={{ minHeight: "100vh", height: "100vh" }}
+    >
         {!isMobile && (
           <Sider
             collapsible
@@ -553,6 +550,5 @@ export function AppShell({
           </div>
         </Layout>
       </Layout>
-    </>
   );
 }
