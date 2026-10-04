@@ -119,10 +119,10 @@ pnpm db:seed               # загрузить уровни и демо-дан�
 | `pnpm db:seed` | Полный демо-seed: 5 уровней, группы, 22 ученика, история занятий |
 | `pnpm db:seed:prod` | Production-seed: программа + супер-админ (код из `SUPER_ADMIN_CODE`) |
 | `pnpm db:seed:program` | Загрузить программу (5 уровней) из `prisma/data/` в БД |
-| `pnpm db:seed:e2e` | Минимальный seed для e2e (2 уровня × 5 шагов, 5 учеников) |
+| `pnpm db:seed:e2e` | E2E-пользователи и группы (5 учеников). Программу, предметы и уровни не трогает — они должны уже быть в БД |
 | `pnpm db:bench` | Бенчмарк запросов аналитики к БД |
 
-**Защита seed на production:** `pnpm db:seed` и `pnpm db:seed:e2e` **удаляют все данные** и заблокированы, если `NODE_ENV=production` / `APP_ENV=production`, либо `DATABASE_URL` совпадает с `PRODUCTION_DATABASE_URL`. На prod используйте только `pnpm db:seed:prod` или `pnpm db:seed:program` (идемпотентные).
+**Защита seed на production:** `pnpm db:seed` и `pnpm db:seed:e2e` **удаляют операционные данные** (пользователи, группы, занятия и т.д.) и заблокированы, если `NODE_ENV=production` / `APP_ENV=production`, либо `DATABASE_URL` совпадает с `PRODUCTION_DATABASE_URL`. `db:seed:e2e` **не** удаляет предметы, уровни и шаги. На prod используйте только `pnpm db:seed:prod` или `pnpm db:seed:program` (идемпотентные).
 
 ### Тесты
 
@@ -185,7 +185,7 @@ docker compose up app
 | STUDENT | `300001`–`300022` (22 ученика на уровнях 1–5) |
 | PARENT | `500001`–`500010` (семьи с 1–3 детьми) |
 
-Для e2e после `db:seed:e2e`: ученики `300001`–`300005`, опекуны `500001` (Али+Усман), `500002` (Билал), `500003` (Халид+Зайд).
+Для e2e после `db:seed:e2e` (программа и предметы уже в БД): ученики `300001`–`300005`, опекуны `500001` (Али+Усман), `500002` (Билал), `500003` (Халид+Зайд).
 
 ## Маршруты
 
@@ -233,7 +233,7 @@ medrese-book/
 │   ├── seed.ts            # демо-seed
 │   ├── seed-prod.ts       # production-seed
 │   ├── seed-program.ts    # загрузка программы в БД
-│   ├── seed-e2e.ts        # e2e-seed
+│   ├── seed-e2e.ts        # e2e-пользователи/группы (без программы)
 ├── src/
 │   ├── app/               # Next.js App Router, API routes
 │   ├── entities/          # типы и React Query-хуки

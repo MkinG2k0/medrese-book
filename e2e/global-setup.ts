@@ -3,12 +3,28 @@ import path from "node:path";
 
 import { loadTestEnv } from "./helpers/load-test-env";
 
-function runSeed(cwd: string) {
+function runE2eSeed(cwd: string) {
   execSync("pnpm db:seed:e2e", {
     cwd,
     stdio: "inherit",
     env: process.env,
   });
+}
+
+function runSeed(cwd: string) {
+  try {
+    runE2eSeed(cwd);
+  } catch {
+    console.log(
+      "[e2e] Нет программы/предметов — сначала pnpm db:seed, затем e2e-фикстуры...",
+    );
+    execSync("pnpm db:seed", {
+      cwd,
+      stdio: "inherit",
+      env: process.env,
+    });
+    runE2eSeed(cwd);
+  }
 }
 
 export default async function globalSetup() {
@@ -31,15 +47,15 @@ export default async function globalSetup() {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       console.log(
-        `[e2e] Сброс и загрузка демо-данных (попытка ${attempt}/${maxAttempts})...`,
+        `[e2e] Загрузка e2e-фикстур (попытка ${attempt}/${maxAttempts})...`,
       );
       runSeed(cwd);
       return;
     } catch {
       if (attempt === maxAttempts) {
         throw new Error(
-          "Не удалось выполнить pnpm db:seed:e2e. Проверьте DATABASE_URL в .env.test. " +
-            "Для пропуска seed задайте E2E_SKIP_SEED=1.",
+          "Не удалось выполнить pnpm db:seed:e2e. Нужна уже загруженная программа (pnpm db:seed). " +
+            "Проверьте DATABASE_URL в .env.test. Для пропуска seed задайте E2E_SKIP_SEED=1.",
         );
       }
       await new Promise((resolve) => setTimeout(resolve, 2000));

@@ -6,15 +6,8 @@ assertDestructiveSeedAllowed("e2e-seed");
 
 import { PrismaClient } from "../src/shared/lib/db";
 import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  LEVEL1_TITLE,
-  LEVEL2_TITLE,
-} from "./lib/program-config";
 import { buildStudentContactData, E2E_PARENT_PROFILES, seedParentUsers } from "./lib/seed-history";
-import { buildContent, type StepDef } from "./lib/level1-import-utils";
 import { DEFAULT_QURAN_SUBJECT_ID } from "./lib/subject-constants";
-
-const E2E_STEPS_PER_LEVEL = 5;
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -25,44 +18,40 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
 
-function buildE2eSteps(): StepDef[] {
-  return Array.from({ length: E2E_STEPS_PER_LEVEL }, (_, index) => {
-    const order = index + 1;
-    return {
-      order,
-      title: `E2E шаг ${order}`,
-      lesson: `${order}`,
-      letters: "ا",
-      task: `Тестовое задание ${order}`,
-      hours: 1,
-    };
-  });
-}
-
-async function createLevelWithSteps(
-  subjectId: string,
-  number: number,
-  title: string,
-  steps: StepDef[],
-) {
-  const level = await prisma.level.create({
-    data: { subjectId, number, title },
-  });
-
-  await prisma.step.createMany({
-    data: steps.map((step) => ({
-      levelId: level.id,
-      order: step.order,
-      title: step.title,
-      content: buildContent(step),
-      hours: step.hours,
-    })),
-  });
-
-  return level;
-}
-
 const PASSING_GRADE = 3;
+const CURRICULUM_HINT =
+  "Сначала выполните pnpm db:seed (или pnpm db:seed:program для Корана). db:seed:e2e не создаёт и не удаляет программу, предметы, уровни и шаги.";
+
+async function loadSubjectCurriculum(
+  where: { id: string } | { name: string },
+  label: string,
+  minLevels: number,
+) {
+  const subject = await prisma.subject.findFirst({
+    where,
+    include: {
+      levels: {
+        orderBy: { number: "asc" },
+        include: {
+          steps: { orderBy: { order: "asc" }, select: { id: true } },
+        },
+      },
+    },
+  });
+
+  if (!subject) {
+    throw new Error(`${label} не найден. ${CURRICULUM_HINT}`);
+  }
+
+  const levels = subject.levels.filter((level) => level.steps.length > 0);
+  if (levels.length < minLevels) {
+    throw new Error(
+      `У предмета «${subject.name}» недостаточно уровней с шагами (нужно ≥ ${minLevels}). ${CURRICULUM_HINT}`,
+    );
+  }
+
+  return { subject, levels };
+}
 
 async function seedStudentCompletions(
   studentId: string,
@@ -110,7 +99,30 @@ function getPassedStepIds(
 }
 
 async function main() {
-  const e2eSteps = buildE2eSteps();
+  const quran = await loadSubjectCurriculum(
+    { id: DEFAULT_QURAN_SUBJECT_ID },
+    "Предмет «Коран»",
+    2,
+  );
+  const tajweed = await loadSubjectCurriculum(
+    { name: "Таджвид" },
+    "Предмет «Таджвид»",
+    1,
+  );
+
+  const level1 = quran.levels[0]!;
+  const level2 = quran.levels[1]!;
+  const level1Steps = level1.steps;
+  const level2Steps = level2.steps;
+  if (level1Steps.length < 3 || level2Steps.length < 1) {
+    throw new Error(
+      "Для e2e у Корана нужно ≥ 3 шагов на 1-м уровне и ≥ 1 шаг на 2-м. " +
+        CURRICULUM_HINT,
+    );
+  }
+  const tajweedLevel = tajweed.levels[0]!;
+  const tajweedSteps = tajweedLevel.steps;
+  const level2StepOffset = level1Steps.length;
 
   await prisma.message.deleteMany();
   await prisma.conversation.deleteMany();
@@ -136,22 +148,11 @@ async function main() {
   await prisma.leaveRequest.updateMany({ data: { substitutionId: null } });
   await prisma.substitution.deleteMany();
   await prisma.leaveRequest.deleteMany();
-  await prisma.step.deleteMany();
   await prisma.groupEnrollment.deleteMany();
   await prisma.student.deleteMany();
   await prisma.group.deleteMany();
   await prisma.teacher.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.level.deleteMany();
-  await prisma.subject.deleteMany();
-
-  const quranSubject = await prisma.subject.create({
-    data: {
-      id: DEFAULT_QURAN_SUBJECT_ID,
-      name: "Коран",
-      description: "E2E программа",
-    },
-  });
 
   const superAdmin = await prisma.user.create({
     data: {
@@ -204,36 +205,10 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
-  const level1 = await createLevelWithSteps(
-    quranSubject.id,
-    1,
-    LEVEL1_TITLE,
-    e2eSteps,
-  );
-  const level2 = await createLevelWithSteps(
-    quranSubject.id,
-    2,
-    LEVEL2_TITLE,
-    e2eSteps,
-  );
-
-  const [level1Steps, level2Steps] = await Promise.all([
-    prisma.step.findMany({
-      where: { levelId: level1.id },
-      orderBy: { order: "asc" },
-      select: { id: true },
-    }),
-    prisma.step.findMany({
-      where: { levelId: level2.id },
-      orderBy: { order: "asc" },
-      select: { id: true },
-    }),
-  ]);
-
   const group1 = await prisma.group.create({
     data: {
       name: "Группа Аль-Фатиха",
-      subjectId: quranSubject.id,
+      subjectId: quran.subject.id,
       teacherId: teacher1.id,
     },
   });
@@ -241,7 +216,7 @@ async function main() {
   const teacher1Group2 = await prisma.group.create({
     data: {
       name: "Группа Аль-Ихлас",
-      subjectId: quranSubject.id,
+      subjectId: quran.subject.id,
       teacherId: teacher1.id,
     },
   });
@@ -249,8 +224,16 @@ async function main() {
   const group2 = await prisma.group.create({
     data: {
       name: "Группа Ан-Нас",
-      subjectId: quranSubject.id,
+      subjectId: quran.subject.id,
       teacherId: teacher2.id,
+    },
+  });
+
+  const tajweedGroup = await prisma.group.create({
+    data: {
+      name: "Группа Таджвид",
+      subjectId: tajweed.subject.id,
+      teacherId: teacher1.id,
     },
   });
 
@@ -263,7 +246,6 @@ async function main() {
     { name: "Халид", code: "300004", parentCode: "500003" },
     { name: "Зайд", code: "300005", parentCode: "500003" },
   ] as const;
-  const level2StepOffset = e2eSteps.length;
   const studentsByName = new Map<
     string,
     { id: string; onLevel1: boolean; currentStepIdx: number }
@@ -343,33 +325,12 @@ async function main() {
     });
   }
 
-  const tajweedSubject = await prisma.subject.create({
-    data: { name: "Таджвид", description: "E2E программа таджвида" },
-  });
-
-  const tajweedLevel = await createLevelWithSteps(
-    tajweedSubject.id,
-    1,
-    "Таджвид 1",
-    e2eSteps,
-  );
-
-  const tajweedSteps = await prisma.step.findMany({
-    where: { levelId: tajweedLevel.id },
-    orderBy: { order: "asc" },
-    select: { id: true },
-  });
-
-  const tajweedGroup = await prisma.group.create({
-    data: {
-      name: "Группа Таджвид",
-      subjectId: tajweedSubject.id,
-      teacherId: teacher1.id,
-    },
-  });
-
   const aliEntry = studentsByName.get("Али");
-  if (aliEntry && level1Steps[0]) {
+  const firstQuranStep = level1Steps[0];
+  const secondQuranStep = level1Steps[1] ?? firstQuranStep;
+  const firstTajweedStep = tajweedSteps[0];
+
+  if (aliEntry && firstQuranStep && firstTajweedStep) {
     await prisma.groupEnrollment.create({
       data: {
         studentId: aliEntry.id,
@@ -379,9 +340,19 @@ async function main() {
       },
     });
 
-    const quranSession = await prisma.session.findFirst({
-      where: { studentId: aliEntry.id, groupId: group1.id },
-    });
+    const quranSession =
+      (await prisma.session.findFirst({
+        where: { studentId: aliEntry.id, groupId: group1.id },
+      })) ??
+      (await prisma.session.create({
+        data: {
+          studentId: aliEntry.id,
+          groupId: group1.id,
+          date: new Date(),
+          attendance: "PRESENT",
+          note: "E2E seed",
+        },
+      }));
 
     const tajweedSession = await prisma.session.create({
       data: {
@@ -400,16 +371,37 @@ async function main() {
     await prisma.extraAssignment.createMany({
       data: [
         {
+          title: "E2E Extra: Повторение суры Аль-Фатиха",
+          content: extraContent("Прочитать суру Аль-Фатиха 3 раза"),
+          stepId: firstQuranStep.id,
+          authorId: manager.id,
+          isSystem: true,
+        },
+        {
+          title: "E2E Extra: Письменное задание",
+          content: extraContent("Выписать аят из памяти"),
+          stepId: secondQuranStep.id,
+          authorId: superAdmin.id,
+          isSystem: true,
+        },
+        {
+          title: "E2E Extra: Учительское задание",
+          content: extraContent("Дополнительная практика чтения"),
+          stepId: firstQuranStep.id,
+          authorId: teacher1User.id,
+          isSystem: false,
+        },
+        {
           title: "E2E Catalog: Коран шаблон",
           content: extraContent("Коран"),
-          stepId: level1Steps[0].id,
+          stepId: firstQuranStep.id,
           authorId: teacher1User.id,
           isSystem: true,
         },
         {
           title: "E2E Catalog: Таджвид шаблон",
           content: extraContent("Таджвид"),
-          stepId: tajweedSteps[0]!.id,
+          stepId: firstTajweedStep.id,
           authorId: teacher1User.id,
           isSystem: true,
         },
@@ -420,7 +412,7 @@ async function main() {
       data: {
         title: "E2E Extra: Коран для Али",
         content: extraContent("Повторить аят"),
-        stepId: level1Steps[0].id,
+        stepId: firstQuranStep.id,
         authorId: teacher1User.id,
         isSystem: true,
       },
@@ -430,37 +422,35 @@ async function main() {
       data: {
         title: "E2E Extra: Таджвид для Али",
         content: extraContent("Практика таджвида"),
-        stepId: tajweedSteps[0]!.id,
+        stepId: firstTajweedStep.id,
         authorId: teacher1User.id,
         isSystem: true,
       },
     });
 
-    if (quranSession) {
-      const quranInstance = await prisma.studentExtraAssignment.create({
-        data: {
-          templateId: quranTemplate.id,
-          studentId: aliEntry.id,
-          sessionId: quranSession.id,
-          displayStepId: level1Steps[0].id,
-          assignedById: teacher1User.id,
-        },
-      });
+    const quranInstance = await prisma.studentExtraAssignment.create({
+      data: {
+        templateId: quranTemplate.id,
+        studentId: aliEntry.id,
+        sessionId: quranSession.id,
+        displayStepId: firstQuranStep.id,
+        assignedById: teacher1User.id,
+      },
+    });
 
-      await prisma.extraAssignmentCompletion.create({
-        data: {
-          studentExtraAssignmentId: quranInstance.id,
-          grade: PASSING_GRADE,
-        },
-      });
-    }
+    await prisma.extraAssignmentCompletion.create({
+      data: {
+        studentExtraAssignmentId: quranInstance.id,
+        grade: PASSING_GRADE,
+      },
+    });
 
     const tajweedInstance = await prisma.studentExtraAssignment.create({
       data: {
         templateId: tajweedTemplate.id,
         studentId: aliEntry.id,
         sessionId: tajweedSession.id,
-        displayStepId: tajweedSteps[0]!.id,
+        displayStepId: firstTajweedStep.id,
         assignedById: teacher1User.id,
       },
     });
@@ -476,8 +466,9 @@ async function main() {
   const studentCodes = e2eStudents.map((student) => student.code);
   const parentCodes = E2E_PARENT_PROFILES.map((parent) => parent.code);
 
-  console.log("E2E seed completed:");
-  console.log(`  Глава 1 и 2: по ${E2E_STEPS_PER_LEVEL} шагов (без DOCX)`);
+  console.log("E2E seed completed (программа не изменялась):");
+  console.log(`  Коран: ${quran.levels.length} уровней, предмет ${quran.subject.id}`);
+  console.log(`  Таджвид: ${tajweed.levels.length} уровней, предмет ${tajweed.subject.id}`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);
   console.log(`  ACCOUNTANT: ${accountant.code}`);
