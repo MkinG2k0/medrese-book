@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import {
 	listTransferTargetGroups,
-	transferStudent,
+	transferStudents,
 } from '@/features/groups/actions/group-actions'
 
 type TransferTarget = {
@@ -18,17 +18,17 @@ type TransferTarget = {
 type TransferStudentModalProps = {
 	open: boolean
 	fromGroupId: string
-	studentId: string
-	studentName: string
+	students: { studentId: string; studentName: string }[]
 	onClose: () => void
+	onTransferred?: () => void
 }
 
 export function TransferStudentModal({
 	open,
 	fromGroupId,
-	studentId,
-	studentName,
+	students,
 	onClose,
+	onTransferred,
 }: TransferStudentModalProps) {
 	const { message } = App.useApp()
 	const router = useRouter()
@@ -71,11 +71,16 @@ export function TransferStudentModal({
 		startTransition(async () => {
 			try {
 				const values = await form.validateFields()
-				await transferStudent(fromGroupId, {
-					studentId,
+				await transferStudents(fromGroupId, {
+					studentIds: students.map((student) => student.studentId),
 					toGroupId: values.toGroupId,
 				})
-				message.success(`«${studentName}» переведён в другую группу`)
+				message.success(
+					students.length === 1
+						? `«${students[0]?.studentName}» переведён в другую группу`
+						: `Переведено учеников: ${students.length}`,
+				)
+				onTransferred?.()
 				onClose()
 				router.refresh()
 			} catch (err) {
@@ -89,7 +94,11 @@ export function TransferStudentModal({
 
 	return (
 		<Modal
-			title={`Перевести: ${studentName}`}
+			title={
+				students.length === 1
+					? `Перевести: ${students[0]?.studentName}`
+					: `Перевести учеников: ${students.length}`
+			}
 			open={open}
 			onCancel={onClose}
 			onOk={handleOk}

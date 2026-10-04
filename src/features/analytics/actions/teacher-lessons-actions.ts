@@ -71,7 +71,7 @@ async function fetchTeacherLessonAnalytics(
 		validGroupIds,
 	)
 
-	const [sessions, logins, logouts] = await Promise.all([
+	const [sessions, logins, logouts, rates] = await Promise.all([
 		prisma.teachingSession.findMany({
 			where: {
 				teacherId: { in: teacherIds },
@@ -116,6 +116,14 @@ async function fetchTeacherLessonAnalytics(
 			},
 			orderBy: { createdAt: 'asc' },
 		}),
+		prisma.teacherRate.findMany({
+			where: { teacherId: { in: teacherIds } },
+			select: {
+				teacherId: true,
+				hourlyRate: true,
+				validFrom: true,
+			},
+		}),
 	])
 
 	const rows = buildTeacherLessonAnalyticsRows(
@@ -144,6 +152,7 @@ async function fetchTeacherLessonAnalytics(
 		from,
 		to,
 		filterGroupId,
+		rates,
 	)
 
 	return { rows, from, to, isRange }

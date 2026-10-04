@@ -8,7 +8,9 @@ const groupCreateMock = vi.fn()
 const groupUpdateMock = vi.fn()
 const groupEnrollmentFindUniqueMock = vi.fn()
 const groupEnrollmentCreateMock = vi.fn()
+const groupEnrollmentCreateManyMock = vi.fn()
 const groupEnrollmentDeleteMock = vi.fn()
+const groupEnrollmentDeleteManyMock = vi.fn()
 const groupEnrollmentFindManyMock = vi.fn()
 const levelFindFirstMock = vi.fn()
 const studentFindManyMock = vi.fn()
@@ -57,7 +59,9 @@ vi.mock('@/shared/lib/prisma', () => ({
 		groupEnrollment: {
 			findUnique: (...args: unknown[]) => groupEnrollmentFindUniqueMock(...args),
 			create: (...args: unknown[]) => groupEnrollmentCreateMock(...args),
+			createMany: (...args: unknown[]) => groupEnrollmentCreateManyMock(...args),
 			delete: (...args: unknown[]) => groupEnrollmentDeleteMock(...args),
+			deleteMany: (...args: unknown[]) => groupEnrollmentDeleteManyMock(...args),
 			findMany: (...args: unknown[]) => groupEnrollmentFindManyMock(...args),
 		},
 		level: {
@@ -467,6 +471,42 @@ describe('group-actions', () => {
 		})
 	})
 
+	describe('unenrollStudents', () => {
+		it('deletes selected enrollments in one call', async () => {
+			groupEnrollmentFindManyMock.mockResolvedValue([
+				{ studentId: 'student-1' },
+				{ studentId: 'student-2' },
+			])
+			groupEnrollmentDeleteManyMock.mockResolvedValue({ count: 2 })
+
+			const { unenrollStudents } = await import('./group-actions')
+			await unenrollStudents('group-1', {
+				studentIds: ['student-1', 'student-2'],
+			})
+
+			expect(groupEnrollmentDeleteManyMock).toHaveBeenCalledWith({
+				where: {
+					groupId: 'group-1',
+					studentId: { in: ['student-1', 'student-2'] },
+				},
+			})
+		})
+
+		it('rejects when some students are not enrolled', async () => {
+			groupEnrollmentFindManyMock.mockResolvedValue([{ studentId: 'student-1' }])
+
+			const { unenrollStudents } = await import('./group-actions')
+			await expect(
+				unenrollStudents('group-1', {
+					studentIds: ['student-1', 'student-2'],
+				}),
+			).rejects.toThrow(
+				'Один или несколько учеников не зачислены в эту группу',
+			)
+			expect(groupEnrollmentDeleteManyMock).not.toHaveBeenCalled()
+		})
+	})
+
 	describe('transferStudent', () => {
 		it('moves enrollment to another group of the same subject', async () => {
 			groupFindUniqueMock
@@ -555,6 +595,85 @@ describe('group-actions', () => {
 					toGroupId: 'group-2',
 				}),
 			).rejects.toThrow('Ученик уже зачислен в целевую группу')
+			expect(transactionMock).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('transferStudents', () => {
+		it('moves all selected enrollments to one target group', async () => {
+			groupFindUniqueMock
+				.mockResolvedValueOnce({ id: 'group-1', subjectId: 'subject-1' })
+				.mockResolvedValueOnce({ id: 'group-2', subjectId: 'subject-1' })
+			groupEnrollmentFindManyMock
+				.mockResolvedValueOnce([
+					{
+						id: 'enrollment-1',
+						studentId: 'student-1',
+						levelId: 'level-1',
+						currentStepIdx: 7,
+					},
+					{
+						id: 'enrollment-2',
+						studentId: 'student-2',
+						levelId: 'level-2',
+						currentStepIdx: 3,
+					},
+				])
+				.mockResolvedValueOnce([])
+
+			const deleteManyInTx = vi.fn()
+			const createManyInTx = vi.fn()
+			transactionMock.mockImplementation(async (fn) => {
+				return fn({
+					groupEnrollment: {
+						deleteMany: deleteManyInTx,
+						createMany: createManyInTx,
+					},
+				})
+			})
+
+			const { transferStudents } = await import('./group-actions')
+			await transferStudents('group-1', {
+				studentIds: ['student-1', 'student-2'],
+				toGroupId: 'group-2',
+			})
+
+			expect(deleteManyInTx).toHaveBeenCalledWith({
+				where: { id: { in: ['enrollment-1', 'enrollment-2'] } },
+			})
+			expect(createManyInTx).toHaveBeenCalledWith({
+				data: [
+					{
+						studentId: 'student-1',
+						groupId: 'group-2',
+						levelId: 'level-1',
+						currentStepIdx: 7,
+					},
+					{
+						studentId: 'student-2',
+						groupId: 'group-2',
+						levelId: 'level-2',
+						currentStepIdx: 3,
+					},
+				],
+			})
+		})
+
+		it('rejects bulk transfer across different subjects', async () => {
+			groupFindUniqueMock
+				.mockResolvedValueOnce({ id: 'group-1', subjectId: 'subject-1' })
+				.mockResolvedValueOnce({ id: 'group-2', subjectId: 'subject-2' })
+			groupEnrollmentFindManyMock.mockResolvedValueOnce([]).mockResolvedValueOnce([])
+
+			const { transferStudents } = await import('./group-actions')
+			await expect(
+				transferStudents('group-1', {
+					studentIds: ['student-1', 'student-2'],
+					toGroupId: 'group-2',
+				}),
+			).rejects.toThrow(
+				'Перенос возможен только между группами одного предмета',
+			)
 			expect(transactionMock).not.toHaveBeenCalled()
 		})
 	})

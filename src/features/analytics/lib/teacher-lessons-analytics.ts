@@ -13,6 +13,7 @@ import {
 	averageLocalTime,
 	formatLocalTime,
 } from '@/shared/lib/local-time'
+import { formatMoney } from '@/shared/lib/money'
 
 export type TeacherLessonSubjectRow = {
 	teacherId: string
@@ -22,6 +23,8 @@ export type TeacherLessonSubjectRow = {
 	lessonStartedAt: string | null
 	lessonEndedAt: string | null
 	lessonDurationLabel: string
+	earnedKopecks: number
+	earnedLabel: string
 	teachingSessionId: string | null
 	isAverage: boolean
 }
@@ -33,10 +36,18 @@ export type TeacherLessonAnalyticsRow = {
 	logoutAt: string | null
 	totalLessonDurationLabel: string
 	workplaceDurationLabel: string
+	earnedKopecks: number
+	earnedLabel: string
 	isAverage: boolean
 	loginEventId: string | null
 	logoutEventId: string | null
 	lessons: TeacherLessonSubjectRow[]
+}
+
+type TeacherRateRecord = {
+	teacherId: string
+	hourlyRate: number
+	validFrom: Date
 }
 
 type TeacherRecord = {
@@ -86,19 +97,33 @@ function formatLessonDurationLabel(
 	return formatElapsedMs(durations[0]!)
 }
 
+function getDayLessonDurationMs(
+	sessions: TeachingSessionRecord[],
+	day: string,
+): number {
+	return sessions
+		.filter((session) => sessionMatchesDay(session, day))
+		.map((session) => getTeachingSessionDurationMs(session))
+		.filter((value): value is number => value != null && value > 0)
+		.reduce((sum, value) => sum + value, 0)
+}
+
+function getDailyLessonDurationsMs(
+	sessions: TeachingSessionRecord[],
+	days: string[],
+): number[] {
+	return days.flatMap((day) => {
+		const total = getDayLessonDurationMs(sessions, day)
+		return total > 0 ? [total] : []
+	})
+}
+
 function formatTotalLessonDurationLabel(
 	sessions: TeachingSessionRecord[],
 	days: string[],
 	isAverage: boolean,
 ): string {
-	const dailyTotals = days.flatMap((day) => {
-		const total = sessions
-			.filter((session) => sessionMatchesDay(session, day))
-			.map((session) => getTeachingSessionDurationMs(session))
-			.filter((value): value is number => value != null && value > 0)
-			.reduce((sum, value) => sum + value, 0)
-		return total > 0 ? [total] : []
-	})
+	const dailyTotals = getDailyLessonDurationsMs(sessions, days)
 
 	if (dailyTotals.length === 0) return 'время не учтено'
 
@@ -109,6 +134,46 @@ function formatTotalLessonDurationLabel(
 	}
 
 	return formatElapsedMs(dailyTotals[0]!)
+}
+
+export function calcLessonPayKopecks(
+	durationMs: number,
+	hourlyRateKopecks: number,
+): number {
+	if (durationMs <= 0 || hourlyRateKopecks <= 0) return 0
+	return Math.round((durationMs * hourlyRateKopecks) / 3_600_000)
+}
+
+function pickHourlyRateKopecks(rates: TeacherRateRecord[], day: string): number {
+	return (
+		rates
+			.filter((rate) => getLocalDateString(rate.validFrom) <= day)
+			.sort(
+				(left, right) =>
+					getLocalDateString(right.validFrom).localeCompare(
+						getLocalDateString(left.validFrom),
+					),
+			)[0]?.hourlyRate ?? 0
+	)
+}
+
+function calcEarnedKopecks(
+	sessions: TeachingSessionRecord[],
+	days: string[],
+	rates: TeacherRateRecord[],
+	isAverage: boolean,
+): number {
+	const dailyAmounts = days.flatMap((day) => {
+		const durationMs = getDayLessonDurationMs(sessions, day)
+		if (durationMs <= 0) return []
+		return [calcLessonPayKopecks(durationMs, pickHourlyRateKopecks(rates, day))]
+	})
+
+	if (dailyAmounts.length === 0) return 0
+	if (!isAverage) return dailyAmounts[0]!
+	return Math.round(
+		dailyAmounts.reduce((sum, value) => sum + value, 0) / dailyAmounts.length,
+	)
 }
 
 function formatWorkplaceDurationLabel(
@@ -216,12 +281,14 @@ function buildLessonRow(
 	group: GroupRecord,
 	days: string[],
 	sessions: TeachingSessionRecord[],
+	rates: TeacherRateRecord[],
 	isAverage: boolean,
 ): TeacherLessonSubjectRow {
 	const groupSessions = sessions.filter(
 		(session) =>
 			session.teacherId === teacher.id && session.groupId === group.id,
 	)
+	const earnedKopecks = calcEarnedKopecks(groupSessions, days, rates, isAverage)
 
 	if (isAverage) {
 		const startedTimes = days.flatMap((day) => {
@@ -250,6 +317,8 @@ function buildLessonRow(
 			lessonStartedAt: formatTimeValue(startedTimes, true),
 			lessonEndedAt: formatTimeValue(endedTimes, true),
 			lessonDurationLabel: formatLessonDurationLabel(completedSessions, true),
+			earnedKopecks,
+			earnedLabel: formatMoney(earnedKopecks),
 			teachingSessionId: null,
 			isAverage: true,
 		}
@@ -274,6 +343,8 @@ function buildLessonRow(
 		lessonDurationLabel: daySession
 			? formatLessonDurationLabel([daySession], false)
 			: 'время не учтено',
+		earnedKopecks,
+		earnedLabel: formatMoney(earnedKopecks),
 		teachingSessionId: daySession?.id ?? null,
 		isAverage: false,
 	}
@@ -286,6 +357,7 @@ function buildTeacherRow(
 	sessions: TeachingSessionRecord[],
 	logins: AuditTimeRecord[],
 	logouts: AuditTimeRecord[],
+	rates: TeacherRateRecord[],
 	isAverage: boolean,
 ): TeacherLessonAnalyticsRow {
 	const groupIds = new Set(groups.map((group) => group.id))
@@ -298,7 +370,7 @@ function buildTeacherRow(
 		(logout) => logout.userId === teacher.userId,
 	)
 	const lessons = groups.map((group) =>
-		buildLessonRow(teacher, group, days, teacherSessions, isAverage),
+		buildLessonRow(teacher, group, days, teacherSessions, rates, isAverage),
 	)
 
 	if (isAverage) {
@@ -312,6 +384,12 @@ function buildTeacherRow(
 			const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
 			return dayLogout ? [dayLogout.createdAt] : []
 		})
+		const earnedKopecks = calcEarnedKopecks(
+			teacherSessions,
+			days,
+			rates,
+			true,
+		)
 
 		return {
 			teacherId: teacher.id,
@@ -329,6 +407,8 @@ function buildTeacherRow(
 				days,
 				true,
 			),
+			earnedKopecks,
+			earnedLabel: formatMoney(earnedKopecks),
 			isAverage: true,
 			loginEventId: null,
 			logoutEventId: null,
@@ -339,6 +419,12 @@ function buildTeacherRow(
 	const day = days[0]!
 	const dayLogin = teacherLogins.find((login) => auditTimeMatchesDay(login, day))
 	const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
+	const earnedKopecks = calcEarnedKopecks(
+		teacherSessions,
+		days,
+		rates,
+		false,
+	)
 
 	return {
 		teacherId: teacher.id,
@@ -356,6 +442,8 @@ function buildTeacherRow(
 			days,
 			false,
 		),
+		earnedKopecks,
+		earnedLabel: formatMoney(earnedKopecks),
 		isAverage: false,
 		loginEventId: dayLogin?.id ?? null,
 		logoutEventId: dayLogout?.id ?? null,
@@ -372,6 +460,7 @@ export function buildTeacherLessonAnalyticsRows(
 	from: string,
 	to: string,
 	groupIdFilter: string | null = null,
+	rates: TeacherRateRecord[] = [],
 ): TeacherLessonAnalyticsRow[] {
 	const days = listCalendarDays(from, to)
 	const isAverage = isCalendarRange(from, to)
@@ -394,6 +483,7 @@ export function buildTeacherLessonAnalyticsRows(
 				sessions,
 				logins,
 				logouts,
+				rates.filter((rate) => rate.teacherId === teacher.id),
 				isAverage,
 			),
 		]

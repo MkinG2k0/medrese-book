@@ -1,9 +1,11 @@
 'use client'
 
-import { Select, Table } from 'antd'
+import { Button, Select, Table } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 
+import { TeacherRateModal } from '@/features/accounting/ui/TeacherRateModal'
 import { ALL_TEACHERS, ALL_GROUPS } from '@/features/analytics/lib/analytics-query'
 import type {
 	TeacherLessonAnalyticsRow,
@@ -14,10 +16,12 @@ import { EditableTeacherTimeCell } from '@/features/analytics/ui/EditableTeacher
 import type { TeacherLessonTimeField } from '@/shared/lib/validations/teacher-lesson-time'
 
 const SUBJECT_COLUMN_WIDTH = 180
+const GROUP_COLUMN_WIDTH = 110
 const TIME_COLUMN_WIDTH = 120
 const DURATION_COLUMN_WIDTH = 200
-const TABLE_SCROLL_X = 880
-const EXPANDED_TABLE_SCROLL_X = 760
+const EARNED_COLUMN_WIDTH = 140
+const TABLE_SCROLL_X = 1020
+const EXPANDED_TABLE_SCROLL_X = 820
 
 type TeacherLessonsGroupOption = {
 	id: string
@@ -126,6 +130,8 @@ type TeacherLessonsTableProps = {
 	showTeacherColumn?: boolean
 	editable?: boolean
 	date?: string
+	canManageRates?: boolean
+	alwaysExpanded?: boolean
 }
 
 function formatCell(value: string | null) {
@@ -198,6 +204,8 @@ function TeacherLessonsExpandedTable({
 			title: 'Группа',
 			dataIndex: 'groupName',
 			key: 'groupName',
+			width: GROUP_COLUMN_WIDTH,
+			ellipsis: true,
 		},
 		{
 			title: `Начало урока${timeSuffix}`,
@@ -221,6 +229,12 @@ function TeacherLessonsExpandedTable({
 			key: 'lessonDurationLabel',
 			width: DURATION_COLUMN_WIDTH,
 		},
+		{
+			title: isRange ? 'За урок (среднее)' : 'За урок',
+			dataIndex: 'earnedLabel',
+			key: 'earnedLabel',
+			width: EARNED_COLUMN_WIDTH,
+		},
 	]
 
 	return (
@@ -243,7 +257,13 @@ export function TeacherLessonsTable({
 	showTeacherColumn = true,
 	editable = false,
 	date,
+	canManageRates = false,
+	alwaysExpanded = false,
 }: TeacherLessonsTableProps) {
+	const [selectedTeacher, setSelectedTeacher] = useState<{
+		id: string
+		name: string
+	} | null>(null)
 	const timeSuffix = isRange ? ' (среднее)' : ''
 	const columns: TableColumnsType<TeacherLessonAnalyticsRow> = [
 		...(showTeacherColumn
@@ -253,6 +273,20 @@ export function TeacherLessonsTable({
 						dataIndex: 'teacherName' as const,
 						key: 'teacherName',
 						width: SUBJECT_COLUMN_WIDTH,
+						render: (value: string, row: TeacherLessonAnalyticsRow) =>
+							canManageRates ? (
+								<Button
+									type="link"
+									className="h-auto px-0"
+									onClick={() =>
+										setSelectedTeacher({ id: row.teacherId, name: row.teacherName })
+									}
+								>
+									{value}
+								</Button>
+							) : (
+								value
+							),
 					},
 				]
 			: []),
@@ -284,6 +318,12 @@ export function TeacherLessonsTable({
 			key: 'totalLessonDurationLabel',
 			width: DURATION_COLUMN_WIDTH,
 		},
+		{
+			title: isRange ? 'За день (среднее)' : 'За день',
+			dataIndex: 'earnedLabel' as const,
+			key: 'earnedLabel',
+			width: EARNED_COLUMN_WIDTH,
+		},
 	]
 
 	return (
@@ -294,18 +334,41 @@ export function TeacherLessonsTable({
 				scroll={{ x: TABLE_SCROLL_X }}
 				dataSource={rows}
 				columns={columns}
-				expandable={{
-					rowExpandable: (row) => row.lessons.length > 0,
-					expandedRowRender: (row) => (
-						<TeacherLessonsExpandedTable
-							lessons={row.lessons}
-							isRange={isRange}
-							editable={editable}
-							date={date}
-						/>
-					),
-				}}
+				expandable={
+					alwaysExpanded
+						? {
+								expandedRowKeys: rows.map((row) => row.teacherId),
+								showExpandColumn: false,
+								expandedRowRender: (row) => (
+									<TeacherLessonsExpandedTable
+										lessons={row.lessons}
+										isRange={isRange}
+										editable={editable}
+										date={date}
+									/>
+								),
+							}
+						: {
+								rowExpandable: (row) => row.lessons.length > 0,
+								expandedRowRender: (row) => (
+									<TeacherLessonsExpandedTable
+										lessons={row.lessons}
+										isRange={isRange}
+										editable={editable}
+										date={date}
+									/>
+								),
+							}
+				}
 			/>
+			{canManageRates && (
+				<TeacherRateModal
+					open={selectedTeacher != null}
+					teacherId={selectedTeacher?.id ?? null}
+					teacherName={selectedTeacher?.name ?? ''}
+					onClose={() => setSelectedTeacher(null)}
+				/>
+			)}
 		</div>
 	)
 }

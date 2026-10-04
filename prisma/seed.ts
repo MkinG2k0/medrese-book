@@ -20,10 +20,18 @@ import {
   getCurrentStepIdx,
   getPassedStepIds,
   PARENT_PROFILES,
+  seedExtraAssignmentHistory,
   seedParentUsers,
+  seedSessionDurationAdjustments,
   seedStudentHistory,
+  seedTeacherRates,
+  seedTeacherWorkplaceHistory,
   seedTeachingSessions,
   STUDENT_PROFILES,
+  TEACHER1_RATE_HISTORY,
+  TEACHER1_SCHEDULE,
+  TEACHER2_RATE_HISTORY,
+  TEACHER2_SCHEDULE,
 } from "./lib/seed-history";
 
 const connectionString = process.env.DATABASE_URL;
@@ -125,6 +133,9 @@ async function main() {
     data: { userId: teacher2User.id },
   });
 
+  await seedTeacherRates(prisma, teacher1.id, TEACHER1_RATE_HISTORY, seedCtx);
+  await seedTeacherRates(prisma, teacher2.id, TEACHER2_RATE_HISTORY, seedCtx);
+
   const quranSubject = await prisma.subject.create({
     data: {
       id: DEFAULT_QURAN_SUBJECT_ID,
@@ -205,8 +216,40 @@ async function main() {
 
   const groups = [group1, group2];
 
-  await seedTeachingSessions(prisma, group1.id, teacher1.id, lessonDates);
-  await seedTeachingSessions(prisma, group2.id, teacher2.id, lessonDates);
+  await seedTeachingSessions(
+    prisma,
+    group1.id,
+    teacher1.id,
+    lessonDates,
+    TEACHER1_SCHEDULE,
+    "teacher-ahmad",
+  );
+  await seedTeachingSessions(
+    prisma,
+    group2.id,
+    teacher2.id,
+    lessonDates,
+    TEACHER2_SCHEDULE,
+    "teacher-ibrahim",
+  );
+  await seedTeacherWorkplaceHistory(
+    prisma,
+    teacher1User.id,
+    lessonDates,
+    TEACHER1_SCHEDULE,
+    "teacher-ahmad",
+  );
+  await seedTeacherWorkplaceHistory(
+    prisma,
+    teacher2User.id,
+    lessonDates,
+    TEACHER2_SCHEDULE,
+    "teacher-ibrahim",
+  );
+  await seedSessionDurationAdjustments(prisma, teacher1.id, manager.id);
+  await seedSessionDurationAdjustments(prisma, teacher2.id, manager.id);
+
+  const profilesByStudentId = new Map<string, (typeof STUDENT_PROFILES)[number]>();
 
   for (const [index, profile] of STUDENT_PROFILES.entries()) {
     const user = await prisma.user.create({
@@ -260,6 +303,7 @@ async function main() {
       lessonDates,
       seedCtx,
     );
+    profilesByStudentId.set(student.id, profile);
   }
 
   const dualEnrollmentStudent = await prisma.student.findFirst({
@@ -289,34 +333,58 @@ async function main() {
     await prisma.extraAssignment.createMany({
       data: [
         {
-          title: "E2E Extra: Повторение суры Аль-Фатиха",
+          title: "Повторение суры Аль-Фатиха",
           content: {
-            blocks: [{ type: "text", value: "Прочитать суру Аль-Фатиха 3 раза" }],
+            blocks: [{ type: "text", value: "Прочитать суру Аль-Фатиха 3 раза дома и отметить ошибки." }],
           },
           stepId: firstStep.id,
           authorId: manager.id,
           isSystem: true,
         },
         {
-          title: "E2E Extra: Письменное задание",
+          title: "Письменное задание",
           content: {
-            blocks: [{ type: "text", value: "Выписать аят из памяти" }],
+            blocks: [{ type: "text", value: "Выписать аят из памяти и проверить огласовки." }],
           },
           stepId: secondStep?.id ?? firstStep.id,
           authorId: superAdmin.id,
           isSystem: true,
         },
         {
-          title: "E2E Extra: Учительское задание",
+          title: "Дополнительная практика чтения",
           content: {
-            blocks: [{ type: "text", value: "Дополнительная практика чтения" }],
+            blocks: [{ type: "text", value: "Прочитать заданный отрывок медленно с таджвидом." }],
           },
           stepId: firstStep.id,
           authorId: teacher1User.id,
           isSystem: false,
         },
+        {
+          title: "Повтор слабых мест",
+          content: {
+            blocks: [{ type: "text", value: "Разобрать места, где на уроке были ошибки, и сдать на следующем занятии." }],
+          },
+          stepId: secondStep?.id ?? firstStep.id,
+          authorId: teacher1User.id,
+          isSystem: false,
+        },
       ],
     });
+
+    const extraTemplates = await prisma.extraAssignment.findMany({
+      where: { stepId: { in: [firstStep.id, secondStep?.id ?? firstStep.id] } },
+      select: { id: true, stepId: true },
+    });
+
+    await seedExtraAssignmentHistory(
+      prisma,
+      extraTemplates.map((template) => ({
+        id: template.id,
+        displayStepId: template.stepId ?? firstStep.id,
+      })),
+      teacher1User.id,
+      profilesByStudentId,
+    );
   }
 
   const studentCodes = STUDENT_PROFILES.map((p) => p.code);
@@ -339,7 +407,7 @@ async function main() {
   console.log(formatSubjectSummary("Таджвид", tajweedProgramResult));
   console.log(formatSubjectSummary("Арабский язык", arabicProgramResult));
   console.log(formatProgramSeedSummary(quranProgramResult));
-  console.log(`  Учеников: ${STUDENT_PROFILES.length} (уровни программы Корана)`);
+  console.log(`  Учеников: ${STUDENT_PROFILES.length} (по 6 в каждой группе)`);
   console.log(`  Период данных: ${periodLabel}`);
   console.log(`  Занятий групп (вт/чт): ${lessonDates.length} дат на группу`);
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);

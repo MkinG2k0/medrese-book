@@ -143,7 +143,6 @@ export function StepPdfDocument({ url }: StepPdfDocumentProps) {
 
 	useEffect(() => {
 		let cancelled = false
-		let loaded: PDFDocumentProxy | null = null
 		setLoading(true)
 		setError(null)
 		setPdf(null)
@@ -155,10 +154,8 @@ export function StepPdfDocument({ url }: StepPdfDocumentProps) {
 		void loadingTask.promise
 			.then((doc) => {
 				if (cancelled) {
-					void doc.destroy()
 					return
 				}
-				loaded = doc
 				setPdf(doc)
 				setPageCount(doc.numPages)
 				setLoading(false)
@@ -172,7 +169,7 @@ export function StepPdfDocument({ url }: StepPdfDocumentProps) {
 
 		return () => {
 			cancelled = true
-			void loaded?.destroy()
+			void loadingTask.destroy()
 		}
 	}, [source])
 

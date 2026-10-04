@@ -14,7 +14,10 @@ import {
   type ReactNode,
 } from "react";
 
-import { unenrollStudent } from "@/features/groups/actions/group-actions";
+import {
+  unenrollStudent,
+  unenrollStudents,
+} from "@/features/groups/actions/group-actions";
 import { EnrollStudentModal } from "@/features/groups/ui/EnrollStudentModal";
 import { TransferStudentModal } from "@/features/groups/ui/TransferStudentModal";
 import { resetUserCode } from "@/features/user-admin/actions/user-actions";
@@ -70,10 +73,10 @@ export function GroupStudentsTable({
   const [isPending, startTransition] = useTransition();
   const [selectedUser, setSelectedUser] = useState<UserDetail | null>(null);
   const [enrollOpen, setEnrollOpen] = useState(false);
-  const [transferTarget, setTransferTarget] = useState<{
-    studentId: string;
-    studentName: string;
-  } | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [transferTarget, setTransferTarget] = useState<
+    { studentId: string; studentName: string }[] | null
+  >(null);
   const [codeModal, setCodeModal] = useState<{ name: string; code: string } | null>(
     null,
   );
@@ -121,6 +124,45 @@ export function GroupStudentsTable({
     },
     [groupId, message, modal, router],
   );
+
+  const selectedStudents = useMemo(
+    () =>
+      users.flatMap((user) => {
+        if (!selectedRowKeys.includes(user.id) || !user.student?.id) {
+          return [];
+        }
+        return [{ studentId: user.student.id, studentName: user.name }];
+      }),
+    [selectedRowKeys, users],
+  );
+
+  const handleBulkUnenroll = useCallback(() => {
+    if (!groupId || selectedStudents.length === 0) return;
+
+    modal.confirm({
+      title: "Снять выбранных с группы?",
+      content: `Будет снято учеников: ${selectedStudents.length}.`,
+      okText: "Снять",
+      okType: "danger",
+      cancelText: "Отмена",
+      onOk: async () => {
+        try {
+          await unenrollStudents(groupId, {
+            studentIds: selectedStudents.map((student) => student.studentId),
+          });
+          message.success(`Снято с группы: ${selectedStudents.length}`);
+          setSelectedRowKeys([]);
+          router.refresh();
+        } catch (err) {
+          message.error(
+            err instanceof Error
+              ? err.message
+              : "Не удалось снять учеников с группы",
+          );
+        }
+      },
+    });
+  }, [groupId, message, modal, router, selectedStudents]);
 
   const columns: ColumnsType<UserDetail> = useMemo(
     () => [
@@ -223,10 +265,12 @@ export function GroupStudentsTable({
                       size="small"
                       onClick={(event) => {
                         event.stopPropagation();
-                        setTransferTarget({
-                          studentId,
-                          studentName: record.name,
-                        });
+                        setTransferTarget([
+                          {
+                            studentId,
+                            studentName: record.name,
+                          },
+                        ]);
                       }}
                     >
                       Перевести
@@ -262,6 +306,17 @@ export function GroupStudentsTable({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {canManageEnrollment && groupId && selectedStudents.length > 0 && (
+            <>
+              <Text type="secondary">Выбрано: {selectedStudents.length}</Text>
+              <Button onClick={() => setTransferTarget(selectedStudents)}>
+                Перевести
+              </Button>
+              <Button danger onClick={handleBulkUnenroll}>
+                Снять с группы
+              </Button>
+            </>
+          )}
           {headerControls}
           {canManageEnrollment && groupId && subjectId && (
             <Button type="primary" onClick={() => setEnrollOpen(true)}>
@@ -277,8 +332,23 @@ export function GroupStudentsTable({
         rowKey="id"
         scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 20 }}
+        rowSelection={
+          canManageEnrollment && groupId
+            ? {
+                selectedRowKeys,
+                onChange: (keys) => setSelectedRowKeys(keys as string[]),
+                getCheckboxProps: (record) => ({
+                  disabled: !record.student?.id,
+                }),
+              }
+            : undefined
+        }
         onRow={(record) => ({
-          onClick: () => setSelectedUser(record),
+          onClick: (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest(".ant-checkbox-wrapper, .ant-btn")) return;
+            setSelectedUser(record);
+          },
           className: "cursor-pointer",
         })}
       />
@@ -310,9 +380,9 @@ export function GroupStudentsTable({
         <TransferStudentModal
           open
           fromGroupId={groupId}
-          studentId={transferTarget.studentId}
-          studentName={transferTarget.studentName}
+          students={transferTarget}
           onClose={() => setTransferTarget(null)}
+          onTransferred={() => setSelectedRowKeys([])}
         />
       )}
 

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { isPastCalendarDay } from '@/shared/lib/calendar-date'
+
 const monthSchema = z
 	.string()
 	.regex(/^\d{4}-\d{2}$/, 'Некорректный месяц (YYYY-MM)')
@@ -96,7 +98,10 @@ export const adjustSessionDurationSchema = z.object({
 export const setTeacherRateSchema = z.object({
 	teacherId: z.string().min(1),
 	hourlyRateKopecks: z.number().int().min(0),
-	validFrom: dateSchema,
+	validFrom: dateSchema.refine(
+		(value) => !isPastCalendarDay(value),
+		'Нельзя поставить ставку задним числом',
+	),
 })
 
 export const updateStudentTuitionSchema = z.object({

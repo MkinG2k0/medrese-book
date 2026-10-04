@@ -31,6 +31,7 @@ export type DomainEventAction =
 	| 'SALARY_PAYOUT_REVERSED'
 	| 'MONTH_CLOSED'
 	| 'TEACHING_SESSION_DURATION_ADJUSTED'
+	| 'TEACHER_RATE_SET'
 
 export type LeaveDomainEventPayload = {
 	teacherId: string

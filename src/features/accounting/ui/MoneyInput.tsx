@@ -9,6 +9,7 @@ type MoneyInputProps = {
 	valueKopecks: number | null
 	onChangeKopecks: (value: number | null) => void
 	placeholder?: string
+	ariaLabel?: string
 	onPressEnter?: () => void
 }
 
@@ -16,6 +17,7 @@ export function MoneyInput({
 	valueKopecks,
 	onChangeKopecks,
 	placeholder = '0',
+	ariaLabel,
 	onPressEnter,
 }: MoneyInputProps) {
 	const displayValue = useMemo(() => {
@@ -27,6 +29,7 @@ export function MoneyInput({
 		<Input
 			inputMode="decimal"
 			placeholder={placeholder}
+			aria-label={ariaLabel}
 			value={displayValue}
 			onChange={(event) => {
 				const parsed = parseMoneyInput(event.target.value)

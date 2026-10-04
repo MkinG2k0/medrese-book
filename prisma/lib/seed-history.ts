@@ -9,7 +9,7 @@ export type StudentSeedProfile = {
   level: 1 | 2 | 3 | 4 | 5;
   /** Пройденные шаги на текущем уровне. */
   stepsOnLevel: number;
-  /** Месяц начала обучения: 0 = первый месяц периода, …, 5 = текущий месяц. */
+  /** Месяц начала обучения: 0 = первый месяц периода, …, SEED_MONTHS-1 = текущий месяц. */
   startMonthOffset: number;
   attendance: "good" | "average" | "poor" | "at-risk-month" | "at-risk-streak";
   gradeMin: number;
@@ -78,7 +78,7 @@ export function buildStudentContactData(
   };
 }
 
-export const SEED_MONTHS = 6;
+export const SEED_MONTHS = 3;
 
 export type SeedContext = {
   now: Date;
@@ -148,36 +148,58 @@ export async function seedParentUsers(
 }
 
 export const STUDENT_PROFILES: StudentSeedProfile[] = [
-  // Уровень 1 — начинающие (33 шага)
-  { name: "Муса", code: "300013", groupIndex: 0, level: 1, stepsOnLevel: 0, startMonthOffset: 5, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
-  { name: "Фарис", code: "300010", groupIndex: 0, level: 1, stepsOnLevel: 1, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
-  { name: "Билал", code: "300003", groupIndex: 0, level: 1, stepsOnLevel: 3, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
-  { name: "Умар", code: "300008", groupIndex: 0, level: 1, stepsOnLevel: 6, startMonthOffset: 2, attendance: "at-risk-month", gradeMin: 3, gradeMax: 3, parentCode: "500002" },
-  { name: "Айюб", code: "300022", groupIndex: 1, level: 1, stepsOnLevel: 2, startMonthOffset: 4, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500002" },
-  { name: "Зайд", code: "300005", groupIndex: 1, level: 1, stepsOnLevel: 5, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500002" },
-  // Уровень 2 (168 шагов)
-  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 50, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500003" },
-  { name: "Ясин", code: "300007", groupIndex: 0, level: 2, stepsOnLevel: 140, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 5, parentCode: "500003" },
-  { name: "Салих", code: "300014", groupIndex: 0, level: 2, stepsOnLevel: 30, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, status: "PAUSE", parentCode: "500004", tuitionRate: 150000, discountReason: "Многодетная семья" },
-  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3, parentCode: "500005" },
-  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500005" },
-  { name: "Юсуф", code: "300016", groupIndex: 1, level: 2, stepsOnLevel: 60, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500005" },
-  // Уровень 3 (159 шагов)
-  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500006" },
-  { name: "Амир", code: "300006", groupIndex: 0, level: 3, stepsOnLevel: 140, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500006" },
-  { name: "Иса", code: "300012", groupIndex: 0, level: 3, stepsOnLevel: 80, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500007" },
-  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 50, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4, parentCode: "500007" },
-  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 30, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3, parentCode: "500008", tuitionRate: 180000, discountReason: "Скидка по заявлению" },
-  // Уровень 4 (158 шагов)
-  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 100, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500009" },
-  { name: "Сулейман", code: "300018", groupIndex: 1, level: 4, stepsOnLevel: 120, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500009" },
-  { name: "Лукман", code: "300019", groupIndex: 1, level: 4, stepsOnLevel: 80, startMonthOffset: 1, attendance: "at-risk-month", gradeMin: 3, gradeMax: 4, parentCode: "500009" },
-  // Уровень 5 — джузъ (37 шагов)
-  { name: "Харун", code: "300020", groupIndex: 1, level: 5, stepsOnLevel: 20, startMonthOffset: 2, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500010" },
-  { name: "Идрис", code: "300021", groupIndex: 1, level: 5, stepsOnLevel: 10, startMonthOffset: 3, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500010" },
+  // Группа 0 — Аль-Фатиха: 6 учеников
+  { name: "Али", code: "300001", groupIndex: 0, level: 3, stepsOnLevel: 70, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500001" },
+  { name: "Усман", code: "300002", groupIndex: 0, level: 2, stepsOnLevel: 55, startMonthOffset: 0, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500001" },
+  { name: "Билал", code: "300003", groupIndex: 0, level: 1, stepsOnLevel: 8, startMonthOffset: 1, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500002" },
+  { name: "Умар", code: "300008", groupIndex: 0, level: 1, stepsOnLevel: 4, startMonthOffset: 2, attendance: "at-risk-month", gradeMin: 3, gradeMax: 3, parentCode: "500004" },
+  { name: "Нух", code: "300011", groupIndex: 0, level: 2, stepsOnLevel: 36, startMonthOffset: 1, attendance: "at-risk-streak", gradeMin: 3, gradeMax: 3, parentCode: "500005" },
+  { name: "Саид", code: "300009", groupIndex: 0, level: 3, stepsOnLevel: 28, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 4, parentCode: "500006" },
+  // Группа 1 — Ан-Нас: 6 учеников
+  { name: "Халид", code: "300004", groupIndex: 1, level: 2, stepsOnLevel: 90, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500003" },
+  { name: "Зайд", code: "300005", groupIndex: 1, level: 1, stepsOnLevel: 6, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500003" },
+  { name: "Дауд", code: "300017", groupIndex: 1, level: 3, stepsOnLevel: 22, startMonthOffset: 0, attendance: "poor", gradeMin: 3, gradeMax: 3, parentCode: "500007", tuitionRate: 180000, discountReason: "Скидка по заявлению" },
+  { name: "Ибрахим", code: "300015", groupIndex: 1, level: 4, stepsOnLevel: 48, startMonthOffset: 0, attendance: "good", gradeMin: 4, gradeMax: 5, parentCode: "500008" },
+  { name: "Харун", code: "300020", groupIndex: 1, level: 5, stepsOnLevel: 14, startMonthOffset: 1, attendance: "average", gradeMin: 3, gradeMax: 4, parentCode: "500009" },
+  { name: "Идрис", code: "300021", groupIndex: 1, level: 5, stepsOnLevel: 6, startMonthOffset: 2, attendance: "good", gradeMin: 3, gradeMax: 4, parentCode: "500010" },
 ];
 
-/** Вторник и четверг каждой недели в периоде seed (не позже сегодня). */
+export type TeacherLessonSchedule = {
+  lessonStartHour: number;
+  lessonStartMinute: number;
+  durationMinutes: number;
+};
+
+export const TEACHER1_SCHEDULE: TeacherLessonSchedule = {
+  lessonStartHour: 12,
+  lessonStartMinute: 50,
+  durationMinutes: 90,
+};
+
+export const TEACHER2_SCHEDULE: TeacherLessonSchedule = {
+  lessonStartHour: 14,
+  lessonStartMinute: 0,
+  durationMinutes: 85,
+};
+
+export type TeacherRateSeedStep = {
+  monthOffset: number;
+  hourlyRateRubles: number;
+};
+
+export const TEACHER1_RATE_HISTORY: TeacherRateSeedStep[] = [
+  { monthOffset: 0, hourlyRateRubles: 1800 },
+  { monthOffset: 1, hourlyRateRubles: 2200 },
+  { monthOffset: 2, hourlyRateRubles: 2600 },
+];
+
+export const TEACHER2_RATE_HISTORY: TeacherRateSeedStep[] = [
+  { monthOffset: 0, hourlyRateRubles: 1500 },
+  { monthOffset: 1, hourlyRateRubles: 1750 },
+  { monthOffset: 2, hourlyRateRubles: 2100 },
+];
+
+/** Вторник и четверг каждой недели в периоде seed, плюс сегодня, если это не учебный день. */
 export function buildLessonDates(ctx: SeedContext): Date[] {
   const dates: Date[] = [];
   const cursor = new Date(ctx.periodStart);
@@ -188,6 +210,18 @@ export function buildLessonDates(ctx: SeedContext): Date[] {
       dates.push(new Date(cursor));
     }
     cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  const today = new Date(
+    Date.UTC(ctx.now.getUTCFullYear(), ctx.now.getUTCMonth(), ctx.now.getUTCDate()),
+  );
+  if (
+    today >= ctx.periodStart &&
+    today <= ctx.periodEnd &&
+    !dates.some((date) => date.getTime() === today.getTime())
+  ) {
+    dates.push(today);
+    dates.sort((a, b) => a.getTime() - b.getTime());
   }
 
   return dates;
@@ -313,28 +347,165 @@ function resolveAttendance(
   }
 }
 
+function pad2(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/** Дата в Europe/Moscow: календарный день берётся из UTC-даты seed. */
+export function moscowDateTime(date: Date, hours: number, minutes: number): Date {
+  const totalMinutes = hours * 60 + minutes;
+  const normalizedHours = Math.floor(totalMinutes / 60);
+  const normalizedMinutes = ((totalMinutes % 60) + 60) % 60;
+  return new Date(
+    `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}T${pad2(normalizedHours)}:${pad2(normalizedMinutes)}:00+03:00`,
+  );
+}
+
+export async function seedTeacherRates(
+  prisma: PrismaClient,
+  teacherId: string,
+  history: TeacherRateSeedStep[],
+  ctx: SeedContext,
+): Promise<void> {
+  await prisma.teacherRate.createMany({
+    data: history.map((step) => ({
+      teacherId,
+      hourlyRate: step.hourlyRateRubles * 100,
+      validFrom: monthStartOffsetToDate(step.monthOffset, ctx),
+    })),
+  });
+}
+
 export async function seedTeachingSessions(
   prisma: PrismaClient,
   groupId: string,
   teacherId: string,
   lessonDates: Date[],
+  schedule: TeacherLessonSchedule,
+  seedKey: string,
 ): Promise<void> {
-  for (const date of lessonDates) {
-    const startedAt = new Date(date);
-    startedAt.setUTCHours(14, 0, 0, 0);
-    const endedAt = new Date(startedAt);
-    endedAt.setUTCHours(15, 30, 0, 0);
+  const rand = seededRandom(hashCode(`lessons:${seedKey}`));
 
-    await prisma.teachingSession.create({
-      data: {
+  await prisma.teachingSession.createMany({
+    data: lessonDates.map((date) => {
+      const lateMinutes = rand() < 0.18 ? 5 + Math.floor(rand() * 20) : 0;
+      const durationJitter = Math.floor(rand() * 21) - 8;
+      const duration = Math.max(55, schedule.durationMinutes + durationJitter);
+      const startedAt = moscowDateTime(
+        date,
+        schedule.lessonStartHour,
+        schedule.lessonStartMinute + lateMinutes,
+      );
+      const endedAt = new Date(startedAt.getTime() + duration * 60_000);
+
+      return {
         groupId,
         teacherId,
         date,
         startedAt,
         endedAt,
+        createdAt: startedAt,
+      };
+    }),
+  });
+}
+
+export async function seedTeacherWorkplaceHistory(
+  prisma: PrismaClient,
+  teacherUserId: string,
+  lessonDates: Date[],
+  schedule: TeacherLessonSchedule,
+  seedKey: string,
+): Promise<void> {
+  const rand = seededRandom(hashCode(`workplace:${seedKey}`));
+  const events: {
+    actorId: string;
+    action: "USER_LOGIN" | "USER_LOGOUT";
+    entityType: string;
+    entityId: string;
+    payload: Record<string, string>;
+    createdAt: Date;
+  }[] = [];
+
+  for (const date of lessonDates) {
+    const arriveEarly = 8 + Math.floor(rand() * 18);
+    const login = moscowDateTime(
+      date,
+      schedule.lessonStartHour,
+      schedule.lessonStartMinute - arriveEarly,
+    );
+    const leaveAfter = 6 + Math.floor(rand() * 22);
+    const lessonEnd = moscowDateTime(
+      date,
+      schedule.lessonStartHour,
+      schedule.lessonStartMinute + schedule.durationMinutes,
+    );
+    const logout = new Date(lessonEnd.getTime() + leaveAfter * 60_000);
+    const skipLogout = rand() < 0.08;
+    const skipDay = rand() < 0.04;
+
+    if (skipDay) continue;
+
+    events.push({
+      actorId: teacherUserId,
+      action: "USER_LOGIN",
+      entityType: "User",
+      entityId: teacherUserId,
+      payload: {
+        role: "TEACHER",
+        loggedInAt: login.toISOString(),
       },
+      createdAt: login,
     });
+
+    if (!skipLogout) {
+      events.push({
+        actorId: teacherUserId,
+        action: "USER_LOGOUT",
+        entityType: "User",
+        entityId: teacherUserId,
+        payload: {
+          role: "TEACHER",
+          loggedOutAt: logout.toISOString(),
+        },
+        createdAt: logout,
+      });
+    }
   }
+
+  if (events.length > 0) {
+    await prisma.auditEvent.createMany({ data: events });
+  }
+}
+
+export async function seedSessionDurationAdjustments(
+  prisma: PrismaClient,
+  teacherId: string,
+  adjustedById: string,
+): Promise<void> {
+  const sessions = await prisma.teachingSession.findMany({
+    where: { teacherId, endedAt: { not: null } },
+    orderBy: { startedAt: "asc" },
+  });
+  if (sessions.length < 4) return;
+
+  const target = sessions[Math.floor(sessions.length / 2)]!;
+  const originalMinutes = Math.max(
+    1,
+    Math.round(
+      (target.endedAt!.getTime() - target.startedAt.getTime()) / 60_000,
+    ),
+  );
+
+  await prisma.teachingSessionDurationAdjustment.create({
+    data: {
+      teachingSessionId: target.id,
+      originalMinutes,
+      adjustedMinutes: originalMinutes + 15,
+      reason: "Урок задержался: разбор ошибок чтения",
+      adjustedById,
+    },
+  });
 }
 
 export async function seedStudentHistory(
@@ -367,7 +538,6 @@ export async function seedStudentHistory(
   const studentDates = lessonDates.filter((d) => d >= startDate);
   const rand = seededRandom(hashCode(profile.code));
   let stepIndex = 0;
-  const stepsPerSession = Math.max(1, Math.ceil(passedStepIds.length / Math.max(studentDates.length * 0.55, 1)));
 
   for (let i = 0; i < studentDates.length; i++) {
     const date = studentDates[i]!;
@@ -380,6 +550,7 @@ export async function seedStudentHistory(
       ctx,
     );
 
+    const excused = attendance === "ABSENT" && rand() < 0.25;
     const session = await prisma.session.create({
       data: {
         studentId,
@@ -387,6 +558,14 @@ export async function seedStudentHistory(
         date,
         attendance,
         lateMinutes,
+        absenceExcused: excused,
+        absenceReason: excused ? "Болезнь" : undefined,
+        note:
+          attendance === "LATE"
+            ? "Опоздал к началу урока"
+            : excused
+              ? "Отсутствовал по болезни"
+              : undefined,
       },
     });
 
@@ -394,15 +573,14 @@ export async function seedStudentHistory(
       continue;
     }
 
-    const shouldComplete =
-      stepIndex < passedStepIds.length &&
-      (i % stepsPerSession === 0 || rand() < 0.35);
+    const remainingSessions = Math.max(1, studentDates.length - i);
+    const remainingSteps = passedStepIds.length - stepIndex;
+    const take = Math.min(
+      remainingSteps,
+      Math.max(1, Math.ceil(remainingSteps / remainingSessions)),
+    );
 
-    if (!shouldComplete) continue;
-
-    const stepsThisSession = rand() < 0.15 && stepIndex + 1 < passedStepIds.length ? 2 : 1;
-
-    for (let j = 0; j < stepsThisSession && stepIndex < passedStepIds.length; j++) {
+    for (let j = 0; j < take && stepIndex < passedStepIds.length; j++) {
       const grade = Math.max(
         PASSING_GRADE,
         pickGrade(rand, profile.gradeMin, profile.gradeMax),
@@ -419,5 +597,79 @@ export async function seedStudentHistory(
       });
       stepIndex++;
     }
+  }
+
+  if (profile.attendance === "good") {
+    await prisma.award.create({
+      data: {
+        studentId,
+        type: "STUDY",
+        title: "Старание на уроках",
+        date: studentDates[Math.max(0, studentDates.length - 3)] ?? ctx.now,
+      },
+    });
+  }
+}
+
+export type ExtraAssignmentTemplateSeed = {
+  id: string;
+  displayStepId: string;
+};
+
+export async function seedExtraAssignmentHistory(
+  prisma: PrismaClient,
+  templates: ExtraAssignmentTemplateSeed[],
+  assignedById: string,
+  profilesByStudentId: Map<string, StudentSeedProfile>,
+): Promise<void> {
+  if (templates.length === 0) return;
+
+  const sessions = await prisma.session.findMany({
+    where: { attendance: { in: ["PRESENT", "LATE"] } },
+    select: { id: true, studentId: true, date: true },
+    orderBy: { date: "asc" },
+  });
+
+  for (const session of sessions) {
+    const profile = profilesByStudentId.get(session.studentId);
+    if (!profile) continue;
+
+    const rand = seededRandom(hashCode(`${profile.code}:${session.id}`));
+    const extraChance =
+      profile.attendance === "poor" || profile.attendance.startsWith("at-risk")
+        ? 0.42
+        : profile.attendance === "average"
+          ? 0.22
+          : 0.12;
+
+    if (rand() >= extraChance) continue;
+
+    const template = templates[Math.floor(rand() * templates.length)]!;
+    const instance = await prisma.studentExtraAssignment.create({
+      data: {
+        templateId: template.id,
+        studentId: session.studentId,
+        sessionId: session.id,
+        displayStepId: template.displayStepId,
+        assignedById,
+        createdAt: session.date,
+      },
+    });
+
+    const completed = rand() < 0.72;
+    if (!completed) continue;
+
+    await prisma.extraAssignmentCompletion.create({
+      data: {
+        studentExtraAssignmentId: instance.id,
+        grade: Math.max(
+          PASSING_GRADE,
+          pickGrade(rand, profile.gradeMin, profile.gradeMax),
+        ),
+        note: rand() < 0.2 ? "Нужно повторить ещё раз дома" : undefined,
+        gradedAt: new Date(session.date.getTime() + 2 * 60 * 60 * 1000),
+        createdAt: session.date,
+      },
+    });
   }
 }

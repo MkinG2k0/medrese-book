@@ -4,6 +4,8 @@ import { createGroupSchema, updateGroupSchema } from './group'
 import {
 	assertLevelBelongsToGroupSubject,
 	enrollStudentSchema,
+	transferStudentsSchema,
+	unenrollStudentsSchema,
 } from './enrollment'
 
 describe('group schemas', () => {
@@ -60,6 +62,21 @@ describe('enrollment schemas', () => {
 				result.error.issues.some((issue) => issue.path.includes('levelId')),
 			).toBe(true)
 		}
+	})
+
+	it('unenrollStudentsSchema принимает несколько учеников', () => {
+		const result = unenrollStudentsSchema.safeParse({
+			studentIds: ['student-1', 'student-2'],
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('transferStudentsSchema отклоняет пустой список', () => {
+		const result = transferStudentsSchema.safeParse({
+			studentIds: [],
+			toGroupId: 'group-2',
+		})
+		expect(result.success).toBe(false)
 	})
 })
 

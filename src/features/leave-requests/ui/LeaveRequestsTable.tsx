@@ -105,7 +105,7 @@ export function LeaveRequestsTable({
 
 	return (
 		<div className="flex flex-col gap-4">
-			<FilterGrid>
+			<FilterGrid className="lg:grid-cols-4 xl:grid-cols-4">
 				<Select
 					value={statusFilter}
 					className="w-full min-w-0"

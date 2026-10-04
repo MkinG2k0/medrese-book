@@ -1,6 +1,7 @@
 import { getMyTeacherHoursAnalytics } from '@/features/analytics/actions/teacher-lessons-actions'
 import { getAnalyticsGroupsByTeacher } from '@/features/analytics/actions/analytics-actions'
 import { ALL_GROUPS, resolveAnalyticsGroupFilter } from '@/features/analytics/lib/analytics-query'
+import { getOwnTeacherRateView } from '@/features/accounting/actions/teacher-rate-actions'
 import { MySalaryPage } from '@/features/accounting'
 import { getAccountingMonth } from '@/shared/lib/accounting/month'
 import { requireRole } from '@/shared/lib/session'
@@ -39,6 +40,7 @@ export default async function TeacherMySalaryPage({ searchParams }: PageProps) {
 		to: hoursTo,
 		isRange: hoursIsRange,
 	} = await getMyTeacherHoursAnalytics(fromParam, toParam, groupIdParam)
+	const rateView = await getOwnTeacherRateView()
 
 	return (
 		<MySalaryPage
@@ -49,6 +51,7 @@ export default async function TeacherMySalaryPage({ searchParams }: PageProps) {
 			hoursIsRange={hoursIsRange}
 			hoursGroups={teacherGroups}
 			selectedGroupId={selectedGroupId ?? ALL_GROUPS}
+			rateView={rateView}
 		/>
 	)
 }

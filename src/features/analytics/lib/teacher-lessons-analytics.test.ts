@@ -67,9 +67,11 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		expect(ahmad?.loginEventId).toBe('l1')
 		expect(ahmad?.logoutEventId).toBe('o1')
 		expect(quranLesson?.teachingSessionId).toBe('s1')
+		expect(ahmad?.earnedKopecks).toBe(0)
 
 		expect(aqidahLesson?.lessonDurationLabel).toBe('время не учтено')
 		expect(ibrahim?.totalLessonDurationLabel).toBe('время не учтено')
+		expect(ibrahim?.earnedKopecks).toBe(0)
 	})
 
 	it('filters nested lessons by groupId', () => {
@@ -158,5 +160,41 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		expect(ahmad?.logoutAt).not.toBeNull()
 		expect(ahmad?.totalLessonDurationLabel).not.toBe('время не учтено')
 		expect(ahmad?.workplaceDurationLabel).not.toBe('время не учтено')
+	})
+
+	it('multiplies hourly rate by total lesson duration for the day', () => {
+		const rows = buildTeacherLessonAnalyticsRows(
+			[teachers[0]!],
+			groups,
+			[
+				{
+					id: 's1',
+					teacherId: 't1',
+					groupId: 'g1',
+					startedAt: new Date('2026-06-25T07:30:00.000Z'),
+					endedAt: new Date('2026-06-25T08:15:00.000Z'),
+					date: new Date('2026-06-25T12:00:00.000Z'),
+				},
+			],
+			[],
+			[],
+			'2026-06-25',
+			'2026-06-25',
+			null,
+			[
+				{
+					teacherId: 't1',
+					hourlyRate: 187_500,
+					validFrom: new Date('2026-06-01T12:00:00.000Z'),
+				},
+			],
+		)
+
+		expect(rows[0]?.earnedKopecks).toBe(140_625)
+		expect(rows[0]?.earnedLabel).toMatch(/1\s?406/)
+		expect(rows[0]?.lessons.find((lesson) => lesson.groupId === 'g1')?.earnedKopecks).toBe(
+			140_625,
+		)
+		expect(rows[0]?.lessons.find((lesson) => lesson.groupId === 'g2')?.earnedKopecks).toBe(0)
 	})
 })

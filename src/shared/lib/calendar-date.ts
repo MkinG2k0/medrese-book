@@ -23,6 +23,14 @@ export function isFutureCalendarDay(
   return calendarDay > today;
 }
 
+/** Календарный день раньше «сегодня» в часовом поясе приложения. */
+export function isPastCalendarDay(
+  calendarDay: string,
+  today: string = getLocalDateString(),
+): boolean {
+  return calendarDay < today;
+}
+
 /**
  * Временно разрешает выбор/оценку будущих дней в журнале.
  * Env: `NEXT_PUBLIC_ALLOW_FUTURE_JOURNAL_DATES=true` (в проде обычно не задавать).

@@ -3,7 +3,7 @@
 import { App, TimePicker } from 'antd'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 
 import {
 	clearTeacherLessonTime,
@@ -36,6 +36,11 @@ export function EditableTeacherTimeCell({
 	const { message, modal } = App.useApp()
 	const router = useRouter()
 	const [pending, startTransition] = useTransition()
+	const [pickerKey, setPickerKey] = useState(0)
+
+	const restorePicker = () => {
+		setPickerKey((key) => key + 1)
+	}
 
 	const saveTime = (time: string) => {
 		startTransition(async () => {
@@ -58,12 +63,14 @@ export function EditableTeacherTimeCell({
 	}
 
 	const confirmClear = () => {
+		restorePicker()
 		modal.confirm({
 			title: 'Удалить время?',
 			content: `Удалить ${FIELD_LABELS[field]} за этот день?`,
 			okText: 'Удалить',
 			okType: 'danger',
 			cancelText: 'Отмена',
+			onCancel: restorePicker,
 			onOk: async () => {
 				const result = await clearTeacherLessonTime({
 					teacherId,
@@ -74,6 +81,7 @@ export function EditableTeacherTimeCell({
 
 				if (!result.ok) {
 					message.error(result.error)
+					restorePicker()
 					throw new Error(result.error)
 				}
 
@@ -85,6 +93,7 @@ export function EditableTeacherTimeCell({
 
 	return (
 		<TimePicker
+			key={pickerKey}
 			size="small"
 			format="HH:mm"
 			variant="borderless"

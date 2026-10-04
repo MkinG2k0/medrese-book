@@ -275,13 +275,105 @@ test.describe("Группы: зачисление учеников", () => {
     const aliInGroup2 = page
       .getByRole("row")
       .filter({ hasText: TEST_USERS.studentAli });
-    await expect(aliInGroup2.getByRole("cell").nth(1)).toContainText("2");
+    await expect(aliInGroup2).toContainText("2й уровень");
 
     await page.goto("/groups");
     await page.getByRole("link", { name: TEST_USERS.group1, exact: true }).click();
     const aliInGroup1 = page
       .getByRole("row")
       .filter({ hasText: TEST_USERS.studentAli });
-    await expect(aliInGroup1.getByRole("cell").nth(1)).toContainText("1");
+    await expect(aliInGroup1).toContainText("1й уровень");
+  });
+});
+
+test.describe("Группы: массовые действия с учениками", () => {
+  test.use({ storageState: AUTH_STATE.manager });
+
+  test("переводит выбранных учеников в одну группу", async ({ page }) => {
+    const sourceGroup = `Группа bulk from ${Date.now()}`;
+    const targetGroup = `Группа bulk to ${Date.now()}`;
+
+    await page.goto("/groups");
+    for (const groupName of [sourceGroup, targetGroup]) {
+      await page.getByRole("button", { name: "Создать группу" }).click();
+      const createDialog = page.getByRole("dialog", { name: "Создать группу" });
+      await pickAntdSelectOption(
+        page,
+        createDialog
+          .locator(".ant-form-item")
+          .filter({ hasText: "Предмет" })
+          .getByRole("combobox"),
+        "Коран",
+      );
+      await createDialog.getByLabel("Название").fill(groupName);
+      await pickAntdSelectOption(
+        page,
+        createDialog
+          .locator(".ant-form-item")
+          .filter({ hasText: "Учитель" })
+          .getByRole("combobox"),
+        TEST_USERS.teacher1Name,
+      );
+      await createDialog.getByRole("button", { name: "Создать группу" }).click();
+      await expect(createDialog).toBeHidden();
+    }
+
+    await page.getByRole("link", { name: sourceGroup, exact: true }).click();
+    await page.getByRole("button", { name: "Добавить учеников" }).click();
+    const enrollDialog = page.getByRole("dialog", { name: "Зачислить учеников" });
+    const studentsCombobox = enrollDialog
+      .locator(".ant-form-item")
+      .filter({ hasText: "Ученики" })
+      .getByRole("combobox");
+    await pickAntdSelectOption(page, studentsCombobox, TEST_USERS.studentKhalid);
+    await pickAntdSelectOption(page, studentsCombobox, TEST_USERS.studentZayd);
+    await pickAntdSelectOption(
+      page,
+      enrollDialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Уровень" })
+        .getByRole("combobox"),
+      "1й уровень",
+    );
+    await enrollDialog.getByRole("button", { name: "Зачислить" }).click();
+    await expect(enrollDialog).toBeHidden();
+
+    const khalidRow = page.getByRole("row").filter({ hasText: TEST_USERS.studentKhalid });
+    const zaydRow = page.getByRole("row").filter({ hasText: TEST_USERS.studentZayd });
+    await khalidRow.getByRole("checkbox").check();
+    await zaydRow.getByRole("checkbox").check();
+
+    await page
+      .getByText("Выбрано: 2")
+      .locator("..")
+      .getByRole("button", { name: "Перевести", exact: true })
+      .click();
+    const transferDialog = page.getByRole("dialog", { name: "Перевести учеников: 2" });
+    await pickAntdSelectOption(
+      page,
+      transferDialog
+        .locator(".ant-form-item")
+        .filter({ hasText: "Группа того же предмета" })
+        .getByRole("combobox"),
+      targetGroup,
+    );
+    await transferDialog.getByRole("button", { name: "Перевести" }).click();
+    await expect(transferDialog).toBeHidden();
+
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentKhalid, exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentZayd, exact: true }),
+    ).toHaveCount(0);
+
+    await page.goto("/groups");
+    await page.getByRole("link", { name: targetGroup, exact: true }).click();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentKhalid, exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("cell", { name: TEST_USERS.studentZayd, exact: true }),
+    ).toBeVisible();
   });
 });

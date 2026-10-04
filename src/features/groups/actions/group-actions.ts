@@ -12,7 +12,9 @@ import {
 	enrollStudentSchema,
 	enrollStudentsSchema,
 	transferStudentSchema,
+	transferStudentsSchema,
 	unenrollStudentSchema,
+	unenrollStudentsSchema,
 } from '@/shared/lib/validations/enrollment'
 import {
 	createGroupSchema,
@@ -290,6 +292,33 @@ export async function unenrollStudent(groupId: string, input: unknown) {
 	revalidateEnrollmentPaths(groupId)
 }
 
+export async function unenrollStudents(groupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = unenrollStudentsSchema.parse(input)
+
+	const existing = await prisma.groupEnrollment.findMany({
+		where: {
+			groupId,
+			studentId: { in: data.studentIds },
+		},
+		select: { studentId: true },
+	})
+	if (existing.length !== data.studentIds.length) {
+		throw new Error(
+			'Один или несколько учеников не зачислены в эту группу',
+		)
+	}
+
+	await prisma.groupEnrollment.deleteMany({
+		where: {
+			groupId,
+			studentId: { in: data.studentIds },
+		},
+	})
+
+	revalidateEnrollmentPaths(groupId)
+}
+
 export async function listTransferTargetGroups(fromGroupId: string) {
 	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
 
@@ -388,6 +417,81 @@ export async function transferStudent(fromGroupId: string, input: unknown) {
 				levelId: sourceEnrollment.levelId,
 				currentStepIdx: sourceEnrollment.currentStepIdx,
 			},
+		})
+	})
+
+	revalidateEnrollmentPaths(fromGroupId)
+	revalidateEnrollmentPaths(data.toGroupId)
+}
+
+export async function transferStudents(fromGroupId: string, input: unknown) {
+	await requireRoles(['MANAGER', 'SUPER_ADMIN'])
+	const data = transferStudentsSchema.parse(input)
+
+	if (data.toGroupId === fromGroupId) {
+		throw new Error('Выберите другую группу')
+	}
+
+	const [fromGroup, toGroup, sourceEnrollments, targetEnrollments] =
+		await Promise.all([
+			prisma.group.findUnique({
+				where: { id: fromGroupId },
+				select: { id: true, subjectId: true },
+			}),
+			prisma.group.findUnique({
+				where: { id: data.toGroupId },
+				select: { id: true, subjectId: true },
+			}),
+			prisma.groupEnrollment.findMany({
+				where: {
+					groupId: fromGroupId,
+					studentId: { in: data.studentIds },
+				},
+				select: {
+					id: true,
+					studentId: true,
+					levelId: true,
+					currentStepIdx: true,
+				},
+			}),
+			prisma.groupEnrollment.findMany({
+				where: {
+					groupId: data.toGroupId,
+					studentId: { in: data.studentIds },
+				},
+				select: { studentId: true },
+			}),
+		])
+
+	if (!fromGroup) throw new Error('Исходная группа не найдена')
+	if (!toGroup) throw new Error('Целевая группа не найдена')
+	if (fromGroup.subjectId !== toGroup.subjectId) {
+		throw new Error('Перенос возможен только между группами одного предмета')
+	}
+	if (sourceEnrollments.length !== data.studentIds.length) {
+		throw new Error(
+			'Один или несколько учеников не зачислены в исходную группу',
+		)
+	}
+	if (targetEnrollments.length > 0) {
+		throw new Error(
+			'Один или несколько учеников уже зачислены в целевую группу',
+		)
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await tx.groupEnrollment.deleteMany({
+			where: {
+				id: { in: sourceEnrollments.map((enrollment) => enrollment.id) },
+			},
+		})
+		await tx.groupEnrollment.createMany({
+			data: sourceEnrollments.map((enrollment) => ({
+				studentId: enrollment.studentId,
+				groupId: data.toGroupId,
+				levelId: enrollment.levelId,
+				currentStepIdx: enrollment.currentStepIdx,
+			})),
 		})
 	})
 

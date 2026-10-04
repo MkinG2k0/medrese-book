@@ -102,6 +102,7 @@ export default async function TeacherLessonsAnalyticsPage({
 				isRange={isRange}
 				editable={!isRange}
 				date={from}
+				canManageRates
 			/>
 		</div>
 	)

@@ -21,6 +21,7 @@ const ACTION_LABELS: Record<string, string> = {
 	TUITION_PAYMENT_REQUEST_CONFIRMED: 'Заявка на оплату подтверждена',
 	TUITION_PAYMENT_REQUEST_REJECTED: 'Заявка на оплату отклонена',
 	TUITION_PAYMENT_REMINDER: 'Напоминание об оплате обучения',
+	TEACHER_RATE_SET: 'Установлена ставка учителя',
 }
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -36,6 +37,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
 	TeachingSession: 'Урок',
 	Message: 'Сообщение',
 	Post: 'Новость',
+	TeacherRate: 'Ставка учителя',
 }
 
 export const KNOWN_AUDIT_ACTIONS = Object.keys(
