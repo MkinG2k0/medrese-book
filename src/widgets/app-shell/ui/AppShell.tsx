@@ -288,7 +288,7 @@ type AppShellProps = {
 
 type NavPanelProps = {
   collapsed: boolean;
-  menuItems: { key: string; icon: React.ReactNode; label: string }[];
+  menuItems: { key: string; icon: React.ReactNode; label: React.ReactNode }[];
   selectedKey: string | undefined;
   onNavigate: (key: string) => void;
   onClose?: () => void;
