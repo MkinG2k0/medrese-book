@@ -54,6 +54,7 @@ function getS3RemotePatterns(): RemotePattern[] {
 
 const nextConfig: NextConfig = {
 	turbopack: {},
+	transpilePackages: ['pdfjs-dist'],
 	images: {
 		remotePatterns: [
 			{
