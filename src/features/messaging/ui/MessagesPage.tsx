@@ -10,13 +10,13 @@ import type {
 import { useConversations } from "@/entities/conversation";
 import { ChatPanel } from "@/features/messaging/ui/ChatPanel";
 import { ConversationList } from "@/features/messaging/ui/ConversationList";
-import { useIsMobile } from "@/shared/lib/use-breakpoint";
+import { useIsCompactLayout } from "@/shared/lib/use-breakpoint";
 
 export function MessagesPage() {
   const searchParams = useSearchParams();
   const conversationFromUrl = searchParams.get("conversation");
   const { data, isLoading, refetch } = useConversations();
-  const isMobile = useIsMobile();
+  const isCompactLayout = useIsCompactLayout();
   const mine = data?.mine ?? [];
   const teacherChats = data?.teacherChats ?? [];
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -52,14 +52,14 @@ export function MessagesPage() {
     setSelectedId(conversation.id);
   };
 
-  const showList = !isMobile || !selectedId;
-  const showChat = !isMobile || !!selectedId;
+  const showList = !isCompactLayout || !selectedId;
+  const showChat = !isCompactLayout || !!selectedId;
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card">
+    <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border border-border bg-card">
       {showList && (
         <div
-          className={`flex h-full min-h-0 shrink-0 ${isMobile ? "w-full" : "md:w-[20rem]"}`}
+          className={`flex h-full min-h-0 min-w-0 shrink-0 ${isCompactLayout ? "w-full" : "lg:w-[20rem]"}`}
         >
           <ConversationList
             mine={mine}
@@ -74,7 +74,9 @@ export function MessagesPage() {
       {showChat && (
         <ChatPanel
           conversation={selectedConversation}
-          onBack={isMobile && selectedId ? () => setSelectedId(null) : undefined}
+          onBack={
+            isCompactLayout && selectedId ? () => setSelectedId(null) : undefined
+          }
         />
       )}
     </div>

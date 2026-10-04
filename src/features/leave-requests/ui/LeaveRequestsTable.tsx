@@ -15,6 +15,7 @@ import type {
 	LeaveRequestStatus,
 	LeaveRequestType,
 } from '@/shared/lib/prisma'
+import { FilterGrid, TABLE_SCROLL_X, TableFrame } from '@/shared/ui/responsive-page'
 import Text from '@/shared/ui/Text'
 
 const { RangePicker } = DatePicker
@@ -104,10 +105,10 @@ export function LeaveRequestsTable({
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="flex flex-wrap gap-4">
+			<FilterGrid>
 				<Select
 					value={statusFilter}
-					className="min-w-[160px]"
+					className="w-full min-w-0"
 					onChange={setStatusFilter}
 					options={[
 						{ value: ALL_FILTER, label: 'Все' },
@@ -123,7 +124,7 @@ export function LeaveRequestsTable({
 					value={teacherFilter}
 					showSearch
 					optionFilterProp="label"
-					className="min-w-[200px]"
+					className="w-full min-w-0"
 					onChange={setTeacherFilter}
 					options={[
 						{ value: ALL_FILTER, label: 'Все' },
@@ -135,7 +136,7 @@ export function LeaveRequestsTable({
 				/>
 				<Select
 					value={typeFilter}
-					className="min-w-[160px]"
+					className="w-full min-w-0"
 					onChange={setTypeFilter}
 					options={[
 						{ value: ALL_FILTER, label: 'Все' },
@@ -159,14 +160,17 @@ export function LeaveRequestsTable({
 						setDateRange([dates[0], dates[1]])
 					}}
 					allowClear
+					className="w-full min-w-0"
 				/>
-			</div>
+			</FilterGrid>
 
+			<TableFrame>
 			<Table
 				rowKey="id"
 				loading={loading}
 				dataSource={filteredRequests}
 				pagination={{ pageSize: 20 }}
+				scroll={{ x: TABLE_SCROLL_X }}
 				onRow={(record) => ({
 					onClick: () => onRowClick(record),
 					className: 'cursor-pointer',
@@ -274,6 +278,7 @@ export function LeaveRequestsTable({
 					},
 				]}
 			/>
+			</TableFrame>
 		</div>
 	)
 }

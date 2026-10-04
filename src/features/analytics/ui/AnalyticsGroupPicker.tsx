@@ -61,7 +61,7 @@ export function AnalyticsGroupPicker({
 					})}`,
 				)
 			}}
-			className="w-full sm:w-56"
+			className="w-full min-w-0"
 			disabled={isAllTeachers || groups.length === 0}
 			placeholder="Группа"
 			aria-label="Группа"

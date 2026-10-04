@@ -58,6 +58,7 @@ export function StudentExtraAssignmentsHistory() {
             dataSource={group.rows}
             rowKey="id"
             pagination={{ pageSize: 10 }}
+            scroll={{ x: 'max-content' }}
             columns={[
               {
                 title: "Дата занятия",

@@ -59,12 +59,17 @@ export function AwardsManager({ awards, students }: AwardsManagerProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
-			<Form form={form} layout="inline" onFinish={onFinish} className="flex flex-wrap gap-2">
-				<Form.Item name="studentId" rules={[{ required: true }]}>
+		<div className="flex w-full min-w-0 flex-col gap-6">
+			<Form
+				form={form}
+				layout="vertical"
+				onFinish={onFinish}
+				className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)_auto] xl:items-end"
+			>
+				<Form.Item name="studentId" rules={[{ required: true }]} className="!mb-0">
 					<Select
 						placeholder="Ученик"
-						className="min-w-[280px]"
+						className="w-full min-w-0"
 						showSearch
 						optionFilterProp="label"
 						popupMatchSelectWidth={false}
@@ -80,27 +85,29 @@ export function AwardsManager({ awards, students }: AwardsManagerProps) {
 						)}
 					/>
 				</Form.Item>
-				<Form.Item name="type" rules={[{ required: true }]}>
+				<Form.Item name="type" rules={[{ required: true }]} className="!mb-0">
 					<Select
 						placeholder="Тип"
-						style={{ width: 140 }}
+						className="w-full min-w-0"
 						options={[
 							{ value: 'STUDY', label: 'Учёба' },
 							{ value: 'ACTIVITY', label: 'Активность' },
 						]}
 					/>
 				</Form.Item>
-				<Form.Item name="title" rules={[{ required: true }]}>
-					<Input placeholder="Название награды" />
+				<Form.Item name="title" rules={[{ required: true }]} className="!mb-0">
+					<Input placeholder="Название награды" className="w-full min-w-0" />
 				</Form.Item>
 				<Button type="primary" htmlType="submit" loading={isPending}>
 					Добавить
 				</Button>
 			</Form>
 
+			<div className="min-w-0 max-w-full">
 			<Table
 				dataSource={awards}
 				rowKey="id"
+				scroll={{ x: 'max-content' }}
 				columns={[
 					{ title: 'Ученик', dataIndex: 'studentName', key: 'studentName' },
 					{ title: 'Тип', dataIndex: 'type', key: 'type' },
@@ -122,6 +129,7 @@ export function AwardsManager({ awards, students }: AwardsManagerProps) {
 					},
 				]}
 			/>
+			</div>
 		</div>
 	)
 }

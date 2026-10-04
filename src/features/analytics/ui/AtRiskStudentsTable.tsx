@@ -108,6 +108,7 @@ export function AtRiskStudentsTable({
       <Table
         dataSource={data}
         rowKey={(record) => record.student.id}
+        scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 10, showSizeChanger: false }}
         locale={{
           emptyText: `Все ученики в норме за ${monthLabel}`,

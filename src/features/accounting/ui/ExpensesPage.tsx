@@ -263,6 +263,7 @@ export function ExpensesPage() {
 									rowKey="id"
 									loading={expensesLoading}
 									columns={expenseColumns}
+									scroll={{ x: 'max-content' }}
 									dataSource={expenses ?? []}
 								/>
 							</>
@@ -286,6 +287,7 @@ export function ExpensesPage() {
 									rowKey="id"
 									loading={donationsLoading}
 									columns={donationColumns}
+									scroll={{ x: 'max-content' }}
 									dataSource={donations ?? []}
 								/>
 							</>

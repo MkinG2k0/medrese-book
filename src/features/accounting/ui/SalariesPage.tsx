@@ -147,18 +147,23 @@ export function SalariesPage({ month }: SalariesPageProps) {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<Title level={3}>Зарплаты</Title>
+			<div className="flex min-w-0 flex-col gap-4">
+				<Title level={3} className="!mb-0">
+					Зарплаты
+				</Title>
 				<AccountingMonthPicker month={month} />
 			</div>
 
+			<div className="min-w-0 max-w-full">
 			<Table
 				rowKey="accrualId"
 				loading={isLoading}
 				columns={columns}
 				dataSource={data ?? []}
 				pagination={false}
+				scroll={{ x: 'max-content' }}
 			/>
+			</div>
 
 			<Modal
 				title="Уроки учителя"

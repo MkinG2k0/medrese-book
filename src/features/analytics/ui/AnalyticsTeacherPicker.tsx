@@ -54,7 +54,7 @@ export function AnalyticsTeacherPicker({
 					})}`,
 				)
 			}}
-			className="w-full sm:w-56"
+			className="w-full min-w-0"
 			disabled={teachers.length === 0}
 		/>
 	)

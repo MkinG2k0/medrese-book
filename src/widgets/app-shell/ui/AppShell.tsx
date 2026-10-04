@@ -34,7 +34,7 @@ import { UserSwitcher } from "@/features/auth/ui/UserSwitcher";
 import { NotificationBell } from "@/features/notifications";
 import { PwaInstallBanner } from "@/features/pwa";
 import type { UserRole } from "@/entities/user";
-import { useIsMobile } from "@/shared/lib/use-breakpoint";
+import { useIsCompactLayout, useIsMobile } from "@/shared/lib/use-breakpoint";
 import {
   STUDENT_STATUS_LABELS,
   type StudentStatus,
@@ -371,6 +371,7 @@ export function AppShell({
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const isCompactLayout = useIsCompactLayout();
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -378,8 +379,12 @@ export function AppShell({
     const stored = readSidebarCollapsed();
     if (stored !== null) {
       setCollapsed(stored);
+      return;
     }
-  }, []);
+    if (isCompactLayout && !isMobile) {
+      setCollapsed(true);
+    }
+  }, [isCompactLayout, isMobile]);
 
   const handleCollapse = (next: boolean) => {
     setCollapsed(next);
@@ -543,9 +548,11 @@ export function AppShell({
 
           <PwaInstallBanner />
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col p-1 md:p-4">
-            <Content className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto rounded-lg p-3 md:p-6">
-              {children}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col p-1 md:p-3 lg:p-4">
+            <Content className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-auto rounded-lg p-3 md:p-5 lg:p-6">
+              <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
+                {children}
+              </div>
             </Content>
           </div>
         </Layout>

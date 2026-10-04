@@ -8,6 +8,12 @@ import { useState } from 'react'
 import { deleteSubject } from '@/features/subject-admin/actions/subject-actions'
 import { CreateSubjectForm } from '@/features/subject-admin/ui/CreateSubjectForm'
 import { EditSubjectForm } from '@/features/subject-admin/ui/EditSubjectForm'
+import {
+	PageRoot,
+	PageTitleRow,
+	TABLE_SCROLL_X,
+	TableFrame,
+} from '@/shared/ui/responsive-page'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
@@ -61,13 +67,15 @@ export function SubjectsList({ subjects }: SubjectsListProps) {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex items-center justify-between">
-				<Title level={3}>Предметы</Title>
+		<PageRoot>
+			<PageTitleRow>
+				<Title level={3} className="!mb-0">
+					Предметы
+				</Title>
 				<Button type="primary" onClick={() => setShowCreate(true)}>
 					Создать предмет
 				</Button>
-			</div>
+			</PageTitleRow>
 
 			{subjects.length === 0 && (
 				<Text type="secondary">
@@ -76,9 +84,11 @@ export function SubjectsList({ subjects }: SubjectsListProps) {
 				</Text>
 			)}
 
+			<TableFrame>
 			<Table
 				dataSource={subjects}
 				rowKey="id"
+				scroll={{ x: TABLE_SCROLL_X }}
 				columns={[
 					{
 						title: 'Название',
@@ -132,6 +142,7 @@ export function SubjectsList({ subjects }: SubjectsListProps) {
 					},
 				]}
 			/>
+			</TableFrame>
 
 			<Modal
 				title="Создать предмет"
@@ -168,6 +179,6 @@ export function SubjectsList({ subjects }: SubjectsListProps) {
 					/>
 				)}
 			</Modal>
-		</div>
+		</PageRoot>
 	)
 }

@@ -24,6 +24,7 @@ import {
 } from '@/shared/lib/analytics'
 import { getAtRiskStudents } from '@/shared/lib/analytics-queries/at-risk-students'
 import { requireRoles } from '@/shared/lib/session'
+import { FilterGrid, PageRoot, PageTitleRow } from '@/shared/ui/responsive-page'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
@@ -102,12 +103,14 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 	])
 
 	return (
-		<div className="flex flex-col gap-8">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<Title level={3} className="!mb-0">
-					Аналитика
-				</Title>
-				<div className="flex flex-wrap flex-col gap-2 sm:flex-row sm:items-center">
+		<PageRoot className="gap-8">
+			<div className="flex min-w-0 flex-col gap-4">
+				<PageTitleRow>
+					<Title level={3} className="!mb-0">
+						Аналитика
+					</Title>
+				</PageTitleRow>
+				<FilterGrid className="xl:grid-cols-4">
 					<AnalyticsSubjectPicker
 						subjects={subjects}
 						selectedSubjectId={selectedSubjectId}
@@ -134,7 +137,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 						selectedTeacher={selectedTeacher}
 						selectedSubjectId={selectedSubjectId}
 					/>
-				</div>
+				</FilterGrid>
 			</div>
 
 			<TopStudents
@@ -149,6 +152,6 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 				showTeacherColumn={selectedTeacher === ALL_TEACHERS}
 				subjectId={filterSubjectId}
 			/>
-		</div>
+		</PageRoot>
 	)
 }

@@ -13,7 +13,11 @@ import { buildTeacherLessonsSearchParams } from '@/features/analytics/lib/teache
 import { EditableTeacherTimeCell } from '@/features/analytics/ui/EditableTeacherTimeCell'
 import type { TeacherLessonTimeField } from '@/shared/lib/validations/teacher-lesson-time'
 
-const SUBJECT_COLUMN_WIDTH = 200
+const SUBJECT_COLUMN_WIDTH = 180
+const TIME_COLUMN_WIDTH = 120
+const DURATION_COLUMN_WIDTH = 200
+const TABLE_SCROLL_X = 880
+const EXPANDED_TABLE_SCROLL_X = 760
 
 type TeacherLessonsGroupOption = {
 	id: string
@@ -44,7 +48,7 @@ export function TeacherLessonsGroupPicker({
 	return (
 		<Select
 			value={selectedGroupId ?? undefined}
-			className="w-full sm:min-w-[180px]"
+			className="w-full min-w-0"
 			disabled={isAllTeachers || groups.length === 0}
 			placeholder="Группа"
 			aria-label="Группа"
@@ -91,7 +95,7 @@ export function TeacherLessonsPicker({
 	return (
 		<Select
 			value={selectedTeacher}
-			className="w-full sm:min-w-[220px]"
+			className="w-full min-w-0"
 			options={[
 				{ value: ALL_TEACHERS, label: 'Все учителя' },
 				...teachers.map((teacher) => ({
@@ -199,6 +203,7 @@ function TeacherLessonsExpandedTable({
 			title: `Начало урока${timeSuffix}`,
 			dataIndex: 'lessonStartedAt',
 			key: 'lessonStartedAt',
+			width: TIME_COLUMN_WIDTH,
 			render: (value: string | null, row) =>
 				renderLessonTimeCell(row, 'lessonStart', value, editable, date),
 		},
@@ -206,6 +211,7 @@ function TeacherLessonsExpandedTable({
 			title: `Конец урока${timeSuffix}`,
 			dataIndex: 'lessonEndedAt',
 			key: 'lessonEndedAt',
+			width: TIME_COLUMN_WIDTH,
 			render: (value: string | null, row) =>
 				renderLessonTimeCell(row, 'lessonEnd', value, editable, date),
 		},
@@ -213,18 +219,21 @@ function TeacherLessonsExpandedTable({
 			title: `Длительность урока${isRange ? ' (средняя)' : ''}`,
 			dataIndex: 'lessonDurationLabel',
 			key: 'lessonDurationLabel',
+			width: DURATION_COLUMN_WIDTH,
 		},
 	]
 
 	return (
-		<Table<TeacherLessonSubjectRow>
-			rowKey={(row) => `${row.teacherId}-${row.groupId}`}
-			pagination={false}
-			size="small"
-			tableLayout="fixed"
-			dataSource={lessons}
-			columns={columns}
-		/>
+		<div className="min-w-0 max-w-full">
+			<Table<TeacherLessonSubjectRow>
+				rowKey={(row) => `${row.teacherId}-${row.groupId}`}
+				pagination={false}
+				size="small"
+				scroll={{ x: EXPANDED_TABLE_SCROLL_X }}
+				dataSource={lessons}
+				columns={columns}
+			/>
+		</div>
 	)
 }
 
@@ -251,6 +260,7 @@ export function TeacherLessonsTable({
 			title: `Пришел${timeSuffix}`,
 			dataIndex: 'loginAt',
 			key: 'loginAt',
+			width: TIME_COLUMN_WIDTH,
 			render: (value: string | null, row) =>
 				renderTeacherTimeCell(row, 'login', value, editable, date),
 		},
@@ -258,6 +268,7 @@ export function TeacherLessonsTable({
 			title: `Ушел${timeSuffix}`,
 			dataIndex: 'logoutAt',
 			key: 'logoutAt',
+			width: TIME_COLUMN_WIDTH,
 			render: (value: string | null, row) =>
 				renderTeacherTimeCell(row, 'logout', value, editable, date),
 		},
@@ -265,32 +276,36 @@ export function TeacherLessonsTable({
 			title: `Длительность на раб. месте${isRange ? ' (средняя)' : ''}`,
 			dataIndex: 'workplaceDurationLabel',
 			key: 'workplaceDurationLabel',
+			width: DURATION_COLUMN_WIDTH,
 		},
 		{
 			title: `Длительность всех уроков${isRange ? ' (средняя)' : ''}`,
 			dataIndex: 'totalLessonDurationLabel',
 			key: 'totalLessonDurationLabel',
+			width: DURATION_COLUMN_WIDTH,
 		},
 	]
 
 	return (
-		<Table<TeacherLessonAnalyticsRow>
-			rowKey={(row) => row.teacherId}
-			pagination={false}
-			tableLayout="fixed"
-			dataSource={rows}
-			columns={columns}
-			expandable={{
-				rowExpandable: (row) => row.lessons.length > 0,
-				expandedRowRender: (row) => (
-					<TeacherLessonsExpandedTable
-						lessons={row.lessons}
-						isRange={isRange}
-						editable={editable}
-						date={date}
-					/>
-				),
-			}}
-		/>
+		<div className="min-w-0 max-w-full">
+			<Table<TeacherLessonAnalyticsRow>
+				rowKey={(row) => row.teacherId}
+				pagination={false}
+				scroll={{ x: TABLE_SCROLL_X }}
+				dataSource={rows}
+				columns={columns}
+				expandable={{
+					rowExpandable: (row) => row.lessons.length > 0,
+					expandedRowRender: (row) => (
+						<TeacherLessonsExpandedTable
+							lessons={row.lessons}
+							isRange={isRange}
+							editable={editable}
+							date={date}
+						/>
+					),
+				}}
+			/>
+		</div>
 	)
 }

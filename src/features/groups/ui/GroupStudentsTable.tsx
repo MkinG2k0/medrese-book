@@ -275,6 +275,7 @@ export function GroupStudentsTable({
         dataSource={users}
         columns={columns}
         rowKey="id"
+        scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 20 }}
         onRow={(record) => ({
           onClick: () => setSelectedUser(record),

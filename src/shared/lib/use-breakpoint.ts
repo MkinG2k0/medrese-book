@@ -12,3 +12,9 @@ export function useIsMobile(): boolean {
   const screens = Grid.useBreakpoint();
   return screens.md === false;
 }
+
+/** Планшет и уже: ширина < 992px (antd `lg`). */
+export function useIsCompactLayout(): boolean {
+  const screens = Grid.useBreakpoint();
+  return screens.lg === false;
+}

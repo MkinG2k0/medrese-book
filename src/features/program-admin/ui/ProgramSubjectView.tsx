@@ -32,8 +32,10 @@ export function ProgramSubjectView({
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="flex items-center justify-between">
-				<Title level={3}>{subjectName}</Title>
+			<div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<Title level={3} className="!mb-0">
+					{subjectName}
+				</Title>
 				<Button type="primary" onClick={() => setShowCreate(true)}>
 					Новый уровень
 				</Button>

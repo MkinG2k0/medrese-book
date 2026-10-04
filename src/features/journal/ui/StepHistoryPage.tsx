@@ -207,6 +207,7 @@ export function StepHistoryPage({
         dataSource={sortedCompletions}
         rowKey="id"
         loading={isLoading}
+        scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 20, showSizeChanger: true }}
         rowSelection={{
           selectedRowKeys: selectedIds,

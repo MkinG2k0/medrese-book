@@ -8,6 +8,12 @@ import { useMemo, useState } from "react";
 
 import { CreateGroupForm } from "@/features/groups/ui/CreateGroupForm";
 import { EditGroupForm } from "@/features/groups/ui/EditGroupForm";
+import {
+  PageRoot,
+  PageTitleRow,
+  TABLE_SCROLL_X,
+  TableFrame,
+} from "@/shared/ui/responsive-page";
 import Title from "@/shared/ui/Title";
 
 type GroupRow = {
@@ -79,14 +85,23 @@ export function GroupsList({ groups, teachers, subjects }: GroupsListProps) {
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <Title level={3}>Группы</Title>
+    <PageRoot>
+      <PageTitleRow>
+        <Title level={3} className="!mb-0">
+          Группы
+        </Title>
         <Button type="primary" onClick={() => setShowCreate(true)}>
           Создать группу
         </Button>
-      </div>
-      <Table dataSource={groups} rowKey="id" columns={columns} />
+      </PageTitleRow>
+      <TableFrame>
+        <Table
+          dataSource={groups}
+          rowKey="id"
+          columns={columns}
+          scroll={{ x: TABLE_SCROLL_X }}
+        />
+      </TableFrame>
 
       <Modal
         title="Создать группу"
@@ -127,6 +142,6 @@ export function GroupsList({ groups, teachers, subjects }: GroupsListProps) {
           />
         )}
       </Modal>
-    </div>
+    </PageRoot>
   );
 }

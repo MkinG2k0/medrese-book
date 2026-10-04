@@ -49,7 +49,7 @@ export function MyGroupView({
           options={groupOptions}
           onChange={handleGroupChange}
           disabled={groups.length <= 1}
-          className="min-w-[220px]"
+          className="w-full min-w-0 md:w-[220px]"
           aria-label="Группа"
         />
       }

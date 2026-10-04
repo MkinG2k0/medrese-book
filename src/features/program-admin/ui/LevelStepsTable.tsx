@@ -27,6 +27,7 @@ export function LevelStepsTable({
 		<Table
 			dataSource={steps}
 			rowKey="id"
+			scroll={{ x: 'max-content' }}
 			columns={[
 				{
 					title: '№',

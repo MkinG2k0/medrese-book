@@ -20,6 +20,13 @@ import {
 import { clearExtraAssignmentDraft } from '@/features/extra-assignments/lib/extra-assignment-draft'
 import { ExtraAssignmentFormModal } from '@/features/extra-assignments/ui/ExtraAssignmentFormModal'
 import { formatDate } from '@/shared/lib/utils'
+import {
+	FilterGrid,
+	PageRoot,
+	PageTitleRow,
+	TABLE_SCROLL_X,
+	TableFrame,
+} from '@/shared/ui/responsive-page'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
@@ -164,20 +171,22 @@ export function ExtraAssignmentCatalogPage({
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<Title level={3}>Доп. задания</Title>
+		<PageRoot>
+			<PageTitleRow>
+				<Title level={3} className="!mb-0">
+					Доп. задания
+				</Title>
 				<Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
 					Создать задание
 				</Button>
-			</div>
+			</PageTitleRow>
 
-			<div className="flex flex-wrap gap-3">
+			<FilterGrid className="xl:grid-cols-5">
 				<Select
 					value={selectedSubjectId}
 					options={subjectOptions}
 					onChange={handleSubjectChange}
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					disabled={subjects.length === 0}
 					placeholder="Предмет"
 					aria-label="Предмет"
@@ -185,7 +194,7 @@ export function ExtraAssignmentCatalogPage({
 				<Select
 					allowClear
 					placeholder="Уровень"
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					options={levelOptions}
 					value={levelFilter}
 					loading={isPending}
@@ -197,7 +206,7 @@ export function ExtraAssignmentCatalogPage({
 				<Select
 					allowClear
 					placeholder="Шаг"
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					options={stepOptions}
 					value={stepFilter}
 					loading={isPending}
@@ -206,7 +215,7 @@ export function ExtraAssignmentCatalogPage({
 				<Select
 					allowClear
 					placeholder="Автор"
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					options={authorOptions}
 					value={authorFilter}
 					onChange={setAuthorFilter}
@@ -214,16 +223,18 @@ export function ExtraAssignmentCatalogPage({
 				<Input
 					allowClear
 					placeholder="Поиск по названию"
-					className="min-w-[200px]"
+					className="w-full min-w-0 md:col-span-2 xl:col-span-1"
 					value={titleFilter}
 					onChange={(e) => setTitleFilter(e.target.value)}
 				/>
-			</div>
+			</FilterGrid>
 
+			<TableFrame>
 			<Table<ExtraAssignmentTemplate>
 				rowKey="id"
 				loading={isLoading || isPending}
 				dataSource={assignments}
+				scroll={{ x: TABLE_SCROLL_X }}
 				locale={{ emptyText: 'Нет доп. заданий' }}
 				columns={[
 					{
@@ -288,6 +299,7 @@ export function ExtraAssignmentCatalogPage({
 					},
 				]}
 			/>
+			</TableFrame>
 
 			<ExtraAssignmentFormModal
 				open={modalOpen}
@@ -303,6 +315,6 @@ export function ExtraAssignmentCatalogPage({
 				onSave={handleSave}
 				onDelete={editing ? () => handleDelete(editing) : undefined}
 			/>
-		</div>
+		</PageRoot>
 	)
 }

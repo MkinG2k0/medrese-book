@@ -64,15 +64,15 @@ export default async function TeacherLessonsAnalyticsPage({
 		: from
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<div>
+		<div className="flex w-full min-w-0 flex-col gap-6">
+			<div className="flex min-w-0 flex-col gap-4">
+				<div className="min-w-0">
 					<Title level={3} className="!mb-1">
 						Аналитика учителей
 					</Title>
 					<Text type="secondary">Период: {periodLabel}</Text>
 				</div>
-				<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+				<div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
 					<TeacherLessonsPicker
 						teachers={allTeachers}
 						selectedTeacher={selectedTeacher}
@@ -86,12 +86,14 @@ export default async function TeacherLessonsAnalyticsPage({
 						from={from}
 						to={to}
 					/>
-					<TeacherLessonsDateFilter
-						from={from}
-						to={to}
-						selectedTeacher={selectedTeacher}
-						selectedGroupId={selectedGroupId ?? ALL_GROUPS}
-					/>
+					<div className="min-w-0 md:col-span-2 xl:col-span-1">
+						<TeacherLessonsDateFilter
+							from={from}
+							to={to}
+							selectedTeacher={selectedTeacher}
+							selectedGroupId={selectedGroupId ?? ALL_GROUPS}
+						/>
+					</div>
 				</div>
 			</div>
 

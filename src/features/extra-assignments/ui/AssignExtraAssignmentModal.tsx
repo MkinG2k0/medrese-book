@@ -113,11 +113,11 @@ export function AssignExtraAssignmentModal({
 				</p>
 			) : null}
 
-			<div className="mb-4 flex flex-wrap gap-3">
+			<div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
 				<Select
 					allowClear
 					placeholder="Автор"
-					className="min-w-[160px]"
+					className="w-full min-w-0"
 					options={authorOptions}
 					value={authorFilter}
 					onChange={setAuthorFilter}
@@ -125,7 +125,7 @@ export function AssignExtraAssignmentModal({
 				<Select
 					allowClear
 					placeholder="Шаг шаблона"
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					options={stepOptions}
 					value={stepFilter}
 					onChange={setStepFilter}
@@ -133,7 +133,7 @@ export function AssignExtraAssignmentModal({
 				<Input
 					allowClear
 					placeholder="Название"
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 					value={titleFilter}
 					onChange={(e) => setTitleFilter(e.target.value)}
 				/>
@@ -143,6 +143,7 @@ export function AssignExtraAssignmentModal({
 				rowKey="id"
 				loading={isLoading}
 				dataSource={templates}
+				scroll={{ x: 'max-content' }}
 				pagination={{ pageSize: 8, showSizeChanger: false }}
 				locale={{ emptyText: 'Нет заданий в справочнике' }}
 				columns={[

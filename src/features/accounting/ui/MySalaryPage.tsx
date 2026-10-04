@@ -43,9 +43,9 @@ export function MySalaryPage({
 		: hoursFrom
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex w-full min-w-0 flex-col gap-8">
 			<section className="flex flex-col gap-6">
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div className="flex min-w-0 flex-col gap-4 md:flex-row md:items-center md:justify-between">
 					<Title level={3} className="!mb-0">
 						Моя зарплата
 					</Title>
@@ -81,26 +81,26 @@ export function MySalaryPage({
 			</section>
 
 			<section className="flex flex-col gap-4">
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-					<div>
+				<div className="flex min-w-0 flex-col gap-4">
+					<div className="min-w-0">
 						<Title level={4} className="!mb-1">
 							Мои часы
 						</Title>
 						<Text type="secondary">Период: {hoursPeriodLabel}</Text>
 					</div>
-					<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-					<TeacherLessonsGroupPicker
-						groups={hoursGroups}
-						selectedGroupId={selectedGroupId}
-						from={hoursFrom}
-						to={hoursTo}
-					/>
-					<TeacherLessonsDateFilter
-						from={hoursFrom}
-						to={hoursTo}
-						selectedGroupId={selectedGroupId}
-					/>
-				</div>
+					<div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+						<TeacherLessonsGroupPicker
+							groups={hoursGroups}
+							selectedGroupId={selectedGroupId}
+							from={hoursFrom}
+							to={hoursTo}
+						/>
+						<TeacherLessonsDateFilter
+							from={hoursFrom}
+							to={hoursTo}
+							selectedGroupId={selectedGroupId}
+						/>
+					</div>
 				</div>
 
 				<TeacherLessonsTable

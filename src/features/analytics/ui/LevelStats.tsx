@@ -41,6 +41,7 @@ export function LevelStatsChart({
 			<Table
 				dataSource={data}
 				rowKey="levelId"
+				scroll={{ x: 'max-content' }}
 				pagination={false}
 				columns={[
 					{ title: 'Уровень', dataIndex: 'label', key: 'label' },

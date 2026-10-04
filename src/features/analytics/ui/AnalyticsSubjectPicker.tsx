@@ -52,7 +52,7 @@ export function AnalyticsSubjectPicker({
 					})}`,
 				)
 			}}
-			className="w-full sm:w-56"
+			className="w-full min-w-0"
 			disabled={subjects.length === 0}
 			placeholder="Предмет"
 			aria-label="Предмет"

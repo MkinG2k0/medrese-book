@@ -10,6 +10,7 @@ import { LeaveCalendar } from '@/features/leave-requests/ui/LeaveCalendar'
 import { LeaveDetailModal } from '@/features/leave-requests/ui/LeaveDetailModal'
 import { LeaveRequestsTable } from '@/features/leave-requests/ui/LeaveRequestsTable'
 import { RejectLeaveModal } from '@/features/leave-requests/ui/RejectLeaveModal'
+import { PageRoot } from '@/shared/ui/responsive-page'
 import Title from '@/shared/ui/Title'
 
 export function ManagerLeaveCalendarPage() {
@@ -39,7 +40,7 @@ export function ManagerLeaveCalendarPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
+		<PageRoot>
 			<Title level={3} className="!mb-0">
 				Календарь отпусков
 			</Title>
@@ -77,6 +78,6 @@ export function ManagerLeaveCalendarPage() {
 				request={rejectRequest}
 				onClose={() => setRejectRequest(null)}
 			/>
-		</div>
+		</PageRoot>
 	)
 }

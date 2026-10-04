@@ -51,6 +51,7 @@ export function LevelsTable({
 		<Table
 			dataSource={levels}
 			rowKey="id"
+			scroll={{ x: 'max-content' }}
 			columns={[
 				{ title: 'Уровень', dataIndex: 'number', key: 'number' },
 				{ title: 'Название', dataIndex: 'title', key: 'title' },

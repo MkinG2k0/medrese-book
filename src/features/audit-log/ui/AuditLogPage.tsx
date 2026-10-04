@@ -17,6 +17,13 @@ import {
 } from '@/features/audit-log/lib/audit-labels'
 import { formatAuditEntitySummary } from '@/features/audit-log/lib/format-audit-entity'
 import { AuditEventDetailModal } from '@/features/audit-log/ui/AuditEventDetailModal'
+import {
+	FilterGrid,
+	PageRoot,
+	PageTitleRow,
+	TABLE_SCROLL_X,
+	TableFrame,
+} from '@/shared/ui/responsive-page'
 import Title from '@/shared/ui/Title'
 
 const { RangePicker } = DatePicker
@@ -139,8 +146,8 @@ export function AuditLogPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div className="flex flex-wrap items-center justify-between gap-3">
+		<PageRoot>
+			<PageTitleRow>
 				<Title level={3} className="!mb-0">
 					Журнал действий
 				</Title>
@@ -151,9 +158,9 @@ export function AuditLogPage() {
 				>
 					Обновить
 				</Button>
-			</div>
+			</PageTitleRow>
 
-			<div className="flex flex-wrap gap-3">
+			<FilterGrid className="xl:grid-cols-5">
 				<Select
 					allowClear
 					showSearch
@@ -163,7 +170,7 @@ export function AuditLogPage() {
 					options={filterOptions.actions}
 					value={filters.action}
 					onChange={(value) => updateFilters({ action: value ?? undefined })}
-					className="min-w-[220px]"
+					className="w-full min-w-0"
 				/>
 				<Select
 					allowClear
@@ -176,7 +183,7 @@ export function AuditLogPage() {
 					onChange={(value) =>
 						updateFilters({ entityType: value ?? undefined })
 					}
-					className="min-w-[180px]"
+					className="w-full min-w-0"
 				/>
 				<Select
 					allowClear
@@ -187,7 +194,7 @@ export function AuditLogPage() {
 					options={filterOptions.actors}
 					value={filters.actorId}
 					onChange={(value) => updateFilters({ actorId: value ?? undefined })}
-					className="min-w-[200px]"
+					className="w-full min-w-0"
 				/>
 				<RangePicker
 					value={dateRange}
@@ -195,10 +202,14 @@ export function AuditLogPage() {
 					format="DD.MM.YYYY"
 					inputReadOnly
 					placeholder={['С', 'По']}
+					className="w-full min-w-0"
 				/>
-				<Button onClick={resetFilters}>Сбросить</Button>
-			</div>
+				<Button onClick={resetFilters} className="w-full md:w-auto">
+					Сбросить
+				</Button>
+			</FilterGrid>
 
+			<TableFrame>
 			<Table
 				rowKey="id"
 				columns={columns}
@@ -216,13 +227,14 @@ export function AuditLogPage() {
 					onClick: () => setSelectedEvent(record),
 					className: 'cursor-pointer',
 				})}
-				scroll={{ x: 900 }}
+				scroll={{ x: TABLE_SCROLL_X }}
 			/>
+			</TableFrame>
 
 			<AuditEventDetailModal
 				event={selectedEvent}
 				onClose={() => setSelectedEvent(null)}
 			/>
-		</div>
+		</PageRoot>
 	)
 }

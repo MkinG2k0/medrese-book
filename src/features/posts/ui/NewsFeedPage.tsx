@@ -166,8 +166,10 @@ export function NewsFeedPage() {
 
 	return (
 		<div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-			<div className="flex items-center justify-between gap-4">
-				<Title level={2}>Новости</Title>
+			<div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<Title level={2} className="!mb-0">
+					Новости
+				</Title>
 				{canManage && (
 					<Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
 						Создать

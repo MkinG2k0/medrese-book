@@ -26,7 +26,7 @@ export function AccountingMonthPicker({ month }: AccountingMonthPickerProps) {
 			}}
 			allowClear={false}
 			format="MMMM YYYY"
-			className="w-full sm:w-auto"
+			className="w-full min-w-0"
 		/>
 	)
 }

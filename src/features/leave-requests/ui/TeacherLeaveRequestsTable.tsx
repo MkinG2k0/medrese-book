@@ -15,6 +15,7 @@ import type {
 	LeaveRequestStatus,
 	LeaveRequestType,
 } from '@/shared/lib/prisma'
+import { FilterGrid, TABLE_SCROLL_X, TableFrame } from '@/shared/ui/responsive-page'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
 
@@ -90,10 +91,10 @@ export function TeacherLeaveRequestsTable({
 				Мои заявки
 			</Title>
 
-			<div className="flex flex-wrap gap-4">
+			<FilterGrid>
 				<Select
 					value={statusFilter}
-					className="min-w-[160px]"
+					className="w-full min-w-0"
 					onChange={setStatusFilter}
 					options={[
 						{ value: ALL_FILTER, label: 'Все статусы' },
@@ -107,7 +108,7 @@ export function TeacherLeaveRequestsTable({
 				/>
 				<Select
 					value={typeFilter}
-					className="min-w-[160px]"
+					className="w-full min-w-0"
 					onChange={setTypeFilter}
 					options={[
 						{ value: ALL_FILTER, label: 'Все типы' },
@@ -119,13 +120,15 @@ export function TeacherLeaveRequestsTable({
 						),
 					]}
 				/>
-			</div>
+			</FilterGrid>
 
+			<TableFrame>
 			<Table
 				rowKey="id"
 				loading={loading}
 				dataSource={filteredRequests}
 				pagination={{ pageSize: 10 }}
+				scroll={{ x: TABLE_SCROLL_X }}
 				onRow={(record) => ({
 					onClick: () => onRowClick(record),
 					className: 'cursor-pointer',
@@ -218,6 +221,7 @@ export function TeacherLeaveRequestsTable({
 					},
 				]}
 			/>
+			</TableFrame>
 		</div>
 	)
 }

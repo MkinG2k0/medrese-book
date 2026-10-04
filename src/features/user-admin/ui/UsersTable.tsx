@@ -20,6 +20,12 @@ import {
   UserDetailModal,
   type UserDetail,
 } from "@/features/user-admin/ui/UserDetailModal";
+import {
+  PageRoot,
+  PageTitleRow,
+  TABLE_SCROLL_X,
+  TableFrame,
+} from "@/shared/ui/responsive-page";
 import Title from "@/shared/ui/Title";
 
 const ROLE_OPTIONS = [
@@ -237,21 +243,25 @@ export function UsersTable({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <Title level={3}>{title}</Title>
+    <PageRoot>
+      <PageTitleRow>
+        <Title level={3} className="!mb-0">
+          {title}
+        </Title>
         {showCreateButton && (
           <Button type="primary" onClick={() => setShowCreate(true)}>
             Создать пользователя
           </Button>
         )}
-      </div>
+      </PageTitleRow>
 
+      <TableFrame>
       <Table
         dataSource={users}
         columns={columns}
         rowKey="id"
         pagination={{ pageSize: 20 }}
+        scroll={{ x: TABLE_SCROLL_X }}
         onRow={
           enableRowClick
             ? (record) => ({
@@ -261,6 +271,7 @@ export function UsersTable({
             : undefined
         }
       />
+      </TableFrame>
 
       <UserDetailModal
         user={selectedUser}
@@ -329,6 +340,6 @@ export function UsersTable({
           ))}
         </div>
       </Modal>
-    </div>
+    </PageRoot>
   );
 }

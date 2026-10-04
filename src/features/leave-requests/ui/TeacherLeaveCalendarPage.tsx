@@ -11,6 +11,7 @@ import { LeaveCalendar } from '@/features/leave-requests/ui/LeaveCalendar'
 import { LeaveDetailModal } from '@/features/leave-requests/ui/LeaveDetailModal'
 import { TeacherLeaveRequestsTable } from '@/features/leave-requests/ui/TeacherLeaveRequestsTable'
 import type { LeaveRequestType } from '@/shared/lib/prisma'
+import { PageRoot, PageTitleRow } from '@/shared/ui/responsive-page'
 import Title from '@/shared/ui/Title'
 
 export function TeacherLeaveCalendarPage() {
@@ -24,8 +25,8 @@ export function TeacherLeaveCalendarPage() {
 		useState<LeaveRequestListItem | null>(null)
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<PageRoot>
+			<PageTitleRow>
 				<Title level={3} className="!mb-0">
 					Календарь
 				</Title>
@@ -40,7 +41,7 @@ export function TeacherLeaveCalendarPage() {
 						Создать больничный
 					</Button>
 				</div>
-			</div>
+			</PageTitleRow>
 
 			<LeaveCalendar
 				requests={requests}
@@ -82,6 +83,6 @@ export function TeacherLeaveCalendarPage() {
 						: undefined
 				}
 			/>
-		</div>
+		</PageRoot>
 	)
 }

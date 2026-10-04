@@ -146,7 +146,7 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+			<div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-end md:justify-between">
 				<div>
 					<div className="mb-1 flex items-center gap-2">
 						<Title level={3} className="!mb-0">
@@ -180,6 +180,7 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 				rowKey="id"
 				columns={columns}
 				dataSource={requests}
+				scroll={{ x: 'max-content' }}
 				loading={isPending}
 				pagination={false}
 				locale={{ emptyText: 'Нет ожидающих заявок' }}

@@ -6,7 +6,7 @@ import Title from '@/shared/ui/Title'
 
 export default function SettingsPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6">
       <Title level={2}>Настройки</Title>
       <section className="flex flex-col gap-3">
         <Title level={4}>Тема оформления</Title>

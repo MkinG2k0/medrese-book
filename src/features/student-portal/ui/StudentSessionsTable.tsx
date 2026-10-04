@@ -70,6 +70,7 @@ export function StudentSessionsTable({ sessions }: { sessions: SessionRow[] }) {
       dataSource={rows}
       rowKey="key"
       pagination={{ pageSize: 10 }}
+      scroll={{ x: 'max-content' }}
       columns={[
         {
           title: "Дата",

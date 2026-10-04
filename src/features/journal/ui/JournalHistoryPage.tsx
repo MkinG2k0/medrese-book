@@ -60,17 +60,17 @@ export function JournalHistoryPage({
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 pb-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col gap-4">
         <Title level={3} className="!mb-0">
           История шагов
         </Title>
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           <Select
             value={groupId}
             onChange={setGroupId}
             options={groupOptions}
             disabled={groups.length <= 1}
-            className="w-full sm:min-w-[220px]"
+            className="w-full min-w-0"
             aria-label="Группа"
           />
           <Select
@@ -78,7 +78,7 @@ export function JournalHistoryPage({
             onChange={setStudentId}
             loading={isLoading}
             placeholder="Выберите ученика"
-            className="w-full sm:min-w-[220px]"
+            className="w-full min-w-0"
             options={sortedStudents.map((student) => ({
               value: student.id,
               label: student.name,
@@ -92,7 +92,7 @@ export function JournalHistoryPage({
             allowClear
             inputReadOnly
             placeholder="Все даты"
-            className="w-full sm:w-auto"
+            className="w-full min-w-0"
           />
         </div>
       </div>

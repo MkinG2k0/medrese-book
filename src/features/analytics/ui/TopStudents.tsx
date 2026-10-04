@@ -50,6 +50,7 @@ export function TopStudents({
       <Table
         dataSource={data}
         rowKey={(r) => r.student.id}
+        scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 10, showSizeChanger: false }}
         onRow={(record) => ({
           onClick: () =>

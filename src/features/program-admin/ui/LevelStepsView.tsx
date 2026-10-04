@@ -55,9 +55,11 @@ export function LevelStepsView({
 				]}
 			/>
 
-			<div className="flex items-center justify-between">
-				<Title level={3}>{levelTitle}</Title>
-				<div className="flex gap-2">
+			<div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<Title level={3} className="!mb-0">
+					{levelTitle}
+				</Title>
+				<div className="flex flex-wrap gap-2">
 					<Button onClick={() => setShowEdit(true)}>Редактировать уровень</Button>
 					<Link href={programStepNewPath(subjectId, levelId)}>
 						<Button type="primary">Новый шаг</Button>

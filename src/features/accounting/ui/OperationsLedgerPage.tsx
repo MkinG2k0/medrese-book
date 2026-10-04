@@ -71,6 +71,7 @@ export function OperationsLedgerPage() {
 				rowKey="id"
 				loading={isLoading}
 				columns={columns}
+				scroll={{ x: 'max-content' }}
 				dataSource={data ?? []}
 				pagination={{ pageSize: 50 }}
 			/>
