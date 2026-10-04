@@ -1,17 +1,24 @@
 'use client'
 
 import { Select, Table } from 'antd'
+import type { TableColumnsType } from 'antd'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { ALL_TEACHERS, ALL_GROUPS } from '@/features/analytics/lib/analytics-query'
-import type { TeacherLessonAnalyticsRow } from '@/features/analytics/lib/teacher-lessons-analytics'
+import type {
+	TeacherLessonAnalyticsRow,
+	TeacherLessonSubjectRow,
+} from '@/features/analytics/lib/teacher-lessons-analytics'
 import { buildTeacherLessonsSearchParams } from '@/features/analytics/lib/teacher-lessons-query'
 import { EditableTeacherTimeCell } from '@/features/analytics/ui/EditableTeacherTimeCell'
 import type { TeacherLessonTimeField } from '@/shared/lib/validations/teacher-lesson-time'
 
+const SUBJECT_COLUMN_WIDTH = 200
+
 type TeacherLessonsGroupOption = {
 	id: string
 	name: string
+	subjectName?: string
 }
 
 type TeacherLessonsGroupPickerProps = {
@@ -45,7 +52,9 @@ export function TeacherLessonsGroupPicker({
 				{ value: ALL_GROUPS, label: 'Все группы' },
 				...groups.map((group) => ({
 					value: group.id,
-					label: group.name,
+					label: group.subjectName
+						? `${group.name} — ${group.subjectName}`
+						: group.name,
 				})),
 			]}
 			onChange={(groupId) => {
@@ -119,9 +128,30 @@ function formatCell(value: string | null) {
 	return value ?? '—'
 }
 
-function renderTimeCell(
+function renderTeacherTimeCell(
 	row: TeacherLessonAnalyticsRow,
-	field: TeacherLessonTimeField,
+	field: Extract<TeacherLessonTimeField, 'login' | 'logout'>,
+	value: string | null,
+	editable: boolean,
+	date?: string,
+) {
+	if (!editable || !date || row.isAverage) {
+		return formatCell(value)
+	}
+
+	return (
+		<EditableTeacherTimeCell
+			teacherId={row.teacherId}
+			date={date}
+			field={field}
+			value={value}
+		/>
+	)
+}
+
+function renderLessonTimeCell(
+	row: TeacherLessonSubjectRow,
+	field: Extract<TeacherLessonTimeField, 'lessonStart' | 'lessonEnd'>,
 	value: string | null,
 	editable: boolean,
 	date?: string,
@@ -141,6 +171,63 @@ function renderTimeCell(
 	)
 }
 
+function TeacherLessonsExpandedTable({
+	lessons,
+	isRange,
+	editable,
+	date,
+}: {
+	lessons: TeacherLessonSubjectRow[]
+	isRange: boolean
+	editable: boolean
+	date?: string
+}) {
+	const timeSuffix = isRange ? ' (среднее)' : ''
+	const columns: TableColumnsType<TeacherLessonSubjectRow> = [
+		{
+			title: 'Предмет',
+			dataIndex: 'subjectName',
+			key: 'subjectName',
+			width: SUBJECT_COLUMN_WIDTH,
+		},
+		{
+			title: 'Группа',
+			dataIndex: 'groupName',
+			key: 'groupName',
+		},
+		{
+			title: `Начало урока${timeSuffix}`,
+			dataIndex: 'lessonStartedAt',
+			key: 'lessonStartedAt',
+			render: (value: string | null, row) =>
+				renderLessonTimeCell(row, 'lessonStart', value, editable, date),
+		},
+		{
+			title: `Конец урока${timeSuffix}`,
+			dataIndex: 'lessonEndedAt',
+			key: 'lessonEndedAt',
+			render: (value: string | null, row) =>
+				renderLessonTimeCell(row, 'lessonEnd', value, editable, date),
+		},
+		{
+			title: `Длительность урока${isRange ? ' (средняя)' : ''}`,
+			dataIndex: 'lessonDurationLabel',
+			key: 'lessonDurationLabel',
+		},
+	]
+
+	return (
+		<Table<TeacherLessonSubjectRow>
+			rowKey={(row) => `${row.teacherId}-${row.groupId}`}
+			pagination={false}
+			size="small"
+			tableLayout="fixed"
+			dataSource={lessons}
+			columns={columns}
+		/>
+	)
+}
+
 export function TeacherLessonsTable({
 	rows,
 	isRange,
@@ -149,66 +236,61 @@ export function TeacherLessonsTable({
 	date,
 }: TeacherLessonsTableProps) {
 	const timeSuffix = isRange ? ' (среднее)' : ''
+	const columns: TableColumnsType<TeacherLessonAnalyticsRow> = [
+		...(showTeacherColumn
+			? [
+					{
+						title: 'Учитель',
+						dataIndex: 'teacherName' as const,
+						key: 'teacherName',
+						width: SUBJECT_COLUMN_WIDTH,
+					},
+				]
+			: []),
+		{
+			title: `Пришел${timeSuffix}`,
+			dataIndex: 'loginAt',
+			key: 'loginAt',
+			render: (value: string | null, row) =>
+				renderTeacherTimeCell(row, 'login', value, editable, date),
+		},
+		{
+			title: `Ушел${timeSuffix}`,
+			dataIndex: 'logoutAt',
+			key: 'logoutAt',
+			render: (value: string | null, row) =>
+				renderTeacherTimeCell(row, 'logout', value, editable, date),
+		},
+		{
+			title: `Длительность на раб. месте${isRange ? ' (средняя)' : ''}`,
+			dataIndex: 'workplaceDurationLabel',
+			key: 'workplaceDurationLabel',
+		},
+		{
+			title: `Длительность всех уроков${isRange ? ' (средняя)' : ''}`,
+			dataIndex: 'totalLessonDurationLabel',
+			key: 'totalLessonDurationLabel',
+		},
+	]
 
 	return (
-		<Table
-			rowKey={(row) => `${row.teacherId}-${row.groupId}`}
+		<Table<TeacherLessonAnalyticsRow>
+			rowKey={(row) => row.teacherId}
 			pagination={false}
+			tableLayout="fixed"
 			dataSource={rows}
-			columns={[
-				...(showTeacherColumn
-					? [
-							{
-								title: 'Учитель',
-								dataIndex: 'teacherName' as const,
-								key: 'teacherName',
-							},
-						]
-					: []),
-				{
-					title: 'Группа',
-					dataIndex: 'groupName',
-					key: 'groupName',
-				},
-				{
-					title: `Пришел${timeSuffix}`,
-					dataIndex: 'loginAt',
-					key: 'loginAt',
-					render: (value: string | null, row: TeacherLessonAnalyticsRow) =>
-						renderTimeCell(row, 'login', value, editable, date),
-				},
-				{
-					title: `Ушел${timeSuffix}`,
-					dataIndex: 'logoutAt',
-					key: 'logoutAt',
-					render: (value: string | null, row: TeacherLessonAnalyticsRow) =>
-						renderTimeCell(row, 'logout', value, editable, date),
-				},
-				{
-					title: `Длительность на раб. месте${isRange ? ' (средняя)' : ''}`,
-					dataIndex: 'workplaceDurationLabel',
-					key: 'workplaceDurationLabel',
-				},
-				{
-					title: `Начало урока${timeSuffix}`,
-					dataIndex: 'lessonStartedAt',
-					key: 'lessonStartedAt',
-					render: (value: string | null, row: TeacherLessonAnalyticsRow) =>
-						renderTimeCell(row, 'lessonStart', value, editable, date),
-				},
-				{
-					title: `Конец урока${timeSuffix}`,
-					dataIndex: 'lessonEndedAt',
-					key: 'lessonEndedAt',
-					render: (value: string | null, row: TeacherLessonAnalyticsRow) =>
-						renderTimeCell(row, 'lessonEnd', value, editable, date),
-				},
-				{
-					title: `Длительность урока${isRange ? ' (средняя)' : ''}`,
-					dataIndex: 'lessonDurationLabel',
-					key: 'lessonDurationLabel',
-				},
-			]}
+			columns={columns}
+			expandable={{
+				rowExpandable: (row) => row.lessons.length > 0,
+				expandedRowRender: (row) => (
+					<TeacherLessonsExpandedTable
+						lessons={row.lessons}
+						isRange={isRange}
+						editable={editable}
+						date={date}
+					/>
+				),
+			}}
 		/>
 	)
 }

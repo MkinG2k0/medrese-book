@@ -9,12 +9,12 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 	]
 
 	const groups = [
-		{ id: 'g1', teacherId: 't1', name: 'Группа А' },
-		{ id: 'g2', teacherId: 't1', name: 'Группа Б' },
-		{ id: 'g3', teacherId: 't2', name: 'Группа В' },
+		{ id: 'g1', teacherId: 't1', name: 'Группа А', subjectName: 'Коран' },
+		{ id: 'g2', teacherId: 't1', name: 'Группа Б', subjectName: 'Основа веры' },
+		{ id: 'g3', teacherId: 't2', name: 'Группа В', subjectName: 'Коран' },
 	]
 
-	it('builds single-day row with lesson and login times per group', () => {
+	it('builds one teacher row with nested lessons per group', () => {
 		const rows = buildTeacherLessonAnalyticsRows(
 			teachers,
 			groups,
@@ -46,28 +46,33 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			'2026-06-25',
 		)
 
-		const groupARow = rows.find((row) => row.groupId === 'g1')
-		const groupBRow = rows.find((row) => row.groupId === 'g2')
+		expect(rows).toHaveLength(2)
 
-		expect(groupARow?.teacherName).toBe('Ахмад')
-		expect(groupARow?.groupName).toBe('Группа А')
-		expect(groupARow?.loginAt).not.toBeNull()
-		expect(groupARow?.logoutAt).not.toBeNull()
-		expect(groupARow?.lessonStartedAt).not.toBeNull()
-		expect(groupARow?.lessonEndedAt).not.toBeNull()
-		expect(groupARow?.lessonDurationLabel).not.toBe('время не учтено')
-		expect(groupARow?.workplaceDurationLabel).not.toBe('время не учтено')
-		expect(groupARow?.loginEventId).toBe('l1')
-		expect(groupARow?.logoutEventId).toBe('o1')
-		expect(groupARow?.teachingSessionId).toBe('s1')
+		const ahmad = rows.find((row) => row.teacherId === 't1')
+		const ibrahim = rows.find((row) => row.teacherId === 't2')
+		const quranLesson = ahmad?.lessons.find((lesson) => lesson.groupId === 'g1')
+		const aqidahLesson = ahmad?.lessons.find((lesson) => lesson.groupId === 'g2')
 
-		expect(groupBRow?.lessonDurationLabel).toBe('время не учтено')
-		expect(rows.find((row) => row.teacherId === 't2')?.lessonDurationLabel).toBe(
-			'время не учтено',
-		)
+		expect(ahmad?.teacherName).toBe('Ахмад')
+		expect(ahmad?.lessons).toHaveLength(2)
+		expect(quranLesson?.subjectName).toBe('Коран')
+		expect(aqidahLesson?.subjectName).toBe('Основа веры')
+		expect(ahmad?.loginAt).not.toBeNull()
+		expect(ahmad?.logoutAt).not.toBeNull()
+		expect(quranLesson?.lessonStartedAt).not.toBeNull()
+		expect(quranLesson?.lessonEndedAt).not.toBeNull()
+		expect(quranLesson?.lessonDurationLabel).not.toBe('время не учтено')
+		expect(ahmad?.totalLessonDurationLabel).not.toBe('время не учтено')
+		expect(ahmad?.workplaceDurationLabel).not.toBe('время не учтено')
+		expect(ahmad?.loginEventId).toBe('l1')
+		expect(ahmad?.logoutEventId).toBe('o1')
+		expect(quranLesson?.teachingSessionId).toBe('s1')
+
+		expect(aqidahLesson?.lessonDurationLabel).toBe('время не учтено')
+		expect(ibrahim?.totalLessonDurationLabel).toBe('время не учтено')
 	})
 
-	it('filters rows by groupId', () => {
+	it('filters nested lessons by groupId', () => {
 		const rows = buildTeacherLessonAnalyticsRows(
 			[teachers[0]!],
 			groups,
@@ -89,11 +94,13 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 		)
 
 		expect(rows).toHaveLength(1)
-		expect(rows[0]?.groupId).toBe('g2')
-		expect(rows[0]?.lessonDurationLabel).toBe('время не учтено')
+		expect(rows[0]?.lessons).toHaveLength(1)
+		expect(rows[0]?.lessons[0]?.groupId).toBe('g2')
+		expect(rows[0]?.lessons[0]?.lessonDurationLabel).toBe('время не учтено')
+		expect(rows[0]?.totalLessonDurationLabel).toBe('время не учтено')
 	})
 
-	it('marks range rows as averages', () => {
+	it('marks range rows as averages and sums lessons per day', () => {
 		const rows = buildTeacherLessonAnalyticsRows(
 			teachers,
 			groups,
@@ -143,11 +150,13 @@ describe('buildTeacherLessonAnalyticsRows', () => {
 			'2026-06-25',
 		)
 
-		const groupARow = rows.find((row) => row.groupId === 'g1')
-		expect(groupARow?.isAverage).toBe(true)
-		expect(groupARow?.loginAt).not.toBeNull()
-		expect(groupARow?.logoutAt).not.toBeNull()
-		expect(groupARow?.lessonDurationLabel).not.toBe('время не учтено')
-		expect(groupARow?.workplaceDurationLabel).not.toBe('время не учтено')
+		const ahmad = rows.find((row) => row.teacherId === 't1')
+		const quranLesson = ahmad?.lessons.find((lesson) => lesson.groupId === 'g1')
+		expect(ahmad?.isAverage).toBe(true)
+		expect(quranLesson?.isAverage).toBe(true)
+		expect(ahmad?.loginAt).not.toBeNull()
+		expect(ahmad?.logoutAt).not.toBeNull()
+		expect(ahmad?.totalLessonDurationLabel).not.toBe('время не учтено')
+		expect(ahmad?.workplaceDurationLabel).not.toBe('время не учтено')
 	})
 })

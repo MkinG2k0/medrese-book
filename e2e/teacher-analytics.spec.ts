@@ -14,10 +14,19 @@ test.describe("Аналитика учителей — менеджер", () => 
     await expect(page.getByRole("columnheader", { name: "Пришел" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Ушел" })).toBeVisible();
     await expect(
-      page.getByRole("columnheader", { name: "Длительность урока" }),
+      page.getByRole("columnheader", { name: "Длительность всех уроков" }),
     ).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Длительность на раб. месте" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Развернуть строку" }).first().click();
+    await expect(page.getByRole("columnheader", { name: "Предмет" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Группа" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Начало урока" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Конец урока" }),
     ).toBeVisible();
     await expect(page.locator(".ant-picker").first()).toBeVisible();
   });
@@ -43,11 +52,14 @@ test.describe("Аналитика учителей — учитель", () => {
     await expect(page.getByRole("columnheader", { name: "Пришел" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Ушел" })).toBeVisible();
     await expect(
-      page.getByRole("columnheader", { name: "Длительность урока" }),
+      page.getByRole("columnheader", { name: "Длительность всех уроков" }),
     ).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Длительность на раб. месте" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Развернуть строку" }).first().click();
+    await expect(page.getByRole("columnheader", { name: "Предмет" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Группа" })).toBeVisible();
     await expect(
       page.getByRole("columnheader", { name: "Учитель" }),
     ).not.toBeVisible();

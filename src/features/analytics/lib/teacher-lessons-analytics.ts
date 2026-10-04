@@ -14,21 +14,29 @@ import {
 	formatLocalTime,
 } from '@/shared/lib/local-time'
 
-export type TeacherLessonAnalyticsRow = {
+export type TeacherLessonSubjectRow = {
 	teacherId: string
-	teacherName: string
 	groupId: string
 	groupName: string
-	loginAt: string | null
-	logoutAt: string | null
+	subjectName: string
 	lessonStartedAt: string | null
 	lessonEndedAt: string | null
 	lessonDurationLabel: string
+	teachingSessionId: string | null
+	isAverage: boolean
+}
+
+export type TeacherLessonAnalyticsRow = {
+	teacherId: string
+	teacherName: string
+	loginAt: string | null
+	logoutAt: string | null
+	totalLessonDurationLabel: string
 	workplaceDurationLabel: string
 	isAverage: boolean
 	loginEventId: string | null
 	logoutEventId: string | null
-	teachingSessionId: string | null
+	lessons: TeacherLessonSubjectRow[]
 }
 
 type TeacherRecord = {
@@ -41,6 +49,7 @@ type GroupRecord = {
 	id: string
 	teacherId: string
 	name: string
+	subjectName: string
 }
 
 type TeachingSessionRecord = {
@@ -75,6 +84,31 @@ function formatLessonDurationLabel(
 	}
 
 	return formatElapsedMs(durations[0]!)
+}
+
+function formatTotalLessonDurationLabel(
+	sessions: TeachingSessionRecord[],
+	days: string[],
+	isAverage: boolean,
+): string {
+	const dailyTotals = days.flatMap((day) => {
+		const total = sessions
+			.filter((session) => sessionMatchesDay(session, day))
+			.map((session) => getTeachingSessionDurationMs(session))
+			.filter((value): value is number => value != null && value > 0)
+			.reduce((sum, value) => sum + value, 0)
+		return total > 0 ? [total] : []
+	})
+
+	if (dailyTotals.length === 0) return 'время не учтено'
+
+	if (isAverage) {
+		const avg =
+			dailyTotals.reduce((sum, value) => sum + value, 0) / dailyTotals.length
+		return formatElapsedMs(avg)
+	}
+
+	return formatElapsedMs(dailyTotals[0]!)
 }
 
 function formatWorkplaceDurationLabel(
@@ -160,12 +194,15 @@ function getGroupsForTeacher(
 			id: session.groupId,
 			teacherId: teacher.id,
 			name: '—',
+			subjectName: '—',
 		})
 	}
 
-	let result = [...groupMap.values()].sort((left, right) =>
-		left.name.localeCompare(right.name, 'ru'),
-	)
+	let result = [...groupMap.values()].sort((left, right) => {
+		const bySubject = left.subjectName.localeCompare(right.subjectName, 'ru')
+		if (bySubject !== 0) return bySubject
+		return left.name.localeCompare(right.name, 'ru')
+	})
 
 	if (groupIdFilter) {
 		result = result.filter((group) => group.id === groupIdFilter)
@@ -174,35 +211,19 @@ function getGroupsForTeacher(
 	return result
 }
 
-function buildRowForTeacherGroup(
+function buildLessonRow(
 	teacher: TeacherRecord,
 	group: GroupRecord,
 	days: string[],
 	sessions: TeachingSessionRecord[],
-	logins: AuditTimeRecord[],
-	logouts: AuditTimeRecord[],
 	isAverage: boolean,
-): TeacherLessonAnalyticsRow {
+): TeacherLessonSubjectRow {
 	const groupSessions = sessions.filter(
 		(session) =>
 			session.teacherId === teacher.id && session.groupId === group.id,
 	)
-	const teacherLogins = logins.filter((login) => login.userId === teacher.userId)
-	const teacherLogouts = logouts.filter(
-		(logout) => logout.userId === teacher.userId,
-	)
 
 	if (isAverage) {
-		const loginTimes = days.flatMap((day) => {
-			const dayLogin = teacherLogins.find((login) =>
-				auditTimeMatchesDay(login, day),
-			)
-			return dayLogin ? [dayLogin.createdAt] : []
-		})
-		const logoutTimes = days.flatMap((day) => {
-			const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
-			return dayLogout ? [dayLogout.createdAt] : []
-		})
 		const startedTimes = days.flatMap((day) => {
 			const daySession = groupSessions.find((session) =>
 				sessionMatchesDay(session, day),
@@ -223,41 +244,27 @@ function buildRowForTeacherGroup(
 
 		return {
 			teacherId: teacher.id,
-			teacherName: teacher.name,
 			groupId: group.id,
 			groupName: group.name,
-			loginAt: formatTimeValue(loginTimes, true),
-			logoutAt: formatTimeValue(logoutTimes, true),
+			subjectName: group.subjectName,
 			lessonStartedAt: formatTimeValue(startedTimes, true),
 			lessonEndedAt: formatTimeValue(endedTimes, true),
 			lessonDurationLabel: formatLessonDurationLabel(completedSessions, true),
-			workplaceDurationLabel: formatWorkplaceDurationLabel(
-				teacherLogins,
-				teacherLogouts,
-				days,
-				true,
-			),
-			isAverage: true,
-			loginEventId: null,
-			logoutEventId: null,
 			teachingSessionId: null,
+			isAverage: true,
 		}
 	}
 
 	const day = days[0]!
-	const dayLogin = teacherLogins.find((login) => auditTimeMatchesDay(login, day))
-	const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
 	const daySession = groupSessions.find((session) =>
 		sessionMatchesDay(session, day),
 	)
 
 	return {
 		teacherId: teacher.id,
-		teacherName: teacher.name,
 		groupId: group.id,
 		groupName: group.name,
-		loginAt: dayLogin ? formatLocalTime(dayLogin.createdAt) : null,
-		logoutAt: dayLogout ? formatLocalTime(dayLogout.createdAt) : null,
+		subjectName: group.subjectName,
 		lessonStartedAt: daySession
 			? formatLocalTime(daySession.startedAt)
 			: null,
@@ -267,6 +274,82 @@ function buildRowForTeacherGroup(
 		lessonDurationLabel: daySession
 			? formatLessonDurationLabel([daySession], false)
 			: 'время не учтено',
+		teachingSessionId: daySession?.id ?? null,
+		isAverage: false,
+	}
+}
+
+function buildTeacherRow(
+	teacher: TeacherRecord,
+	groups: GroupRecord[],
+	days: string[],
+	sessions: TeachingSessionRecord[],
+	logins: AuditTimeRecord[],
+	logouts: AuditTimeRecord[],
+	isAverage: boolean,
+): TeacherLessonAnalyticsRow {
+	const groupIds = new Set(groups.map((group) => group.id))
+	const teacherSessions = sessions.filter(
+		(session) =>
+			session.teacherId === teacher.id && groupIds.has(session.groupId),
+	)
+	const teacherLogins = logins.filter((login) => login.userId === teacher.userId)
+	const teacherLogouts = logouts.filter(
+		(logout) => logout.userId === teacher.userId,
+	)
+	const lessons = groups.map((group) =>
+		buildLessonRow(teacher, group, days, teacherSessions, isAverage),
+	)
+
+	if (isAverage) {
+		const loginTimes = days.flatMap((day) => {
+			const dayLogin = teacherLogins.find((login) =>
+				auditTimeMatchesDay(login, day),
+			)
+			return dayLogin ? [dayLogin.createdAt] : []
+		})
+		const logoutTimes = days.flatMap((day) => {
+			const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
+			return dayLogout ? [dayLogout.createdAt] : []
+		})
+
+		return {
+			teacherId: teacher.id,
+			teacherName: teacher.name,
+			loginAt: formatTimeValue(loginTimes, true),
+			logoutAt: formatTimeValue(logoutTimes, true),
+			totalLessonDurationLabel: formatTotalLessonDurationLabel(
+				teacherSessions,
+				days,
+				true,
+			),
+			workplaceDurationLabel: formatWorkplaceDurationLabel(
+				teacherLogins,
+				teacherLogouts,
+				days,
+				true,
+			),
+			isAverage: true,
+			loginEventId: null,
+			logoutEventId: null,
+			lessons,
+		}
+	}
+
+	const day = days[0]!
+	const dayLogin = teacherLogins.find((login) => auditTimeMatchesDay(login, day))
+	const dayLogout = findLastAuditTimeForDay(teacherLogouts, day)
+
+	return {
+		teacherId: teacher.id,
+		teacherName: teacher.name,
+		loginAt: dayLogin ? formatLocalTime(dayLogin.createdAt) : null,
+		logoutAt: dayLogout ? formatLocalTime(dayLogout.createdAt) : null,
+		totalLessonDurationLabel: formatTotalLessonDurationLabel(
+			teacherSessions,
+			days,
+			false,
+		),
 		workplaceDurationLabel: formatWorkplaceDurationLabel(
 			teacherLogins,
 			teacherLogouts,
@@ -276,7 +359,7 @@ function buildRowForTeacherGroup(
 		isAverage: false,
 		loginEventId: dayLogin?.id ?? null,
 		logoutEventId: dayLogout?.id ?? null,
-		teachingSessionId: daySession?.id ?? null,
+		lessons,
 	}
 }
 
@@ -301,17 +384,19 @@ export function buildTeacherLessonAnalyticsRows(
 			groupIdFilter,
 		)
 
-		return teacherGroups.map((group) =>
-			buildRowForTeacherGroup(
+		if (teacherGroups.length === 0) return []
+
+		return [
+			buildTeacherRow(
 				teacher,
-				group,
+				teacherGroups,
 				days,
 				sessions,
 				logins,
 				logouts,
 				isAverage,
 			),
-		)
+		]
 	})
 }
 

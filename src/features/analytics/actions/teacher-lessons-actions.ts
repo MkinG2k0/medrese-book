@@ -51,7 +51,12 @@ async function fetchTeacherLessonAnalytics(
 
 	const groups = await prisma.group.findMany({
 		where: { teacherId: { in: teacherIds } },
-		select: { id: true, teacherId: true, name: true },
+		select: {
+			id: true,
+			teacherId: true,
+			name: true,
+			subject: { select: { name: true } },
+		},
 		orderBy: { name: 'asc' },
 	})
 
@@ -119,7 +124,12 @@ async function fetchTeacherLessonAnalytics(
 			userId: teacher.userId,
 			name: teacher.user.name,
 		})),
-		groups,
+		groups.map((group) => ({
+			id: group.id,
+			teacherId: group.teacherId,
+			name: group.name,
+			subjectName: group.subject.name,
+		})),
 		sessions,
 		logins.map((login) => ({
 			id: login.id,

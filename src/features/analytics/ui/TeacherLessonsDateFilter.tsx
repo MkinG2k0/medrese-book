@@ -63,7 +63,7 @@ export function TeacherLessonsDateFilter({
 			allowClear={false}
 			inputReadOnly
 			disabledDate={disableFutureDate}
-			className="w-full sm:w-auto"
+			className="w-full sm:min-w-[320px]"
 			onChange={(dates) => {
 				if (!dates?.[0]) {
 					const today = getLocalDateString()
