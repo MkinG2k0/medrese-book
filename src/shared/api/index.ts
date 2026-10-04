@@ -10,6 +10,16 @@ export const error = (message: string, status = 400) =>
 
 export const unauthorized = () => error("Требуется авторизация", 401)
 
+export const unauthorizedIdle = () =>
+  NextResponse.json(
+    {
+      data: null,
+      error: "Сессия завершена из-за неактивности",
+      reason: "idle",
+    },
+    { status: 401 },
+  )
+
 export const forbidden = () => error("Недостаточно прав", 403)
 
 export const notFound = (entity = "Ресурс") =>
