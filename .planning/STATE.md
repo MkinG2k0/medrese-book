@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-10-03 - Completed quick task 261003-wy9: accountant bell + payment request notifications
+Last activity: 2026-10-04 - Completed quick task 261004-hip: Move teacher 1-hour idle logout from frontend react-idle-timer to backend-enforced lastActiveAt; skip poll/SSE as activity; clear session and end lesson on idle; keep /login?reason=idle
 
 
 ## Performance Metrics
@@ -205,6 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 261004-hip | Move teacher 1-hour idle logout from frontend react-idle-timer to backend-enforced lastActiveAt; skip poll/SSE as activity; clear session and end lesson on idle; keep /login?reason=idle | 2026-10-04 | 73efcca | [261004-hip-move-teacher-1-hour-idle-logout-from-fro](./quick/261004-hip-move-teacher-1-hour-idle-logout-from-fro/) |
 | 261003-wy9 | Уведомление бухгалтеру при новой заявке (колокольчик + in-app/push) | 2026-10-03 | — | [261003-wy9-uvedomlenie-buhgalteru-pri-novoy-zayavke](./quick/261003-wy9-uvedomlenie-buhgalteru-pri-novoy-zayavke/) |
 | 261003-wwx | Cron-напоминание в конце месяца в 12:00 МСК только опекуну (in-app + push) | 2026-10-03 | 11c802f | [261003-wwx-cron-napominanie-v-kontse-mesyatsa-v-12-](./quick/261003-wwx-cron-napominanie-v-kontse-mesyatsa-v-12-/) |
 | 261003-pay | Оплата детей опекуном + заявки бухгалтеру | 2026-10-03 | 7616f18 | [261003-pay-parent-tuition-payment-requests](./quick/261003-pay-parent-tuition-payment-requests/) |
@@ -287,7 +288,7 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-10-03 - Completed quick task 261003-wy9: accountant bell + payment request notifications
+Last activity: 2026-10-04 - Completed quick task 261004-hip: Move teacher 1-hour idle logout from frontend react-idle-timer to backend-enforced lastActiveAt; skip poll/SSE as activity; clear session and end lesson on idle; keep /login?reason=idle
 
 Last session: 2026-09-16T19:25:00Z
 Stopped at: Completed 260916-v0w PLAN/SUMMARY
