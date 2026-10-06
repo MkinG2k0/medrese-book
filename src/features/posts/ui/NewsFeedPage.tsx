@@ -65,7 +65,6 @@ export function NewsFeedPage() {
 	const canCreate =
 		role === 'TEACHER' || role === 'MANAGER' || role === 'SUPER_ADMIN'
 	const canChoosePostType = role === 'MANAGER' || role === 'SUPER_ADMIN'
-	const canManage = canChoosePostType
 
 	const isEditing = editingPost !== null
 
@@ -195,7 +194,10 @@ export function NewsFeedPage() {
 						<PostCard
 							key={post.id}
 							post={post}
-							canManage={canManage}
+							canManage={
+								canChoosePostType ||
+								(role === 'TEACHER' && post.author.id === session?.user?.id)
+							}
 							onEdit={openEditModal}
 						/>
 					))}
