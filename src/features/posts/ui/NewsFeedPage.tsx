@@ -61,8 +61,11 @@ export function NewsFeedPage() {
 	const [mediaFiles, setMediaFiles] = useState<MediaUploadItem[]>([])
 	const [uploading, setUploading] = useState(false)
 
-	const canManage =
-		session?.user?.role === 'MANAGER' || session?.user?.role === 'SUPER_ADMIN'
+	const role = session?.user?.role
+	const canCreate =
+		role === 'TEACHER' || role === 'MANAGER' || role === 'SUPER_ADMIN'
+	const canChoosePostType = role === 'MANAGER' || role === 'SUPER_ADMIN'
+	const canManage = canChoosePostType
 
 	const isEditing = editingPost !== null
 
@@ -137,7 +140,12 @@ export function NewsFeedPage() {
 		setUploading(true)
 		try {
 			const media = await collectMedia()
-			const payload = { title: trimmedTitle, body, media, type: postType }
+			const payload = {
+				title: trimmedTitle,
+				body,
+				media,
+				type: canChoosePostType ? postType : 'GENERAL',
+			}
 
 			if (isEditing && editingPost) {
 				await updateMutation.mutateAsync({ id: editingPost.id, ...payload })
@@ -170,7 +178,7 @@ export function NewsFeedPage() {
 				<Title level={2} className="!mb-0">
 					Новости
 				</Title>
-				{canManage && (
+				{canCreate && (
 					<Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
 						Создать
 					</Button>
@@ -194,7 +202,7 @@ export function NewsFeedPage() {
 				</div>
 			)}
 
-			{canManage && (
+			{canCreate && (
 				<Modal
 					title={isEditing ? 'Редактирование публикации' : 'Новая публикация'}
 					open={modalOpen}
@@ -217,16 +225,18 @@ export function NewsFeedPage() {
 								placeholder="Заголовок новости"
 							/>
 						</Form.Item>
-						<Form.Item label="Тип поста" required>
-							<Radio.Group
-								value={postType}
-								onChange={(event) => setPostType(event.target.value)}
-								options={[
-									{ label: 'Обычная', value: 'GENERAL' },
-									{ label: 'Системная', value: 'SYSTEM' },
-								]}
-							/>
-						</Form.Item>
+						{canChoosePostType && (
+							<Form.Item label="Тип поста" required>
+								<Radio.Group
+									value={postType}
+									onChange={(event) => setPostType(event.target.value)}
+									options={[
+										{ label: 'Обычная', value: 'GENERAL' },
+										{ label: 'Системная', value: 'SYSTEM' },
+									]}
+								/>
+							</Form.Item>
+						)}
 						<Form.Item label="Описание" required>
 							<PostEditor
 								key={editorKey}
@@ -234,18 +244,21 @@ export function NewsFeedPage() {
 								onChange={setBody}
 							/>
 						</Form.Item>
-						<Form.Item label="Фото и видео">
+						<Form.Item label={canChoosePostType ? 'Фото и видео' : 'Фото'}>
 							<Upload
 								listType="picture"
 								multiple
-								accept="image/*,video/*"
+								accept={
+									canChoosePostType
+										? 'image/*,video/*'
+										: 'image/jpeg,image/png,image/webp'
+								}
 								fileList={mediaFiles}
 								beforeUpload={() => false}
 								onChange={({ fileList }) => setMediaFiles(fileList as MediaUploadItem[])}
 							>
 								<Button icon={<UploadOutlined />}>Загрузить файлы</Button>
 							</Upload>
-					
 						</Form.Item>
 					</Form>
 				</Modal>
