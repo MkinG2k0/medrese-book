@@ -70,11 +70,29 @@ export const createUsersSchema = z
 		parentId: z.string().optional(),
 		guardianName: optionalTextSchema,
 		guardianPhone: optionalPhoneSchema,
+		studentIds: z.array(z.string().min(1)).optional(),
 	})
 	.refine((data) => data.role !== 'STUDENT' || !!data.groupId, {
 		message: 'Выберите группу',
 		path: ['groupId'],
 	})
+	.refine(
+		(data) => data.role === 'PARENT' || !data.studentIds?.length,
+		{
+			message: 'Учеников можно прикрепить только к опекуну',
+			path: ['studentIds'],
+		},
+	)
+	.refine(
+		(data) =>
+			data.role !== 'PARENT' ||
+			data.entries.length === 1 ||
+			!data.studentIds?.length,
+		{
+			message: 'Прикрепить учеников можно только при создании одного опекуна',
+			path: ['studentIds'],
+		},
+	)
 
 export const createUserFormSchema = z
 	.object({
@@ -88,6 +106,7 @@ export const createUserFormSchema = z
 		groupId: z.string().optional(),
 		levelId: z.string().optional(),
 		localStepIndex: z.number().int().min(0),
+		studentIds: z.array(z.string()).optional(),
 	})
 	.refine((data) => parseStudentEntries(data.names).length >= 1, {
 		message: 'Укажите хотя бы одно имя',
@@ -187,6 +206,10 @@ export function buildCreateUsersPayload(
 		guardianPhone:
 			values.role === 'STUDENT' && !parentSelected
 				? values.guardianPhone?.trim() || undefined
+				: undefined,
+		studentIds:
+			values.role === 'PARENT' && parsedEntries.length === 1
+				? values.studentIds?.filter((id) => id.trim().length > 0)
 				: undefined,
 	}
 }

@@ -94,6 +94,39 @@ export async function searchParents(query?: string) {
 	}))
 }
 
+export async function searchStudentsForParent(query?: string) {
+	await requireRoles(['SUPER_ADMIN', 'MANAGER'])
+
+	const trimmed = query?.trim()
+	const students = await prisma.student.findMany({
+		where: trimmed
+			? {
+					OR: [
+						{ user: { name: { contains: trimmed, mode: 'insensitive' } } },
+						{ fullName: { contains: trimmed, mode: 'insensitive' } },
+					],
+				}
+			: {},
+		select: {
+			id: true,
+			user: { select: { name: true } },
+			enrollments: {
+				select: { group: { select: { name: true } } },
+				orderBy: { enrolledAt: 'asc' },
+				take: 1,
+			},
+		},
+		orderBy: { user: { name: 'asc' } },
+		take: 50,
+	})
+
+	return students.map((student) => ({
+		id: student.id,
+		name: student.user.name,
+		groupName: student.enrollments[0]?.group.name ?? null,
+	}))
+}
+
 export async function createUsers(input: unknown) {
 	const session = await requireRoles(['SUPER_ADMIN', 'MANAGER'])
 
@@ -146,6 +179,22 @@ export async function createUsers(input: unknown) {
 		})
 		if (!parent) {
 			throw new Error('Опекун не найден')
+		}
+	}
+
+	const uniqueStudentIds = [...new Set(data.studentIds ?? [])]
+	if (data.role === 'PARENT' && uniqueStudentIds.length > 0) {
+		if (data.entries.length !== 1) {
+			throw new Error(
+				'Прикрепить учеников можно только при создании одного опекуна',
+			)
+		}
+
+		const foundCount = await prisma.student.count({
+			where: { id: { in: uniqueStudentIds } },
+		})
+		if (foundCount !== uniqueStudentIds.length) {
+			throw new Error('Ученик не найден')
 		}
 	}
 
@@ -283,19 +332,34 @@ export async function createUsers(input: unknown) {
 			continue
 		}
 
-		await prisma.user.create({
-			data: {
-				name: entry.name,
-				code,
-				role: data.role,
-				phone: data.phone,
-				...(data.role === 'TEACHER' && {
-					teacher: { create: {} },
-				}),
-			},
+		const created = await prisma.$transaction(async (tx) => {
+			const user = await tx.user.create({
+				data: {
+					name: entry.name,
+					code,
+					role: data.role,
+					phone: data.phone,
+					...(data.role === 'TEACHER' && {
+						teacher: { create: {} },
+					}),
+				},
+			})
+
+			if (data.role === 'PARENT' && uniqueStudentIds.length > 0) {
+				await tx.student.updateMany({
+					where: { id: { in: uniqueStudentIds } },
+					data: {
+						parentId: user.id,
+						guardianName: user.name,
+						guardianPhone: user.phone,
+					},
+				})
+			}
+
+			return user
 		})
 
-		users.push({ name: entry.name, code, role: data.role })
+		users.push({ name: created.name, code, role: data.role })
 	}
 
 	revalidatePath('/admin/users')

@@ -9,6 +9,7 @@ import {
 	createUsers,
 	getLevelsWithStepsForSubject,
 	searchParents,
+	searchStudentsForParent,
 } from '@/features/user-admin/actions/user-actions'
 import {
 	buildCreateUsersPayload,
@@ -31,6 +32,12 @@ type ParentOption = {
 	childrenCount: number
 }
 
+type StudentOption = {
+	id: string
+	name: string
+	groupName: string | null
+}
+
 type CreateUserFormProps = {
 	groups: { id: string; name: string; subjectId: string }[]
 	onSuccess: (users: { name: string; code: string; role?: string }[]) => void
@@ -51,6 +58,9 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const [levelsLoading, setLevelsLoading] = useState(false)
 	const [parents, setParents] = useState<ParentOption[]>([])
 	const [parentsLoading, setParentsLoading] = useState(false)
+	const [students, setStudents] = useState<StudentOption[]>([])
+	const [studentsLoading, setStudentsLoading] = useState(false)
+	const [selectedStudents, setSelectedStudents] = useState<StudentOption[]>([])
 
 	const { control, handleSubmit, setValue } = useForm<CreateUserFormInput>({
 		resolver: zodResolver(createUserFormSchema),
@@ -63,6 +73,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 			guardianName: '',
 			guardianPhone: '',
 			localStepIndex: 0,
+			studentIds: [],
 		},
 	})
 
@@ -78,7 +89,15 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 		[names],
 	)
 	const isMultipleStudents = role === 'STUDENT' && parsedEntries.length > 1
+	const isMultipleParents = role === 'PARENT' && parsedEntries.length > 1
 	const parentLocked = Boolean(parentId)
+	const studentOptions = useMemo(() => {
+		const byId = new Map(students.map((student) => [student.id, student]))
+		for (const selected of selectedStudents) {
+			if (!byId.has(selected.id)) byId.set(selected.id, selected)
+		}
+		return [...byId.values()]
+	}, [students, selectedStudents])
 
 	const selectedGroup = groups.find((group) => group.id === groupId)
 	const selectedLevel = levels.find((level) => level.id === levelId)
@@ -100,6 +119,29 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 			cancelled = true
 		}
 	}, [role])
+
+	useEffect(() => {
+		if (role !== 'PARENT') {
+			setStudents([])
+			setSelectedStudents([])
+			setValue('studentIds', [])
+			return
+		}
+
+		let cancelled = false
+		setStudentsLoading(true)
+		searchStudentsForParent()
+			.then((result) => {
+				if (!cancelled) setStudents(result)
+			})
+			.finally(() => {
+				if (!cancelled) setStudentsLoading(false)
+			})
+
+		return () => {
+			cancelled = true
+		}
+	}, [role, setValue])
 
 	useEffect(() => {
 		if (role !== 'STUDENT' || !selectedGroup) {
@@ -153,6 +195,12 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 		setValue('guardianPhone', '')
 	}, [parentLocked, setValue])
 
+	useEffect(() => {
+		if (!isMultipleParents) return
+		setValue('studentIds', [])
+		setSelectedStudents([])
+	}, [isMultipleParents, setValue])
+
 	const stepOptions = useMemo(() => {
 		if (!selectedLevel) return []
 		const offset = getStepOffset(levels, selectedLevel.number)
@@ -165,6 +213,12 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 	const handleParentSearch = (query: string) => {
 		searchParents(query)
 			.then(setParents)
+			.catch(() => undefined)
+	}
+
+	const handleStudentSearch = (query: string) => {
+		searchStudentsForParent(query)
+			.then(setStudents)
 			.catch(() => undefined)
 	}
 
@@ -182,7 +236,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 				control={control}
 				render={({ field, fieldState }) => (
 					<Form.Item
-						label={role === 'STUDENT' ? 'ФИО' : 'Имена'}
+						label={role === 'STUDENT' || role === 'PARENT' ? 'ФИО' : 'Имена'}
 						validateStatus={fieldState.error ? 'error' : ''}
 						help={
 							fieldState.error?.message ??
@@ -190,7 +244,11 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 								? isMultipleStudents
 									? 'Каждый ученик с новой строки: Имя - телефон'
 									: 'ФИО ученика'
-								: 'Через запятую или с новой строки')
+								: role === 'PARENT'
+									? isMultipleParents
+										? 'Через запятую или с новой строки'
+										: 'ФИО опекуна'
+									: 'Через запятую или с новой строки')
 						}
 					>
 						<Input.TextArea
@@ -201,7 +259,9 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 									? 'Камал - 89676123456\nЗака - 89676789012'
 									: role === 'STUDENT'
 										? 'Ибрагимов Камал Ахмедович'
-										: 'Магомед, Амина\nПатимат'
+										: role === 'PARENT'
+											? 'Ибрагимова Амина'
+											: 'Магомед, Амина\nПатимат'
 							}
 						/>
 					</Form.Item>
@@ -218,6 +278,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 							options={[
 								{ value: 'TEACHER', label: 'Учитель' },
 								{ value: 'STUDENT', label: 'Ученик' },
+								{ value: 'PARENT', label: 'Опекун' },
 								{ value: 'MANAGER', label: 'Менеджер' },
 								{ value: 'ACCOUNTANT', label: 'Бухгалтер' },
 							]}
@@ -233,6 +294,59 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 					render={({ field }) => (
 						<Form.Item label="Телефон">
 							<Input {...field} placeholder="89676123456" />
+						</Form.Item>
+					)}
+				/>
+			)}
+
+			{role === 'PARENT' && (
+				<Controller
+					name="studentIds"
+					control={control}
+					render={({ field }) => (
+						<Form.Item
+							label="Ученики"
+							help={
+								isMultipleParents
+									? 'Прикрепить учеников можно только при создании одного опекуна'
+									: 'Необязательно — можно прикрепить существующих учеников сразу'
+							}
+						>
+							<Select
+								{...field}
+								mode="multiple"
+								allowClear
+								showSearch
+								filterOption={false}
+								disabled={isMultipleParents}
+								loading={studentsLoading}
+								placeholder="Поиск ученика по имени"
+								value={field.value ?? []}
+								onChange={(value: string[]) => {
+									field.onChange(value)
+									setSelectedStudents((current) => {
+										const byId = new Map(
+											[...studentOptions, ...current].map((student) => [
+												student.id,
+												student,
+											]),
+										)
+										return value
+											.map((id) => byId.get(id))
+											.filter((student): student is StudentOption =>
+												Boolean(student),
+											)
+									})
+								}}
+								onSearch={handleStudentSearch}
+								options={studentOptions.map((student) => ({
+									value: student.id,
+									label: `${student.name}${student.groupName ? ` · ${student.groupName}` : ''}`,
+								}))}
+								notFoundContent={
+									studentsLoading ? 'Загрузка…' : 'Ученики не найдены'
+								}
+							/>
 						</Form.Item>
 					)}
 				/>

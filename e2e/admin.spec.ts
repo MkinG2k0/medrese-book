@@ -101,6 +101,58 @@ test.describe("Админ-панель менеджера", () => {
     await expect(page.getByRole("cell", { name: studentName, exact: true })).toBeVisible();
   });
 
+  test("создаёт опекуна и опционально прикрепляет ученика", async ({ page }) => {
+    const studentName = `Ученик опекуна E2E ${Date.now()}`;
+    const parentName = `Опекун E2E ${Date.now()}`;
+
+    await page.getByRole("button", { name: "Создать пользователя" }).click();
+    const createStudentDialog = page.getByRole("dialog", { name: "Создать пользователя" });
+    await createStudentDialog.getByPlaceholder("Ибрагимов Камал Ахмедович").fill(studentName);
+    await createStudentDialog.locator('.ant-select[name="groupId"]').click();
+    await page.getByTitle(TEST_USERS.group1).click();
+    await expect(createStudentDialog.locator('.ant-select[name="levelId"]')).not.toBeDisabled();
+    await createStudentDialog.getByRole("button", { name: "Создать" }).click();
+    await page.getByRole("dialog", { name: /доступ/ }).getByRole("button", { name: "Понятно" }).click();
+    await expect(page.getByRole("cell", { name: studentName, exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Создать пользователя" }).click();
+    const createParentDialog = page.getByRole("dialog", { name: "Создать пользователя" });
+    await expect(createParentDialog).toBeVisible();
+
+    await createParentDialog.locator(".ant-form-item").filter({ hasText: "Роль" }).getByRole("combobox").click();
+    await page.locator(".ant-select-dropdown:visible").getByTitle("Опекун", { exact: true }).click();
+    await createParentDialog.getByPlaceholder("Ибрагимова Амина").fill(parentName);
+
+    const studentSelect = createParentDialog
+      .locator(".ant-form-item")
+      .filter({ hasText: "Ученики" })
+      .getByRole("combobox");
+    await studentSelect.click();
+    await studentSelect.fill(studentName);
+    await page
+      .locator(".ant-select-dropdown:visible .ant-select-item-option")
+      .filter({ hasText: studentName })
+      .click();
+    await createParentDialog.getByPlaceholder("Ибрагимова Амина").click();
+
+    await createParentDialog.getByRole("button", { name: "Создать" }).click();
+    const codeDialog = page.getByRole("dialog", { name: "Код доступа" });
+    await expect(codeDialog).toBeVisible();
+    await expect(codeDialog.getByText(parentName)).toBeVisible();
+    await expect(codeDialog.getByText("Опекун")).toBeVisible();
+    await codeDialog.getByRole("button", { name: "Понятно" }).click();
+
+    await expect(page.getByRole("cell", { name: parentName, exact: true })).toBeVisible();
+
+    await page.getByRole("cell", { name: studentName, exact: true }).click();
+    const detailDialog = page.getByRole("dialog");
+    await expect(detailDialog).toBeVisible();
+    await expect(detailDialog.locator(".ant-form-item").filter({ hasText: "Опекун" })).toContainText(
+      parentName,
+    );
+    await detailDialog.getByRole("button", { name: "Закрыть" }).click();
+  });
+
   test("удаляет ученика из карточки пользователя", async ({ page }) => {
     const studentName = `Удалить E2E ${Date.now()}`;
 
