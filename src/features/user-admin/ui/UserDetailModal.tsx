@@ -643,27 +643,30 @@ export function UserDetailModal({
                     <Input disabled value={user.teacherGroupNames.join(", ")} />
                   </Form.Item>
                 )}
-
-                {user.role === "PARENT" && (
-                  <Form.Item label="Дети">
-                    {user.parentChildren && user.parentChildren.length > 0 ? (
-                      <ul className="m-0 flex list-none flex-col gap-1 p-0">
-                        {user.parentChildren.map((child) => (
-                          <li key={child.id}>
-                            <Text>
-                              {child.name}
-                              {child.groupName ? ` · ${child.groupName}` : ""}
-                            </Text>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <Text type="secondary">Нет прикреплённых учеников</Text>
-                    )}
-                  </Form.Item>
-                )}
               </Form>
             </form>
+          )}
+
+          {user.role === "PARENT" && (
+            <div>
+              <Text strong>Дети</Text>
+              {user.parentChildren && user.parentChildren.length > 0 ? (
+                <ul className="mt-2 mb-0 list-disc space-y-1 pl-5">
+                  {user.parentChildren.map((child) => (
+                    <li key={child.id}>
+                      <Text>{child.name}</Text>
+                      {child.groupName ? (
+                        <Text type="secondary"> — {child.groupName}</Text>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="mt-2">
+                  <Text type="secondary">Нет прикреплённых учеников</Text>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
