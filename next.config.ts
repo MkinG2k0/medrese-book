@@ -1,4 +1,19 @@
+import { copyFileSync, mkdirSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
+
 import type { NextConfig } from 'next'
+
+const require = createRequire(import.meta.url)
+
+function copyPdfWorker() {
+	const workerSrc = require.resolve('pdfjs-dist/build/pdf.worker.min.mjs')
+	const destDir = join(process.cwd(), 'public')
+	mkdirSync(destDir, { recursive: true })
+	copyFileSync(workerSrc, join(destDir, 'pdf.worker.min.mjs'))
+}
+
+copyPdfWorker()
 
 type RemotePattern = {
 	protocol: 'http' | 'https'
@@ -56,6 +71,13 @@ const nextConfig: NextConfig = {
 	output: 'standalone',
 	turbopack: {},
 	transpilePackages: ['pdfjs-dist'],
+	webpack: (config) => {
+		config.resolve.alias = {
+			...config.resolve.alias,
+			canvas: false,
+		}
+		return config
+	},
 	images: {
 		remotePatterns: [
 			{

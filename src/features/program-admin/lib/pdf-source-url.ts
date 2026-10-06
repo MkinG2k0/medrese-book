@@ -22,3 +22,12 @@ export const PDF_ZOOM_DEFAULT = 75
 export function clampPdfZoom(zoom: number): number {
 	return Math.min(PDF_ZOOM_MAX, Math.max(PDF_ZOOM_MIN, zoom))
 }
+
+/** S3/CORS: range/stream requests часто срывают загрузку pdf.js на проде. */
+export function isCrossOriginPdfUrl(url: string, pageOrigin: string): boolean {
+	try {
+		return new URL(url, pageOrigin).origin !== new URL(pageOrigin).origin
+	} catch {
+		return false
+	}
+}

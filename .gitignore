@@ -49,6 +49,9 @@ next-env.d.ts
 
 /generated
 
+# pdf.js worker copied by next.config during dev/build
+/public/pdf.worker.min.mjs
+
 # PWA / Workbox (workbox artifacts from next build — static sw.js is tracked)
 /public/workbox-*.js
 /public/swe-worker-*.js

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
 	clampPdfZoom,
+	isCrossOriginPdfUrl,
 	pdfFileName,
 	pdfSourceUrl,
 	PDF_ZOOM_DEFAULT,
@@ -36,5 +37,25 @@ describe('clampPdfZoom', () => {
 		expect(clampPdfZoom(PDF_ZOOM_DEFAULT)).toBe(75)
 		expect(clampPdfZoom(10)).toBe(PDF_ZOOM_MIN)
 		expect(clampPdfZoom(400)).toBe(PDF_ZOOM_MAX)
+	})
+})
+
+describe('isCrossOriginPdfUrl', () => {
+	it('локальные пути считает same-origin', () => {
+		expect(
+			isCrossOriginPdfUrl(
+				'/uploads/program/level1/step-1/lesson.pdf',
+				'http://localhost:3000',
+			),
+		).toBe(false)
+	})
+
+	it('S3 URL считает cross-origin', () => {
+		expect(
+			isCrossOriginPdfUrl(
+				'https://cdn.example/uploads/lesson.pdf',
+				'https://app.example',
+			),
+		).toBe(true)
 	})
 })

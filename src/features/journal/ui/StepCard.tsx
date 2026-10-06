@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import type { SessionExtraAssignmentInstance } from "@/entities/extra-assignment";
 import { SessionExtraAssignmentCard } from "@/features/extra-assignments/ui/SessionExtraAssignmentCard";
 
-import { getJournalStepContent } from "@/features/journal/actions/journal-actions";
+import { fetchJournalStepContent } from "@/features/journal/lib/fetch-journal-step-content";
 import { LessonContentView } from "@/features/program-admin/ui/LessonContentView";
 import { StepContentPreview } from "@/features/program-admin/ui/StepContentPreview";
 import { EMPTY_STEP_CONTENT, hasVisibleStepContent } from "@/features/journal/lib/journal-step";
@@ -82,7 +82,10 @@ export function StepCard({
     setTeacherNote(EMPTY_STEP_CONTENT);
     setPdfUrl(null);
     setDetailsLoaded(false);
-  }, [step.id, step.content]);
+    setIsContentLoading(false);
+    // step.content is omitted on purpose: RSC refresh recreates the object.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only on step change
+  }, [step.id]);
 
   useEffect(() => {
     if (!expanded || detailsLoaded) return;
@@ -90,7 +93,7 @@ export function StepCard({
     let cancelled = false;
     setIsContentLoading(true);
 
-    void getJournalStepContent(step.id)
+    void fetchJournalStepContent(step.id)
       .then((loaded) => {
         if (!cancelled && loaded) {
           setContent(loaded.content);
@@ -162,7 +165,7 @@ export function StepCard({
           <Flex vertical gap={16} className="pt-2">
             <Form layout="vertical" >
               <Form.Item label="Содержание" className="mb-4">
-                {isContentLoading ? (
+                {isContentLoading && !detailsLoaded ? (
                   <Spin />
                 ) : (
                   <LessonContentView

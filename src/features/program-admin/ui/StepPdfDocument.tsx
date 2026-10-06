@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import {
 	clampPdfZoom,
+	isCrossOriginPdfUrl,
 	pdfFileName,
 	pdfSourceUrl,
 	PDF_ZOOM_DEFAULT,
@@ -23,10 +24,8 @@ import '@/features/program-admin/ui/editor/step-editor.css'
 
 function ensurePdfWorker() {
 	if (GlobalWorkerOptions.workerSrc) return
-	GlobalWorkerOptions.workerSrc = new URL(
-		'pdfjs-dist/build/pdf.worker.min.mjs',
-		import.meta.url,
-	).toString()
+	// Same-origin public file — `import.meta.url` worker path 404s in prod webpack/standalone.
+	GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 }
 
 type StepPdfDocumentProps = {
@@ -150,7 +149,13 @@ export function StepPdfDocument({ url }: StepPdfDocumentProps) {
 		setPageNumber(1)
 
 		ensurePdfWorker()
-		const loadingTask = getDocument({ url: source })
+		const crossOrigin = isCrossOriginPdfUrl(source, window.location.origin)
+		const loadingTask = getDocument({
+			url: source,
+			withCredentials: false,
+			disableRange: crossOrigin,
+			disableStream: crossOrigin,
+		})
 		void loadingTask.promise
 			.then((doc) => {
 				if (cancelled) {
@@ -226,7 +231,7 @@ export function StepPdfDocument({ url }: StepPdfDocumentProps) {
 				/>
 			</div>
 			<div className="relative h-[min(80vh,900px)] w-full overflow-x-auto overflow-y-scroll bg-white [scrollbar-gutter:stable]">
-				{loading && !pdf ? (
+				{(loading && !pdf) || (!error && pdf && renderWidth <= 0) ? (
 					<div className="flex h-full items-center justify-center">
 						<Spin />
 					</div>

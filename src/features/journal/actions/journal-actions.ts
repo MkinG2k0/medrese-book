@@ -24,7 +24,6 @@ import {
 	getCompletionsByStepId,
 	sumPassedStepHours,
 } from '@/shared/lib/step-completion'
-import type { StepContent } from '@/shared/lib/validations/step'
 
 export type { JournalStep } from '@/features/journal/lib/journal-step'
 
@@ -127,28 +126,6 @@ export async function resumeStudentFromPause(studentId: string, groupId: string)
 	revalidatePath(`/journal/${studentId}`)
 
 	return { ok: true as const }
-}
-
-export async function getJournalStepContent(
-	stepId: string,
-): Promise<{
-	content: StepContent
-	teacherNote: StepContent
-	pdfUrl: string | null
-} | null> {
-	await requireRole('TEACHER')
-
-	const step = await prisma.step.findUnique({
-		where: { id: stepId },
-		select: { content: true, teacherNote: true, pdfUrl: true },
-	})
-
-	if (!step) return null
-	return {
-		content: step.content as StepContent,
-		teacherNote: step.teacherNote as StepContent,
-		pdfUrl: step.pdfUrl,
-	}
 }
 
 export async function getNextLevelJournalSteps(
