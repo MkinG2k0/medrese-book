@@ -281,6 +281,10 @@ export function UsersTable({
         onClose={() => setSelectedUser(null)}
         canResetCode={canResetCode}
         onResetCode={handleReset}
+        onOpenUser={(userId) => {
+          const next = users.find((item) => item.id === userId);
+          if (next) setSelectedUser(next);
+        }}
         isResetting={isPending}
       />
 

@@ -40,7 +40,7 @@ export async function getUsers() {
 			children: {
 				select: {
 					id: true,
-					user: { select: { name: true } },
+					user: { select: { id: true, name: true } },
 					enrollments: {
 						select: { group: { select: { name: true } } },
 						orderBy: { enrolledAt: 'asc' },

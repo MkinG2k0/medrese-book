@@ -36,7 +36,7 @@ type UserWithRelations = {
 	} | null
 	children?: {
 		id: string
-		user: { name: string }
+		user: { id: string; name: string }
 		enrollments: { group: { name: string } }[]
 	}[]
 }
@@ -102,6 +102,7 @@ export function mapUsersToDetails(
 			teacherGroupNames: user.teacher?.groups.map((group) => group.name),
 			parentChildren: user.children?.map((child) => ({
 				id: child.id,
+				userId: child.user.id,
 				name: child.user.name,
 				groupName: child.enrollments[0]?.group.name,
 			})),

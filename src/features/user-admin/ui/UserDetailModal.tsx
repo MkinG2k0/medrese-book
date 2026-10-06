@@ -57,6 +57,7 @@ export type UserDetail = {
   teacherGroupNames?: string[];
   parentChildren?: {
     id: string;
+    userId: string;
     name: string;
     groupName?: string;
   }[];
@@ -94,6 +95,7 @@ type UserDetailModalProps = {
   readOnly?: boolean;
   canEditStatus?: boolean;
   onResetCode?: (userId: string) => void;
+  onOpenUser?: (userId: string) => void;
   isResetting?: boolean;
 };
 
@@ -390,6 +392,7 @@ export function UserDetailModal({
   readOnly = false,
   canEditStatus = false,
   onResetCode,
+  onOpenUser,
   isResetting,
 }: UserDetailModalProps) {
   const router = useRouter();
@@ -654,7 +657,17 @@ export function UserDetailModal({
                 <ul className="mt-2 mb-0 list-disc space-y-1 pl-5">
                   {user.parentChildren.map((child) => (
                     <li key={child.id}>
-                      <Text>{child.name}</Text>
+                      {onOpenUser ? (
+                        <Button
+                          type="link"
+                          className="h-auto p-0"
+                          onClick={() => onOpenUser(child.userId)}
+                        >
+                          {child.name}
+                        </Button>
+                      ) : (
+                        <Text>{child.name}</Text>
+                      )}
                       {child.groupName ? (
                         <Text type="secondary"> — {child.groupName}</Text>
                       ) : null}
