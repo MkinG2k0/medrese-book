@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 0
-total_count: 1
-last_updated: 2026-10-04T09:54:42.484Z
+total_count: 2
+last_updated: 2026-10-06T06:20:06.125Z
 ---
 
 # Broken Windows Ledger
@@ -16,6 +16,7 @@ last_updated: 2026-10-04T09:54:42.484Z
 | id | phase | kind | file | line | description | status | reason | recorded_at | resolved_at |
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 261004-hip | unrun-verify | e2e/auth.spec.ts |  | Playwright e2e/auth.spec.ts not run: no .env.test/DB/server in worktree; config load TypeError | open |  | 2026-10-04T09:54:42.484Z |  |
+| 2 | 261006-cl7 | unrun-verify | e2e/posts.spec.ts |  | Playwright CLI cannot load playwright.config.ts in this agent shell (context.conditions?.includes is not a function); teacher/manager/student posts spec rewritten as planned | open |  | 2026-10-06T06:20:06.125Z |  |
 
 ````json
 [
@@ -30,6 +31,19 @@ last_updated: 2026-10-04T09:54:42.484Z
     "reason": "",
     "recorded_at": "2026-10-04T09:54:42.484Z",
     "resolved_at": null
+  },
+  {
+    "id": 2,
+    "kind": "unrun-verify",
+    "phase": "261006-cl7",
+    "file": "e2e/posts.spec.ts",
+    "line": null,
+    "description": "Playwright CLI cannot load playwright.config.ts in this agent shell (context.conditions?.includes is not a function); teacher/manager/student posts spec rewritten as planned",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T06:20:06.125Z",
+    "resolved_at": null
   }
 ]
 ````
+
