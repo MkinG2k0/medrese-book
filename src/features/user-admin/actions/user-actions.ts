@@ -37,6 +37,18 @@ export async function getUsers() {
 					},
 				},
 			},
+			children: {
+				select: {
+					id: true,
+					user: { select: { name: true } },
+					enrollments: {
+						select: { group: { select: { name: true } } },
+						orderBy: { enrolledAt: 'asc' },
+						take: 1,
+					},
+				},
+				orderBy: { user: { name: 'asc' } },
+			},
 		},
 		orderBy: { createdAt: 'desc' },
 	})
