@@ -55,12 +55,12 @@ test.describe("Новости — менеджер", () => {
 test.describe("Новости — учитель", () => {
   test.use({ storageState: AUTH_STATE.teacher1 });
 
-  test("видит ленту без кнопки создания", async ({ page }) => {
+  test("видит ленту и кнопку создания", async ({ page }) => {
     await page.goto("/news");
     await expect(page.getByRole("heading", { name: "Новости" })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Создать" }),
-    ).not.toBeVisible();
+    ).toBeVisible();
 
     const likeButton = page
       .getByRole("button")
@@ -69,6 +69,26 @@ test.describe("Новости — учитель", () => {
     if (await likeButton.isVisible()) {
       await likeButton.click();
     }
+  });
+
+  test("может опубликовать обычную новость без выбора типа", async ({ page }) => {
+    const title = `E2E учитель ${Date.now()}`;
+
+    await page.goto("/news");
+    await page.getByRole("button", { name: "Создать" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "Новая публикация" });
+    await expect(dialog.getByRole("radio", { name: "Системная" })).toHaveCount(0);
+    await expect(dialog.getByRole("radio", { name: "Обычная" })).toHaveCount(0);
+
+    await dialog.getByPlaceholder("Заголовок новости").fill(title);
+    await dialog.locator(".step-editor-content").click();
+    await page.keyboard.type("Текст публикации учителя");
+
+    await dialog.getByRole("button", { name: "Опубликовать" }).click();
+
+    await expect(page.getByText("Новость опубликована")).toBeVisible();
+    await expect(page.getByRole("heading", { name: title })).toBeVisible();
   });
 });
 
