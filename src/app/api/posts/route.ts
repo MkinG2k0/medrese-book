@@ -42,7 +42,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
 	const authResult = await authorizeApiRequest({
-		allowedRoles: ['MANAGER', 'SUPER_ADMIN'],
+		allowedRoles: ['TEACHER', 'MANAGER', 'SUPER_ADMIN'],
 	})
 	if ('error' in authResult) return authResult.error
 
@@ -57,6 +57,10 @@ export async function POST(request: Request) {
 
 	const parsed = createPostSchema.safeParse(body)
 	if (!parsed.success) return error(parsed.error.message)
+
+	if (session.user.role === 'TEACHER' && parsed.data.type === 'SYSTEM') {
+		return error('Учитель может создавать только обычные публикации')
+	}
 
 	try {
 		const result = await prisma.$transaction(async (tx) => {

@@ -58,7 +58,7 @@ Note: многие quick tasks фактически выполнены (см. Qu
 Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-10-06 - Completed quick task 261006-ck6: создание опекуна через создать пользователя с опциональным прикреплением учеников
+Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
 
 ## Performance Metrics
@@ -205,6 +205,7 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 261006-cl7 | дай преподам возможность создавать посты | 2026-10-06 | 7bc568b | [261006-cl7-day-prepodam-vozmozhnost-sozdavat-posty](./quick/261006-cl7-day-prepodam-vozmozhnost-sozdavat-posty/) |
 | 261006-ck6 | создание опекуна через создать пользователя с опциональным прикреплением учеников | 2026-10-06 | 62e724a | [261006-ck6-sozdanie-opekuna-cherez-sozdat-polzovate](./quick/261006-ck6-sozdanie-opekuna-cherez-sozdat-polzovate/) |
 | 261004-hip | Move teacher 1-hour idle logout from frontend react-idle-timer to backend-enforced lastActiveAt; skip poll/SSE as activity; clear session and end lesson on idle; keep /login?reason=idle | 2026-10-04 | 73efcca | [261004-hip-move-teacher-1-hour-idle-logout-from-fro](./quick/261004-hip-move-teacher-1-hour-idle-logout-from-fro/) |
 | 261003-wy9 | Уведомление бухгалтеру при новой заявке (колокольчик + in-app/push) | 2026-10-03 | — | [261003-wy9-uvedomlenie-buhgalteru-pri-novoy-zayavke](./quick/261003-wy9-uvedomlenie-buhgalteru-pri-novoy-zayavke/) |
@@ -285,12 +286,13 @@ None yet.
 
 | quick_id | taiga_url |
 |----------|-----------|
+| 261006-cl7 | — |
 | 261006-ck6 | — |
 | 261003-wwx | — |
 
 ## Session Continuity
 
-Last activity: 2026-10-06 - Completed quick task 261006-ck6: создание опекуна через создать пользователя с опциональным прикреплением учеников
+Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
 Last session: 2026-09-16T19:25:00Z
 Stopped at: Completed 260916-v0w PLAN/SUMMARY
