@@ -201,7 +201,8 @@ export function UsersTable({
         title: "Код",
         dataIndex: "code",
         key: "code",
-        render: (code: string) => `••••${code.slice(-2)}`,
+        render: (code: string | undefined) =>
+          code ? `••••${code.slice(-2)}` : "—",
       },
       ...(!hideGroupColumn
         ? [

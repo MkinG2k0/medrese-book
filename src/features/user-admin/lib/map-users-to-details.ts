@@ -100,7 +100,7 @@ export function mapUsersToDetails(
 			createdAt: user.createdAt.toISOString(),
 			groupName: formatGroupNames(enrollments),
 			teacherGroupNames: user.teacher?.groups.map((group) => group.name),
-			children: user.children?.map((child) => ({
+			parentChildren: user.children?.map((child) => ({
 				id: child.id,
 				name: child.user.name,
 				groupName: child.enrollments[0]?.group.name,

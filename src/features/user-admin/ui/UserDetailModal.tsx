@@ -55,7 +55,7 @@ export type UserDetail = {
   createdAt: string;
   groupName?: string;
   teacherGroupNames?: string[];
-  children?: {
+  parentChildren?: {
     id: string;
     name: string;
     groupName?: string;
@@ -646,9 +646,9 @@ export function UserDetailModal({
 
                 {user.role === "PARENT" && (
                   <Form.Item label="Дети">
-                    {user.children && user.children.length > 0 ? (
+                    {user.parentChildren && user.parentChildren.length > 0 ? (
                       <ul className="m-0 flex list-none flex-col gap-1 p-0">
-                        {user.children.map((child) => (
+                        {user.parentChildren.map((child) => (
                           <li key={child.id}>
                             <Text>
                               {child.name}
