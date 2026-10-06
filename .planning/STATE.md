@@ -2,18 +2,17 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Система предметов
-current_phase: 0
 status: Awaiting next milestone
 stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-07-22T12:37:01.998Z"
-last_activity: 2026-07-22
-last_activity_desc: "fast: inputReadOnly на DatePicker"
+last_updated: "2026-10-06T06:58:42.682Z"
+last_activity: 2026-10-06
+last_activity_desc: "Completed quick task 261006-cl7: дай преподам возможность создавать посты"
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 27
   completed_plans: 27
-  percent: 100
+current_phase: 0
 current_phase_name: student-portal-extra-assignments
 ---
 
@@ -59,7 +58,6 @@ Phase: Milestone v2.0 complete
 Plan: —
 Status: Awaiting next milestone
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
-
 
 ## Performance Metrics
 
@@ -281,6 +279,7 @@ None yet.
 | 260723-2dd | Страница справки `/help`: инструкция и фичи для менеджера и учителя | 2026-07-23 | 3af4e93 | [260723-2dd-system-help-guide](./quick/260723-2dd-system-help-guide/) |
 | 260730-tvy | рядом с оценками за урок выводить среднее арифметическое | 2026-07-30 | d855f21 | — |
 | 260916-v0w | Касса платежей: быстрый ввод, массовая оплата, история/сторно, Excel | 2026-09-16 | aa4004a | [260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg](./quick/260916-v0w-kassa-platezhey-bystryy-vvod-tarifa-dolg/) |
+| 77 | список детей в карточке опекуна | 2026-10-06 | a087f38 | — |
 
 ### Quick Task Links
 
