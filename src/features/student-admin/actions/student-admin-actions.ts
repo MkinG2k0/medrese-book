@@ -151,10 +151,14 @@ export async function updateStudentProgress(studentId: string, input: unknown) {
 }
 
 export async function updateStudentStatus(studentId: string, input: unknown) {
-	const { session, student, enrollment } = await requireStudentEditAccess(studentId)
+	const { status, groupId } = updateStudentStatusSchema.parse(input)
+
+	const { session, student, enrollment } = await requireStudentEditAccess(
+		studentId,
+		groupId,
+	)
 	if (!student || !enrollment) throw new Error('Ученик не найден')
 
-	const { status } = updateStudentStatusSchema.parse(input)
 	const previousStatus = student.status
 
 	if (previousStatus === status) {

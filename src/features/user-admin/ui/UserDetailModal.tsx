@@ -469,6 +469,7 @@ export function UserDetailModal({
           localStepIndex: values.localStepIndex,
         });
         await updateStudentStatus(user.student!.id, {
+          groupId: resolvedGroupId,
           status: values.status,
         });
         router.refresh();
