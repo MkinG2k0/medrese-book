@@ -87,12 +87,17 @@ async function endActiveLessonForIdle(actorId: string, teacherId: string) {
 	})
 }
 
-function idleExpireResponse(request: NextRequest, from: string) {
+function idleExpireResponse(_request: NextRequest, from: string) {
 	if (from.startsWith('/api/')) {
 		return unauthorizedIdle()
 	}
 
-	return NextResponse.redirect(new URL(TEACHER_IDLE_LOGOUT_PATH, request.url))
+	// Relative Location: browser resolves against the client-facing origin
+	// (localhost / public host), not the server bind address (e.g. 0.0.0.0).
+	return new NextResponse(null, {
+		status: 307,
+		headers: {Location: TEACHER_IDLE_LOGOUT_PATH},
+	})
 }
 
 function clearTeacherLastActiveCookie(

@@ -118,8 +118,14 @@ export async function decideTeacherIdleAction(
 	}
 
 	const parsed = await parseTeacherLastActiveValue(raw, input.secret)
-	if (!parsed || parsed.userId !== input.userId) {
+	if (!parsed) {
 		return {action: 'expire'}
+	}
+
+	// JWT is source of truth after switchUser; re-bind cookie to current user
+	// instead of treating a leftover cookie for another teacher as idle expiry.
+	if (parsed.userId !== input.userId) {
+		return {action: shouldBump ? 'bump' : 'allow'}
 	}
 
 	if (input.nowMs - parsed.epochMs >= TEACHER_IDLE_TIMEOUT_MS) {

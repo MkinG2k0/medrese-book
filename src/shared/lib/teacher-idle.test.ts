@@ -217,13 +217,23 @@ describe('teacher-idle', () => {
 			expect(result.action).toBe('expire')
 		})
 
-		it('userId mismatch → expire', async () => {
+		it('userId mismatch + GET /journal → bump (re-init после switchUser)', async () => {
 			const result = await decideTeacherIdleAction(
 				decideInput({
 					cookieHeader: await cookieHeader('other-user-id', FRESH_TS),
 				}),
 			)
-			expect(result.action).toBe('expire')
+			expect(result.action).toBe('bump')
+		})
+
+		it('userId mismatch + пассивный GET → allow (как нет cookie)', async () => {
+			const result = await decideTeacherIdleAction(
+				decideInput({
+					cookieHeader: await cookieHeader('other-user-id', FRESH_TS),
+					pathname: '/api/notifications/unread-count',
+				}),
+			)
+			expect(result.action).toBe('allow')
 		})
 
 		it('нет cookie + GET /journal → bump (initialize)', async () => {
