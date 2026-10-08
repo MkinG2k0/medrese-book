@@ -32,6 +32,13 @@ COPY --from=deps /app/node_modules ./node_modules
 
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/dummy?sslmode=disable
 ENV DATABASE_URL=$DATABASE_URL
+# next/image remotePatterns are baked at build time from these
+ARG S3_ENDPOINT=https://storage.yandexcloud.net
+ARG S3_PUBLIC_URL=
+ARG S3_BUCKET=
+ENV S3_ENDPOINT=$S3_ENDPOINT
+ENV S3_PUBLIC_URL=$S3_PUBLIC_URL
+ENV S3_BUCKET=$S3_BUCKET
 ENV NODE_ENV=production
 
 COPY . .

@@ -57,6 +57,9 @@ function getS3RemotePatterns(): RemotePattern[] {
 
 	add(process.env.S3_PUBLIC_URL?.trim())
 	add(process.env.S3_ENDPOINT?.trim())
+	// Default Yandex Object Storage — next.config is evaluated at build time,
+	// so runtime-only S3_* env vars on Coolify would otherwise leave remotePatterns empty.
+	add('https://storage.yandexcloud.net')
 
 	const bucket = process.env.S3_BUCKET?.trim()
 	const region = process.env.AWS_REGION?.trim()
