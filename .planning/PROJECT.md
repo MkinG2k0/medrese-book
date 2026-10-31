@@ -10,16 +10,26 @@
 
 Учитель и менеджер видят реальный прогресс каждого ученика — что пройдено, сколько времени заняло обучение, где отстаёт — и могут вовремя вмешаться (допзадания, смена преподавателя, контроль нормативов).
 
-## Current State (v2.0 shipped)
+## Current Milestone: v3.0 Касса и долги по месяцам
 
-- **Предметы:** CRUD, программа (уровни → шаги) per subject, Tiptap-редактор
-- **Группы:** 1 группа = 1 предмет; many-to-many зачисление учеников
-- **Прогресс:** GroupEnrollment.currentStepIdx; recalculate/sync per groupId
-- **Сессии:** уникальность student + date + groupId
-- **Журнал:** выбор группы → прогресс и урок по предмету группы
-- **Аналитика:** селект предмета, метрики в subject scope
-- **Портал ученика:** дашборд per enrollment, groupId-навигация, история допзаданий по предметам
-- **Seed:** три демо-предмета (Коран, Таджвид, Арабский язык)
+**Goal:** Разделить кассу и бухгалтерию: кассир подтверждает только наличные, оплаты и долги ведутся по месяцам, колонка «Сальдо» убрана из UI.
+
+**Target features:**
+- Роль Кассир (только подтверждение наличных); бухгалтер — полный доступ
+- Заявка опекуна с одним месяцем на всю заявку; в селекте видны неоплаченные месяцы
+- Долг по месяцам виден бухгалтеру и кассиру
+- Убрать колонку «Сальдо» из таблицы платежей и Excel
+
+**Waves beyond v3.0 (backlog):**
+- v3.1 — формула ЗП (коэф., пунктуальность, аттестация, выходные), «Я пришёл/Завершить день», окна учителей
+- v3.2 — глобальные каникулы (отключение окон/прогулов/штрафов)
+- v3.3 — роль Партнёр (donation + итог), переписки менеджеров
+
+## Current State (v2.0 shipped + accounting brownfield)
+
+- **Предметы / группы / прогресс / журнал / аналитика / портал ученика** — v2.0
+- **Бухгалтерия (quick):** tuition charges/payments, заявки опекуна, salary accrual по часам×ставке, donations, ledger, month-close
+- **Роли:** SUPER_ADMIN, MANAGER, TEACHER, STUDENT, ACCOUNTANT (+ PARENT через quick); CASHIER/PARTNER — нет
 
 ## Requirements
 
@@ -35,19 +45,15 @@
 - ✓ SUBJ-01…SUBJ-18: мультипредметная модель — v2.0
 - ✓ Портал ученика: дашборд per enrollment, groupId-навигация, история допзаданий — v2.0 Phase 15
 - ✓ Допзадания subject-scoped: справочник, назначение на уроке, история по предмету — v2.0 Phase 15
+- ✓ Базовая бухгалтерия tuition/salary/donations (quick tasks) — existing brownfield
 
-### Active (next milestone — TBD via `/gsd-new-milestone`)
+### Active (v3.0)
 
-Кандидаты из v1.0 backlog (не вошли в v2.0):
+См. `.planning/REQUIREMENTS.md`:
 
-- Карточка ученика (STUD-02, STUD-03)
-- Статусы ученика расширенные (STUD-06, STUD-07) — частично через quick task
-- Безопасность: idle timeout, login/logout audit (SECU-01, SECU-02)
-- Централизованный student-progress module (FND-03)
-- dispatchDomainEvent fan-out (FND-04)
-- Аудит действий (AUDT-01…04) — частично через quick task
-- Аналитика преподавателя (TANL-01…04)
-- Чат (CHAT-01…03) — частично через quick task messenger
+- CASH-01…03 — роль кассира и границы доступа
+- TUITION-01…04 — месяц оплаты/долга для опекуна, бухгалтера, кассира
+- PAYUI-01…03 — убрать «Сальдо», сохранить статусы
 
 ### Out of Scope
 
@@ -56,25 +62,27 @@
 - S3-хранилище — локальные uploads достаточны (S3 quick task — env only)
 - Полная переработка дизайна — точечные UI-улучшения
 - Миграция старых completions — fresh start в v2.0 выполнен
+- Помощник руководителя — под вопросом, отдельное решение
+- Отдельная сущность «повышение квалификации» — слито с аттестацией (v3.1)
 
 ## Context
 
 **Tech stack:** Next.js 16, React 19, Ant Design, Tailwind, Prisma 7, PostgreSQL (Neon)
 
-**Техдолг после v2.0:**
+**Техдолг:**
 - API-авторизация разрозненная (middleware не покрывает все `/api/*`)
 - `next-auth@5.0.0-beta.30`, 6-значные коды без rate-limit
 - Legacy global currentStepIdx references в read-paths (см. CONCERNS.md)
 
-**Бэклог:** утверждён 2026-06-24; v2.0 закрыл SUBJ-01…18.
+**Источник требований v3.0:** переписка Камы 31.10.2026 + уточнения (месяц на заявку, кассир=наличные, волны).
 
 ## Constraints
 
 - **Tech stack**: сохранить Next.js 16 + Prisma + PostgreSQL + FSD
 - **Architecture**: новые фичи в `src/features/`
 - **Language**: UI и документация на русском
-- **Roles**: существующая модель ролей; супер-админ вне чата
-- **Data**: миграции через Prisma; не ломать существующие sessions/completions
+- **Roles**: расширять существующую модель ролей; супер-админ вне чата
+- **Data**: миграции через Prisma; не ломать существующие sessions/completions/tuition history
 - **Security**: закрыть известные уязвимости API (CONCERNS.md)
 
 ## Key Decisions
@@ -84,15 +92,25 @@
 | Программа — шаблон на предмет | Все группы по одному предмету делят одну программу | ✓ v2.0 |
 | Fresh start для v2.0 | Новая схема без миграции старых completions | ✓ v2.0 |
 | 1 группа = 1 предмет | Ученик в нескольких группах → несколько предметов | ✓ v2.0 |
-| Прогресс на GroupEnrollment (D-01) | Независимый прогress per зачисление | ✓ Phase 12 |
+| Прогресс на GroupEnrollment (D-01) | Независимый прогресс per зачисление | ✓ Phase 12 |
 | Subject scope через Step.level.subjectId | Без лишних FK на допзадания | ✓ Phase 15 |
 | groupId в URL журнала/портала | Единый контракт навигации | ✓ Phase 13, 15 |
-| Чат отложен из v1 | Фокус на обучении | — Pending |
+| Чат отложен из v1 | Фокус на обучении | — Pending / v3.3 manager chat |
 | Зачёт шагов при создании | syncCompletionsForProgress | ✓ Good |
+| v3.0 = только касса+месяцы (D-M5) | Волновый rollout бухгалтерии 3.0 | Active |
+| Один месяц на заявку опекуна (D-M1) | Проще UX и учёт | Locked |
+| Кассир только наличные (D-M2) | Разделение сбора и полного бухучёта | Locked |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
 
 **After each milestone** (via `/gsd-complete-milestone`):
 1. Full review of all sections
@@ -101,4 +119,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-12 after v2.0 milestone shipped*
+*Last updated: 2026-10-31 — milestone v3.0 started*

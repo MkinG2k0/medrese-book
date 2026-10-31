@@ -1,29 +1,26 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Система предметов
-status: Awaiting next milestone
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-10-06T06:58:42.682Z"
-last_activity: 2026-10-06
-last_activity_desc: "Completed quick task 261006-cl7: дай преподам возможность создавать посты"
+milestone: v3.0
+milestone_name: Касса и долги по месяцам
+status: planning
+last_updated: "2026-10-31T19:49:21.362Z"
+last_activity: 2026-10-31
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 27
-  completed_plans: 27
-current_phase: 0
-current_phase_name: student-portal-extra-assignments
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-12)
+See: .planning/PROJECT.md (updated 2026-10-31)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Planning next milestone — run `/gsd-new-milestone`
+**Current focus:** Milestone v3.0 — Касса и долги по месяцам (Phases 16–18)
 
 ## Deferred Items
 
@@ -54,10 +51,10 @@ Note: многие quick tasks фактически выполнены (см. Qu
 
 ## Current Position
 
-Phase: Milestone v2.0 complete
+Phase: 16 — Cashier role & access (next: `/gsd-plan-phase 16`)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
+Status: Roadmap ready — plan first phase
+Last activity: 2026-10-31 — Milestone v3.0 requirements + roadmap locked
 
 ## Performance Metrics
 
