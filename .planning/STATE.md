@@ -5,15 +5,15 @@ milestone_name: Касса и долги по месяцам
 current_phase: 17
 current_phase_name: Tuition month & unpaid visibility
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-11-05T18:08:00.000Z"
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-11-05T18:16:26.032Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 17-01 tuition month tracer (schema+Zod+confirm+monthPaid)
+last_activity_desc: Completed 17-03 debts page + payment-requests month (D-07…D-09)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 11
-  completed_plans: 4
+  total_plans: 12
+  completed_plans: 6
 ---
 
 # Project State
@@ -55,9 +55,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 17 — Tuition month & unpaid visibility
-Plan: 17-01 complete (1/4 plans) — next 17-02
-Status: Executing Phase 17 — month columns migrated (SQL committed; deploy via migrate:deploy), parent/confirm/create wired, monthPaid by payment.month
-Last activity: 2026-11-05 — Executed 17-01 (tuition month tracer)
+Plan: 17-03 complete (debts page); 17-01 done; 17-02 may still be in progress — next remaining incomplete plan / 17-04 E2E
+Status: Executing Phase 17 — /accounting/debts for ACCOUNTANT+CASHIER; payment-requests show month; monthPaid by payment.month
+Last activity: 2026-11-05 — Executed 17-03 (debts page + request month UI)
 
 ## Performance Metrics
 
@@ -120,6 +120,7 @@ Last activity: 2026-11-05 — Executed 17-01 (tuition month tracer)
 | Phase 16 P02 | 8min | 3 tasks | 8 files |
 | Phase 16 P03 | 18min | 3 tasks | 10 files |
 | Phase 17 P01 | 12min | 3 tasks | 14 files |
+| Phase 17 P03 | 8min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -198,6 +199,9 @@ Recent decisions affecting current work:
 - [Phase ?]: 16-03 E2E cashier-role.spec covers CASHIER vs ACCOUNTANT matrix
 - [Phase ?]: 17-01: apply-month-migration — expand SQL month columns with Moscow backfill (user pre-approved)
 - [Phase ?]: 17-01: confirm copies request.month from DB via paymentMonthFromRequest; monthPaid by payment.month
+- [Phase ?]: Path /accounting/debts + menu «Долги» for ACCOUNTANT and CASHIER
+- [Phase ?]: Split mapTuitionDebtRows from Prisma loader for DB-free unit tests
+- [Phase ?]: D-09: request.month display-only on list/confirm; schema unchanged
 
 ### Pending Todos
 
@@ -309,8 +313,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T18:06:28.117Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-11-05T18:16:25.981Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
