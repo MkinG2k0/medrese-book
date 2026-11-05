@@ -46,9 +46,9 @@ Brownfield. **v3.0** — первая волна обновления бухга
 **Plans:** 3 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates, seed 400002
-- [ ] 16-02-PLAN.md — Cash-only API/UI constraints, confirm/reject dual-role, hide reverse/export
-- [ ] 16-03-PLAN.md — Unit match-role-route matrix + e2e/cashier-role.spec.ts (D-M6)
+- [ ] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates
+- [ ] 16-02-PLAN.md — Cash-only API/UI + Vitest assertCashierCashMethod/canReverse
+- [ ] 16-03-PLAN.md — User-admin/seed 400002 + unit matrix + e2e/cashier-role.spec.ts (D-M6)
 
 ### Phase 17: Tuition month & unpaid visibility
 

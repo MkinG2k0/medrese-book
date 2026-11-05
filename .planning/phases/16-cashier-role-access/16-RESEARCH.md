@@ -486,15 +486,13 @@ Per `new-module-tests.mdc`:
 | A3 | Cashier is **not** a privileged switch-user role | can-switch-user | If managers need switch-into-cashier flows differently — extend later |
 | A4 | Payment-request created notifications stay ACCOUNTANT-only; cashier relies on badge | Notifications | Cashier may miss alerts without opening the page |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Reject заявки для кассира?**
-   - What we know: D-01 lists confirm CASH; reject not named; page shows both buttons.
-   - Recommendation: allow reject for CASHIER (UX); planner may flip to hide if product says no.
+1. **Reject заявки для кассира?** — **RESOLVED: yes**
+   - Cashier MAY reject payment requests (same as accountant for reject). Locked at plan-phase.
 
-2. **Settings in cashier menu?**
-   - What we know: D-03 says payments + payment-requests + shell exit/profile.
-   - Recommendation: include `/settings` only (like minimal shell); exclude news/messages.
+2. **Settings in cashier menu?** — **RESOLVED: yes (shell)**
+   - Include `/settings` in cashier AppShell menu; do NOT add news/messages unless already default for all roles.
 
 *(No other blockers — D-01…D-08 locked.)*
 
