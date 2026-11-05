@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 2
+open_count: 3
 waived_count: 0
 fixed_count: 0
-total_count: 2
-last_updated: 2026-10-06T06:20:06.125Z
+total_count: 3
+last_updated: 2026-11-05T18:55:57.451Z
 ---
 
 # Broken Windows Ledger
@@ -17,6 +17,7 @@ last_updated: 2026-10-06T06:20:06.125Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 261004-hip | unrun-verify | e2e/auth.spec.ts |  | Playwright e2e/auth.spec.ts not run: no .env.test/DB/server in worktree; config load TypeError | open |  | 2026-10-04T09:54:42.484Z |  |
 | 2 | 261006-cl7 | unrun-verify | e2e/posts.spec.ts |  | Playwright CLI cannot load playwright.config.ts in this agent shell (context.conditions?.includes is not a function); teacher/manager/student posts spec rewritten as planned | open |  | 2026-10-06T06:20:06.125Z |  |
+| 3 | 17 | unmet-truth | e2e/tuition-month.spec.ts |  | Visual UAT pending: gold Tag + debts table readability (human_needed) | open |  | 2026-11-05T18:55:57.451Z |  |
 
 ````json
 [
@@ -43,7 +44,20 @@ last_updated: 2026-10-06T06:20:06.125Z
     "reason": "",
     "recorded_at": "2026-10-06T06:20:06.125Z",
     "resolved_at": null
+  },
+  {
+    "id": 3,
+    "kind": "unmet-truth",
+    "phase": "17",
+    "file": "e2e/tuition-month.spec.ts",
+    "line": null,
+    "description": "Visual UAT pending: gold Tag + debts table readability (human_needed)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-05T18:55:57.451Z",
+    "resolved_at": null
   }
 ]
 ````
+
 
