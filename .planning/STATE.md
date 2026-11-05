@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Касса и долги по месяцам
-status: planning
-last_updated: "2026-10-31T19:49:21.362Z"
-last_activity: 2026-10-31
+status: plans_ready
+last_updated: "2026-11-05T16:10:00.000Z"
+last_activity: 2026-11-05
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -51,10 +51,10 @@ Note: многие quick tasks фактически выполнены (см. Qu
 
 ## Current Position
 
-Phase: 16 — Cashier role & access (next: `/gsd-plan-phase 16`)
-Plan: —
-Status: Roadmap ready — plan first phase
-Last activity: 2026-10-31 — Milestone v3.0 requirements + roadmap locked
+Phase: 16 — Cashier role & access
+Plan: 16-01 (next: `/gsd-execute-phase 16`)
+Status: Plans ready — 3 plans (waves 1–3); checkpoint on 16-01 for D-07 enum
+Last activity: 2026-11-05 — Phase 16 planned (CONTEXT + RESEARCH → PLAN)
 
 ## Performance Metrics
 

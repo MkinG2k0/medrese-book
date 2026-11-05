@@ -43,6 +43,13 @@ Brownfield. **v3.0** — первая волна обновления бухга
 4. Middleware / role routes не пускают кассира на ЗП, расходы, закрытие месяца и т.п.
 5. Есть автотесты на разграничение CASHIER vs ACCOUNTANT (E2E и/или unit route guards)
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates, seed 400002
+- [ ] 16-02-PLAN.md — Cash-only API/UI constraints, confirm/reject dual-role, hide reverse/export
+- [ ] 16-03-PLAN.md — Unit match-role-route matrix + e2e/cashier-role.spec.ts (D-M6)
+
 ### Phase 17: Tuition month & unpaid visibility
 
 **Goal:** Оплаты и долги привязаны к месяцу: один месяц на заявку опекуна; неоплаченные месяцы видны в селекте; бухгалтер и кассир видят долг по месяцам.
@@ -84,7 +91,7 @@ Brownfield. **v3.0** — первая волна обновления бухга
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
-| 16. Cashier role & access | v3.0 | 0/— | Pending | — |
+| 16. Cashier role & access | v3.0 | 0/3 | Planned | — |
 | 17. Tuition month & unpaid | v3.0 | 0/— | Pending | — |
 | 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
 
