@@ -110,7 +110,7 @@ Assignable CASHIER + seed `400002`, full longest-prefix unit matrix, and green P
 2. **Task 2: Extend match-role-route unit matrix for CASHIER** - `bee80f3` (test)
 3. **Task 3: Playwright e2e/cashier-role.spec.ts** - `2a3c739` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `47b35e5` (docs: complete plan)
 
 ## Files Created/Modified
 

@@ -4,16 +4,17 @@ milestone: v3.0
 milestone_name: Касса и долги по месяцам
 current_phase: 16
 current_phase_name: Cashier role & access
-status: executing
+status: phase_complete
 stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-11-05T13:47:36.201Z"
+last_updated: "2026-11-05T13:48:00.000Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 16-02 cashier cash API/UI guards
+last_activity_desc: Completed 16-03 seed/user-admin/E2E cashier matrix
 progress:
   total_phases: 1
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -55,9 +56,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 16 — Cashier role & access
-Plan: 16-03 (next after 16-02 SUMMARY)
-Status: 16-02 complete — cash-only API/UI guards landed; continue with 16-03 seed/E2E
-Last activity: 2026-11-05 — Executed 16-02 (assertCashierCashMethod + dual-role payments + UI lock)
+Plan: 16-03 complete (3/3 plans)
+Status: Phase 16 plans complete — seed 400002, user-admin CASHIER, unit+e2e green; ready for verify
+Last activity: 2026-11-05 — Executed 16-03 (seed/admin/E2E cashier matrix)
 
 ## Performance Metrics
 
