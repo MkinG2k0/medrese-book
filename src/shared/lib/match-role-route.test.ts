@@ -75,6 +75,30 @@ describe('matchRoleRouteAccess', () => {
 				matchRoleRouteAccess('/accounting/payment-requests', 'ACCOUNTANT'),
 			).toBe('allow')
 		})
+
+		it('CASHIER на /accounting/debts → allow', () => {
+			expect(matchRoleRouteAccess('/accounting/debts', 'CASHIER')).toBe(
+				'allow',
+			)
+		})
+
+		it('CASHIER на /accounting/debts/ → allow', () => {
+			expect(matchRoleRouteAccess('/accounting/debts/', 'CASHIER')).toBe(
+				'allow',
+			)
+		})
+
+		it('ACCOUNTANT на /accounting/debts → allow', () => {
+			expect(matchRoleRouteAccess('/accounting/debts', 'ACCOUNTANT')).toBe(
+				'allow',
+			)
+		})
+
+		it('TEACHER на /accounting/debts → deny', () => {
+			expect(matchRoleRouteAccess('/accounting/debts', 'TEACHER')).toBe(
+				'deny',
+			)
+		})
 	})
 
 	describe('analytics nested prefixes', () => {
