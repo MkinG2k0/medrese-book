@@ -1,6 +1,6 @@
 'use client'
 
-import { App, Button, Checkbox, Tag } from 'antd'
+import { App, Button, Checkbox, Select, Tag } from 'antd'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -15,9 +15,30 @@ import {
 	loadParentPayDraft,
 	saveParentPayDraft,
 } from '@/features/parent-portal/lib/parent-pay-draft'
+import {
+	currentMonthKey,
+	previousMonthKey,
+} from '@/shared/lib/accounting/month'
 import { formatMoney } from '@/shared/lib/money'
 import Text from '@/shared/ui/Text'
 import Title from '@/shared/ui/Title'
+
+function buildMonthOptions(count = 12): Array<{ value: string; label: string }> {
+	const options: Array<{ value: string; label: string }> = []
+	let cursor = currentMonthKey()
+	for (let i = 0; i < count; i += 1) {
+		const [year, month] = cursor.split('-')
+		options.push({
+			value: cursor,
+			label: new Date(Number(year), Number(month) - 1, 1).toLocaleDateString(
+				'ru-RU',
+				{ month: 'long', year: 'numeric' },
+			),
+		})
+		cursor = previousMonthKey(cursor)
+	}
+	return options
+}
 
 type ParentPayFormProps = {
 	parentUserId: string
@@ -44,7 +65,9 @@ export function ParentPayForm({
 	const [isPending, startTransition] = useTransition()
 	const [selectedIds, setSelectedIds] = useState<string[]>([])
 	const [amounts, setAmounts] = useState<Record<string, number | null>>({})
+	const [month, setMonth] = useState<string | null>(null)
 	const [hydrated, setHydrated] = useState(false)
+	const monthOptions = useMemo(() => buildMonthOptions(12), [])
 
 	useEffect(() => {
 		const draft = loadParentPayDraft(parentUserId)
@@ -72,12 +95,18 @@ export function ParentPayForm({
 					),
 				),
 			})
+			setMonth(
+				draft.month && monthOptions.some((option) => option.value === draft.month)
+					? draft.month
+					: currentMonthKey(),
+			)
 		} else {
 			setSelectedIds(paymentChildren.map((child) => child.studentId))
 			setAmounts(defaultAmounts)
+			setMonth(currentMonthKey())
 		}
 		setHydrated(true)
-	}, [parentUserId, paymentChildren])
+	}, [parentUserId, paymentChildren, monthOptions])
 
 	useEffect(() => {
 		if (!hydrated) return
@@ -89,8 +118,9 @@ export function ParentPayForm({
 						typeof entry[1] === 'number' && entry[1] > 0,
 				),
 			),
+			month: month ?? undefined,
 		})
-	}, [hydrated, parentUserId, selectedIds, amounts])
+	}, [hydrated, parentUserId, selectedIds, amounts, month])
 
 	const totalKopecks = useMemo(() => {
 		return selectedIds.reduce((sum, studentId) => {
@@ -108,6 +138,11 @@ export function ParentPayForm({
 	}
 
 	const handleSubmit = () => {
+		if (!month) {
+			message.error('Выберите месяц оплаты')
+			return
+		}
+
 		const lines = selectedIds
 			.map((studentId) => ({
 				studentId,
@@ -121,7 +156,7 @@ export function ParentPayForm({
 		}
 
 		startTransition(async () => {
-			const result = await submitParentPaymentRequest({ lines })
+			const result = await submitParentPaymentRequest({ month, lines })
 			if (!result.ok) {
 				message.error(result.error)
 				return
@@ -142,6 +177,17 @@ export function ParentPayForm({
 
 	return (
 		<div className="flex flex-col gap-6">
+			<div className="flex flex-col gap-2 sm:max-w-xs">
+				<Text>Месяц оплаты</Text>
+				<Select
+					value={month}
+					options={monthOptions}
+					placeholder="Выберите месяц"
+					onChange={(value) => setMonth(value)}
+					aria-label="Месяц оплаты"
+				/>
+			</div>
+
 			<div className="flex flex-col gap-3">
 				{paymentChildren.map((child) => {
 					const checked = selectedIds.includes(child.studentId)
@@ -195,7 +241,7 @@ export function ParentPayForm({
 					type="primary"
 					size="large"
 					loading={isPending}
-					disabled={totalKopecks <= 0}
+					disabled={totalKopecks <= 0 || !month}
 					onClick={handleSubmit}
 				>
 					Оплатить

@@ -1,4 +1,3 @@
-import { monthKeyToDateRange } from '@/shared/lib/accounting/month'
 import { primaryEnrollmentOrderBy } from '@/shared/lib/enrollment'
 import { prisma } from '@/shared/lib/prisma'
 
@@ -6,6 +5,7 @@ import {
 	computeStudentBalanceKopecks,
 	resolveStudentPaymentStatus,
 } from './compute-student-balance'
+import { sumPaidForAttributionMonth } from './month-paid-attribution'
 
 export type StudentPaymentRow = {
 	studentId: string
@@ -23,8 +23,6 @@ export async function queryStudentPaymentsForMonth(
 	month: string,
 	options: { debtorsOnly?: boolean } = {},
 ): Promise<StudentPaymentRow[]> {
-	const { start, end } = monthKeyToDateRange(month)
-
 	const students = await prisma.student.findMany({
 		where: { status: 'ACTIVE' },
 		include: {
@@ -35,7 +33,7 @@ export async function queryStudentPaymentsForMonth(
 				include: { group: { select: { name: true } } },
 			},
 			tuitionCharges: { select: { month: true, amount: true } },
-			tuitionPayments: { select: { date: true, amount: true } },
+			tuitionPayments: { select: { month: true, amount: true } },
 		},
 		orderBy: { user: { name: 'asc' } },
 	})
@@ -52,9 +50,10 @@ export async function queryStudentPaymentsForMonth(
 		const monthChargeKopecks =
 			student.tuitionCharges.find((charge) => charge.month === month)
 				?.amount ?? student.tuitionRate
-		const monthPaidKopecks = student.tuitionPayments
-			.filter((payment) => payment.date >= start && payment.date <= end)
-			.reduce((sum, payment) => sum + payment.amount, 0)
+		const monthPaidKopecks = sumPaidForAttributionMonth(
+			student.tuitionPayments,
+			month,
+		)
 		const balanceKopecks = computeStudentBalanceKopecks(
 			totalPayments,
 			totalCharges,

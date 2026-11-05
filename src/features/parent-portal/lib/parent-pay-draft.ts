@@ -3,6 +3,7 @@ const STORAGE_PREFIX = 'parent-pay-draft:'
 export type ParentPayDraft = {
 	selectedStudentIds: string[]
 	amountsKopecks: Record<string, number>
+	month?: string
 }
 
 export function loadParentPayDraft(parentUserId: string): ParentPayDraft | null {
@@ -28,6 +29,10 @@ export function loadParentPayDraft(parentUserId: string): ParentPayDraft | null 
 					([, value]) => typeof value === 'number' && Number.isFinite(value),
 				),
 			),
+			month:
+				typeof parsed.month === 'string' && /^\d{4}-\d{2}$/.test(parsed.month)
+					? parsed.month
+					: undefined,
 		}
 	} catch {
 		return null

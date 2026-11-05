@@ -150,7 +150,7 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 		const res = await fetch('/api/accounting/payments', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
+			body: JSON.stringify({ ...payload, month }),
 		})
 		const json = await res.json()
 		if (json.error) throw new Error(json.error)
@@ -293,6 +293,7 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
 							date: operationDate.format('YYYY-MM-DD'),
+							month,
 							method,
 							items: items.map(({ studentId, amountKopecks }) => ({
 								studentId,

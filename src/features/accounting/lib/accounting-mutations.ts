@@ -17,6 +17,7 @@ function parseOperationDate(dateStr: string): Date {
 export async function createTuitionPayment(input: {
 	studentId: string
 	date: string
+	month: string
 	amountKopecks: number
 	method: PaymentMethod
 	comment?: string
@@ -30,6 +31,7 @@ export async function createTuitionPayment(input: {
 			data: {
 				studentId: input.studentId,
 				date,
+				month: input.month,
 				amount: input.amountKopecks,
 				method: input.method,
 				comment: input.comment,
@@ -47,6 +49,7 @@ export async function createTuitionPayment(input: {
 					studentId: input.studentId,
 					amount: input.amountKopecks,
 					method: input.method,
+					month: input.month,
 				},
 			},
 			tx,
@@ -58,6 +61,7 @@ export async function createTuitionPayment(input: {
 
 export async function createTuitionPaymentsBatch(input: {
 	date: string
+	month: string
 	method: PaymentMethod
 	comment?: string
 	actorId: string
@@ -82,6 +86,7 @@ export async function createTuitionPaymentsBatch(input: {
 				data: {
 					studentId: item.studentId,
 					date,
+					month: input.month,
 					amount: item.amountKopecks,
 					method: input.method,
 					comment: input.comment,
@@ -99,6 +104,7 @@ export async function createTuitionPaymentsBatch(input: {
 						studentId: item.studentId,
 						amount: item.amountKopecks,
 						method: input.method,
+						month: input.month,
 						batch: true,
 					},
 				},
@@ -128,6 +134,7 @@ export async function reverseTuitionPayment(
 			data: {
 				studentId: original!.studentId,
 				date: new Date(),
+				month: original!.month,
 				amount: reversalAmount(original!.amount),
 				method: original!.method,
 				comment,
@@ -142,7 +149,7 @@ export async function reverseTuitionPayment(
 				action: 'TUITION_PAYMENT_REVERSED',
 				entityType: 'TuitionPayment',
 				entityId: reversal.id,
-				payload: { originalId: original!.id, comment },
+				payload: { originalId: original!.id, comment, month: original!.month },
 			},
 			tx,
 		)

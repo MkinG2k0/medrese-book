@@ -27,6 +27,7 @@ export const expenseCategorySchema = z.enum([
 export const createTuitionPaymentSchema = z.object({
 	studentId: z.string().min(1),
 	date: dateSchema,
+	month: monthSchema,
 	amountKopecks: positiveKopecksSchema,
 	method: paymentMethodSchema,
 	comment: z.string().trim().optional(),
@@ -34,6 +35,7 @@ export const createTuitionPaymentSchema = z.object({
 
 export const createTuitionPaymentsBatchSchema = z.object({
 	date: dateSchema,
+	month: monthSchema,
 	method: paymentMethodSchema,
 	comment: z.string().trim().optional(),
 	items: z
@@ -116,6 +118,7 @@ export const exportQuerySchema = z.object({
 })
 
 export const createTuitionPaymentRequestSchema = z.object({
+	month: monthSchema,
 	lines: z
 		.array(
 			z.object({

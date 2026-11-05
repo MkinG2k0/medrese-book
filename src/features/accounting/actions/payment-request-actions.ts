@@ -7,6 +7,7 @@ import {
 	MonthClosedError,
 	assertMonthOpenForDate,
 } from '@/features/accounting/lib/assert-month-open'
+import { paymentMonthFromRequest } from '@/features/accounting/lib/month-paid-attribution'
 import { toSessionDate } from '@/shared/lib/calendar-date'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
@@ -117,11 +118,14 @@ export async function confirmTuitionPaymentRequest(
 
 			const comment = `Заявка родителя: ${request.parent.name}`
 
+			const paymentMonth = paymentMonthFromRequest(request.month)
+
 			for (const line of request.lines) {
 				const payment = await tx.tuitionPayment.create({
 					data: {
 						studentId: line.studentId,
 						date,
+						month: paymentMonth,
 						amount: line.amount,
 						method: parsed.data.method,
 						comment,
@@ -144,6 +148,7 @@ export async function confirmTuitionPaymentRequest(
 							studentId: line.studentId,
 							amount: line.amount,
 							method: parsed.data.method,
+							month: paymentMonth,
 							requestId: request.id,
 						},
 					},

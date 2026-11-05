@@ -356,6 +356,7 @@ model TuitionPayment {
   studentId    String
   student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   date         DateTime
+  month        String
   amount       Int
   method       PaymentMethod
   comment      String?
@@ -368,6 +369,7 @@ model TuitionPayment {
   createdAt    DateTime      @default(now())
 
   @@index([studentId, date])
+  @@index([studentId, month])
   @@index([date])
 }
 
@@ -376,6 +378,7 @@ model TuitionPaymentRequest {
   parentId      String
   parent        User                         @relation("TuitionPaymentRequestParent", fields: [parentId], references: [id], onDelete: Cascade)
   status        TuitionPaymentRequestStatus  @default(PENDING)
+  month         String
   rejectReason  String?
   confirmedById String?
   confirmedBy   User?                        @relation("TuitionPaymentRequestConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
@@ -385,6 +388,7 @@ model TuitionPaymentRequest {
 
   @@index([parentId, status])
   @@index([status, createdAt])
+  @@index([month])
 }
 
 model TuitionPaymentRequestLine {

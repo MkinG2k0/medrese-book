@@ -138,6 +138,7 @@ export async function submitParentPaymentRequest(
 				data: {
 					parentId: session.user.id,
 					status: 'PENDING',
+					month: parsed.data.month,
 					lines: {
 						create: parsed.data.lines.map((line) => ({
 							studentId: line.studentId,
@@ -156,6 +157,7 @@ export async function submitParentPaymentRequest(
 					entityId: created.id,
 					payload: {
 						parentId: session.user.id,
+						month: parsed.data.month,
 						lines: parsed.data.lines,
 						date: getLocalDateString(),
 					},
