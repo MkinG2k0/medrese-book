@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { assertCashierCashMethod } from '@/features/accounting/lib/assert-cashier-cash-method'
 import {
 	MonthClosedError,
 	assertMonthOpenForDate,
@@ -10,11 +11,13 @@ import { toSessionDate } from '@/shared/lib/calendar-date'
 import { dispatchDomainEvent } from '@/shared/lib/domain-events'
 import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
 import { prisma } from '@/shared/lib/prisma'
-import { requireRole } from '@/shared/lib/session'
+import { requireRoles } from '@/shared/lib/session'
 import {
 	confirmTuitionPaymentRequestSchema,
 	rejectTuitionPaymentRequestSchema,
 } from '@/shared/lib/validations/accounting'
+
+const CASH_DESK_ROLES = ['ACCOUNTANT', 'CASHIER'] as const
 
 export type AccountantPaymentRequestRow = {
 	id: string
@@ -32,7 +35,7 @@ export type AccountantPaymentRequestRow = {
 export async function listPendingTuitionPaymentRequests(): Promise<
 	AccountantPaymentRequestRow[]
 > {
-	await requireRole('ACCOUNTANT')
+	await requireRoles([...CASH_DESK_ROLES])
 
 	const requests = await prisma.tuitionPaymentRequest.findMany({
 		where: { status: 'PENDING' },
@@ -74,10 +77,18 @@ export type AccountantRequestActionResult =
 export async function confirmTuitionPaymentRequest(
 	input: unknown,
 ): Promise<AccountantRequestActionResult> {
-	const session = await requireRole('ACCOUNTANT')
+	const session = await requireRoles([...CASH_DESK_ROLES])
 	const parsed = confirmTuitionPaymentRequestSchema.safeParse(input)
 	if (!parsed.success) {
 		return { ok: false, error: parsed.error.issues[0]?.message ?? 'Некорректные данные' }
+	}
+
+	const methodError = assertCashierCashMethod(
+		session.user.role,
+		parsed.data.method,
+	)
+	if (methodError) {
+		return { ok: false, error: methodError }
 	}
 
 	const date = toSessionDate(parsed.data.date)
@@ -184,7 +195,7 @@ export async function confirmTuitionPaymentRequest(
 export async function rejectTuitionPaymentRequest(
 	input: unknown,
 ): Promise<AccountantRequestActionResult> {
-	const session = await requireRole('ACCOUNTANT')
+	const session = await requireRoles([...CASH_DESK_ROLES])
 	const parsed = rejectTuitionPaymentRequestSchema.safeParse(input)
 	if (!parsed.success) {
 		return { ok: false, error: parsed.error.issues[0]?.message ?? 'Некорректные данные' }
