@@ -95,9 +95,9 @@ Plans:
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
-| 16. Cashier role & access | v3.0 | 2/3 | In Progress|  |
+| 16. Cashier role & access | v3.0 | 3/3 | Awaiting UAT |  |
 | 17. Tuition month & unpaid | v3.0 | 0/— | Pending | — |
 | 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
 
 ---
-*Last updated: 2026-11-01 — D-M7 UI-configurable salary params*
+*Last updated: 2026-11-05 — Phase 16 verified (implementation PASS, human_needed for E2E/UAT)*
