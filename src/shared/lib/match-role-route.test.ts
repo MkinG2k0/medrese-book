@@ -30,13 +30,49 @@ describe('matchRoleRouteAccess', () => {
 			)
 		})
 
+		it('CASHIER на /accounting/payment-requests → allow', () => {
+			expect(
+				matchRoleRouteAccess('/accounting/payment-requests', 'CASHIER'),
+			).toBe('allow')
+		})
+
 		it('CASHIER на /accounting → deny (без fall-through с payments)', () => {
 			expect(matchRoleRouteAccess('/accounting', 'CASHIER')).toBe('deny')
+		})
+
+		it('CASHIER на /accounting/salaries → deny', () => {
+			expect(matchRoleRouteAccess('/accounting/salaries', 'CASHIER')).toBe(
+				'deny',
+			)
+		})
+
+		it('CASHIER на /accounting/expenses → deny', () => {
+			expect(matchRoleRouteAccess('/accounting/expenses', 'CASHIER')).toBe(
+				'deny',
+			)
+		})
+
+		it('CASHIER на /accounting/ledger → deny', () => {
+			expect(matchRoleRouteAccess('/accounting/ledger', 'CASHIER')).toBe(
+				'deny',
+			)
+		})
+
+		it('CASHIER на /accounting/my-salary → deny', () => {
+			expect(matchRoleRouteAccess('/accounting/my-salary', 'CASHIER')).toBe(
+				'deny',
+			)
 		})
 
 		it('ACCOUNTANT на /accounting/payments → allow', () => {
 			expect(
 				matchRoleRouteAccess('/accounting/payments', 'ACCOUNTANT'),
+			).toBe('allow')
+		})
+
+		it('ACCOUNTANT на /accounting/payment-requests → allow', () => {
+			expect(
+				matchRoleRouteAccess('/accounting/payment-requests', 'ACCOUNTANT'),
 			).toBe('allow')
 		})
 	})
