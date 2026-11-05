@@ -5,16 +5,16 @@ milestone_name: Касса и долги по месяцам
 current_phase: 16
 current_phase_name: Cashier role & access
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-11-05T13:31:00.000Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-11-05T13:28:20.118Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 16-01 cashier Role.CASHIER access slice
+last_activity_desc: Completed 16-02 cashier cash API/UI guards
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -56,9 +56,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 16 — Cashier role & access
-Plan: 16-02 (next after 16-01 SUMMARY)
-Status: 16-01 complete — Role.CASHIER access slice landed; continue with 16-02 API/action guards
-Last activity: 2026-11-05 — Executed 16-01 (enum + ROLE_ROUTES + redirect + RSC + menu)
+Plan: 16-03 (next after 16-02 SUMMARY)
+Status: 16-02 complete — cash-only API/UI guards landed; continue with 16-03 seed/E2E
+Last activity: 2026-11-05 — Executed 16-02 (assertCashierCashMethod + dual-role payments + UI lock)
 
 ## Performance Metrics
 
@@ -118,6 +118,7 @@ Last activity: 2026-11-05 — Executed 16-01 (enum + ROLE_ROUTES + redirect + RS
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 16 P01 | 12min | 2 tasks | 11 files |
+| Phase 16 P02 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,8 @@ Last activity: 2026-11-05 — Executed 16-01 (enum + ROLE_ROUTES + redirect + RS
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 16]: Cash-only message: Кассир может проводить только наличные
+- [Phase 16]: Cashier UI: disabled Select with only CASH; history reverse via canReverseForActor
 - Roadmap: Phase 0 (foundation) обязателен до пользовательских фич
 - Roadmap: аналитика ученика (Phase 1) — ядро ценности; чат в Phase 7
 - Roadmap: security (idle timeout) отделён от substitution auth (Phase 4 vs 5)
@@ -190,6 +193,8 @@ Recent decisions affecting current work:
 - [Quick 260722-x84]: Teacher my-group modal edits level+step via updateStudentProgress; no contact example placeholders
 - [Phase ?]: Checkpoint add-cashier-enum: Role.CASHIER via ALTER TYPE ADD VALUE (D-07)
 - [Phase ?]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
+- [Phase ?]: Cash-only message: Кассир может проводить только наличные
+- [Phase ?]: Cashier UI: disabled Select with only CASH; history reverse via canReverseForActor
 
 ### Pending Todos
 
@@ -301,8 +306,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T13:23:20.249Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-11-05T13:28:20.103Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
