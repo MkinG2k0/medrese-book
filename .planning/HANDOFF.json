@@ -1,34 +1,32 @@
 {
   "version": "1.0",
-  "timestamp": "2026-11-05T18:30:00+03:00",
+  "timestamp": "2026-11-05T21:30:00+03:00",
   "milestone": "v3.0",
   "milestone_name": "Касса и долги по месяцам",
   "phase": "17",
   "phase_name": "Tuition month & unpaid visibility",
   "phase_dir": ".planning/phases/17-tuition-month-unpaid-visibility",
-  "status": "planned_awaiting_execute",
-  "next_action": "Start /gsd-execute-phase 17 (4 plans, 3 waves). Do not start Phase 18.",
-  "completed_phases": ["16"],
-  "remaining_phases": ["17", "18"],
+  "status": "phase_complete_awaiting_uat",
+  "next_action": "Optional visual UAT Phase 17 (reply approved); then /gsd-discuss-phase 18 or plan+execute Phase 18 Remove Saldo",
+  "completed_phases": ["16", "17"],
+  "remaining_phases": ["18"],
   "completed_work": [
-    "Phase 16 cashier complete",
-    "Phase 17 CONTEXT + RESEARCH + PATTERNS + VALIDATION + 4 PLANs + PLAN-CHECK PASSED"
+    "Phase 16 Cashier",
+    "Phase 17: month on request+payment, gold unpaid Select, /accounting/debts, E2E 16 passed, verification PASS / Awaiting UAT"
   ],
   "remaining_work": [
-    "Phase 17 execute: month on request/payment, unpaid yellow select, /accounting/debts, tests",
-    "Phase 18: remove Saldo column"
+    "Optional UAT Phase 17 visual",
+    "Phase 18: PAYUI-01..03 remove Saldo column UI+Excel"
   ],
   "decisions_locked": [
-    "D-M1 + D-01..03: month on request+payment; monthPaid by payment.month; Moscow backfill",
-    "D-04..06: yellow unpaid Select; OR aggregation across children",
-    "D-07..09: /accounting/debts for ACCOUNTANT+CASHIER; month on list+confirm UI",
-    "D-10: direct cash create requires month",
-    "D-11 / D-M6: unit+E2E same phase"
+    "D-M1 + month attribution by payment.month",
+    "Yellow unpaid Select; /accounting/debts for accountant+cashier",
+    "D-M6 tests same phase"
   ],
   "human_actions_pending": [
-    "Optional UAT Phase 16",
-    "After execute: migrate deploy + visual UAT gold Tag / debts"
+    "Visual UAT Phase 17 (gold Tag, debts table, cash month picker)",
+    "Prod/test: pnpm db:migrate:deploy for tuition month columns"
   ],
   "blockers": [],
-  "resume_prompt": "Execute Phase 17: /gsd-execute-phase 17. Read .planning/HANDOFF.json, 17-CONTEXT.md, 17-01..04-PLAN.md. Skip Phase 18 and v3.1 salary."
+  "resume_prompt": "After UAT: continue v3.0 Phase 18 Remove Saldo — /gsd-discuss-phase 18 then execute. Do not start v3.1 salary."
 }

@@ -105,8 +105,8 @@ Plans:
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
 | 16. Cashier role & access | v3.0 | 3/3 | Awaiting UAT |  |
-| 17. Tuition month & unpaid | v3.0 | 1/4 | In Progress|  |
+| 17. Tuition month & unpaid | v3.0 | 4/4 | Awaiting UAT |  |
 | 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
 
 ---
-*Last updated: 2026-11-05 — Phase 16 verified (implementation PASS, human_needed for E2E/UAT)*
+*Last updated: 2026-11-05 — Phase 17 verified (implementation PASS, human_needed for visual UAT)*
