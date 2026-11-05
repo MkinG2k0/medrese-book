@@ -4,16 +4,16 @@ milestone: v3.0
 milestone_name: Касса и долги по месяцам
 current_phase: 17
 current_phase_name: Tuition month & unpaid visibility
-status: executing
-stopped_at: Completed 17-04-PLAN.md
-last_updated: "2026-11-05T18:55:56.283Z"
+status: phase_complete_awaiting_verification
+stopped_at: Completed 17-04-PLAN.md — visual UAT human_needed
+last_updated: "2026-11-05T18:56:30.000Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 17-02 parent unpaid gold Select; 17-03 debts already done in parallel
+last_activity_desc: Completed 17-04 E2E tuition-month + cashier regression; visual UAT pending
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -55,9 +55,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 17 — Tuition month & unpaid visibility
-Plan: 17-01…17-03 complete — next 17-04 E2E
-Status: Executing Phase 17 — parent gold unpaid Select + debts page; remaining E2E
-Last activity: 2026-11-05 — Executed 17-02 (unpaid Select); 17-03 already complete
+Plan: 17-01…17-04 complete — awaiting phase verify + visual UAT
+Status: Phase 17 plans complete; human visual UAT (gold Tag + debts) pending
+Last activity: 2026-11-05 — Executed 17-04 E2E (16 passed on Node 22.22)
 
 ## Performance Metrics
 
