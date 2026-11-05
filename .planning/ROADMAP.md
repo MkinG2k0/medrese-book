@@ -68,10 +68,11 @@ Plans:
 
 **Depends on:** Phase 16 (кассир как актор для TUITION-04)
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
-- [ ] 17-01-PLAN.md — Tracer: month columns + migrate + parent/confirm/create + monthPaid by payment.month
+
+- [x] 17-01-PLAN.md — Tracer: month columns + migrate + parent/confirm/create + monthPaid by payment.month
 - [ ] 17-02-PLAN.md — Parent unpaid Select with gold Tag (D-04…D-06)
 - [ ] 17-03-PLAN.md — /accounting/debts dual-role + payment-requests month column
 - [ ] 17-04-PLAN.md — E2E tuition-month + cashier regression + visual UAT
@@ -104,7 +105,7 @@ Plans:
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
 | 16. Cashier role & access | v3.0 | 3/3 | Awaiting UAT |  |
-| 17. Tuition month & unpaid | v3.0 | 0/— | Pending | — |
+| 17. Tuition month & unpaid | v3.0 | 1/4 | In Progress |  |
 | 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
 
 ---

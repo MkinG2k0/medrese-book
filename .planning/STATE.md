@@ -2,19 +2,18 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Касса и долги по месяцам
-current_phase: 16
-current_phase_name: Cashier role & access
-status: phase_complete
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-11-05T13:48:00.000Z"
+current_phase: 17
+current_phase_name: Tuition month & unpaid visibility
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-11-05T18:08:00.000Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 16-03 seed/user-admin/E2E cashier matrix
+last_activity_desc: Completed 17-01 tuition month tracer (schema+Zod+confirm+monthPaid)
 progress:
-  total_phases: 1
+  total_phases: 3
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_plans: 11
+  completed_plans: 4
 ---
 
 # Project State
@@ -55,10 +54,10 @@ Note: многие quick tasks фактически выполнены (см. Qu
 
 ## Current Position
 
-Phase: 16 — Cashier role & access
-Plan: 16-03 complete (3/3 plans)
-Status: Phase 16 plans complete — seed 400002, user-admin CASHIER, unit+e2e green; ready for verify
-Last activity: 2026-11-05 — Executed 16-03 (seed/admin/E2E cashier matrix)
+Phase: 17 — Tuition month & unpaid visibility
+Plan: 17-01 complete (1/4 plans) — next 17-02
+Status: Executing Phase 17 — month columns migrated (SQL committed; deploy via migrate:deploy), parent/confirm/create wired, monthPaid by payment.month
+Last activity: 2026-11-05 — Executed 17-01 (tuition month tracer)
 
 ## Performance Metrics
 
@@ -120,6 +119,7 @@ Last activity: 2026-11-05 — Executed 16-03 (seed/admin/E2E cashier matrix)
 | Phase 16 P01 | 12min | 2 tasks | 11 files |
 | Phase 16 P02 | 8min | 3 tasks | 8 files |
 | Phase 16 P03 | 18min | 3 tasks | 10 files |
+| Phase 17 P01 | 12min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -196,6 +196,8 @@ Recent decisions affecting current work:
 - [Phase 16]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
 - [Phase ?]: Seed cashier 400002; requireRole wrong-role → getDefaultRedirect
 - [Phase ?]: 16-03 E2E cashier-role.spec covers CASHIER vs ACCOUNTANT matrix
+- [Phase ?]: 17-01: apply-month-migration — expand SQL month columns with Moscow backfill (user pre-approved)
+- [Phase ?]: 17-01: confirm copies request.month from DB via paymentMonthFromRequest; monthPaid by payment.month
 
 ### Pending Todos
 
@@ -307,8 +309,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T13:47:36.187Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-11-05T18:06:28.117Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
