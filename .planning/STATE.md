@@ -2,15 +2,18 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Касса и долги по месяцам
+current_phase: 16
+current_phase_name: Cashier role & access
 status: plans_ready
-last_updated: "2026-11-05T16:10:00.000Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-11-05T13:23:20.263Z"
 last_activity: 2026-11-05
+last_activity_desc: Phase 16 planned (CONTEXT + RESEARCH → PLAN)
 progress:
-  total_phases: 3
+  total_phases: 1
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
 ---
 
 # Project State
@@ -109,6 +112,11 @@ Last activity: 2026-11-05 — Phase 16 planned (CONTEXT + RESEARCH → PLAN)
 | Phase 15 P01 | 8min | 3 tasks | 6 files |
 | Phase 15 P02 | 12min | 3 tasks | 5 files |
 | Phase 15 P03 | 15min | 3 tasks | 11 files |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 16 P01 | 12min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -179,6 +187,8 @@ Recent decisions affecting current work:
 - [Quick 260718-3fl]: StepForm reuse StepPdfViewer при pdfUrl; key={pdfUrl} для remount после replace
 - [Quick 260722-lca]: PostType GENERAL|SYSTEM; STUDENT filtered from SYSTEM list/get/like and SYSTEM POST_PUBLISHED
 - [Quick 260722-x84]: Teacher my-group modal edits level+step via updateStudentProgress; no contact example placeholders
+- [Phase ?]: Checkpoint add-cashier-enum: Role.CASHIER via ALTER TYPE ADD VALUE (D-07)
+- [Phase ?]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
 
 ### Pending Todos
 
@@ -290,8 +300,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-09-16T19:25:00Z
-Stopped at: Completed 260916-v0w PLAN/SUMMARY
+Last session: 2026-11-05T13:23:20.249Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

@@ -11,9 +11,9 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 
 ### Roles & cash desk
 
-- [ ] **CASH-01**: В системе есть роль **Кассир** (`CASHIER`) с доступом к сценариям приёма/подтверждения наличных
+- [x] **CASH-01**: В системе есть роль **Кассир** (`CASHIER`) с доступом к сценариям приёма/подтверждения наличных
 - [ ] **CASH-02**: Кассир может **только подтверждать наличные** платежи; остальные бухгалтерские операции ему недоступны
-- [ ] **CASH-03**: Бухгалтер (`ACCOUNTANT`) сохраняет **полный доступ** ко всем операциям бухгалтерии (включая то, что делает кассир)
+- [x] **CASH-03**: Бухгалтер (`ACCOUNTANT`) сохраняет **полный доступ** ко всем операциям бухгалтерии (включая то, что делает кассир)
 
 ### Tuition by month
 
@@ -92,9 +92,9 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CASH-01 | Phase 16 | Pending |
+| CASH-01 | Phase 16 | Complete |
 | CASH-02 | Phase 16 | Pending |
-| CASH-03 | Phase 16 | Pending |
+| CASH-03 | Phase 16 | Complete |
 | TUITION-01 | Phase 17 | Pending |
 | TUITION-02 | Phase 17 | Pending |
 | TUITION-03 | Phase 17 | Pending |
@@ -110,6 +110,7 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 | SAL-CFG-02 | v3.1 (future) | Deferred |
 
 **Coverage:**
+
 - v3.0 requirements: 12 actionable (10 feature + TEST-01/04); TEST-02/03 в future v3.1
 - Mapped to phases: 12
 - Unmapped: 0

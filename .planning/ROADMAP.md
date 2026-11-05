@@ -37,16 +37,18 @@ Brownfield. **v3.0** — первая волна обновления бухга
 **Requirements:** CASH-01, CASH-02, CASH-03, TEST-01 (часть), TEST-04
 
 **Success criteria:**
+
 1. Можно создать пользователя с ролью Кассир и войти под ним
 2. Кассир видит только разрешённые экраны/действия подтверждения наличных; остальные accounting-мутации запрещены (UI + API)
 3. Бухгалтер по-прежнему может выполнять все операции бухгалтерии, включая подтверждение наличных
 4. Middleware / role routes не пускают кассира на ЗП, расходы, закрытие месяца и т.п.
 5. Есть автотесты на разграничение CASHIER vs ACCOUNTANT (E2E и/или unit route guards)
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates
+
+- [x] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates
 - [ ] 16-02-PLAN.md — Cash-only API/UI + Vitest assertCashierCashMethod/canReverse
 - [ ] 16-03-PLAN.md — User-admin/seed 400002 + unit matrix + e2e/cashier-role.spec.ts (D-M6)
 
@@ -57,6 +59,7 @@ Plans:
 **Requirements:** TUITION-01, TUITION-02, TUITION-03, TUITION-04, TEST-01 (часть), TEST-04
 
 **Success criteria:**
+
 1. Заявка опекуна сохраняет одно поле месяца на всю заявку (все дети — тот же месяц)
 2. В селекте месяца на экране оплаты отмечены / выделены неоплаченные месяцы
 3. Бухгалтер на платежах/долгах видит, за какой месяц долг
@@ -72,6 +75,7 @@ Plans:
 **Requirements:** PAYUI-01, PAYUI-02, PAYUI-03, TEST-01 (часть), TEST-04
 
 **Success criteria:**
+
 1. В UI таблицы платежей нет колонки «Сальдо»
 2. Excel-экспорт платежей не содержит колонку «Сальдо»
 3. Бейджи/статусы (Аванс, Оплачено, Долг и т.п.) по-прежнему отображаются и читаемы без сальдо
@@ -91,7 +95,7 @@ Plans:
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
-| 16. Cashier role & access | v3.0 | 0/3 | Planned | — |
+| 16. Cashier role & access | v3.0 | 0/3 | In Progress|  |
 | 17. Tuition month & unpaid | v3.0 | 0/— | Pending | — |
 | 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
 
