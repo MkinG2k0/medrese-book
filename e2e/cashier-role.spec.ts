@@ -17,6 +17,7 @@ test.describe("Роль кассира", () => {
     await expect(
       page.getByRole("menuitem", { name: "Заявки на оплату" }),
     ).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Долги" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Бухгалтерия" })).toHaveCount(
       0,
     );

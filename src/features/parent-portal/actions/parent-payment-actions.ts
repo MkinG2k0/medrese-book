@@ -48,8 +48,7 @@ export async function getParentPaymentPageData(): Promise<ParentPaymentPageData>
 				id: true,
 				fullName: true,
 				tuitionRate: true,
-				createdAt: true,
-				user: { select: { name: true } },
+				user: { select: { name: true, createdAt: true } },
 				enrollments: {
 					select: {
 						enrolledAt: true,
@@ -101,8 +100,3 @@ export async function getParentPaymentPageData(): Promise<ParentPaymentPageData>
 		})),
 	}
 }
-
-export {
-	submitParentPaymentRequest,
-	type SubmitParentPaymentResult,
-} from './submit-parent-payment-request'

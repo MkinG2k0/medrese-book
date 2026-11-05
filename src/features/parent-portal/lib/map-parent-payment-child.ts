@@ -9,8 +9,7 @@ export type ParentPaymentChildSource = {
 	id: string
 	fullName: string | null
 	tuitionRate: number
-	createdAt: Date
-	user: { name: string }
+	user: { name: string; createdAt: Date }
 	enrollments: Array<{
 		enrolledAt: Date
 		group: { name: string }
@@ -40,7 +39,7 @@ export function mapParentPaymentChild(
 		enrollmentMonthKeys: child.enrollments.map((enrollment) =>
 			moscowMonthKey(enrollment.enrolledAt),
 		),
-		fallbackMonth: moscowMonthKey(child.createdAt),
+		fallbackMonth: moscowMonthKey(child.user.createdAt),
 	})
 
 	return {

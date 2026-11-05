@@ -47,6 +47,8 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 	const [rejectOpen, setRejectOpen] = useState(false)
 	const [rejectRequestId, setRejectRequestId] = useState<string | null>(null)
 	const [rejectReason, setRejectReason] = useState('')
+	// Avoid race: session may load after first paint; cashier must never submit TRANSFER
+	const submitMethod: PaymentMethod = isCashier ? 'CASH' : method
 
 	useEffect(() => {
 		if (isCashier) setMethod('CASH')
@@ -118,24 +120,19 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 									content: `Месяц заявки: ${row.month}. Будут созданы платежи на ${formatMoney(row.totalKopecks)} за ${row.lines.length} дет.`,
 									okText: 'Подтвердить',
 									cancelText: 'Отмена',
-									onOk: () =>
-										new Promise<void>((resolve, reject) => {
-											startTransition(async () => {
-												const result = await confirmTuitionPaymentRequest({
-													requestId: row.id,
-													date: operationDate.format('YYYY-MM-DD'),
-													method,
-												})
-												if (!result.ok) {
-													message.error(result.error)
-													reject(new Error(result.error))
-													return
-												}
-												message.success('Заявка подтверждена')
-												router.refresh()
-												resolve()
-											})
-										}),
+									onOk: async () => {
+										const result = await confirmTuitionPaymentRequest({
+											requestId: row.id,
+											date: operationDate.format('YYYY-MM-DD'),
+											method: submitMethod,
+										})
+										if (!result.ok) {
+											message.error(result.error)
+											throw new Error(result.error)
+										}
+										message.success('Заявка подтверждена')
+										router.refresh()
+									},
 								})
 							}}
 						>
@@ -156,7 +153,7 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 				),
 			},
 		],
-		[isPending, message, method, modal, operationDate, router],
+		[isPending, message, modal, operationDate, router, submitMethod],
 	)
 
 	return (
