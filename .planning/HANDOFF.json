@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-11-05T17:46:00+03:00",
+  "milestone": "v3.0",
+  "milestone_name": "Касса и долги по месяцам",
+  "phase": "16",
+  "phase_name": "Cashier role & access",
+  "phase_dir": ".planning/phases/16-cashier-role-access",
+  "status": "phase_complete_awaiting_next",
+  "next_action": "Start Phase 17 — discuss/plan then execute (tuition month & unpaid visibility)",
+  "completed_phases": ["16"],
+  "remaining_phases": ["17", "18"],
+  "completed_work": [
+    "Phase 16 plans 01–03 executed: Role.CASHIER, cash-only guards, seed 400002, unit+e2e",
+    "Verification: implementation PASS, Awaiting UAT (16-VERIFICATION.md)"
+  ],
+  "remaining_work": [
+    "Phase 17: TUITION-01..04 — one month per parent payment request; unpaid months in selector; debt by month for accountant+cashier; tests",
+    "Phase 18: PAYUI-01..03 — remove Saldo column UI+Excel"
+  ],
+  "decisions_locked": [
+    "D-M1: one month for entire parent payment request",
+    "D-M2: cashier cash only; accountant full access",
+    "D-M6: tests required same phase",
+    "D-M7: salary params UI — deferred to v3.1"
+  ],
+  "human_actions_pending": [
+    "Optional UAT Phase 16 (cashier 400002)",
+    "Prod: pnpm db:migrate:deploy for Role.CASHIER before deploy"
+  ],
+  "blockers": [],
+  "resume_prompt": "Continue v3.0: /gsd-discuss-phase 17 or /gsd-plan-phase 17 then execute. Read .planning/HANDOFF.json, REQUIREMENTS.md TUITION-*, ROADMAP Phase 17, and Phase 16 CONTEXT/SUMMARYs for cashier integration."
+}
