@@ -255,6 +255,11 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
   MANAGER: managerMenuOrder,
   SUPER_ADMIN: managerMenuOrder,
   ACCOUNTANT: [...accountantMenuOrder, "/news", "/messages", "/settings"],
+  CASHIER: [
+    "/accounting/payments",
+    "/accounting/payment-requests",
+    "/settings",
+  ],
   STUDENT: [
     "/student/me",
     "/student/lessons",

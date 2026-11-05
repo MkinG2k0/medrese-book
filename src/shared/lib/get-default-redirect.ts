@@ -13,6 +13,8 @@ export function getDefaultRedirect(role: UserRole): string {
 			return '/admin/users'
 		case 'ACCOUNTANT':
 			return '/accounting'
+		case 'CASHIER':
+			return '/accounting/payments'
 		default:
 			return '/dashboard'
 	}

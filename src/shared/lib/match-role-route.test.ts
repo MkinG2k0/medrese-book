@@ -23,6 +23,22 @@ describe('matchRoleRouteAccess', () => {
 				matchRoleRouteAccess('/accounting/my-salary', 'ACCOUNTANT'),
 			).toBe('deny')
 		})
+
+		it('CASHIER на /accounting/payments → allow', () => {
+			expect(matchRoleRouteAccess('/accounting/payments', 'CASHIER')).toBe(
+				'allow',
+			)
+		})
+
+		it('CASHIER на /accounting → deny (без fall-through с payments)', () => {
+			expect(matchRoleRouteAccess('/accounting', 'CASHIER')).toBe('deny')
+		})
+
+		it('ACCOUNTANT на /accounting/payments → allow', () => {
+			expect(
+				matchRoleRouteAccess('/accounting/payments', 'ACCOUNTANT'),
+			).toBe('allow')
+		})
 	})
 
 	describe('analytics nested prefixes', () => {

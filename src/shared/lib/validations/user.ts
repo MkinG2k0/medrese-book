@@ -47,6 +47,7 @@ const userRoleSchema = z.enum([
 	'STUDENT',
 	'ACCOUNTANT',
 	'PARENT',
+	'CASHIER',
 ])
 
 const createUserEntrySchema = z.object({

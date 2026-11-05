@@ -1,9 +1,9 @@
 import { listPendingTuitionPaymentRequests } from '@/features/accounting/actions/payment-request-actions'
 import { PaymentRequestsPage } from '@/features/accounting/ui/PaymentRequestsPage'
-import { requireRole } from '@/shared/lib/session'
+import { requireRoles } from '@/shared/lib/session'
 
 export default async function AccountingPaymentRequestsPage() {
-	await requireRole('ACCOUNTANT')
+	await requireRoles(['ACCOUNTANT', 'CASHIER'])
 	const requests = await listPendingTuitionPaymentRequests()
 	return <PaymentRequestsPage requests={requests} />
 }
