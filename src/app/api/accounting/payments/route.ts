@@ -6,15 +6,15 @@ import {
 	monthQuerySchema,
 } from '@/shared/lib/validations/accounting'
 
-import {
-	createTuitionPayment,
-	reverseTuitionPayment,
-} from '@/features/accounting/lib/accounting-mutations'
+import { createTuitionPayment } from '@/features/accounting/lib/accounting-mutations'
+import { assertCashierCashMethod } from '@/features/accounting/lib/assert-cashier-cash-method'
 import { queryStudentPaymentsForMonth } from '@/features/accounting/lib/query-student-payments'
 import { MonthClosedError } from '@/features/accounting/lib/assert-month-open'
 
+const CASH_DESK_ROLES = ['ACCOUNTANT', 'CASHIER'] as const
+
 export async function GET(request: Request) {
-	const auth = await authorizeApiRequest({ allowedRoles: ['ACCOUNTANT'] })
+	const auth = await authorizeApiRequest({ allowedRoles: [...CASH_DESK_ROLES] })
 	if ('error' in auth) return auth.error
 
 	try {
@@ -35,13 +35,19 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-	const auth = await authorizeApiRequest({ allowedRoles: ['ACCOUNTANT'] })
+	const auth = await authorizeApiRequest({ allowedRoles: [...CASH_DESK_ROLES] })
 	if ('error' in auth) return auth.error
 
 	try {
 		const body = await request.json()
 		const parsed = createTuitionPaymentSchema.safeParse(body)
 		if (!parsed.success) return error(parsed.error.message)
+
+		const methodError = assertCashierCashMethod(
+			auth.session.user.role,
+			parsed.data.method,
+		)
+		if (methodError) return error(methodError, 403)
 
 		const payment = await createTuitionPayment({
 			...parsed.data,

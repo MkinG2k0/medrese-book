@@ -3,16 +3,25 @@ import { created, error, serverError } from '@/shared/api'
 import { createTuitionPaymentsBatchSchema } from '@/shared/lib/validations/accounting'
 
 import { createTuitionPaymentsBatch } from '@/features/accounting/lib/accounting-mutations'
+import { assertCashierCashMethod } from '@/features/accounting/lib/assert-cashier-cash-method'
 import { MonthClosedError } from '@/features/accounting/lib/assert-month-open'
 
 export async function POST(request: Request) {
-	const auth = await authorizeApiRequest({ allowedRoles: ['ACCOUNTANT'] })
+	const auth = await authorizeApiRequest({
+		allowedRoles: ['ACCOUNTANT', 'CASHIER'],
+	})
 	if ('error' in auth) return auth.error
 
 	try {
 		const body = await request.json()
 		const parsed = createTuitionPaymentsBatchSchema.safeParse(body)
 		if (!parsed.success) return error(parsed.error.message)
+
+		const methodError = assertCashierCashMethod(
+			auth.session.user.role,
+			parsed.data.method,
+		)
+		if (methodError) return error(methodError, 403)
 
 		const payments = await createTuitionPaymentsBatch({
 			...parsed.data,

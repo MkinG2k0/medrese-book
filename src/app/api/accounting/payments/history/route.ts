@@ -2,6 +2,7 @@ import { authorizeApiRequest } from '@/shared/lib/authorize-api-request'
 import { error, success, serverError } from '@/shared/api'
 import { z } from 'zod'
 
+import { canReverseForActor } from '@/features/accounting/lib/assert-cashier-cash-method'
 import { queryStudentPaymentHistory } from '@/features/accounting/lib/query-student-payment-history'
 
 const historyQuerySchema = z.object({
@@ -9,7 +10,9 @@ const historyQuerySchema = z.object({
 })
 
 export async function GET(request: Request) {
-	const auth = await authorizeApiRequest({ allowedRoles: ['ACCOUNTANT'] })
+	const auth = await authorizeApiRequest({
+		allowedRoles: ['ACCOUNTANT', 'CASHIER'],
+	})
 	if ('error' in auth) return auth.error
 
 	try {
@@ -20,7 +23,14 @@ export async function GET(request: Request) {
 		if (!parsed.success) return error(parsed.error.message)
 
 		const data = await queryStudentPaymentHistory(parsed.data.studentId)
-		return success(data)
+		const role = auth.session.user.role
+		return success({
+			...data,
+			items: data.items.map((item) => ({
+				...item,
+				canReverse: canReverseForActor(role, item.canReverse),
+			})),
+		})
 	} catch (err) {
 		if (err instanceof Error) return error(err.message)
 		return serverError(err)
