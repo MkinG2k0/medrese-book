@@ -452,17 +452,17 @@ const payment = await tx.tuitionPayment.create({
 
 **If A1 needs lock:** planner can add a one-line decision in PLAN.md Wave 0.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Unpaid aggregation across multiple children**
+1. **Unpaid aggregation across multiple children** (RESOLVED)
    - What we know: D-06 says payments for selected children vs charge; partial unpaid.
-   - What's unclear: any-child vs sum-of-selected.
-   - Recommendation: any-child unpaid ⇒ yellow (A1); note in PLAN.
+   - Decision: any-child unpaid ⇒ yellow (OR / A1). Locked in 17-02-PLAN and CONTEXT discretion.
+   - RESOLVED: 2026-11-05 via plan-check fix + 17-02.
 
-2. **E2E Node version on research machine**
+2. **E2E Node version on research machine** (RESOLVED)
    - What we know: Phase 16 verification flagged Playwright failure on Node v22.15 (`context.conditions`). [VERIFIED: .planning/phases/16-cashier-role-access/16-VERIFICATION.md:13-18]
-   - What's unclear: CI Node version for Phase 17 E2E gate.
-   - Recommendation: run E2E on Node ≥22.22 where possible; still author specs this phase.
+   - Decision: author E2E specs this phase (17-04); run gate on Node ≥22.22 where possible; document Node caveat in SUMMARY if local gate blocked.
+   - RESOLVED: 2026-11-05 via 17-04-PLAN + plan-check.
 
 ## Environment Availability
 
