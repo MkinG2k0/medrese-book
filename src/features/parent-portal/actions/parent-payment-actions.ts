@@ -1,17 +1,18 @@
 'use server'
 
-import { getLocalDateString } from '@/shared/lib/calendar-date'
-import { dispatchDomainEvent } from '@/shared/lib/domain-events'
-import { deliverNotifications } from '@/shared/lib/notifications/deliver-notifications'
+import { mapParentPaymentChild } from '@/features/parent-portal/lib/map-parent-payment-child'
+import { moscowMonthKey } from '@/shared/lib/moscow-date'
 import { prisma } from '@/shared/lib/prisma'
 import { requireRole } from '@/shared/lib/session'
-import { createTuitionPaymentRequestSchema } from '@/shared/lib/validations/accounting'
 
 export type ParentPaymentChild = {
 	studentId: string
 	name: string
 	tuitionRateKopecks: number
 	groupNames: string[]
+	earliestMonth: string
+	chargesByMonth: Record<string, number>
+	paidByMonth: Record<string, number>
 }
 
 export type ParentPaymentRequestSummary = {
@@ -35,6 +36,7 @@ export type ParentPaymentPageData = {
 
 export async function getParentPaymentPageData(): Promise<ParentPaymentPageData> {
 	const session = await requireRole('PARENT')
+	const currentMonth = moscowMonthKey()
 
 	const [children, requests] = await Promise.all([
 		prisma.student.findMany({
@@ -46,11 +48,17 @@ export async function getParentPaymentPageData(): Promise<ParentPaymentPageData>
 				id: true,
 				fullName: true,
 				tuitionRate: true,
+				createdAt: true,
 				user: { select: { name: true } },
 				enrollments: {
-					select: { group: { select: { name: true } } },
+					select: {
+						enrolledAt: true,
+						group: { select: { name: true } },
+					},
 					orderBy: { enrolledAt: 'asc' },
 				},
+				tuitionCharges: { select: { month: true, amount: true } },
+				tuitionPayments: { select: { month: true, amount: true } },
 			},
 			orderBy: { user: { name: 'asc' } },
 		}),
@@ -76,12 +84,9 @@ export async function getParentPaymentPageData(): Promise<ParentPaymentPageData>
 
 	return {
 		parentUserId: session.user.id,
-		children: children.map((child) => ({
-			studentId: child.id,
-			name: child.fullName?.trim() || child.user.name,
-			tuitionRateKopecks: child.tuitionRate,
-			groupNames: child.enrollments.map((enrollment) => enrollment.group.name),
-		})),
+		children: children.map((child) =>
+			mapParentPaymentChild(child, currentMonth),
+		),
 		requests: requests.map((request) => ({
 			id: request.id,
 			status: request.status,
@@ -97,87 +102,7 @@ export async function getParentPaymentPageData(): Promise<ParentPaymentPageData>
 	}
 }
 
-export type SubmitParentPaymentResult =
-	| { ok: true; requestId: string }
-	| { ok: false; error: string }
-
-export async function submitParentPaymentRequest(
-	input: unknown,
-): Promise<SubmitParentPaymentResult> {
-	const session = await requireRole('PARENT')
-
-	const parsed = createTuitionPaymentRequestSchema.safeParse(input)
-	if (!parsed.success) {
-		return { ok: false, error: parsed.error.issues[0]?.message ?? 'Некорректные данные' }
-	}
-
-	const studentIds = [...new Set(parsed.data.lines.map((line) => line.studentId))]
-	if (studentIds.length !== parsed.data.lines.length) {
-		return { ok: false, error: 'В заявке не должно быть дублей детей' }
-	}
-
-	const children = await prisma.student.findMany({
-		where: {
-			id: { in: studentIds },
-			parentId: session.user.id,
-			status: 'ACTIVE',
-		},
-		select: { id: true },
-	})
-
-	if (children.length !== studentIds.length) {
-		return {
-			ok: false,
-			error: 'Можно оплатить только своих активных детей',
-		}
-	}
-
-	try {
-		const request = await prisma.$transaction(async (tx) => {
-			const created = await tx.tuitionPaymentRequest.create({
-				data: {
-					parentId: session.user.id,
-					status: 'PENDING',
-					month: parsed.data.month,
-					lines: {
-						create: parsed.data.lines.map((line) => ({
-							studentId: line.studentId,
-							amount: line.amountKopecks,
-						})),
-					},
-				},
-				select: { id: true },
-			})
-
-			const notifications = await dispatchDomainEvent(
-				{
-					actorId: session.user.id,
-					action: 'TUITION_PAYMENT_REQUEST_CREATED',
-					entityType: 'TuitionPaymentRequest',
-					entityId: created.id,
-					payload: {
-						parentId: session.user.id,
-						month: parsed.data.month,
-						lines: parsed.data.lines,
-						date: getLocalDateString(),
-					},
-				},
-				tx,
-			)
-
-			return { created, notifications }
-		})
-
-		void deliverNotifications(request.notifications)
-
-		return { ok: true, requestId: request.created.id }
-	} catch (error) {
-		return {
-			ok: false,
-			error:
-				error instanceof Error
-					? error.message
-					: 'Не удалось отправить заявку',
-		}
-	}
-}
+export {
+	submitParentPaymentRequest,
+	type SubmitParentPaymentResult,
+} from './submit-parent-payment-request'

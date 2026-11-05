@@ -1,171 +1,45 @@
 'use client'
 
-import { App, Button, Checkbox, Select, Tag } from 'antd'
-import { useEffect, useMemo, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { Button, Checkbox } from 'antd'
 
 import { MoneyInput } from '@/features/accounting/ui/MoneyInput'
-import {
-	submitParentPaymentRequest,
-	type ParentPaymentChild,
-	type ParentPaymentRequestSummary,
+import type {
+	ParentPaymentChild,
+	ParentPaymentRequestSummary,
 } from '@/features/parent-portal/actions/parent-payment-actions'
-import {
-	clearParentPayDraft,
-	loadParentPayDraft,
-	saveParentPayDraft,
-} from '@/features/parent-portal/lib/parent-pay-draft'
-import {
-	currentMonthKey,
-	previousMonthKey,
-} from '@/shared/lib/accounting/month'
+import { useParentPayForm } from '@/features/parent-portal/lib'
 import { formatMoney } from '@/shared/lib/money'
 import Text from '@/shared/ui/Text'
-import Title from '@/shared/ui/Title'
 
-function buildMonthOptions(count = 12): Array<{ value: string; label: string }> {
-	const options: Array<{ value: string; label: string }> = []
-	let cursor = currentMonthKey()
-	for (let i = 0; i < count; i += 1) {
-		const [year, month] = cursor.split('-')
-		options.push({
-			value: cursor,
-			label: new Date(Number(year), Number(month) - 1, 1).toLocaleDateString(
-				'ru-RU',
-				{ month: 'long', year: 'numeric' },
-			),
-		})
-		cursor = previousMonthKey(cursor)
-	}
-	return options
-}
+import { ParentMonthSelect } from './ParentMonthSelect'
+import { ParentPayRequestsList } from './ParentPayRequestsList'
 
-type ParentPayFormProps = {
+interface ParentPayFormProps {
 	parentUserId: string
 	paymentChildren: ParentPaymentChild[]
 	requests: ParentPaymentRequestSummary[]
-}
-
-const REQUEST_STATUS_LABELS: Record<
-	ParentPaymentRequestSummary['status'],
-	{ label: string; color: string }
-> = {
-	PENDING: { label: 'Ожидает подтверждения', color: 'processing' },
-	CONFIRMED: { label: 'Подтверждена', color: 'success' },
-	REJECTED: { label: 'Отклонена', color: 'error' },
+	className?: string
 }
 
 export function ParentPayForm({
 	parentUserId,
 	paymentChildren,
 	requests,
+	className,
 }: ParentPayFormProps) {
-	const router = useRouter()
-	const { message } = App.useApp()
-	const [isPending, startTransition] = useTransition()
-	const [selectedIds, setSelectedIds] = useState<string[]>([])
-	const [amounts, setAmounts] = useState<Record<string, number | null>>({})
-	const [month, setMonth] = useState<string | null>(null)
-	const [hydrated, setHydrated] = useState(false)
-	const monthOptions = useMemo(() => buildMonthOptions(12), [])
-
-	useEffect(() => {
-		const draft = loadParentPayDraft(parentUserId)
-		const defaultAmounts = Object.fromEntries(
-			paymentChildren.map((child) => [
-				child.studentId,
-				child.tuitionRateKopecks,
-			]),
-		)
-
-		if (draft) {
-			const validSelected = draft.selectedStudentIds.filter((id) =>
-				paymentChildren.some((child) => child.studentId === id),
-			)
-			setSelectedIds(
-				validSelected.length > 0
-					? validSelected
-					: paymentChildren.map((child) => child.studentId),
-			)
-			setAmounts({
-				...defaultAmounts,
-				...Object.fromEntries(
-					Object.entries(draft.amountsKopecks).filter(([id]) =>
-						paymentChildren.some((child) => child.studentId === id),
-					),
-				),
-			})
-			setMonth(
-				draft.month && monthOptions.some((option) => option.value === draft.month)
-					? draft.month
-					: currentMonthKey(),
-			)
-		} else {
-			setSelectedIds(paymentChildren.map((child) => child.studentId))
-			setAmounts(defaultAmounts)
-			setMonth(currentMonthKey())
-		}
-		setHydrated(true)
-	}, [parentUserId, paymentChildren, monthOptions])
-
-	useEffect(() => {
-		if (!hydrated) return
-		saveParentPayDraft(parentUserId, {
-			selectedStudentIds: selectedIds,
-			amountsKopecks: Object.fromEntries(
-				Object.entries(amounts).filter(
-					(entry): entry is [string, number] =>
-						typeof entry[1] === 'number' && entry[1] > 0,
-				),
-			),
-			month: month ?? undefined,
-		})
-	}, [hydrated, parentUserId, selectedIds, amounts, month])
-
-	const totalKopecks = useMemo(() => {
-		return selectedIds.reduce((sum, studentId) => {
-			const amount = amounts[studentId]
-			return sum + (typeof amount === 'number' && amount > 0 ? amount : 0)
-		}, 0)
-	}, [selectedIds, amounts])
-
-	const toggleChild = (studentId: string, checked: boolean) => {
-		setSelectedIds((prev) =>
-			checked
-				? [...new Set([...prev, studentId])]
-				: prev.filter((id) => id !== studentId),
-		)
-	}
-
-	const handleSubmit = () => {
-		if (!month) {
-			message.error('Выберите месяц оплаты')
-			return
-		}
-
-		const lines = selectedIds
-			.map((studentId) => ({
-				studentId,
-				amountKopecks: amounts[studentId] ?? 0,
-			}))
-			.filter((line) => line.amountKopecks > 0)
-
-		if (lines.length === 0) {
-			message.error('Выберите хотя бы одного ребёнка и укажите сумму')
-			return
-		}
-
-		startTransition(async () => {
-			const result = await submitParentPaymentRequest({ month, lines })
-			if (!result.ok) {
-				message.error(result.error)
-				return
-			}
-			clearParentPayDraft(parentUserId)
-			message.success('Заявка отправлена бухгалтеру')
-			router.refresh()
-		})
-	}
+	const {
+		amounts,
+		handleSubmit,
+		isPending,
+		month,
+		monthOptions,
+		requests: requestList,
+		selectedIds,
+		setAmounts,
+		setMonth,
+		toggleChild,
+		totalKopecks,
+	} = useParentPayForm({ parentUserId, paymentChildren, requests })
 
 	if (paymentChildren.length === 0) {
 		return (
@@ -176,15 +50,13 @@ export function ParentPayForm({
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div className={className ?? 'flex flex-col gap-6'}>
 			<div className="flex flex-col gap-2 sm:max-w-xs">
 				<Text>Месяц оплаты</Text>
-				<Select
+				<ParentMonthSelect
 					value={month}
 					options={monthOptions}
-					placeholder="Выберите месяц"
-					onChange={(value) => setMonth(value)}
-					aria-label="Месяц оплаты"
+					onChange={setMonth}
 				/>
 			</div>
 
@@ -248,40 +120,7 @@ export function ParentPayForm({
 				</Button>
 			</div>
 
-			{requests.length > 0 && (
-				<div className="flex flex-col gap-3">
-					<Title level={4} className="!mb-0">
-						Мои заявки
-					</Title>
-					{requests.map((request) => {
-						const status = REQUEST_STATUS_LABELS[request.status]
-						return (
-							<div
-								key={request.id}
-								className="flex flex-col gap-2 rounded-lg border border-white/10 p-4"
-							>
-								<div className="flex flex-wrap items-center justify-between gap-2">
-									<Text strong>{formatMoney(request.totalKopecks)}</Text>
-									<Tag color={status.color}>{status.label}</Tag>
-								</div>
-								<Text type="secondary">
-									{new Date(request.createdAt).toLocaleString('ru-RU')}
-									{' · '}
-									{request.lines
-										.map(
-											(line) =>
-												`${line.studentName}: ${formatMoney(line.amountKopecks)}`,
-										)
-										.join('; ')}
-								</Text>
-								{request.rejectReason ? (
-									<Text type="danger">Причина: {request.rejectReason}</Text>
-								) : null}
-							</div>
-						)
-					})}
-				</div>
-			)}
+			<ParentPayRequestsList requests={requestList} />
 		</div>
 	)
 }

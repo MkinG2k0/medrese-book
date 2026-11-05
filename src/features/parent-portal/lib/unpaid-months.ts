@@ -101,3 +101,36 @@ export function pickDefaultParentMonth(
 ): string {
 	return options.find((option) => option.unpaid)?.value ?? currentMonth
 }
+
+/** Earliest of charge months / enrollment months, else fallback (D-05). */
+export function resolveEarliestChildMonth(input: {
+	chargeMonths: string[]
+	enrollmentMonthKeys: string[]
+	fallbackMonth: string
+}): string {
+	const candidates = [
+		...input.chargeMonths,
+		...input.enrollmentMonthKeys,
+	].filter((month) => /^\d{4}-\d{2}$/.test(month))
+	if (candidates.length === 0) return input.fallbackMonth
+	return candidates.reduce((min, month) => (month < min ? month : min))
+}
+
+export function aggregatePaidByMonth(
+	payments: Array<{ month: string; amount: number }>,
+): Record<string, number> {
+	const paidByMonth: Record<string, number> = {}
+	for (const payment of payments) {
+		paidByMonth[payment.month] =
+			(paidByMonth[payment.month] ?? 0) + payment.amount
+	}
+	return paidByMonth
+}
+
+export function chargesRecordFromRows(
+	charges: Array<{ month: string; amount: number }>,
+): Record<string, number> {
+	return Object.fromEntries(
+		charges.map((charge) => [charge.month, charge.amount]),
+	)
+}
