@@ -191,10 +191,8 @@ Recent decisions affecting current work:
 - [Quick 260718-3fl]: StepForm reuse StepPdfViewer при pdfUrl; key={pdfUrl} для remount после replace
 - [Quick 260722-lca]: PostType GENERAL|SYSTEM; STUDENT filtered from SYSTEM list/get/like and SYSTEM POST_PUBLISHED
 - [Quick 260722-x84]: Teacher my-group modal edits level+step via updateStudentProgress; no contact example placeholders
-- [Phase ?]: Checkpoint add-cashier-enum: Role.CASHIER via ALTER TYPE ADD VALUE (D-07)
-- [Phase ?]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
-- [Phase ?]: Cash-only message: Кассир может проводить только наличные
-- [Phase ?]: Cashier UI: disabled Select with only CASH; history reverse via canReverseForActor
+- [Phase 16]: Checkpoint add-cashier-enum: Role.CASHIER via ALTER TYPE ADD VALUE (D-07)
+- [Phase 16]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
 
 ### Pending Todos
 

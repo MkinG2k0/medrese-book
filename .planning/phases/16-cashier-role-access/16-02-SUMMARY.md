@@ -114,7 +114,7 @@ status: complete
 3. **Task 2: Payment-request confirm/reject dual-role + CASH** - `a7150d3` (feat)
 4. **Task 3: UI method lock / hide export** - `b5a6b33` (feat)
 
-**Plan metadata:** _(docs commit follows)_
+**Plan metadata:** `bf14d5e` (docs: complete plan)
 
 ## Files Created/Modified
 
