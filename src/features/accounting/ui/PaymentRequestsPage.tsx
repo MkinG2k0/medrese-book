@@ -14,7 +14,8 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
-import { useMemo, useState, useTransition } from 'react'
+import { useSession } from 'next-auth/react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import {
@@ -34,13 +35,22 @@ type PaymentRequestsPageProps = {
 
 export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 	const router = useRouter()
+	const { data: session } = useSession()
 	const { message, modal } = App.useApp()
+	const isCashier = session?.user.role === 'CASHIER'
+	const methodOptions = isCashier
+		? PAYMENT_METHOD_OPTIONS.filter((option) => option.value === 'CASH')
+		: PAYMENT_METHOD_OPTIONS
 	const [isPending, startTransition] = useTransition()
 	const [operationDate, setOperationDate] = useState<Dayjs>(() => dayjs())
 	const [method, setMethod] = useState<PaymentMethod>('TRANSFER')
 	const [rejectOpen, setRejectOpen] = useState(false)
 	const [rejectRequestId, setRejectRequestId] = useState<string | null>(null)
 	const [rejectReason, setRejectReason] = useState('')
+
+	useEffect(() => {
+		if (isCashier) setMethod('CASH')
+	}, [isCashier])
 
 	const columns: ColumnsType<AccountantPaymentRequestRow> = useMemo(
 		() => [
@@ -169,8 +179,9 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 					/>
 					<Select
 						value={method}
+						disabled={isCashier}
 						onChange={setMethod}
-						options={PAYMENT_METHOD_OPTIONS}
+						options={methodOptions}
 						style={{ width: 160 }}
 					/>
 				</Space>

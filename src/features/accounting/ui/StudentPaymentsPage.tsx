@@ -15,6 +15,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
+import { useSession } from 'next-auth/react'
 import { useEffect, useMemo, useState, type Key } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -69,7 +70,12 @@ function renderStatus(status: StudentPaymentRow['status']) {
 
 export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 	const { message, modal } = App.useApp()
+	const { data: session } = useSession()
 	const queryClient = useQueryClient()
+	const isCashier = session?.user.role === 'CASHIER'
+	const methodOptions = isCashier
+		? PAYMENT_METHOD_OPTIONS.filter((option) => option.value === 'CASH')
+		: PAYMENT_METHOD_OPTIONS
 	const [debtorsOnly, setDebtorsOnly] = useState(false)
 	const [groupFilter, setGroupFilter] = useState<string | null>(null)
 	const [search, setSearch] = useState('')
@@ -95,8 +101,12 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 	const [historyStudentId, setHistoryStudentId] = useState<string | null>(null)
 
 	useEffect(() => {
+		if (isCashier) {
+			setMethod('CASH')
+			return
+		}
 		setMethod(loadLastPaymentMethod('CASH'))
-	}, [])
+	}, [isCashier])
 
 	const groupOptions = useMemo(() => {
 		const names = new Set((data ?? []).map((row) => row.groupName).filter(Boolean))
@@ -446,11 +456,12 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 					/>
 					<Select
 						value={method}
+						disabled={isCashier}
 						onChange={(value) => {
 							setMethod(value)
-							saveLastPaymentMethod(value)
+							if (!isCashier) saveLastPaymentMethod(value)
 						}}
-						options={PAYMENT_METHOD_OPTIONS}
+						options={methodOptions}
 						style={{ width: 140 }}
 					/>
 					<Checkbox
@@ -474,13 +485,15 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 						onChange={(event) => setSearch(event.target.value)}
 						style={{ width: 200 }}
 					/>
-					<Button
-						icon={<DownloadOutlined />}
-						loading={exporting}
-						onClick={() => void handleExport()}
-					>
-						Excel
-					</Button>
+					{isCashier ? null : (
+						<Button
+							icon={<DownloadOutlined />}
+							loading={exporting}
+							onClick={() => void handleExport()}
+						>
+							Excel
+						</Button>
+					)}
 					<Button
 						loading={batchSubmitting}
 						disabled={selectedRowKeys.length === 0}
@@ -600,11 +613,12 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 					/>
 					<Select
 						value={method}
+						disabled={isCashier}
 						onChange={(value) => {
 							setMethod(value)
-							saveLastPaymentMethod(value)
+							if (!isCashier) saveLastPaymentMethod(value)
 						}}
-						options={PAYMENT_METHOD_OPTIONS}
+						options={methodOptions}
 						className="w-full"
 					/>
 					<input
