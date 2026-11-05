@@ -68,6 +68,14 @@ Plans:
 
 **Depends on:** Phase 16 (кассир как актор для TUITION-04)
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Tracer: month columns + migrate + parent/confirm/create + monthPaid by payment.month
+- [ ] 17-02-PLAN.md — Parent unpaid Select with gold Tag (D-04…D-06)
+- [ ] 17-03-PLAN.md — /accounting/debts dual-role + payment-requests month column
+- [ ] 17-04-PLAN.md — E2E tuition-month + cashier regression + visual UAT
+
 ### Phase 18: Remove Saldo column
 
 **Goal:** Колонка «Сальдо» убрана из таблицы платежей и Excel; статусы оплаты остаются понятными.
