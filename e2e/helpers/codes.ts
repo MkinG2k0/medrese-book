@@ -4,6 +4,7 @@ export const TEST_CODES = {
   teacher1: "200001",
   teacher2: "200002",
   accountant: "400001",
+  cashier: "400002",
   studentAli: "300001",
   studentUsman: "300002",
   studentBilal: "300003",

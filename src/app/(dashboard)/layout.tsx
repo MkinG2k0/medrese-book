@@ -39,7 +39,7 @@ export default async function DashboardLayout({
 					})
 					.then((row) => (row?.status as StudentStatus | undefined) ?? null)
 			: Promise.resolve(null),
-		session.user.role === 'ACCOUNTANT'
+		session.user.role === 'ACCOUNTANT' || session.user.role === 'CASHIER'
 			? prisma.tuitionPaymentRequest.count({
 					where: { status: 'PENDING' },
 				})

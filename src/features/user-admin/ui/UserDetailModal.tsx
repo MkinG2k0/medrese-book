@@ -36,6 +36,7 @@ const ROLE_LABELS: Record<string, string> = {
   TEACHER: "Учитель",
   STUDENT: "Ученик",
   ACCOUNTANT: "Бухгалтер",
+  CASHIER: "Кассир",
   PARENT: "Опекун",
 };
 

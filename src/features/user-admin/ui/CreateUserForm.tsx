@@ -281,6 +281,7 @@ export function CreateUserForm({ groups, onSuccess }: CreateUserFormProps) {
 								{ value: 'PARENT', label: 'Опекун' },
 								{ value: 'MANAGER', label: 'Менеджер' },
 								{ value: 'ACCOUNTANT', label: 'Бухгалтер' },
+								{ value: 'CASHIER', label: 'Кассир' },
 							]}
 						/>
 					</Form.Item>

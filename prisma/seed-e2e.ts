@@ -181,6 +181,15 @@ async function main() {
     },
   });
 
+  const cashier = await prisma.user.create({
+    data: {
+      name: "Кассир Тест",
+      code: "400002",
+      role: "CASHIER",
+      phone: "89684000002",
+    },
+  });
+
   const teacher1User = await prisma.user.create({
     data: {
       name: "Учитель Ахмад",
@@ -472,6 +481,7 @@ async function main() {
   console.log(`  SUPER_ADMIN: ${superAdmin.code}`);
   console.log(`  MANAGER: ${manager.code}`);
   console.log(`  ACCOUNTANT: ${accountant.code}`);
+  console.log(`  CASHIER: ${cashier.code}`);
   console.log(`  TEACHER 1: ${teacher1User.code}`);
   console.log(`  TEACHER 2: ${teacher2User.code}`);
   console.log(`  PARENTS: ${parentCodes.join(", ")}`);

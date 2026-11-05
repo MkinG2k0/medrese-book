@@ -33,6 +33,7 @@ const ROLE_OPTIONS = [
   { value: "TEACHER", label: "Учитель" },
   { value: "MANAGER", label: "Менеджер" },
   { value: "ACCOUNTANT", label: "Бухгалтер" },
+  { value: "CASHIER", label: "Кассир" },
   { value: "PARENT", label: "Опекун" },
 ];
 
