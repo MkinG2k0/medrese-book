@@ -18,6 +18,7 @@ export const ROLE_ROUTES: Record<string, UserRole[]> = {
 	'/accounting/my-salary': ['TEACHER'],
 	'/accounting/payments': ['ACCOUNTANT', 'CASHIER'],
 	'/accounting/payment-requests': ['ACCOUNTANT', 'CASHIER'],
+	'/accounting/debts': ['ACCOUNTANT', 'CASHIER'],
 	'/student': ['STUDENT'],
 	'/parent': ['PARENT'],
 	'/messages': [...MESSAGING_ROLES],
