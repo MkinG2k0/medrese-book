@@ -36,3 +36,23 @@ export function previousMonthKey(month: string): string {
 	const date = new Date(year, m - 2, 1)
 	return toMonthKey(date)
 }
+
+/** Inclusive YYYY-MM sequence from `from` through `to`. */
+export function iterateMonths(from: string, to: string): string[] {
+	const start = parseMonthKey(from)
+	const end = parseMonthKey(to)
+	const months: string[] = []
+	let year = start.year
+	let month = start.month
+
+	while (year < end.year || (year === end.year && month <= end.month)) {
+		months.push(`${year}-${String(month).padStart(2, '0')}`)
+		month += 1
+		if (month > 12) {
+			month = 1
+			year += 1
+		}
+	}
+
+	return months
+}
