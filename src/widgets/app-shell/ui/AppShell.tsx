@@ -181,6 +181,11 @@ const menuItemDefs: Record<string, MenuItemDef> = {
     icon: <FileTextOutlined />,
     label: "Заявки на оплату",
   },
+  "/accounting/debts": {
+    key: "/accounting/debts",
+    icon: <DollarOutlined />,
+    label: "Долги",
+  },
   "/student/lessons": {
     key: "/student/lessons",
     icon: <BookOutlined />,
@@ -233,6 +238,7 @@ const accountantMenuOrder = [
   "/accounting",
   "/accounting/payments",
   "/accounting/payment-requests",
+  "/accounting/debts",
   "/accounting/salaries",
   "/accounting/expenses",
   "/accounting/ledger",
@@ -258,6 +264,7 @@ const MENU_ORDER_BY_ROLE: Record<UserRole, readonly string[]> = {
   CASHIER: [
     "/accounting/payments",
     "/accounting/payment-requests",
+    "/accounting/debts",
     "/settings",
   ],
   STUDENT: [
