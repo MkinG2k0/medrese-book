@@ -5,14 +5,14 @@ milestone_name: Касса и долги по месяцам
 current_phase: 17
 current_phase_name: Tuition month & unpaid visibility
 status: executing
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-11-05T18:16:26.032Z"
+stopped_at: Completed 17-02-PLAN.md (17-03 already complete in parallel)
+last_updated: "2026-11-05T18:18:19.577Z"
 last_activity: 2026-11-05
-last_activity_desc: Completed 17-03 debts page + payment-requests month (D-07…D-09)
+last_activity_desc: Completed 17-02 parent unpaid gold Select; 17-03 debts already done in parallel
 progress:
-  total_phases: 3
+  total_phases: 2
   completed_phases: 1
-  total_plans: 12
+  total_plans: 8
   completed_plans: 6
 ---
 
@@ -55,9 +55,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 17 — Tuition month & unpaid visibility
-Plan: 17-03 complete (debts page); 17-01 done; 17-02 may still be in progress — next remaining incomplete plan / 17-04 E2E
-Status: Executing Phase 17 — /accounting/debts for ACCOUNTANT+CASHIER; payment-requests show month; monthPaid by payment.month
-Last activity: 2026-11-05 — Executed 17-03 (debts page + request month UI)
+Plan: 17-01…17-03 complete — next 17-04 E2E
+Status: Executing Phase 17 — parent gold unpaid Select + debts page; remaining E2E
+Last activity: 2026-11-05 — Executed 17-02 (unpaid Select); 17-03 already complete
 
 ## Performance Metrics
 
@@ -121,6 +121,7 @@ Last activity: 2026-11-05 — Executed 17-03 (debts page + request month UI)
 | Phase 16 P03 | 18min | 3 tasks | 10 files |
 | Phase 17 P01 | 12min | 3 tasks | 14 files |
 | Phase 17 P03 | 8min | 3 tasks | 11 files |
+| Phase 17 P02 | 9min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -202,6 +203,7 @@ Recent decisions affecting current work:
 - [Phase ?]: Path /accounting/debts + menu «Долги» for ACCOUNTANT and CASHIER
 - [Phase ?]: Split mapTuitionDebtRows from Prisma loader for DB-free unit tests
 - [Phase ?]: D-09: request.month display-only on list/confirm; schema unchanged
+- [Phase ?]: Parent unpaid Select uses Tag color=gold; multi-child OR (A1); default first unpaid else moscowMonthKey
 
 ### Pending Todos
 
@@ -313,8 +315,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T18:16:25.981Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-11-05T18:18:19.530Z
+Stopped at: Completed 17-02-PLAN.md (17-03 already complete in parallel)
 Resume file: None
 
 ## Operator Next Steps
