@@ -4,16 +4,17 @@ milestone: v3.0
 milestone_name: Касса и долги по месяцам
 current_phase: 16
 current_phase_name: Cashier role & access
-status: plans_ready
+status: executing
 stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-11-05T13:23:20.263Z"
+last_updated: "2026-11-05T13:31:00.000Z"
 last_activity: 2026-11-05
-last_activity_desc: Phase 16 planned (CONTEXT + RESEARCH → PLAN)
+last_activity_desc: Completed 16-01 cashier Role.CASHIER access slice
 progress:
-  total_phases: 1
+  total_phases: 3
   completed_phases: 0
   total_plans: 3
   completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -55,9 +56,9 @@ Note: многие quick tasks фактически выполнены (см. Qu
 ## Current Position
 
 Phase: 16 — Cashier role & access
-Plan: 16-01 (next: `/gsd-execute-phase 16`)
-Status: Plans ready — 3 plans (waves 1–3); checkpoint on 16-01 for D-07 enum
-Last activity: 2026-11-05 — Phase 16 planned (CONTEXT + RESEARCH → PLAN)
+Plan: 16-02 (next after 16-01 SUMMARY)
+Status: 16-01 complete — Role.CASHIER access slice landed; continue with 16-02 API/action guards
+Last activity: 2026-11-05 — Executed 16-01 (enum + ROLE_ROUTES + redirect + RSC + menu)
 
 ## Performance Metrics
 
