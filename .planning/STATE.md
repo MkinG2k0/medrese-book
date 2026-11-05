@@ -5,16 +5,15 @@ milestone_name: Касса и долги по месяцам
 current_phase: 16
 current_phase_name: Cashier role & access
 status: executing
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-11-05T13:28:20.118Z"
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-11-05T13:47:36.201Z"
 last_activity: 2026-11-05
 last_activity_desc: Completed 16-02 cashier cash API/UI guards
 progress:
-  total_phases: 3
-  completed_phases: 0
+  total_phases: 1
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
 ---
 
 # Project State
@@ -119,6 +118,7 @@ Last activity: 2026-11-05 — Executed 16-02 (assertCashierCashMethod + dual-rol
 |------|----------|-------|-------|
 | Phase 16 P01 | 12min | 2 tasks | 11 files |
 | Phase 16 P02 | 8min | 3 tasks | 8 files |
+| Phase 16 P03 | 18min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -193,6 +193,8 @@ Recent decisions affecting current work:
 - [Quick 260722-x84]: Teacher my-group modal edits level+step via updateStudentProgress; no contact example placeholders
 - [Phase 16]: Checkpoint add-cashier-enum: Role.CASHIER via ALTER TYPE ADD VALUE (D-07)
 - [Phase 16]: CASHIER ROLE_ROUTES only on payments+payment-requests; /accounting stays ACCOUNTANT
+- [Phase ?]: Seed cashier 400002; requireRole wrong-role → getDefaultRedirect
+- [Phase ?]: 16-03 E2E cashier-role.spec covers CASHIER vs ACCOUNTANT matrix
 
 ### Pending Todos
 
@@ -304,8 +306,8 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T13:28:20.103Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-11-05T13:47:36.187Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

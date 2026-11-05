@@ -44,13 +44,13 @@ Brownfield. **v3.0** — первая волна обновления бухга
 4. Middleware / role routes не пускают кассира на ЗП, расходы, закрытие месяца и т.п.
 5. Есть автотесты на разграничение CASHIER vs ACCOUNTANT (E2E и/или unit route guards)
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 Plans:
 
 - [x] 16-01-PLAN.md — Role.CASHIER tracer: enum migration, ROLE_ROUTES, redirect, menu, RSC gates
 - [x] 16-02-PLAN.md — Cash-only API/UI + Vitest assertCashierCashMethod/canReverse
-- [ ] 16-03-PLAN.md — User-admin/seed 400002 + unit matrix + e2e/cashier-role.spec.ts (D-M6)
+- [x] 16-03-PLAN.md — User-admin/seed 400002 + unit matrix + e2e/cashier-role.spec.ts (D-M6)
 
 ### Phase 17: Tuition month & unpaid visibility
 
