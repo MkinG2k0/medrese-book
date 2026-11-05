@@ -113,7 +113,7 @@ status: complete
 1. **Task 1: Confirm one-way Role.CASHIER enum migration (D-07)** - pre-approved `add-cashier-enum` (no commit)
 2. **Task 2: End-to-end CASHIER reaches /accounting/payments** - `3fdbf79` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `33d4ae8` (docs: complete plan); `de3a930` (docs: STATE position)
 
 ## Files Created/Modified
 
