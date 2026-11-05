@@ -79,6 +79,11 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 				),
 			},
 			{
+				title: 'Месяц',
+				dataIndex: 'month',
+				render: (month: string) => <Tag>{month}</Tag>,
+			},
+			{
 				title: 'Дети / суммы',
 				key: 'lines',
 				render: (_: unknown, row) =>
@@ -110,7 +115,7 @@ export function PaymentRequestsPage({ requests }: PaymentRequestsPageProps) {
 							onClick={() => {
 								modal.confirm({
 									title: 'Подтвердить заявку целиком?',
-									content: `Будут созданы платежи на ${formatMoney(row.totalKopecks)} за ${row.lines.length} дет.`,
+									content: `Месяц заявки: ${row.month}. Будут созданы платежи на ${formatMoney(row.totalKopecks)} за ${row.lines.length} дет.`,
 									okText: 'Подтвердить',
 									cancelText: 'Отмена',
 									onOk: () =>

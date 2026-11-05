@@ -23,6 +23,7 @@ const CASH_DESK_ROLES = ['ACCOUNTANT', 'CASHIER'] as const
 export type AccountantPaymentRequestRow = {
 	id: string
 	createdAt: string
+	month: string
 	parentName: string
 	parentPhone: string | null
 	totalKopecks: number
@@ -60,6 +61,7 @@ export async function listPendingTuitionPaymentRequests(): Promise<
 	return requests.map((request) => ({
 		id: request.id,
 		createdAt: request.createdAt.toISOString(),
+		month: request.month,
 		parentName: request.parent.name,
 		parentPhone: request.parent.phone,
 		totalKopecks: request.lines.reduce((sum, line) => sum + line.amount, 0),
