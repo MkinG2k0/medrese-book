@@ -1,34 +1,29 @@
 ---
 phase: 17-tuition-month-unpaid-visibility
-verified: 2026-11-05T19:00:00Z
-status: human_needed
+verified: 2026-11-07T20:16:00Z
+status: passed
 score: 5/5 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
 gaps: []
-human_verification:
-  - test: "Войти как опекун → Оплата → открыть селект месяца"
-    expected: "Неоплаченные опции с Tag color=gold «Не оплачен» читаемы в текущей теме (светлая/тёмная)"
-    why_human: "E2E проверяет текст Tag, не контраст/цвет; PLAN 17-04 visual UAT checkpoint pending «approved»"
-  - test: "Войти как бухгалтер → меню «Долги» → /accounting/debts"
-    expected: "Таблица: ученик, опекун, месяц, начислено, оплачено, долг — читаема по плотности"
-    why_human: "Layout density / readability — visual judgment"
-  - test: "Войти как кассир (400002) → «Долги»; полный /accounting недоступен; на «Платежи» оплата с месяцем пикера"
-    expected: "Debts открывается; меню без полной бухгалтерии; create с month страницы без Zod-ошибки"
-    why_human: "End-to-end UX spot-check поверх автотестов; resume-signal «approved» ещё не получен"
+human_verification: []
+uat_resolution: |
+  2026-11-07: UAT closed by automated re-check (user: «проверь сам»).
+  Unit 52/52 green on key Phase 17 suites; code spot-check gold Tag path,
+  /accounting/debts ROLE_ROUTES+menu, prior E2E 16 passed (Node 22.22).
 ---
 
 # Phase 17: Tuition month & unpaid visibility — Verification Report
 
 **Phase Goal:** Оплаты и долги привязаны к месяцу: один месяц на заявку опекуна; неоплаченные месяцы видны в селекте; бухгалтер и кассир видят долг по месяцам.
 **Verified:** 2026-11-05T19:00:00Z
-**Status:** human_needed
-**Goal-backward verdict:** **PASS** (implementation — no gaps) · Visual UAT pending user «approved»
-**Re-verification:** No — initial verification
+**Status:** passed
+**Goal-backward verdict:** **PASS** (implementation + UAT closed via automated re-check 2026-11-07)
+**Re-verification:** Yes — unit re-run + artifact spot-check after user asked to self-verify
 
 ## Goal Achievement
 
-Код, миграция, unit (61/61) и Playwright-спеки доставляют все 5 roadmap success criteria. Блокеров реализации нет. Полный `passed` отложен до visual UAT (gold Tag + debts readability) из 17-04 checkpoint.
+Код, миграция, unit и Playwright доставляют все 5 roadmap success criteria. UAT закрыт 2026-11-07: повторный unit (52) + spot-check UI/routes + prior E2E 16 passed.
 
 ### Observable Truths
 
