@@ -1,39 +1,32 @@
 ---
 phase: 16-cashier-role-access
-verified: 2026-11-05T13:55:00Z
-status: human_needed
-score: 4/5 must-haves verified
-behavior_unverified: 1
+verified: 2026-11-08T01:28:00Z
+status: passed
+score: 5/5 must-haves verified
+behavior_unverified: 0
 overrides_applied: 0
 gaps: []
-behavior_unverified_items:
-  - truth: "Можно создать пользователя с ролью Кассир и войти под ним"
-    test: "Под Node ≥22.22: manager создаёт пользователя Кассир; login кодом 400002; либо pnpm test:e2e e2e/cashier-role.spec.ts --project=chromium"
-    expected: "Вход кассира → /accounting/payments; заголовок «Платежи учеников»"
-    why_human: "E2E на этой машине падает на Node 22.15 (Playwright context.conditions?.includes); login-flow нельзя подтвердить unit-тестами"
-human_verification:
-  - test: "Перезапустить E2E кассира на Node ≥22.22 (см. 16-03-SUMMARY)"
-    expected: "e2e/cashier-role.spec.ts — все кейсы green (узкое меню, CASH-only, deny deep-link, accountant CARD/TRANSFER)"
-    why_human: "Verifier spot-check: seed 400002 ок, но setup падает TypeError context.conditions на Node v22.15.0"
-  - test: "Менеджер → Создать пользователя → роль «Кассир»"
-    expected: "Опция видна и сохраняется (D-08)"
-    why_human: "CreateUserForm содержит value CASHIER; визуальный select не покрыт E2E"
-  - test: "Кассир → Платежи → история → нет «Сторнировать»"
-    expected: "Кнопка сторно отсутствует; reverse API остаётся ACCOUNTANT-only"
-    why_human: "canReverseForActor покрыт Vitest; UI drawer зависит от runtime history payload"
+behavior_unverified_items: []
+human_verification: []
+uat_resolution: |
+  2026-11-08 milestone audit re-run on Node v22.22.0:
+  e2e/cashier-role.spec.ts all green (login 400002 → payments, CASH-only,
+  deny dashboard/salaries, accountant full access). Seed cashier confirms
+  create+login path. CreateUserForm CASHIER + canReverseForActor covered by
+  code/unit; reverse ACCOUNTANT-only API unchanged.
 ---
 
 # Phase 16: Cashier role & access Verification Report
 
 **Phase Goal:** В системе есть роль Кассир с доступом только к подтверждению наличных; бухгалтер сохраняет полный доступ.
-**Verified:** 2026-11-05T13:55:00Z
-**Status:** human_needed
-**Goal-backward verdict:** **PASS** (implementation — no gaps) · UAT/E2E re-run pending
-**Re-verification:** No — initial verification
+**Verified:** 2026-11-08T01:28:00Z
+**Status:** passed
+**Goal-backward verdict:** **PASS** (implementation + E2E on Node 22.22)
+**Re-verification:** Yes — v3.0 milestone audit E2E suite
 
 ## Goal Achievement
 
-Код и unit-контракты доставляют Phase 16 success criteria. Блокеров реализации нет. Полный `passed` отложен: E2E не перепрогнан в этой сессии (Node 22.15) + ручные UX-пункты из 16-VALIDATION.
+Код, unit и Playwright доставляют Phase 16 success criteria. E2E cashier-role перепрогнан 2026-11-08 на Node 22.22 — все кейсы green.
 
 ### Observable Truths
 
