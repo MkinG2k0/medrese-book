@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v2.0 Система предметов** — Phases 10–15 (shipped 2026-07-11)
-- 🚧 **v3.0 Касса и долги по месяцам** — Phases 16–18 (active)
+- ✅ **v3.0 Касса и долги по месяцам** — Phases 16–18 (verified 2026-11-07; Phase 16 UAT optional)
 - 📋 **v1.0** — Phases 0–9 (partially shipped, pre-subjects era)
 
 ## Overview
@@ -109,9 +109,9 @@ Plans:
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
-| 16. Cashier role & access | v3.0 | 3/3 | Awaiting UAT |  |
-| 17. Tuition month & unpaid | v3.0 | 4/4 | Awaiting UAT |  |
-| 18. Remove Saldo column | v3.0 | 1/1 | Complete | 2026-11-07 |
+| 16. Cashier role & access | v3.0 | 3/3 | Verified (human_needed residual) | 2026-11-05 |
+| 17. Tuition month & unpaid | v3.0 | 4/4 | Verified passed | 2026-11-07 |
+| 18. Remove Saldo column | v3.0 | 1/1 | Verified passed | 2026-11-07 |
 
 ---
-*Last updated: 2026-11-07 — Phase 18 plan 01 complete (Saldo removed; unit+E2E green)*
+*Last updated: 2026-11-07 — Phase 18 verified passed (5/5); v3.0 phases 16–18 complete*

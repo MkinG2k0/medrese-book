@@ -1,32 +1,28 @@
 {
   "version": "1.0",
-  "timestamp": "2026-11-05T21:30:00+03:00",
+  "timestamp": "2026-11-07T20:30:00+03:00",
   "milestone": "v3.0",
   "milestone_name": "Касса и долги по месяцам",
-  "phase": "17",
-  "phase_name": "Tuition month & unpaid visibility",
-  "phase_dir": ".planning/phases/17-tuition-month-unpaid-visibility",
-  "status": "phase_complete_awaiting_uat",
-  "next_action": "Optional visual UAT Phase 17 (reply approved); then /gsd-discuss-phase 18 or plan+execute Phase 18 Remove Saldo",
-  "completed_phases": ["16", "17"],
-  "remaining_phases": ["18"],
+  "phase": "18",
+  "phase_name": "Remove Saldo column",
+  "phase_dir": ".planning/phases/18-remove-saldo-column",
+  "status": "milestone_phases_complete",
+  "next_action": "Optional /gsd-complete-milestone v3.0; then /gsd-new-milestone for v3.1 (ЗП). Do not start salary without new milestone.",
+  "completed_phases": ["16", "17", "18"],
+  "remaining_phases": [],
   "completed_work": [
     "Phase 16 Cashier",
-    "Phase 17: month on request+payment, gold unpaid Select, /accounting/debts, E2E 16 passed, verification PASS / Awaiting UAT"
+    "Phase 17 Tuition month & unpaid visibility (UAT closed 2026-11-07)",
+    "Phase 18 Remove Saldo column — PAYUI-01..03 passed"
   ],
   "remaining_work": [
-    "Optional UAT Phase 17 visual",
-    "Phase 18: PAYUI-01..03 remove Saldo column UI+Excel"
-  ],
-  "decisions_locked": [
-    "D-M1 + month attribution by payment.month",
-    "Yellow unpaid Select; /accounting/debts for accountant+cashier",
-    "D-M6 tests same phase"
+    "Optional formal milestone archive",
+    "v3.1: salary formula + UI config + ATTEND/WINDOW (future)"
   ],
   "human_actions_pending": [
-    "Visual UAT Phase 17 (gold Tag, debts table, cash month picker)",
-    "Prod/test: pnpm db:migrate:deploy for tuition month columns"
+    "Prod: pnpm db:migrate:deploy if month columns / CASHIER not yet applied",
+    "Optional Phase 16 visual UAT leftovers"
   ],
   "blockers": [],
-  "resume_prompt": "After UAT: continue v3.0 Phase 18 Remove Saldo — /gsd-discuss-phase 18 then execute. Do not start v3.1 salary."
+  "resume_prompt": "v3.0 phases 16–18 complete. Next: /gsd-complete-milestone or start v3.1 with /gsd-new-milestone."
 }

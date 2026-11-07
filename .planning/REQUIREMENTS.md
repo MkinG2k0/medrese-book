@@ -117,4 +117,4 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 
 ---
 *Requirements defined: 2026-10-31*  
-*Last updated: 2026-11-07 — Phase 18: PAYUI-01..03 + TEST-01/04 complete*
+*Last updated: 2026-11-07 — Phase 18 verified passed; PAYUI-01..03 + TEST-01/04 confirmed in codebase*

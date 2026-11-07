@@ -4,11 +4,11 @@ milestone: v3.0
 milestone_name: Касса и долги по месяцам
 current_phase: 18
 current_phase_name: Remove Saldo column
-status: phase_complete
-stopped_at: Completed 18-01-PLAN.md
-last_updated: "2026-11-07T17:25:31.881Z"
+status: milestone_phases_complete
+stopped_at: Phase 18 verified passed — v3.0 phases 16–18 complete
+last_updated: "2026-11-07T17:28:00Z"
 last_activity: 2026-11-07
-last_activity_desc: Phase 18 plan 01 executed — Saldo removed from payments UI+Excel; unit+E2E green
+last_activity_desc: Phase 18 verified 5/5 — Saldo removed; v3.0 Phases 16–18 complete
 progress:
   total_phases: 3
   completed_phases: 3
@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-31)
 
 **Core value:** Учитель и менеджер видят реальный прогресс каждого ученика и могут вовремя вмешаться
-**Current focus:** Milestone v3.0 — Касса и долги по месяцам (Phases 16–18)
+**Current focus:** Milestone v3.0 — Касса и долги по месяцам — **phases 16–18 complete** (ready for `/gsd-complete-milestone` / v3.1)
 
 ## Deferred Items
 
@@ -56,8 +56,8 @@ Note: многие quick tasks фактически выполнены (см. Qu
 
 Phase: 18 — Remove Saldo column
 Plan: 18-01 complete
-Status: phase_complete — PAYUI-01…03 + TEST-01/04 for Saldo covered; ready for verify-work
-Last activity: 2026-11-07 — 18-01 executed (UI+Excel Saldo removed; unit+E2E green)
+Status: **milestone_phases_complete** — v3.0 Phases 16–18 all plans done; Phase 18 verification **passed 5/5**; Phase 17 passed; Phase 16 implementation verified with residual human_needed UAT items
+Last activity: 2026-11-07 — Phase 18 verified (no Saldo in UI/Excel; status + balanceKopecks retained)
 
 ## Performance Metrics
 
@@ -319,14 +319,14 @@ None yet.
 
 ## Session Continuity
 
-Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
+Last activity: 2026-11-07 — Phase 18 verification passed (5/5); v3.0 phases 16–18 complete
 
-Last session: 2026-11-07T17:25:31.863Z
-Stopped at: Completed 18-01-PLAN.md
+Last session: 2026-11-07T17:28:00Z
+Stopped at: Phase 18 VERIFICATION.md written — milestone phases complete
 Resume file: None
 
 ## Operator Next Steps
 
-- `/gsd-verify-work` for Phase 18 (Saldo removal)
-- Then `/gsd-complete-milestone` or `/gsd-new-milestone` for v3.1
+- `/gsd-complete-milestone` (archive v3.0) or `/gsd-new-milestone` for v3.1 (ЗП / SAL-CFG / TEST-02/03)
+- Optional: close Phase 16 residual human UAT if still open
 - Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
