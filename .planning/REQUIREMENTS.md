@@ -24,18 +24,18 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 
 ### Payments UI
 
-- [ ] **PAYUI-01**: В таблице платежей учеников колонка **«Сальдо»** убрана
-- [ ] **PAYUI-02**: Экспорт Excel платежей **не содержит** колонку «Сальдо»
-- [ ] **PAYUI-03**: Статусы оплаты (Аванс / Оплачено / Долг и т.п.) продолжают отображаться без колонки сальдо
+- [x] **PAYUI-01**: В таблице платежей учеников колонка **«Сальдо»** убрана
+- [x] **PAYUI-02**: Экспорт Excel платежей **не содержит** колонку «Сальдо»
+- [x] **PAYUI-03**: Статусы оплаты (Аванс / Оплачено / Долг и т.п.) продолжают отображаться без колонки сальдо
 
 ### Testing (quality gate — все волны бухгалтерии 3.x)
 
 На **весь** функционал волн v3.0–v3.3 обязательны автотесты в том же изменении/фазе, что и фича (unit + E2E по правилам проекта). Без тестов фаза не считается done.
 
-- [ ] **TEST-01**: Для каждого REQ волны v3.0 есть покрывающие тесты (роли кассира, месяц заявки/долга, отсутствие «Сальдо» в UI и Excel) — *Phase 16: роли кассира ✓; Phase 17: месяц заявки/долга ✓; 18 pending*
+- [x] **TEST-01**: Для каждого REQ волны v3.0 есть покрывающие тесты (роли кассира, месяц заявки/долга, отсутствие «Сальдо» в UI и Excel) — *Phase 16: роли кассира ✓; Phase 17: месяц заявки/долга ✓; Phase 18: Saldo UI+Excel ✓*
 - [ ] **TEST-02** *(v3.1, критично)*: Unit-тесты **калькуляции ЗП** покрывают все компоненты формулы (часы×ставка×коэф., пунктуальность работы/урока, аттестация×1000, выходные 600+50×N, граничные N=0/1/N)
 - [ ] **TEST-03** *(v3.1, критично)*: Тесты **выдачи ЗП** (accrual → confirm → payout до 10-го; отказ/границы ролей бухгалтера)
-- [ ] **TEST-04**: Регрессия: существующие tuition/salary brownfield-сценарии не ломаются после изменений волны — *Phase 16: cashier/accountant matrix ✓; Phase 17: create/confirm+month + cashier-role ✓; 18 pending*
+- [x] **TEST-04**: Регрессия: существующие tuition/salary brownfield-сценарии не ломаются после изменений волны — *Phase 16: cashier/accountant matrix ✓; Phase 17: create/confirm+month + cashier-role ✓; Phase 18: cashier-role + payments-saldo ✓*
 
 ## Future Requirements
 
@@ -99,11 +99,11 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 | TUITION-02 | Phase 17 | Complete |
 | TUITION-03 | Phase 17 | Complete |
 | TUITION-04 | Phase 17 | Complete |
-| PAYUI-01 | Phase 18 | Pending |
-| PAYUI-02 | Phase 18 | Pending |
-| PAYUI-03 | Phase 18 | Pending |
-| TEST-01 | Phases 16–18 (каждая фаза) | Partial — Phase 16 cashier + Phase 17 tuition-month coverage done |
-| TEST-04 | Phases 16–18 | Partial — Phase 16/17 cashier + tuition month regression done |
+| PAYUI-01 | Phase 18 | Complete |
+| PAYUI-02 | Phase 18 | Complete |
+| PAYUI-03 | Phase 18 | Complete |
+| TEST-01 | Phases 16–18 (каждая фаза) | Complete |
+| TEST-04 | Phases 16–18 | Complete |
 | TEST-02 | v3.1 (future) | Deferred |
 | TEST-03 | v3.1 (future) | Deferred |
 | SAL-CFG-01 | v3.1 (future) | Deferred |
@@ -117,4 +117,4 @@ Scope волны 1: роли кассы, оплата/долг по месяца
 
 ---
 *Requirements defined: 2026-10-31*  
-*Last updated: 2026-11-05 — Phase 17 verification: TUITION-01..04 complete; TEST-01/04 partial (18 pending)*
+*Last updated: 2026-11-07 — Phase 18: PAYUI-01..03 + TEST-01/04 complete*

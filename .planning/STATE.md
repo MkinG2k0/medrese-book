@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Касса и долги по месяцам
-current_phase: 17
-current_phase_name: Tuition month & unpaid visibility
-status: phase_verified_human_needed
-stopped_at: Phase 17 verified — visual UAT pending «approved»
-last_updated: "2026-11-05T19:00:00.000Z"
-last_activity: 2026-11-05
-last_activity_desc: Phase 17 verification PASS (5/5); human_needed for visual UAT gold Tag + debts
+current_phase: 18
+current_phase_name: Remove Saldo column
+status: phase_complete
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-11-07T17:25:31.881Z"
+last_activity: 2026-11-07
+last_activity_desc: Phase 18 plan 01 executed — Saldo removed from payments UI+Excel; unit+E2E green
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
 ---
 
 # Project State
@@ -54,10 +54,10 @@ Note: многие quick tasks фактически выполнены (см. Qu
 
 ## Current Position
 
-Phase: 17 — Tuition month & unpaid visibility
-Plan: 17-01…17-04 complete — verified (implementation PASS)
-Status: human_needed — visual UAT (gold Tag + debts readability); type «approved» to close
-Last activity: 2026-11-05 — 17-VERIFICATION.md: 5/5 SC verified, 61 unit green
+Phase: 18 — Remove Saldo column
+Plan: 18-01 complete
+Status: phase_complete — PAYUI-01…03 + TEST-01/04 for Saldo covered; ready for verify-work
+Last activity: 2026-11-07 — 18-01 executed (UI+Excel Saldo removed; unit+E2E green)
 
 ## Performance Metrics
 
@@ -123,6 +123,7 @@ Last activity: 2026-11-05 — 17-VERIFICATION.md: 5/5 SC verified, 61 unit green
 | Phase 17 P03 | 8min | 3 tasks | 11 files |
 | Phase 17 P02 | 9min | 2 tasks | 13 files |
 | Phase 17 P04 | 55min | 2 tasks | 6 files |
+| Phase 18 P01 | 7min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -207,6 +208,8 @@ Recent decisions affecting current work:
 - [Phase ?]: Parent unpaid Select uses Tag color=gold; multi-child OR (A1); default first unpaid else moscowMonthKey
 - [Phase ?]: 17-04: E2E tuition-month green on Node 22.22; visual UAT human_needed
 - [Phase ?]: 17-04: Cashier confirm uses submitMethod=CASH to avoid session race
+- [Phase 18]: Remove Сальдо only from payments UI/Excel; keep balanceKopecks in query for status/debtors
+- [Phase 18]: Status column and renderStatus remain unchanged (D-02)
 
 ### Pending Todos
 
@@ -318,12 +321,12 @@ None yet.
 
 Last activity: 2026-10-06 - Completed quick task 261006-cl7: дай преподам возможность создавать посты
 
-Last session: 2026-11-05T18:55:56.265Z
-Stopped at: Completed 17-04-PLAN.md
+Last session: 2026-11-07T17:25:31.863Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with `/gsd-new-milestone`
+- `/gsd-verify-work` for Phase 18 (Saldo removal)
+- Then `/gsd-complete-milestone` or `/gsd-new-milestone` for v3.1
 - Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
-- Smoke: бухгалтер → Платежи → Тариф/Долг/инлайн/массовая/История/Excel

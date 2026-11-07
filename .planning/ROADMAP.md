@@ -83,6 +83,11 @@ Plans:
 
 **Requirements:** PAYUI-01, PAYUI-02, PAYUI-03, TEST-01 (часть), TEST-04
 
+**Plans:** 1/1 plans executed
+
+Plans:
+- [x] 18-01-PLAN.md — Remove Saldo from payments UI + Excel; unit + E2E
+
 **Success criteria:**
 
 1. В UI таблицы платежей нет колонки «Сальдо»
@@ -106,7 +111,7 @@ Plans:
 | 10–15 | v2.0 | — | Complete | 2026-07-11 |
 | 16. Cashier role & access | v3.0 | 3/3 | Awaiting UAT |  |
 | 17. Tuition month & unpaid | v3.0 | 4/4 | Awaiting UAT |  |
-| 18. Remove Saldo column | v3.0 | 0/— | Pending | — |
+| 18. Remove Saldo column | v3.0 | 1/1 | Complete | 2026-11-07 |
 
 ---
-*Last updated: 2026-11-05 — Phase 17 verified (implementation PASS, human_needed for visual UAT)*
+*Last updated: 2026-11-07 — Phase 18 plan 01 complete (Saldo removed; unit+E2E green)*
