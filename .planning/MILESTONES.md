@@ -1,5 +1,24 @@
 # Milestones
 
+## v3.0 Касса и долги по месяцам (Shipped: 2026-11-08)
+
+**Phases completed:** 3 phases, 8 plans, 21 tasks
+
+**Key accomplishments:**
+
+- Роль Кассир (`CASHIER`): enum, ROLE_ROUTES, узкое меню, seed 400002; только наличные; бухгалтер — полный доступ
+- Явный `month` на заявке опекуна и платеже; monthPaid/долги по `payment.month`; Moscow backfill
+- Селект неоплаченных месяцев у опекуна (Tag gold «Не оплачен»); страница `/accounting/debts` для бухгалтера и кассира
+- Колонка «Сальдо» убрана из таблицы платежей и Excel; статусы сохранены
+- Автотесты в фазах: unit + E2E cashier / tuition-month / payments-saldo (audit 18 passed)
+
+**Closeout:** override_closeout (v3.0 audit **passed**; 21 legacy open artifacts acknowledged — see STATE.md Deferred Items)  
+**Known verification overrides:** 1 debug session + 20 quick_tasks without SUMMARY (re-ack from v2.0 close)
+
+Архив: [`.planning/milestones/v3.0-ROADMAP.md`](./milestones/v3.0-ROADMAP.md), [requirements](./milestones/v3.0-REQUIREMENTS.md), [audit](./milestones/v3.0-MILESTONE-AUDIT.md), phases → [`milestones/v3.0-phases/`](./milestones/v3.0-phases/)
+
+---
+
 ## v2.0 Система предметов (Shipped: 2026-07-11)
 
 **Phases completed:** 6 phases, 27 plans, 81 tasks

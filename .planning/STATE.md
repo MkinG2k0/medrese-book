@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Касса и долги по месяцам
-current_phase: 18
-current_phase_name: Remove Saldo column
-status: milestone_phases_complete
-stopped_at: Phase 18 verified passed — v3.0 phases 16–18 complete
-last_updated: "2026-11-07T17:28:00Z"
-last_activity: 2026-11-07
-last_activity_desc: Phase 18 verified 5/5 — Saldo removed; v3.0 Phases 16–18 complete
+status: Awaiting next milestone
+stopped_at: Phase 18 VERIFICATION.md written — milestone phases complete
+last_updated: "2026-11-07T22:31:41.126Z"
+last_activity: 2026-11-08
+last_activity_desc: Milestone v3.0 completed and archived
 progress:
   total_phases: 3
-  completed_phases: 3
+  completed_phases: 2
   total_plans: 9
-  completed_plans: 9
+  completed_plans: 8
+current_phase: 18
+current_phase_name: Remove Saldo column
 ---
 
 # Project State
@@ -27,10 +27,11 @@ See: .planning/PROJECT.md (updated 2026-10-31)
 
 ## Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-07-12:
+Items acknowledged and deferred at milestone close on 2026-07-12 (v2.0) and re-acknowledged 2026-11-08 (v3.0 override_closeout):
 
 | Category | Item | Status |
 |----------|------|--------|
+| debug | switch-user-idle-logout | awaiting_human_verify |
 | quick_task | 260606-v2w-lessonpage-lib-fsd | unknown |
 | quick_task | 260624-psw-restrict-user-switcher | unknown |
 | quick_task | 260624-sk2-post-api-sessions-5 | unknown |
@@ -49,15 +50,17 @@ Items acknowledged and deferred at milestone close on 2026-07-12:
 | quick_task | 260625-ljc-pwa | unknown |
 | quick_task | 260625-m6v-mobile | unknown |
 | quick_task | 260701-x4v-calendar-lesson-days | missing |
+| quick_task | 260716-vla-fix-back-btn-breadcrumbs | missing |
+| quick_task | 260926-pay-parent-tuition | missing |
 
-Note: многие quick tasks фактически выполнены (см. Quick Tasks Completed ниже); audit-open флагирует отсутствие SUMMARY.md.
+Note: многие quick tasks фактически выполнены (см. Quick Tasks Completed ниже); audit-open флагирует отсутствие SUMMARY.md. v3.0 feature REQs verified via audit; open items are legacy noise / out-of-scope debug.
 
 ## Current Position
 
-Phase: 18 — Remove Saldo column
-Plan: 18-01 complete
-Status: **milestone_phases_complete** — v3.0 Phases 16–18 all plans done; Phase 18 verification **passed 5/5**; Phase 17 passed; Phase 16 implementation verified with residual human_needed UAT items
-Last activity: 2026-11-07 — Phase 18 verified (no Saldo in UI/Excel; status + balanceKopecks retained)
+Phase: Milestone v3.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-11-08 — Milestone v3.0 completed and archived
 
 ## Performance Metrics
 
@@ -327,6 +330,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- `/gsd-complete-milestone` (archive v3.0) or `/gsd-new-milestone` for v3.1 (ЗП / SAL-CFG / TEST-02/03)
-- Optional: close Phase 16 residual human UAT if still open
-- Optional: backfill SUMMARY.md for deferred quick tasks via `/gsd-cleanup`
+- Start the next milestone with /gsd-new-milestone

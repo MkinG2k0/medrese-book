@@ -1,28 +1,22 @@
 {
   "version": "1.0",
-  "timestamp": "2026-11-07T20:30:00+03:00",
+  "timestamp": "2026-11-08T01:35:00+03:00",
   "milestone": "v3.0",
   "milestone_name": "Касса и долги по месяцам",
-  "phase": "18",
-  "phase_name": "Remove Saldo column",
-  "phase_dir": ".planning/phases/18-remove-saldo-column",
-  "status": "milestone_phases_complete",
-  "next_action": "Optional /gsd-complete-milestone v3.0; then /gsd-new-milestone for v3.1 (ЗП). Do not start salary without new milestone.",
+  "status": "milestone_shipped",
+  "next_action": "/gsd-new-milestone for v3.1 (salary / attendance / windows)",
   "completed_phases": ["16", "17", "18"],
-  "remaining_phases": [],
-  "completed_work": [
-    "Phase 16 Cashier",
-    "Phase 17 Tuition month & unpaid visibility (UAT closed 2026-11-07)",
-    "Phase 18 Remove Saldo column — PAYUI-01..03 passed"
-  ],
-  "remaining_work": [
-    "Optional formal milestone archive",
-    "v3.1: salary formula + UI config + ATTEND/WINDOW (future)"
+  "closeout_type": "override_closeout",
+  "archives": [
+    ".planning/milestones/v3.0-ROADMAP.md",
+    ".planning/milestones/v3.0-REQUIREMENTS.md",
+    ".planning/milestones/v3.0-MILESTONE-AUDIT.md",
+    ".planning/milestones/v3.0-phases/"
   ],
   "human_actions_pending": [
-    "Prod: pnpm db:migrate:deploy if month columns / CASHIER not yet applied",
-    "Optional Phase 16 visual UAT leftovers"
+    "Optional: git push && git push --tags for v3.0",
+    "Prod: pnpm db:migrate:deploy if CASHIER/month not applied"
   ],
   "blockers": [],
-  "resume_prompt": "v3.0 phases 16–18 complete. Next: /gsd-complete-milestone or start v3.1 with /gsd-new-milestone."
+  "resume_prompt": "v3.0 shipped. Start v3.1 with /gsd-new-milestone."
 }
