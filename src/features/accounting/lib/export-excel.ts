@@ -35,7 +35,6 @@ export async function buildPaymentsWorkbook(
 		{ header: 'Группа', key: 'group', width: 20 },
 		{ header: 'Тариф', key: 'rate', width: 14 },
 		{ header: 'Оплачено за месяц', key: 'paid', width: 18 },
-		{ header: 'Сальдо', key: 'balance', width: 14 },
 		{ header: 'Статус', key: 'status', width: 16 },
 	]
 	for (const row of rows) {
@@ -44,7 +43,6 @@ export async function buildPaymentsWorkbook(
 			group: row.groupName,
 			rate: formatMoney(row.tuitionRateKopecks),
 			paid: formatMoney(row.monthPaidKopecks),
-			balance: formatMoney(row.balanceKopecks),
 			status: studentStatusLabel(row.status),
 		})
 	}
