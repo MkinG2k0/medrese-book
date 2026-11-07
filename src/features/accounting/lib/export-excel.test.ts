@@ -20,7 +20,8 @@ async function loadPaymentsSheet(
 	buffer: Buffer,
 ): Promise<ExcelJS.Worksheet> {
 	const workbook = new ExcelJS.Workbook()
-	await workbook.xlsx.load(buffer)
+	// ExcelJS typings predate Node 22 generic Buffer — bridge via never.
+	await workbook.xlsx.load(buffer as never)
 	const sheet = workbook.getWorksheet('Платежи')
 	expect(sheet).toBeDefined()
 	return sheet!

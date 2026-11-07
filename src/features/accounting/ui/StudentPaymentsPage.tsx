@@ -366,11 +366,6 @@ export function StudentPaymentsPage({ month }: StudentPaymentsPageProps) {
 				render: (_, row) => formatMoney(row.monthPaidKopecks),
 			},
 			{
-				title: 'Сальдо',
-				key: 'balanceKopecks',
-				render: (_, row) => formatMoney(row.balanceKopecks),
-			},
-			{
 				title: 'Статус',
 				key: 'status',
 				render: (_, row) => renderStatus(row.status),
