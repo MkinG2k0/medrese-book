@@ -195,6 +195,7 @@ export async function confirmTuitionPaymentRequest(
 
 	revalidatePath('/accounting/payment-requests')
 	revalidatePath('/accounting/payments')
+	revalidatePath('/accounting/debts')
 	revalidatePath('/parent/pay')
 	return { ok: true }
 }
