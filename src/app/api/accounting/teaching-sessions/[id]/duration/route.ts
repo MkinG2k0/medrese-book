@@ -7,7 +7,9 @@ import { adjustTeachingSessionDuration } from '@/features/accounting/lib/account
 type RouteContext = { params: Promise<{ id: string }> }
 
 export async function PATCH(request: Request, context: RouteContext) {
-	const auth = await authorizeApiRequest({ allowedRoles: ['ACCOUNTANT'] })
+	const auth = await authorizeApiRequest({
+		allowedRoles: ['ACCOUNTANT', 'MANAGER'],
+	})
 	if ('error' in auth) return auth.error
 
 	try {

@@ -1,8 +1,9 @@
 'use client'
 
 import { CheckOutlined, SwapOutlined } from '@ant-design/icons'
-import { Avatar, Dropdown, Spin } from 'antd'
+import { App, Avatar, Dropdown, Spin } from 'antd'
 import type { MenuProps } from 'antd'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { useTransition } from 'react'
 
 import type { SwitchableUser } from '@/features/auth/actions/switch-user-actions'
@@ -35,6 +36,7 @@ export function UserSwitcher({
 	collapsed = false,
 }: UserSwitcherProps) {
 	const [isPending, startTransition] = useTransition()
+	const { message } = App.useApp()
 
 	const items: MenuProps['items'] = users.map((user) => ({
 		key: user.id,
@@ -58,7 +60,16 @@ export function UserSwitcher({
 
 	const handleSelect: MenuProps['onClick'] = ({ key }) => {
 		startTransition(async () => {
-			await switchUser(key)
+			try {
+				await switchUser(key)
+			} catch (err) {
+				if (isRedirectError(err)) throw err
+				const text =
+					err instanceof Error && err.message
+						? err.message
+						: 'Не удалось переключить пользователя'
+				message.error(text)
+			}
 		})
 	}
 

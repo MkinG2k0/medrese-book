@@ -11,7 +11,12 @@ import {
 	suggestPaymentAmountKopecks,
 } from './payment-suggestions'
 import { reversalAmount, validateReversalTarget } from './create-reversal'
-import { LESSON_ANOMALY_MINUTES, isSessionAnomaly } from './teacher-hours'
+import {
+	LESSON_ANOMALY_MINUTES,
+	calcWeightedSalaryKopecks,
+	isSessionAnomaly,
+	sumTeacherMinutes,
+} from './teacher-hours'
 
 describe('computeStudentBalanceKopecks', () => {
 	it('returns advance when payments exceed charges', () => {
@@ -147,5 +152,53 @@ describe('isSessionAnomaly', () => {
 				date: startedAt,
 			}),
 		).toBe(false)
+	})
+})
+
+describe('anomaly salary exclusion', () => {
+	const rates = [{ hourlyRate: 60_000, validFrom: new Date('2026-01-01') }]
+
+	function sessionOfMinutes(
+		id: string,
+		minutes: number,
+		adjustment?: { originalMinutes: number; adjustedMinutes: number },
+	) {
+		const startedAt = new Date('2026-07-01T10:00:00')
+		return {
+			id,
+			teacherId: 't1',
+			startedAt,
+			endedAt: new Date(startedAt.getTime() + minutes * 60_000),
+			date: startedAt,
+			durationAdjustment: adjustment ?? null,
+		}
+	}
+
+	it('excludes unresolved 2881-minute anomaly from draft minutes and amount', () => {
+		const sessions = [sessionOfMinutes('anom', 2881)]
+		expect(isSessionAnomaly(sessions[0])).toBe(true)
+		expect(sumTeacherMinutes(sessions)).toBe(0)
+		expect(calcWeightedSalaryKopecks(sessions, rates)).toEqual({
+			totalMinutes: 0,
+			amount: 0,
+			anomalyCount: 1,
+		})
+	})
+
+	it('counts adjusted sessions with adjustedMinutes and clears anomaly', () => {
+		const sessions = [
+			sessionOfMinutes('fixed', 2881, {
+				originalMinutes: 2881,
+				adjustedMinutes: 90,
+			}),
+			sessionOfMinutes('ok', 60),
+		]
+		expect(isSessionAnomaly(sessions[0])).toBe(false)
+		expect(sumTeacherMinutes(sessions)).toBe(150)
+		expect(calcWeightedSalaryKopecks(sessions, rates)).toEqual({
+			totalMinutes: 150,
+			amount: 150_000,
+			anomalyCount: 0,
+		})
 	})
 })

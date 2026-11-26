@@ -25,4 +25,13 @@ describe('canSwitchUser', () => {
 	it('запрещает STUDENT', () => {
 		expect(canSwitchUser('STUDENT')).toBe(false)
 	})
+
+	it('запрещает CASHIER без switchOwnerId', () => {
+		expect(canSwitchUser('CASHIER')).toBe(false)
+		expect(canSwitchUser('CASHIER', null)).toBe(false)
+	})
+
+	it('разрешает CASHIER с switchOwnerId (вход супер-админа)', () => {
+		expect(canSwitchUser('CASHIER', 'owner-id')).toBe(true)
+	})
 })

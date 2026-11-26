@@ -17,6 +17,12 @@ async function teacherHasActiveSubstitution(teacherId: string): Promise<boolean>
 	return active.length > 0
 }
 
+const PRIVILEGED_SWITCH_ROLES = new Set<UserRole>([
+	'SUPER_ADMIN',
+	'MANAGER',
+	'ACCOUNTANT',
+])
+
 export async function isPrivilegedSwitchOwner(
 	switchOwnerId: string,
 ): Promise<boolean> {
@@ -25,7 +31,7 @@ export async function isPrivilegedSwitchOwner(
 		select: { role: true },
 	})
 
-	return owner?.role === 'SUPER_ADMIN' || owner?.role === 'MANAGER'
+	return !!owner && PRIVILEGED_SWITCH_ROLES.has(owner.role as UserRole)
 }
 
 async function isValidTeacherSwitchSession(session: Session): Promise<boolean> {
@@ -51,21 +57,18 @@ export async function resolveSwitchAccess(
 ): Promise<SwitchAccess> {
 	const role = session.user.role as UserRole
 
-	if (role === 'SUPER_ADMIN' || role === 'MANAGER') {
-		return { allowed: true, switchOwnerId: session.user.id }
+	// Сохраняем права владельца при входе под любой ролью (в т.ч. CASHIER)
+	if (
+		session.user.switchOwnerId &&
+		(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
+	) {
+		return {
+			allowed: true,
+			switchOwnerId: session.user.switchOwnerId,
+		}
 	}
 
-	if (role === 'ACCOUNTANT') {
-		if (
-			session.user.switchOwnerId &&
-			(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
-		) {
-			return {
-				allowed: true,
-				switchOwnerId: session.user.switchOwnerId,
-			}
-		}
-
+	if (role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ACCOUNTANT') {
 		return { allowed: true, switchOwnerId: session.user.id }
 	}
 
@@ -76,13 +79,6 @@ export async function resolveSwitchAccess(
 		}
 
 		if (session.user.switchOwnerId) {
-			if (await isPrivilegedSwitchOwner(session.user.switchOwnerId)) {
-				return {
-					allowed: true,
-					switchOwnerId: session.user.switchOwnerId,
-				}
-			}
-
 			const valid = await isValidTeacherSwitchSession(session)
 			if (valid) {
 				return {

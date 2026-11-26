@@ -37,6 +37,7 @@ export function sumTeacherMinutes(
 	sessions: TeachingSessionWithAdjustment[],
 ): number {
 	return sessions.reduce((sum, session) => {
+		if (isSessionAnomaly(session)) return sum
 		const minutes = getSessionDurationMinutes(session)
 		return sum + (minutes ?? 0)
 	}, 0)
@@ -67,6 +68,7 @@ export function calcWeightedSalaryKopecks(
 	let totalMinutes = 0
 
 	for (const session of sessions) {
+		if (isSessionAnomaly(session)) continue
 		const minutes = getSessionDurationMinutes(session)
 		if (minutes == null || minutes <= 0) continue
 		totalMinutes += minutes

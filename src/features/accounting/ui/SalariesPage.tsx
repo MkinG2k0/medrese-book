@@ -1,6 +1,6 @@
 'use client'
 
-import { App, Button, Modal, Select, Table, Tag } from 'antd'
+import { App, Button, Input, InputNumber, Modal, Select, Table, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState } from 'react'
@@ -10,6 +10,7 @@ import {
 	useSalaries,
 	useTeacherLessons,
 	type SalaryRow,
+	type TeacherLessonRow,
 } from '@/entities/accounting'
 import { getSalaryStatusLabel } from '@/features/accounting/lib/accounting-labels'
 import { AccountingMonthPicker } from '@/features/accounting/ui/AccountingMonthPicker'
@@ -17,6 +18,11 @@ import { MoneyInput } from '@/features/accounting/ui/MoneyInput'
 import { PAYMENT_METHOD_OPTIONS } from '@/features/accounting/lib/accounting-labels'
 import { formatMoney } from '@/shared/lib/money'
 import Title from '@/shared/ui/Title'
+
+function formatLessonDateTime(value: string | null): string {
+	if (!value) return '—'
+	return new Date(value).toLocaleString('ru-RU')
+}
 
 type SalariesPageProps = {
 	month: string
@@ -37,6 +43,12 @@ export function SalariesPage({ month }: SalariesPageProps) {
 		'CASH',
 	)
 	const [submitting, setSubmitting] = useState(false)
+	const [adjustDrafts, setAdjustDrafts] = useState<
+		Record<string, { minutes: number | null; reason: string }>
+	>({})
+	const [adjustingSessionId, setAdjustingSessionId] = useState<string | null>(
+		null,
+	)
 
 	const handleConfirm = useCallback(
 		async (accrualId: string) => {
@@ -145,6 +157,71 @@ export function SalariesPage({ month }: SalariesPageProps) {
 		}
 	}
 
+	const getAdjustDraft = (row: TeacherLessonRow) =>
+		adjustDrafts[row.sessionId] ?? {
+			minutes:
+				row.durationMinutes != null && row.durationMinutes <= 480
+					? row.durationMinutes
+					: null,
+			reason: '',
+		}
+
+	const updateAdjustDraft = (
+		sessionId: string,
+		patch: Partial<{ minutes: number | null; reason: string }>,
+	) => {
+		setAdjustDrafts((prev) => {
+			const current = prev[sessionId] ?? { minutes: null, reason: '' }
+			return {
+				...prev,
+				[sessionId]: { ...current, ...patch },
+			}
+		})
+	}
+
+	const handleAdjustDuration = async (row: TeacherLessonRow) => {
+		const draft = getAdjustDraft(row)
+		if (draft.minutes == null || draft.minutes < 1) {
+			message.error('Укажите длительность в минутах')
+			return
+		}
+		if (!draft.reason.trim()) {
+			message.error('Укажите причину корректировки')
+			return
+		}
+
+		setAdjustingSessionId(row.sessionId)
+		try {
+			const res = await fetch(
+				`/api/accounting/teaching-sessions/${row.sessionId}/duration`,
+				{
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						adjustedMinutes: draft.minutes,
+						reason: draft.reason.trim(),
+					}),
+				},
+			)
+			const json = await res.json()
+			if (json.error) throw new Error(json.error)
+			message.success('Длительность урока скорректирована')
+			setAdjustDrafts((prev) => {
+				const next = { ...prev }
+				delete next[row.sessionId]
+				return next
+			})
+			await queryClient.invalidateQueries({
+				queryKey: ['accounting-teacher-lessons'],
+			})
+			await queryClient.invalidateQueries({ queryKey: ['accounting-salaries'] })
+		} catch (err) {
+			message.error(err instanceof Error ? err.message : 'Ошибка')
+		} finally {
+			setAdjustingSessionId(null)
+		}
+	}
+
 	return (
 		<div className="flex flex-col gap-6">
 			<div className="flex min-w-0 flex-col gap-4">
@@ -168,21 +245,29 @@ export function SalariesPage({ month }: SalariesPageProps) {
 			<Modal
 				title="Уроки учителя"
 				open={lessonsTeacherId != null}
-				onCancel={() => setLessonsTeacherId(null)}
+				onCancel={() => {
+					setLessonsTeacherId(null)
+					setAdjustDrafts({})
+				}}
 				footer={null}
-				width={720}
+				width={960}
 			>
 				<Table
 					rowKey="sessionId"
 					loading={lessonsLoading}
 					dataSource={lessons ?? []}
 					pagination={false}
+					scroll={{ x: 'max-content' }}
 					columns={[
 						{
-							title: 'Дата',
-							key: 'date',
-							render: (_, row) =>
-								new Date(row.startedAt).toLocaleString('ru-RU'),
+							title: 'Начало',
+							key: 'startedAt',
+							render: (_, row) => formatLessonDateTime(row.startedAt),
+						},
+						{
+							title: 'Конец',
+							key: 'endedAt',
+							render: (_, row) => formatLessonDateTime(row.endedAt),
 						},
 						{ title: 'Группа', dataIndex: 'groupName', key: 'groupName' },
 						{
@@ -195,6 +280,47 @@ export function SalariesPage({ month }: SalariesPageProps) {
 							key: 'flag',
 							render: (_, row) =>
 								row.isAnomaly ? <Tag color="warning">Проверить</Tag> : null,
+						},
+						{
+							title: 'Корректировка',
+							key: 'adjust',
+							render: (_, row) => {
+								if (!row.isAnomaly) return null
+								const draft = getAdjustDraft(row)
+								return (
+									<div className="flex min-w-64 flex-col gap-2">
+										<InputNumber
+											min={1}
+											max={480}
+											value={draft.minutes}
+											onChange={(value) =>
+												updateAdjustDraft(row.sessionId, {
+													minutes: typeof value === 'number' ? value : null,
+												})
+											}
+											addonAfter="мин"
+											className="w-full"
+										/>
+										<Input
+											value={draft.reason}
+											onChange={(event) =>
+												updateAdjustDraft(row.sessionId, {
+													reason: event.target.value,
+												})
+											}
+											placeholder="Причина корректировки"
+										/>
+										<Button
+											size="small"
+											type="primary"
+											loading={adjustingSessionId === row.sessionId}
+											onClick={() => void handleAdjustDuration(row)}
+										>
+											Исправить
+										</Button>
+									</div>
+								)
+							},
 						},
 					]}
 				/>
