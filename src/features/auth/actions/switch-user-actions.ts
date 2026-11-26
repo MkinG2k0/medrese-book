@@ -61,6 +61,13 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 	const access = await resolveSwitchAccess(session)
 	if (!access.allowed) return []
 
+	if (
+		session.user.switchOwnerId &&
+		(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
+	) {
+		return getPrivilegedSwitchableUsers()
+	}
+
 	const role = session.user.role as UserRole
 
 	if (role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ACCOUNTANT') {
@@ -68,13 +75,6 @@ export async function getSwitchableUsers(): Promise<SwitchableUser[]> {
 	}
 
 	if (role === 'TEACHER') {
-		if (
-			session.user.switchOwnerId &&
-			(await isPrivilegedSwitchOwner(session.user.switchOwnerId))
-		) {
-			return getPrivilegedSwitchableUsers()
-		}
-
 		const allowedUserIds = await getTeacherSwitchUserIds(session)
 		return prisma.user.findMany({
 			where: { id: { in: allowedUserIds } },
